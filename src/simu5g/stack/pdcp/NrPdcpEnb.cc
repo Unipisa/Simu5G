@@ -34,34 +34,5 @@ void NrPdcpEnb::initialize(int stage)
 
 
 
-void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)
-{
-    EV << NOW << " NrPdcpEnb::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
-
-    // Add tag with target node information
-    auto tag = pkt->addTagIfAbsent<X2TargetReq>();
-    tag->setTargetNode(targetNode);
-
-    // Send packet to dual connectivity manager via gate instead of direct method call
-    send(pkt, "dcManagerOut");
-}
-
-void NrPdcpEnb::receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode)
-{
-    Enter_Method("receiveDataFromSourceNode");
-    take(pkt);
-
-    auto ctrlInfo = pkt->getTag<FlowControlInfo>();
-    if (ctrlInfo->getDirection() == DL) {
-        MacNodeId destId = ctrlInfo->getDestId();
-        EV << NOW << " NrPdcpEnb::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
-        sendToLowerLayer(pkt);
-    }
-    else { // UL
-        EV << NOW << " NrPdcpEnb::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
-        fromLowerLayer(pkt);
-    }
-}
-
 
 } //namespace

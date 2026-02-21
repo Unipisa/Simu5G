@@ -39,17 +39,6 @@ class NrPdcpEnb : public LtePdcpEnbD2D
 
     void initialize(int stage) override;
 
-    /*
-     * Dual Connectivity support
-     */
-    bool isDualConnectivityEnabled() override { return dualConnectivityEnabled_; }
-
-    // Send packet to the target node by invoking the Dual Connectivity manager
-    void forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode) override;
-
-    // Receive packet from the source node. Called by the Dual Connectivity manager
-    void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode) override;
-
 };
 
 } //namespace

@@ -334,6 +334,33 @@ void LtePdcpBase::handleMessage(cMessage *msg)
     }
 }
 
+void LtePdcpBase::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
+{
+    EV << NOW << " LtePdcpBase::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
+
+    auto tag = pkt->addTagIfAbsent<X2TargetReq>();
+    tag->setTargetNode(targetNode);
+
+    send(pkt, "dcManagerOut");
+}
+
+void LtePdcpBase::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
+{
+    Enter_Method("receiveDataFromSourceNode");
+    take(pkt);
+
+    auto ctrlInfo = pkt->getTag<FlowControlInfo>();
+    if (ctrlInfo->getDirection() == DL) {
+        MacNodeId destId = ctrlInfo->getDestId();
+        EV << NOW << " LtePdcpBase::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
+        sendToLowerLayer(pkt);
+    }
+    else { // UL
+        EV << NOW << " LtePdcpBase::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
+        fromLowerLayer(pkt);
+    }
+}
+
 void LtePdcpBase::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
 {
     EV << NOW << " LtePdcpBase::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
