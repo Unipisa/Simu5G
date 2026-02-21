@@ -27,6 +27,8 @@ void NrPdcpUe::initialize(int stage)
     LtePdcpUeD2D::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
+        isNR_ = true;
+
         nrNodeId_ = MacNodeId(getContainingNode(this)->par("nrMacNodeId").intValue());
 
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);

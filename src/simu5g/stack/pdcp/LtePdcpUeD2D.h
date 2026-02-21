@@ -35,6 +35,7 @@ class LtePdcpUeD2D : public LtePdcpUe
     std::map<inet::L3Address, bool> d2dPeeringInit_;
 
   protected:
+    void initialize(int stage) override;
 
     void handleMessage(cMessage *msg) override;
 

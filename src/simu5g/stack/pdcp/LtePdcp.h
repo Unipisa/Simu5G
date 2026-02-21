@@ -105,6 +105,10 @@ class LtePdcpBase : public cSimpleModule
     // Identifier for this node
     MacNodeId nodeId_;
 
+    // Flags characterizing the subclass type (set during initialize)
+    bool isNR_ = false;
+    bool hasD2DSupport_ = false;
+
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;

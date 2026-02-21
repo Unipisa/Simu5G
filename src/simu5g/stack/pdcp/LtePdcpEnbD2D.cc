@@ -25,6 +25,13 @@ Define_Module(LtePdcpEnbD2D);
 using namespace omnetpp;
 using namespace inet;
 
+void LtePdcpEnbD2D::initialize(int stage)
+{
+    LtePdcpEnb::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+        hasD2DSupport_ = true;
+}
+
 void LtePdcpEnbD2D::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<inet::Packet *>(msg);

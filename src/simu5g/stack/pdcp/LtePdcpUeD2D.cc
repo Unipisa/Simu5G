@@ -36,6 +36,13 @@ MacNodeId LtePdcpUeD2D::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR
     return destId;
 }
 
+void LtePdcpUeD2D::initialize(int stage)
+{
+    LtePdcpUe::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+        hasD2DSupport_ = true;
+}
+
 void LtePdcpUeD2D::handleMessage(cMessage *msg)
 {
     cPacket *pktAux = check_and_cast<cPacket *>(msg);
