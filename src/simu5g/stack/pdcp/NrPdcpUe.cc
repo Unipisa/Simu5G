@@ -64,32 +64,5 @@ void NrPdcpUe::deleteEntities(MacNodeId nodeId)
     }
 }
 
-void NrPdcpUe::sendToLowerLayer(Packet *pkt)
-{
-    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
-
-    if (!dualConnectivityEnabled_ || useNR) {
-        EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
-
-        // use NR id as source
-        lteInfo->setSourceId(nrNodeId_);
-
-        // notify the packetFlowObserver only with UL packet
-        if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-            if (NRpacketFlowObserver_ != nullptr) {
-                EV << "LteTxPdcpEntity::handlePacketFromUpperLayer - notify NRpacketFlowObserver_" << endl;
-                NRpacketFlowObserver_->insertPdcpSdu(pkt);
-            }
-        }
-
-        // Send message
-        send(pkt, nrRlcOutGate_);
-
-        emit(sentPacketToLowerLayerSignal_, pkt);
-    }
-    else
-        LtePdcpBase::sendToLowerLayer(pkt);
-}
 
 } //namespace

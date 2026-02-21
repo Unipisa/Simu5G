@@ -45,11 +45,6 @@ class NrPdcpUe : public LtePdcpUeD2D
     }
 
     /*
-     * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
-     */
-    void sendToLowerLayer(Packet *pkt) override;
-
-    /*
      * Dual Connectivity support
      */
     bool isDualConnectivityEnabled() override { return dualConnectivityEnabled_; }

@@ -199,22 +199,32 @@ void LtePdcpBase::toDataPort(cPacket *pktAux)
 
 void LtePdcpBase::sendToLowerLayer(Packet *pkt)
 {
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+
+    // NrPdcpUe: route to NR or LTE RLC depending on DC and useNR flag
+    if (isNR_ && nrRlcOutGate_ != nullptr) {
+        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
+        if (!dualConnectivityEnabled_ || useNR) {
+            EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
+
+            // use NR id as source
+            lteInfo->setSourceId(nrNodeId_);
+
+            // notify the packetFlowObserver only with UL packet
+            if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+                if (NRpacketFlowObserver_ != nullptr) {
+                    EV << "LteTxPdcpEntity::handlePacketFromUpperLayer - notify NRpacketFlowObserver_" << endl;
+                    NRpacketFlowObserver_->insertPdcpSdu(pkt);
+                }
+            }
+
+            send(pkt, nrRlcOutGate_);
+            emit(sentPacketToLowerLayerSignal_, pkt);
+            return;
+        }
+    }
 
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
-
-    /*
-     * @author Alessandro Noferi
-     *
-     * Since the other methods, e.g. fromData, are overridden
-     * in many classes, this method is the only one used by
-     * all the classes (except the NRPdcpUe that has its
-     * own sendToLowerLayer method).
-     * So, the notification about the new PDCP to the pfm
-     * is done here.
-     *
-     * packets sent in D2D mode are not considered
-     */
 
     if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
         if (packetFlowObserver_ != nullptr)
