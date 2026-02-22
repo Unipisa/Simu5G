@@ -217,6 +217,25 @@ class LteMacBase : public cSimpleModule
     }
 
     /*
+     * DRB ID <-> LCID mapping
+     *
+     * In the current implementation, DRB IDs (used in PDCP/RLC) map 1:1 to
+     * Logical Channel IDs (used in MAC). These methods make the mapping explicit.
+     */
+
+    /**
+     * Maps a DRB ID to the corresponding Logical Channel ID.
+     * Currently a 1:1 mapping.
+     */
+    LogicalCid drbIdToLcid(DrbId drbId) { return drbId; }
+
+    /**
+     * Maps a Logical Channel ID to the corresponding DRB ID.
+     * Currently a 1:1 mapping.
+     */
+    DrbId lcidToDrbId(LogicalCid lcid) { return lcid; }
+
+    /*
      * Getters
      */
 

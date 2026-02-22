@@ -75,7 +75,7 @@ class Ip2Nic : public cSimpleModule
     LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
 
-    // Key for identifying connections (for LCID assignment)
+    // Key for identifying connections (for DRB ID assignment)
     struct ConnectionKey {
         inet::Ipv4Address srcAddr;
         inet::Ipv4Address dstAddr;
@@ -100,9 +100,9 @@ class Ip2Nic : public cSimpleModule
         }
     };
 
-    // Connection Identifier (for LCID assignment)
-    LogicalCid lcid_ = 1;
-    std::unordered_map<ConnectionKey, LogicalCid, ConnectionKeyHash> lcidTable_;
+    // DRB ID counter and table (for DRB ID assignment)
+    DrbId drbId_ = 1;
+    std::unordered_map<ConnectionKey, DrbId, ConnectionKeyHash> drbIdTable_;
 
     // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
     std::unordered_map<FlowKey, int, FlowKeyHash> splitBearersTable_;
@@ -142,7 +142,7 @@ class Ip2Nic : public cSimpleModule
     MacNodeId getNextHopNodeId(const inet::Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
     LteTrafficClass getTrafficCategory(cPacket *pkt);
     LteRlcType getRlcType(LteTrafficClass trafficCategory);
-    LogicalCid lookupOrAssignLcid(const ConnectionKey& key);
+    DrbId lookupOrAssignDrbId(const ConnectionKey& key);
 
   public:
     ~Ip2Nic() override;

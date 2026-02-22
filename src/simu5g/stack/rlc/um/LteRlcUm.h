@@ -18,7 +18,6 @@
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
-#include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/mec/utils/MecCommon.h"
 
 namespace simu5g {
@@ -71,11 +70,11 @@ class LteRlcUm : public cSimpleModule
     */
 
     /**
-    * The entities map associates each CID with
+    * The entities map associates each DrbKey with
     * a TX/RX Entity , identified by its ID
     */
-    typedef std::map<MacCid, UmTxEntity *> UmTxEntities;
-    typedef std::map<MacCid, UmRxEntity *> UmRxEntities;
+    typedef std::map<DrbKey, UmTxEntity *> UmTxEntities;
+    typedef std::map<DrbKey, UmRxEntity *> UmRxEntities;
     UmTxEntities txEntities_;
     UmRxEntities rxEntities_;
 
@@ -162,39 +161,39 @@ class LteRlcUm : public cSimpleModule
 
   public:
     /**
-     * lookupTxBuffer() searches for an existing TXBuffer for the given CID.
+     * lookupTxBuffer() searches for an existing TXBuffer for the given DrbKey.
      *
-     * @param cid Connection ID to lookup
+     * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    virtual UmTxEntity *lookupTxBuffer(MacCid cid);
+    virtual UmTxEntity *lookupTxBuffer(DrbKey id);
 
     /**
-     * createTxBuffer() creates a new TXBuffer for the given CID and flow info.
+     * createTxBuffer() creates a new TXBuffer for the given DrbKey and flow info.
      *
-     * @param cid Connection ID for the new buffer
+     * @param id DrbKey for the new buffer
      * @param lteInfo flow-related info
      * @return pointer to the newly created TXBuffer
      */
-    virtual UmTxEntity *createTxBuffer(MacCid cid, FlowControlInfo *lteInfo);
+    virtual UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
 
     /**
-     * lookupRxBuffer() searches for an existing RXBuffer for the given CID.
+     * lookupRxBuffer() searches for an existing RXBuffer for the given DrbKey.
      *
-     * @param cid Connection ID to lookup
+     * @param id DrbKey to lookup
      * @return pointer to the RXBuffer if found, nullptr otherwise
      */
-    virtual UmRxEntity *lookupRxBuffer(MacCid cid);
+    virtual UmRxEntity *lookupRxBuffer(DrbKey id);
 
     /**
-     * createRxBuffer() creates a new RXBuffer for the given CID and flow info.
+     * createRxBuffer() creates a new RXBuffer for the given DrbKey and flow info.
      *
-     * @param cid Connection ID for the new buffer
+     * @param id DrbKey for the new buffer
      * @param lteInfo flow-related info
      * @return pointer to the newly created RXBuffer
      */
-    virtual UmRxEntity *createRxBuffer(MacCid cid, FlowControlInfo *lteInfo);
+    virtual UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
   protected:
     /**

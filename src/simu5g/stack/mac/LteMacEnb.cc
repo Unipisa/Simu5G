@@ -610,7 +610,7 @@ void LteMacEnb::macPduMake(MacCid cid)
 
                 auto macPkt = macPacket->removeAtFront<LteMacPdu>();
 
-                macPkt->pushSdu(pkt);
+                macPkt->pushSdu(pkt, destCid.getLcid());
                 macPacket->insertAtFront(macPkt);
                 sduPerCid--;
             }
@@ -673,16 +673,13 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
 
     while (macPdu->hasSdu()) {
         // Extract and send SDU
-        Packet *upPkt = macPdu->popSdu();
+        LogicalCid lcid;
+        Packet *upPkt = macPdu->popSdu(lcid);
         take(upPkt);
 
-        // fill FlowControlInfo from stored descriptors
-        auto flowInfo = upPkt->getTag<FlowControlInfo>();
         MacNodeId senderId = userInfo->getSourceId();
-        LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         ASSERT(connDescIn_.find(cid) != connDescIn_.end());
-        upPkt->removeTag<FlowControlInfo>();
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
 
         EV << "LteMacBase: PDU Unmaker extracted SDU" << endl;
@@ -755,7 +752,7 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
         // discard the RLC
         if (packetFlowObserver_ != nullptr) {
             unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-            packetFlowObserver_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
+            packetFlowObserver_->discardRlcPdu(lteInfo->getDrbId(), rlcSno);
         }
 
         delete pkt;
@@ -772,7 +769,7 @@ void LteMacEnb::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    MacCid cid = MacCid(lteInfo->getDestId(), lteInfo->getLcid());
+    MacCid cid = MacCid(lteInfo->getDestId(), drbIdToLcid(lteInfo->getDrbId()));
 
     bool isLteRlcPduNewData = (pkt->findTag<LteRlcNewDataTag>() != nullptr);
 

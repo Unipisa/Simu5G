@@ -84,8 +84,10 @@ void LteHarqBufferTx::markSelected(UnitList unitIds, unsigned char availableTbs)
             cwList.pop_front();
             auto pkt2 = processes_[acid]->getPdu(cw);
             auto guestPdu = pkt2->removeAtFront<LteMacPdu>();
-            while (guestPdu->hasSdu())
-                basePdu->pushSdu(guestPdu->popSdu());
+            while (guestPdu->hasSdu()) {
+                LogicalCid lcid;
+                basePdu->pushSdu(guestPdu->popSdu(lcid), lcid);
+            }
             while (guestPdu->hasCe())
                 basePdu->pushCe(guestPdu->popCe());
             pkt2->insertAtFront(guestPdu);

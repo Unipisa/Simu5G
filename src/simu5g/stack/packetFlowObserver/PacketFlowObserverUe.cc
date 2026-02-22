@@ -34,15 +34,15 @@ void PacketFlowObserverUe::initialize(int stage)
     }
 }
 
-bool PacketFlowObserverUe::hasLcid(LogicalCid lcid)
+bool PacketFlowObserverUe::hasDrbId(DrbId drbId)
 {
-    return connectionMap_.find(lcid) != connectionMap_.end();
+    return connectionMap_.find(drbId) != connectionMap_.end();
 }
 
-void PacketFlowObserverUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
+void PacketFlowObserverUe::initDrbId(DrbId drbId, MacNodeId nodeId)
 {
-    if (connectionMap_.find(lcid) != connectionMap_.end())
-        throw cRuntimeError("%s::initLcid - Logical CID %d already present", pfmType.c_str(), lcid);
+    if (connectionMap_.find(drbId) != connectionMap_.end())
+        throw cRuntimeError("%s::initDrbId - DRB ID %d already present", pfmType.c_str(), drbId);
 
     // init new descriptor
     StatusDescriptor newDesc;
@@ -53,16 +53,16 @@ void PacketFlowObserverUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
     newDesc.macSdusPerPdu_.clear();
     newDesc.macPduPerProcess_.resize(harqProcesses_, 0);
 
-    connectionMap_[lcid] = newDesc;
-    EV_FATAL << NOW << "node id " << nodeId << " " << pfmType << "::initLcid - initialized lcid " << lcid << endl;
+    connectionMap_[drbId] = newDesc;
+    EV_FATAL << NOW << "node id " << nodeId << " " << pfmType << "::initDrbId - initialized drbId " << drbId << endl;
 }
 
-void PacketFlowObserverUe::clearLcid(LogicalCid lcid)
+void PacketFlowObserverUe::clearDrbId(DrbId drbId)
 {
-    ConnectionMap::iterator it = connectionMap_.find(lcid);
+    ConnectionMap::iterator it = connectionMap_.find(drbId);
     if (it == connectionMap_.end()) {
         // this may occur after a handover, when data structures are cleared
-        EV_FATAL << NOW << " " << pfmType << "::clearLcid - Logical CID " << lcid << " not present." << endl;
+        EV_FATAL << NOW << " " << pfmType << "::clearDrbId - DRB ID " << drbId << " not present." << endl;
         return;
     }
 
@@ -75,18 +75,18 @@ void PacketFlowObserverUe::clearLcid(LogicalCid lcid)
     for (int i = 0; i < harqProcesses_; i++)
         desc->macPduPerProcess_[i] = 0;
 
-    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::clearLcid - cleared data structures for lcid " << lcid << endl;
+    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::clearDrbId - cleared data structures for drbId " << drbId << endl;
 }
 
-void PacketFlowObserverUe::clearAllLcid()
+void PacketFlowObserverUe::clearAllDrbIds()
 {
     connectionMap_.clear();
-    EV_FATAL << NOW << " " << pfmType << "::clearAllLcid - cleared data structures for all lcids " << endl;
+    EV_FATAL << NOW << " " << pfmType << "::clearAllDrbIds - cleared data structures for all drbIds " << endl;
 }
 
 void PacketFlowObserverUe::clearStats()
 {
-    clearAllLcid();
+    clearAllDrbIds();
     resetDelayCounter();
     resetDiscardCounter();
 }
@@ -115,10 +115,10 @@ void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
 {
     EV << pfmType << "::insertPdcpSdu" << endl;
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
-    LogicalCid lcid = lteInfo->getLcid();
+    DrbId drbId = lteInfo->getDrbId();
 
-    if (connectionMap_.find(lcid) == connectionMap_.end())
-        initLcid(lcid, lteInfo->getSourceId());
+    if (connectionMap_.find(drbId) == connectionMap_.end())
+        initDrbId(drbId, lteInfo->getSourceId());
 
     // Extract sequence number from PDCP header
     auto pdcpHeader = pdcpPkt->peekAtFront<LtePdcpHeader>();
@@ -126,11 +126,11 @@ void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
     int64_t pdcpSize = pdcpPkt->getByteLength();
     simtime_t arrivalTime = simTime();
 
-    ConnectionMap::iterator cit = connectionMap_.find(lcid);
+    ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {
         // this may occur after a handover, when data structures are cleared
-        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
-        throw cRuntimeError("%s::insertPdcpSdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - DRB ID " << drbId << " not present." << endl;
+        throw cRuntimeError("%s::insertPdcpSdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
         return;
     }
 
@@ -140,15 +140,15 @@ void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
     initPdcpStatus(desc, pdcpSno, pdcpSize, arrivalTime);
     pktDiscardCounterTotal_.total += 1;
 
-    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno << " added. Logical cid " << lcid << endl;
+    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno << " added. DRB ID " << drbId << endl;
 }
 
-void PacketFlowObserverUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
+void PacketFlowObserverUe::insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
 {
-    ConnectionMap::iterator cit = connectionMap_.find(lcid);
+    ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {
         // this may occur after a handover, when data structures are cleared
-        throw cRuntimeError("%s::insertRlcPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+        throw cRuntimeError("%s::insertRlcPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
         return;
     }
 
@@ -158,8 +158,8 @@ void PacketFlowObserverUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     unsigned int rlcSno = rlcPdu->getPduSequenceNumber();
 
     if (desc->rlcSdusPerPdu_.find(rlcSno) != desc->rlcSdusPerPdu_.end())
-        throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d", pfmType.c_str(), rlcSno, lcid);
-    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertRlcPdu - Logical CID " << lcid << endl;
+        throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for DRB ID %d", pfmType.c_str(), rlcSno, drbId);
+    EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertRlcPdu - DRB ID " << drbId << endl;
 
     FramingInfo fi = rlcPdu->getFramingInfo();
     for (size_t idx = 0; idx < rlcPdu->getNumSdu(); ++idx) {
@@ -195,31 +195,31 @@ void PacketFlowObserverUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
             pit->second.hasArrivedAll = true;
         }
 
-        EV_FATAL << NOW << " " << pfmType << "::insertRlcPdu - lcid[" << lcid << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
+        EV_FATAL << NOW << " " << pfmType << "::insertRlcPdu - drbId[" << drbId << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
     }
     EV << "size:" << desc->rlcSdusPerPdu_[rlcSno].size() << endl;
 }
 
-void PacketFlowObserverUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac)
+void PacketFlowObserverUe::discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool fromMac)
 {
-    ConnectionMap::iterator cit = connectionMap_.find(lcid);
+    ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {
         // this may occur after a handover, when data structures are cleared
-        throw cRuntimeError("%s::discardRlcPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+        throw cRuntimeError("%s::discardRlcPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
         return;
     }
 
     // get the descriptor for this connection
     StatusDescriptor *desc = &cit->second;
     if (desc->rlcSdusPerPdu_.find(rlcSno) == desc->rlcSdusPerPdu_.end())
-        throw cRuntimeError("%s::discardRlcPdu - RLC PDU SN %d not present for logical CID %d", pfmType.c_str(), rlcSno, lcid);
+        throw cRuntimeError("%s::discardRlcPdu - RLC PDU SN %d not present for DRB ID %d", pfmType.c_str(), rlcSno, drbId);
 
     // get the PDCP SDUs fragmented in this RLC PDU
     SequenceNumberSet pdcpSnoSet = desc->rlcSdusPerPdu_.find(rlcSno)->second;
     for (const auto& pdcpSno : pdcpSnoSet) {
         auto rit = desc->rlcPdusPerSdu_.find(pdcpSno);
         if (rit == desc->rlcPdusPerSdu_.end())
-            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] with lcid [%d] not present, this should not happen", pfmType.c_str(), pdcpSno, lcid);
+            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] with drbId [%d] not present, this should not happen", pfmType.c_str(), pdcpSno, drbId);
 
         // remove the RLC PDUs that contains a fragment of this pdcpSno
         rit->second.erase(rlcSno);
@@ -242,7 +242,7 @@ void PacketFlowObserverUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
         // compliant with ETSI 136 314 at 4.1.5.1
 
         if (rit->second.empty() && pit->second.hasArrivedAll && !pit->second.discardedAtMac && !pit->second.sentOverTheAir) {
-            EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::discardRlcPdu - lcid[" << lcid << "], discarded PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
+            EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::discardRlcPdu - drbId[" << drbId << "], discarded PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
             pktDiscardCounterTotal_.discarded += 1;
         }
         // if the pdcp was entire and the set of rlc is empty, discard it
@@ -433,7 +433,7 @@ void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
         auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
-        int lcid = lteInfo->getLcid();
+        int lcid = lteInfo->getDrbId();
 
         auto cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {

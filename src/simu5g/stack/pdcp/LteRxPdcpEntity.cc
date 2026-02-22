@@ -38,7 +38,7 @@ void LteRxPdcpEntity::initialize(int stage)
 void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
 {
     take(pkt);
-    EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - processing packet from RLC layer" << endl;
+    EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - DRB ID[" << drbId_ << "] - processing packet from RLC layer" << endl;
 
     // Extract sequence number from PDCP header before popping it
     auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();

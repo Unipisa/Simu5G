@@ -60,15 +60,15 @@ class LteControlInfo extends inet::TagBase {
 // @brief Contains flow information in layers above the MAC
 //
 class FlowControlInfo extends LteControlInfo {
-    uint16 lcid = 0;                                     //  Logical Channel Identifier
+    uint16 drbId = 0;                                    // DRB (Data Radio Bearer) identifier
     MacNodeId multicastGroupId = NODEID_NONE;            // Identifier for a multicast group (it is in range [0:[2^28)-1] ) -- TODO probably should not be needed
 
     unsigned short traffic enum(LteTrafficClass) = 0;       // Lte Traffic Type; analogous to LCG IDs (Logical Channel Group Identifiers) in LTE/NR
     unsigned short rlcType enum(LteRlcType) = 0;            // RLC Traffic Type
 }
 
-cplusplus (FlowControlInfo::setLcid) {{
-    ASSERT(lcid <= 63);
+cplusplus (FlowControlInfo::setDrbId) {{
+    ASSERT(drbId <= 63);
 }}
 
 // WIP: Describes logical channels (identified by remote node + LCID) in MAC

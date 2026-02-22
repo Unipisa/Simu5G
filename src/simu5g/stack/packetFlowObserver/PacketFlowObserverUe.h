@@ -29,11 +29,11 @@ class LtePdcpUe;
 class PacketFlowObserverUe : public PacketFlowObserverBase
 {
     /*
-     * The node can have different active connections (LCID) at the same time, hence we need to
+     * The node can have different active connections (DRB ID) at the same time, hence we need to
      * maintain the status for each of them.
      */
     struct StatusDescriptor {
-        MacNodeId nodeId_; // destination node of this LCID
+        MacNodeId nodeId_; // destination node of this DRB ID
         std::map<unsigned int, PdcpStatus> pdcpStatus_; // a PDCP PDU can be fragmented into many RLC that could be sent and acknowledged at different times (this prevents early removal on acknowledgment)
         std::map<unsigned int, SequenceNumberSet> rlcPdusPerSdu_;  // for each RLC SDU, stores the RLC PDUs where the former was fragmented
         std::map<unsigned int, SequenceNumberSet> rlcSdusPerPdu_;  // for each RLC PDU, stores the included RLC SDUs
@@ -41,8 +41,8 @@ class PacketFlowObserverUe : public PacketFlowObserverBase
         std::vector<unsigned int> macPduPerProcess_;               // for each HARQ process, stores the included MAC PDU
     };
 
-    typedef std::map<LogicalCid, StatusDescriptor> ConnectionMap;
-    ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
+    typedef std::map<DrbId, StatusDescriptor> ConnectionMap;
+    ConnectionMap connectionMap_; // DRB ID to the corresponding StatusDescriptor
 
     Delay pdcpDelay;
 
@@ -50,23 +50,23 @@ class PacketFlowObserverUe : public PacketFlowObserverBase
     void initialize(int stage) override;
 
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
-    // return true if a structure for this LCID is present
-    bool hasLcid(LogicalCid lcid) override;
-    // initialize a new structure for this LCID
-    void initLcid(LogicalCid lcid, MacNodeId nodeId) override;
-    // reset the structure for this LCID
-    void clearLcid(LogicalCid lcid) override;
+    // return true if a structure for this DRB ID is present
+    bool hasDrbId(DrbId drbId) override;
+    // initialize a new structure for this DRB ID
+    void initDrbId(DrbId drbId, MacNodeId nodeId) override;
+    // reset the structure for this DRB ID
+    void clearDrbId(DrbId drbId) override;
     // reset structures for all connections
-    void clearAllLcid() override;
+    void clearAllDrbIds() override;
 
   public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override { /*TODO*/ }
-    void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+    void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
     void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
     void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) override;
     void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
-    void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
+    void discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool fromMac = false) override;
 
     DiscardedPkts getDiscardedPkt();
     double getDelayStats();

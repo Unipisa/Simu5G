@@ -13,6 +13,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 import inet.common.packet.Packet;
+import simu5g.common.LteCommon;
 
 cplusplus {{
 namespace simu5g {
@@ -71,17 +72,19 @@ cplusplus(LteMacPdu) {{
      * in back position
      *
      * @param pkt packet to store
+     * @param lcid logical channel ID for this SDU
      */
-    virtual void pushSdu(Packet *pkt);
+    virtual void pushSdu(Packet *pkt, LogicalCid lcid);
 
     /**
      * popSdu() pops a packet from the front of
      * the SDU list and drops ownership before
      * returning it
      *
+     * @param lcid output parameter for the logical channel ID
      * @return popped packet
      */
-    virtual Packet* popSdu();
+    virtual Packet* popSdu(LogicalCid& lcid);
 
     /**
      * hasSdu() verifies if there are other

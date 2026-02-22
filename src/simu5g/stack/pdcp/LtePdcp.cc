@@ -54,38 +54,38 @@ void LtePdcp::fromDataPort(cPacket *pktAux)
     auto lteInfo = pkt->getTag<FlowControlInfo>();
     verifyControlInfo(lteInfo.get());
 
-    MacCid cid = MacCid(lteInfo->getDestId(), lteInfo->getLcid());
+    DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
 
     if (isDualConnectivityEnabled() && lteInfo->getMulticastGroupId() == NODEID_NONE) {
         // Handle DC setup: Assume packet arrives in Master nodeB (LTE), and wants to use Secondary nodeB (NR).
         // Packet is processed by local PDCP entity, then needs to be tunneled over X2 to Secondary for transmission.
-        // However, local PDCP entity is keyed on LTE nodeIds, so we need to tweak the cid and replace NR nodeId
+        // However, local PDCP entity is keyed on LTE nodeIds, so we need to tweak the id and replace NR nodeId
         // with LTE nodeId so that lookup succeeds.
         if (getNodeTypeById(nodeId_) == NODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getDestId()) ) {
-            // use another CID whose technology matches the nodeB
+            // use another ID whose technology matches the nodeB
             MacNodeId otherDestId = binder_->getUeNodeId(lteInfo->getDestId(), !isNrUe(lteInfo->getDestId()));
             ASSERT(otherDestId != NODEID_NONE);
-            cid = MacCid(otherDestId, lteInfo->getLcid());
+            id = DrbKey(otherDestId, lteInfo->getDrbId());
         }
 
         // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
         if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getDestId()) == NODEB)  {
             MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
-            cid = MacCid(lteNodeB, lteInfo->getLcid());
+            id = DrbKey(lteNodeB, lteInfo->getDrbId());
         }
     }
 
-    LteTxPdcpEntity *entity = lookupTxEntity(cid);
+    LteTxPdcpEntity *entity = lookupTxEntity(id);
 
-    // get the PDCP entity for this LCID and process the packet
+    // get the PDCP entity for this DRB ID and process the packet
     EV << "fromDataPort in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
        << ": Processing packet " << pkt->getName() << " src=" << lteInfo->getSourceId() << " dest=" << lteInfo->getDestId()
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
-       << " ---> CID " << cid << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
+       << " ---> " << id << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
 
     if (entity == nullptr) {
         binder_->establishUnidirectionalDataConnection((FlowControlInfo *)lteInfo.get());
-        entity = lookupTxEntity(cid);
+        entity = lookupTxEntity(id);
         ASSERT(entity != nullptr);
     }
 
@@ -116,23 +116,23 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
     ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());
+    DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
 
     if (isDualConnectivityEnabled()) {
         // Handle DC setup: Assume packet arrives at this Master nodeB (LTE) from Secondary (NR) over X2.
         // Packet needs to be processed by local PDCP entity. However, local PDCP entity is keyed on LTE nodeIds,
-        // so we need to tweak the cid and replace NR nodeId with LTE nodeId so that lookup succeeds.
+        // so we need to tweak the id and replace NR nodeId with LTE nodeId so that lookup succeeds.
         if (getNodeTypeById(nodeId_) == NODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getSourceId()) ) {
-            // use another CID whose technology matches the nodeB
+            // use another ID whose technology matches the nodeB
             MacNodeId otherSourceId = binder_->getUeNodeId(lteInfo->getSourceId(), !isNrUe(lteInfo->getSourceId()));
             ASSERT(otherSourceId != NODEID_NONE);
-            cid = MacCid(otherSourceId, lteInfo->getLcid());
+            id = DrbKey(otherSourceId, lteInfo->getDrbId());
         }
 
         // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
         if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getSourceId()) == NODEB)  {
             MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
-            cid = MacCid(lteNodeB, lteInfo->getLcid());
+            id = DrbKey(lteNodeB, lteInfo->getDrbId());
         }
     }
 
@@ -156,7 +156,7 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
             }
 
             if (otherSrcId != NODEID_NONE && otherSrcId != lteInfo->getSourceId()) {
-                cid = MacCid(otherSrcId, lteInfo->getLcid());
+                id = DrbKey(otherSrcId, lteInfo->getDrbId());
 
                 EV << "LtePdcp: UE DC RX - Using alternate base station ID " << otherSrcId
                    << " instead of " << lteInfo->getSourceId()
@@ -165,12 +165,12 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
         }
     }
 
-    LteRxPdcpEntity *entity = lookupRxEntity(cid);
+    LteRxPdcpEntity *entity = lookupRxEntity(id);
 
     EV << "fromLowerLayer in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
        <<  ": Processing packet " << pkt->getName() << " src=" << lteInfo->getSourceId() << " dest=" << lteInfo->getDestId()
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
-       << " ---> CID " << cid << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
+       << " ---> " << id << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
 
     ASSERT(entity != nullptr);
 
@@ -362,39 +362,39 @@ void LtePdcp::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
     // add here specific behavior for handling mode switch at the PDCP layer
 }
 
-LteTxPdcpEntity *LtePdcp::lookupTxEntity(MacCid cid)
+LteTxPdcpEntity *LtePdcp::lookupTxEntity(DrbKey id)
 {
-    auto it = txEntities_.find(cid);
+    auto it = txEntities_.find(id);
     return it != txEntities_.end() ? it->second : nullptr;
 }
 
-LteTxPdcpEntity *LtePdcp::createTxEntity(MacCid cid)
+LteTxPdcpEntity *LtePdcp::createTxEntity(DrbKey id)
 {
     std::stringstream buf;
-    buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
+    buf << "tx-" << id.getNodeId() << "-" << id.getDrbId();
     LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
-    txEntities_[cid] = txEnt;
+    txEntities_[id] = txEnt;
 
-    EV << "LtePdcp::createTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
+    EV << "LtePdcp::createTxEntity - Added new TxPdcpEntity for " << id << "\n";
 
     return txEnt;
 }
 
 
-LteRxPdcpEntity *LtePdcp::lookupRxEntity(MacCid cid)
+LteRxPdcpEntity *LtePdcp::lookupRxEntity(DrbKey id)
 {
-    auto it = rxEntities_.find(cid);
+    auto it = rxEntities_.find(id);
     return it != rxEntities_.end() ? it->second : nullptr;
 }
 
-LteRxPdcpEntity *LtePdcp::createRxEntity(MacCid cid)
+LteRxPdcpEntity *LtePdcp::createRxEntity(DrbKey id)
 {
     std::stringstream buf;
-    buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
+    buf << "rx-" << id.getNodeId() << "-" << id.getDrbId();
     LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
-    rxEntities_[cid] = rxEnt;
+    rxEntities_[id] = rxEnt;
 
-    EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
+    EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for " << id << "\n";
 
     return rxEnt;
 }
@@ -409,8 +409,8 @@ void LtePdcp::deleteEntities(MacNodeId nodeId)
         // ENB and NrPdcpUe: delete connections related to the given UE only
         // TODO: LtePdcpUe deletes ALL entities — check if that is correct for NR dual connectivity
         for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-            auto& [cid, txEntity] = *tit;
-            if (cid.getNodeId() == nodeId) {
+            auto& [id, txEntity] = *tit;
+            if (id.getNodeId() == nodeId) {
                 txEntity->deleteModule();
                 tit = txEntities_.erase(tit);
             }
@@ -419,8 +419,8 @@ void LtePdcp::deleteEntities(MacNodeId nodeId)
             }
         }
         for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-            auto& [cid, rxEntity] = *rit;
-            if (cid.getNodeId() == nodeId) {
+            auto& [id, rxEntity] = *rit;
+            if (id.getNodeId() == nodeId) {
                 rxEntity->deleteModule();
                 rit = rxEntities_.erase(rit);
             }
@@ -444,8 +444,8 @@ void LtePdcp::deleteEntities(MacNodeId nodeId)
 
 void LtePdcp::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    for (const auto& [cid, rxEntity] : rxEntities_) {
-        MacNodeId nodeId = cid.getNodeId();
+    for (const auto& [id, rxEntity] : rxEntities_) {
+        MacNodeId nodeId = id.getNodeId();
         if (!(rxEntity->isEmpty()))
             ueSet->insert(nodeId);
     }

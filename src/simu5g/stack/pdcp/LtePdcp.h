@@ -50,10 +50,10 @@ class LteRxPdcpEntity;
  * - Binding the Local IP Address of this Terminal with
  *   its module id (MacNodeId) by informing these details
  *   to the oracle.
- * - Assign a Logical Connection IDentifier (LCID)
+ * - Assign a Data Radio Bearer IDentifier (DRB ID)
  *   for each connection request (coming from PDCP).
  *
- * The couple < MacNodeId, LogicalCID > constitutes the CID,
+ * The couple < MacNodeId, DRB ID > constitutes the CID,
  * that uniquely identifies a connection in the whole network.
  *
  */
@@ -97,10 +97,10 @@ class LtePdcp : public cSimpleModule
     cGate *rlcOutGate_ = nullptr;
 
     /**
-     * The entities map associates each CID with a PDCP Entity, identified by its ID
+     * The entities map associates each DrbKey with a PDCP Entity, identified by its ID
      */
-    typedef std::map<MacCid, LteTxPdcpEntity *> PdcpTxEntities;
-    typedef std::map<MacCid, LteRxPdcpEntity *> PdcpRxEntities;
+    typedef std::map<DrbKey, LteTxPdcpEntity *> PdcpTxEntities;
+    typedef std::map<DrbKey, LteRxPdcpEntity *> PdcpRxEntities;
     PdcpTxEntities txEntities_;
     PdcpRxEntities rxEntities_;
 
@@ -113,36 +113,36 @@ class LtePdcp : public cSimpleModule
   public:
 
     /**
-     * lookupTxEntity() searches for an existing TX PDCP entity for the given CID.
+     * lookupTxEntity() searches for an existing TX PDCP entity for the given node+DRB ID.
      *
-     * @param cid Connection ID
+     * @param id Node + DRB ID
      * @return pointer to the existing TX PDCP entity, or nullptr if not found
      */
-    virtual LteTxPdcpEntity *lookupTxEntity(MacCid cid);
+    virtual LteTxPdcpEntity *lookupTxEntity(DrbKey id);
 
     /**
-     * createTxEntity() creates a new TX PDCP entity for the given CID and adds it to the entities map.
+     * createTxEntity() creates a new TX PDCP entity for the given node+DRB ID and adds it to the entities map.
      *
-     * @param cid Connection ID
+     * @param id Node + DRB ID
      * @return pointer to the newly created TX PDCP entity
      */
-    virtual LteTxPdcpEntity *createTxEntity(MacCid cid);
+    virtual LteTxPdcpEntity *createTxEntity(DrbKey id);
 
     /**
-     * lookupRxEntity() searches for an existing RX PDCP entity for the given CID.
+     * lookupRxEntity() searches for an existing RX PDCP entity for the given node+DRB ID.
      *
-     * @param cid Connection ID
+     * @param id Node + DRB ID
      * @return pointer to the existing RX PDCP entity, or nullptr if not found
      */
-    virtual LteRxPdcpEntity *lookupRxEntity(MacCid cid);
+    virtual LteRxPdcpEntity *lookupRxEntity(DrbKey id);
 
     /**
-     * createRxEntity() creates a new RX PDCP entity for the given CID and adds it to the entities map.
+     * createRxEntity() creates a new RX PDCP entity for the given node+DRB ID and adds it to the entities map.
      *
-     * @param cid Connection ID
+     * @param id Node + DRB ID
      * @return pointer to the newly created RX PDCP entity
      */
-    virtual LteRxPdcpEntity *createRxEntity(MacCid cid);
+    virtual LteRxPdcpEntity *createRxEntity(DrbKey id);
 
   protected:
     /*

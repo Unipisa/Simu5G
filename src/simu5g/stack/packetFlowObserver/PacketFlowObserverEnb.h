@@ -69,11 +69,11 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     };
 
     /*
-     * The node can have different active connections (LCID) at the same time, hence we need to
+     * The node can have different active connections (DRB ID) at the same time, hence we need to
      * maintain the status for each of them
      */
     struct StatusDescriptor {
-        MacNodeId nodeId_; // destination node of this LCID
+        MacNodeId nodeId_; // destination node of this DRB ID
         bool burstState_; // control variable that controls one burst active at a time
         BurstId burstId_; // separates the bursts
         std::map<unsigned int, PdcpStatus> pdcpStatus_; // a PDCP PDU can be fragmented into many RLC PDUs that could be sent and acknowledged at different times (this prevents early removal on acknowledgment)
@@ -84,8 +84,8 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
         //std::vector<unsigned int> macPduPerProcess_;               // for each HARQ process, stores the included MAC PDU
     };
 
-    typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
-    ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
+    typedef  std::map<DrbId, StatusDescriptor> ConnectionMap;
+    ConnectionMap connectionMap_; // DRB ID to the corresponding StatusDescriptor
 
     opp_component_ptr<LtePdcp> pdcp_;
 
@@ -106,11 +106,11 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     void initialize(int stage) override;
 
     /*
-     * This method checks if a PDCP PDU of a LCID is part of a burst of data.
+     * This method checks if a PDCP PDU of a DRB ID is part of a burst of data.
      * In a positive case, according to the ack boolean its size is counted in the
      * total of the burst size.
      * It is called by macPduArrived (ack true) and rlcPduDiscarded (ack false)
-     * @param desc LCID descriptor
+     * @param desc DRB ID descriptor
      * @param rlcSno RLC sequence number
      * @bool ack PDCP acknowledgment flag
      */
@@ -121,28 +121,28 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
      */
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t arrivalTime);
 
-    // return true if a structure for this LCID is present
-    bool hasLcid(LogicalCid lcid) override;
-    // initialize a new structure for this LCID
-    void initLcid(LogicalCid lcid, MacNodeId nodeId) override;
-    // reset the structure for this LCID
-    void clearLcid(LogicalCid lcid) override;
+    // return true if a structure for this DRB ID is present
+    bool hasDrbId(DrbId drbId) override;
+    // initialize a new structure for this DRB ID
+    void initDrbId(DrbId drbId, MacNodeId nodeId) override;
+    // reset the structure for this DRB ID
+    void clearDrbId(DrbId drbId) override;
     // reset structures for all connections
-    void clearAllLcid() override;
+    void clearAllDrbIds() override;
 
   public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override;
-    void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+    void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
     void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
     void macPduArrived(inet::Ptr<const LteMacPdu>) override;
     void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;
     void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
-    void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
+    void discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool fromMac = false) override;
     void grantSent(MacNodeId nodeId, unsigned int grantId) override;
 
     /**
-     * Deletes all the LCID structures related to the UE. Called upon handover.
+     * Deletes all the DRB ID structures related to the UE. Called upon handover.
      */
     virtual void deleteUe(MacNodeId id);
 

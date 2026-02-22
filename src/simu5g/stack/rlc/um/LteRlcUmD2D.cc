@@ -18,9 +18,9 @@ namespace simu5g {
 Define_Module(LteRlcUmD2D);
 using namespace omnetpp;
 
-UmTxEntity *LteRlcUmD2D::createTxBuffer(MacCid cid, FlowControlInfo *lteInfo)
+UmTxEntity *LteRlcUmD2D::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
-    UmTxEntity *txEnt = LteRlcUm::createTxBuffer(cid, lteInfo);
+    UmTxEntity *txEnt = LteRlcUm::createTxBuffer(id, lteInfo);
 
     // store per-peer map
     MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
@@ -50,11 +50,11 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
         // add here specific behavior for handling mode switch at the RLC layer
 
         if (switchPkt->getTxSide()) {
-            // get the corresponding Rx buffer & call handler
-            MacCid cid = ctrlInfoToMacCid(lteInfo.get());
-            UmTxEntity *txbuf = lookupTxBuffer(cid);
+            // get the corresponding Tx buffer & call handler
+            DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+            UmTxEntity *txbuf = lookupTxBuffer(id);
             if (txbuf == nullptr)
-                txbuf = createTxBuffer(cid, lteInfo.get());
+                txbuf = createTxBuffer(id, lteInfo.get());
             txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
             // forward packet to PDCP
@@ -64,10 +64,10 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
         else { // rx side
             // get the corresponding Rx buffer & call handler
             MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-            MacCid cid = MacCid(nodeId, lteInfo->getLcid());
-            UmRxEntity *rxbuf = lookupRxBuffer(cid);
+            DrbKey id = DrbKey(nodeId, lteInfo->getDrbId());
+            UmRxEntity *rxbuf = lookupRxBuffer(id);
             if (rxbuf == nullptr)
-                rxbuf = createRxBuffer(cid, lteInfo.get());
+                rxbuf = createRxBuffer(id, lteInfo.get());
             rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
 
             delete pkt;

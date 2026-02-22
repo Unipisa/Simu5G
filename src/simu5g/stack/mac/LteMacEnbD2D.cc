@@ -135,18 +135,15 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
 
     while (macPdu->hasSdu()) {
         // Extract and send SDU
-        auto upPkt = macPdu->popSdu();
+        LogicalCid lcid;
+        auto upPkt = macPdu->popSdu(lcid);
         take(upPkt);
 
         EV << "LteMacEnbD2D: pduUnmaker extracted SDU" << endl;
 
-        // fill FlowControlInfo from stored descriptors
-        auto flowInfo = upPkt->getTag<FlowControlInfo>();
         MacNodeId senderId = userInfo->getSourceId();
-        LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         ASSERT(connDescIn_.find(cid) != connDescIn_.end());
-        upPkt->removeTag<FlowControlInfo>();
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
 
         sendUpperPackets(upPkt);

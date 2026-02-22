@@ -39,6 +39,9 @@ class LteRxPdcpEntity : public cSimpleModule
     // whether headers are compressed
     bool headerCompressionEnabled_;
 
+    // DRB ID for this connection
+    DrbId drbId_;
+
     // handler for PDCP SDU
     virtual void handlePdcpSdu(Packet *pkt, unsigned int sequenceNumber);
 

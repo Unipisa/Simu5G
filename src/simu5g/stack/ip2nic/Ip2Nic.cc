@@ -293,16 +293,16 @@ LteRlcType Ip2Nic::getRlcType(LteTrafficClass trafficCategory)
     }
 }
 
-LogicalCid Ip2Nic::lookupOrAssignLcid(const ConnectionKey& key)
+DrbId Ip2Nic::lookupOrAssignDrbId(const ConnectionKey& key)
 {
-    auto it = lcidTable_.find(key);
-    if (it != lcidTable_.end())
+    auto it = drbIdTable_.find(key);
+    if (it != drbIdTable_.end())
         return it->second;
     else {
-        LogicalCid lcid = lcid_++;
-        lcidTable_[key] = lcid;
-        EV << "Connection not found, new CID created with LCID " << lcid << "\n";
-        return lcid;
+        DrbId drbId = drbId_++;
+        drbIdTable_[key] = drbId;
+        EV << "Connection not found, new DRB ID created: " << drbId << "\n";
+        return drbId;
     }
 }
 
@@ -381,10 +381,10 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
 
         // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
         ConnectionKey key{srcAddr, destAddr, typeOfService, 0xFFFF};
-        LogicalCid lcid = lookupOrAssignLcid(key);
+        DrbId drbId = lookupOrAssignDrbId(key);
 
-        // assign LCID and node IDs
-        lteInfo->setLcid(lcid);
+        // assign DRB ID and node IDs
+        lteInfo->setDrbId(drbId);
         lteInfo->setSourceId(nodeId_);
         lteInfo->setDestId(destId);
 
@@ -480,19 +480,19 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
             lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
     }
 
-    // --- LCID assignment (all D2D subclasses use direction in key) ---
+    // --- DRB ID assignment (all D2D subclasses use direction in key) ---
     ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
-    LogicalCid lcid = lookupOrAssignLcid(key);
-    lteInfo->setLcid(lcid);
+    DrbId drbId = lookupOrAssignDrbId(key);
+    lteInfo->setDrbId(drbId);
 
     // Debug logging (UE subclasses only)
     if (!isEnb) {
         if (isNR_) {
-            EV << "NrPdcpUe : Assigned Lcid: " << lcid << "\n";
+            EV << "NrPdcpUe : Assigned DRB ID: " << drbId << "\n";
             EV << "NrPdcpUe : Assigned Node ID: " << localNodeId << "\n";
         }
         else {
-            EV << "LtePdcpUeD2D : Assigned Lcid: " << lcid << "\n";
+            EV << "LtePdcpUeD2D : Assigned DRB ID: " << drbId << "\n";
             EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
         }
     }

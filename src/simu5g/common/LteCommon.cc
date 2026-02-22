@@ -336,7 +336,15 @@ bool isMulticastConnection(FlowControlInfo *lteInfo)
  */
 MacCid ctrlInfoToMacCid(const FlowControlInfo *info)
 {
-    return MacCid(ctrlInfoToUeId(info), info->getLcid());
+    return MacCid(ctrlInfoToUeId(info), info->getDrbId());
+}
+
+/*
+ * Obtain the DrbKey from the Control Info
+ */
+DrbKey ctrlInfoToNodeDrbId(const FlowControlInfo *info)
+{
+    return DrbKey(ctrlInfoToUeId(info), info->getDrbId());
 }
 
 /*

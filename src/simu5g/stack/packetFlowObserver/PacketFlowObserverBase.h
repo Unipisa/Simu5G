@@ -42,7 +42,7 @@ struct StatusDescriptor;
  * - inserted into one TB
  * - MAC PDU (aka TB)
  *
- * Each PDCP has its own sequence number, managed by the corresponding LCID
+ * Each PDCP has its own sequence number, managed by the corresponding DRB ID
  *
  * The main functions of this module are:
  *  - detect PDCP SDUs discarded (no part transmitted)
@@ -79,19 +79,19 @@ class PacketFlowObserverBase : public cSimpleModule
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
 
-    // Return true if a data structure for this LCID is present
-    virtual bool hasLcid(LogicalCid lcid) = 0;
+    // Return true if a data structure for this DRB ID is present
+    virtual bool hasDrbId(DrbId drbId) = 0;
 
-    // Initialize a new data structure for this LCID. Abstract since in eNodeB case,
+    // Initialize a new data structure for this DRB ID. Abstract since in eNodeB case,
     // it initializes different structures with respect to the UE
-    virtual void initLcid(LogicalCid lcid, MacNodeId nodeId) = 0;
+    virtual void initDrbId(DrbId drbId, MacNodeId nodeId) = 0;
 
-    // Reset the data structure for this LCID. Abstract since in eNodeB case,
+    // Reset the data structure for this DRB ID. Abstract since in eNodeB case,
     // it clears different structures with respect to the UE
-    virtual void clearLcid(LogicalCid lcid) = 0;
+    virtual void clearDrbId(DrbId drbId) = 0;
 
     // Reset data structures for all connections
-    virtual void clearAllLcid() = 0;
+    virtual void clearAllDrbIds() = 0;
 
   public:
     /**
@@ -112,7 +112,7 @@ class PacketFlowObserverBase : public cSimpleModule
      * It records the mapping between the RLC PDU and its contained PDCP SDUs in the tracking
      * data structures, along with burst status information for throughput measurement.
      */
-    virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
+    virtual void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
 
     /**
      * This method is called when a MAC PDU is inserted into the HARQ buffer for transmission.
@@ -147,7 +147,7 @@ class PacketFlowObserverBase : public cSimpleModule
      * that compose a PDCP SDU have been discarded, the discarded counters are updated.
      * The fromMac parameter is used when this method is called by discardMacPdu.
      */
-    virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) = 0;
+    virtual void discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool fromMac = false) = 0;
 
     /**
      * This method is called when an uplink grant is sent to a UE.

@@ -31,50 +31,50 @@ simsignal_t LteRlcUm::receivedPacketFromLowerLayerSignal_ = registerSignal("rece
 simsignal_t LteRlcUm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
-UmTxEntity *LteRlcUm::lookupTxBuffer(MacCid cid)
+UmTxEntity *LteRlcUm::lookupTxBuffer(DrbKey id)
 {
-    UmTxEntities::iterator it = txEntities_.find(cid);
+    UmTxEntities::iterator it = txEntities_.find(id);
     return (it != txEntities_.end()) ? it->second : nullptr;
 }
 
-UmTxEntity *LteRlcUm::createTxBuffer(MacCid cid, FlowControlInfo *lteInfo)
+UmTxEntity *LteRlcUm::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
-    if (txEntities_.find(cid) != txEntities_.end())
-        throw cRuntimeError("RLC-UM connection TX entity for %s already exists", cid.str().c_str());
+    if (txEntities_.find(id) != txEntities_.end())
+        throw cRuntimeError("RLC-UM connection TX entity for %s already exists", id.str().c_str());
 
     std::stringstream buf;
-    buf << "UmTxEntity Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+    buf << "UmTxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
     UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
-    txEntities_[cid] = txEnt;
+    txEntities_[id] = txEnt;
 
     txEnt->setFlowControlInfo(lteInfo);
 
-    EV << "LteRlcUm::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for CID " << cid << "\n";
+    EV << "LteRlcUm::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for " << id << "\n";
 
     return txEnt;
 }
 
 
-UmRxEntity *LteRlcUm::lookupRxBuffer(MacCid cid)
+UmRxEntity *LteRlcUm::lookupRxBuffer(DrbKey id)
 {
-    UmRxEntities::iterator it = rxEntities_.find(cid);
+    UmRxEntities::iterator it = rxEntities_.find(id);
     return (it != rxEntities_.end()) ? it->second : nullptr;
 }
 
-UmRxEntity *LteRlcUm::createRxBuffer(MacCid cid, FlowControlInfo *lteInfo)
+UmRxEntity *LteRlcUm::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
-    if (rxEntities_.find(cid) != rxEntities_.end())
-        throw cRuntimeError("RLC-UM connection RX entity for %s already exists", cid.str().c_str());
+    if (rxEntities_.find(id) != rxEntities_.end())
+        throw cRuntimeError("RLC-UM connection RX entity for %s already exists", id.str().c_str());
 
     std::stringstream buf;
-    buf << "UmRxEntity Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+    buf << "UmRxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
     UmRxEntity *rxEnt = check_and_cast<UmRxEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
-    rxEntities_[cid] = rxEnt;
+    rxEntities_[id] = rxEnt;
 
     // configure entity
     rxEnt->setFlowControlInfo(lteInfo);
 
-    EV << "LteRlcUm::createRxBuffer - Added new UmRxEntity: " << rxEnt->getId() << " for CID " << cid << "\n";
+    EV << "LteRlcUm::createRxBuffer - Added new UmRxEntity: " << rxEnt->getId() << " for " << id << "\n";
 
     return rxEnt;
 }
@@ -112,10 +112,10 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
 
-    MacCid cid = ctrlInfoToMacCid(lteInfo.get());
-    UmTxEntity *txbuf = lookupTxBuffer(cid);
+    DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+    UmTxEntity *txbuf = lookupTxBuffer(id);
     if (txbuf == nullptr)
-        txbuf = createTxBuffer(cid, lteInfo.get());
+        txbuf = createTxBuffer(id, lteInfo.get());
 
     // Extract sequence number from PDCP header
     auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
@@ -165,10 +165,10 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
-        MacCid cid = ctrlInfoToMacCid(lteInfo.get());
-        UmTxEntity *txbuf = lookupTxBuffer(cid);
+        DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+        UmTxEntity *txbuf = lookupTxBuffer(id);
         if (txbuf == nullptr)
-            txbuf = createTxBuffer(cid, lteInfo.get());
+            txbuf = createTxBuffer(id, lteInfo.get());
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -185,10 +185,10 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
         // Extract information from fragment
         MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-        MacCid cid = MacCid(nodeId, lteInfo->getLcid());
-        UmRxEntity *rxbuf = lookupRxBuffer(cid);
+        DrbKey id = DrbKey(nodeId, lteInfo->getDrbId());
+        UmRxEntity *rxbuf = lookupRxBuffer(id);
         if (rxbuf == nullptr)
-            rxbuf = createRxBuffer(cid, lteInfo.get());
+            rxbuf = createRxBuffer(id, lteInfo.get());
         drop(pkt);
 
         // Bufferize PDU
@@ -263,8 +263,8 @@ void LteRlcUm::handleMessage(cMessage *msg)
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    for (const auto& [macCid, entity] : rxEntities_) {
-        MacNodeId nodeId = macCid.getNodeId();
+    for (const auto& [id, entity] : rxEntities_) {
+        MacNodeId nodeId = id.getNodeId();
         if ((ueSet->find(nodeId) == ueSet->end()) && !entity->isEmpty())
             ueSet->insert(nodeId);
     }

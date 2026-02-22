@@ -197,7 +197,7 @@ void UmTxEntity::rlcPduMake(int pduLength)
     if (flowControlInfo_->getDirection() == DL || flowControlInfo_->getDirection() == UL) {
         // add RLC PDU to packetFlowObserver
         if (len != 0 && packetFlowObserver_ != nullptr) {
-            LogicalCid lcid = flowControlInfo_->getLcid();
+            DrbId drbId = flowControlInfo_->getDrbId();
 
             /*
              * Burst management.
@@ -216,13 +216,13 @@ void UmTxEntity::rlcPduMake(int pduLength)
                 if (burstStatus_ == ACTIVE) {
                     EV << NOW << " UmTxEntity::burstStatus - ACTIVE -> INACTIVE" << endl;
 
-                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, STOP);
+                    packetFlowObserver_->insertRlcPdu(drbId, rlcPdu, STOP);
                     burstStatus_ = INACTIVE;
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - " << burstStatus_ << endl;
 
-                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
+                    packetFlowObserver_->insertRlcPdu(drbId, rlcPdu, burstStatus_);
                 }
             }
             else {
@@ -230,13 +230,13 @@ void UmTxEntity::rlcPduMake(int pduLength)
                     burstStatus_ = ACTIVE;
                     EV << NOW << " UmTxEntity::burstStatus - INACTIVE -> ACTIVE" << endl;
                     //start a new burst
-                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, START);
+                    packetFlowObserver_->insertRlcPdu(drbId, rlcPdu, START);
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - burstStatus: " << burstStatus_ << endl;
 
                     // burst is still active
-                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
+                    packetFlowObserver_->insertRlcPdu(drbId, rlcPdu, burstStatus_);
                 }
             }
         }
