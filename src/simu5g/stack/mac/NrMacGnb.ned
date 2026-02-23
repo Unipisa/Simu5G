@@ -24,5 +24,6 @@ module NrMacGnb extends LteMacEnbD2D
         @class("NrMacGnb");
         amcType = default("NrAmc");
         harqProcesses = default(5);
+        ulSchedulerType = default("NrSchedulerGnbUl");
 }
 

@@ -973,4 +973,11 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
     }
 }
 
+// Temporary dummy module class for scheduler submodules (will be replaced when converting to cSimpleModule)
+class SchedulerDummy : public cSimpleModule {
+  protected:
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("SchedulerDummy does not handle messages"); }
+};
+Define_Module(SchedulerDummy);
+
 } //namespace

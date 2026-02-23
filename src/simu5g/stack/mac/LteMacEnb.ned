@@ -14,6 +14,9 @@
 package simu5g.stack.mac;
 
 import simu5g.stack.mac.amc.ILteAmc;
+import simu5g.stack.mac.scheduler.ILteSchedulerEnbDl;
+import simu5g.stack.mac.scheduler.ILteSchedulerEnbUl;
+import simu5g.stack.mac.scheduler.LteSchedulerEnbDl;
 
 //
 // Extends the ~LteMacBase module by providing specific MAC functions
@@ -74,6 +77,10 @@ module LteMacEnb extends LteMacBase
         string schedulingDisciplineDl @enum(DRR,PF,MAXCI,MAXCI_MB,MAXCI_OPT_MB,MAXCI_COMP,ALLOCATOR_BESTFIT) = default("MAXCI");
         string schedulingDisciplineUl @enum(DRR,PF,MAXCI,MAXCI_MB,MAXCI_OPT_MB,MAXCI_COMP,ALLOCATOR_BESTFIT) = default("MAXCI");
 
+        // Scheduler Types
+        string ulSchedulerType @enum(LteSchedulerEnbUl,NrSchedulerGnbUl) = default("LteSchedulerEnbUl");
+        string dlSchedulerType @enum(LteSchedulerEnbDl) = default("LteSchedulerEnbDl");
+
         // Proportional Fair parameters
         double pfAlpha = default(0.95);
 
@@ -93,6 +100,14 @@ module LteMacEnb extends LteMacBase
         @statistic[avgServedBlocksUl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksUl"; record=mean,vector);
 
     submodules:
-        amc: <amcType> like ILteAmc;
+        amc: <amcType> like ILteAmc {
+            @display("p=60,140");
+        }
+        schedulerDl: <dlSchedulerType> like ILteSchedulerEnbDl {
+            @display("p=60,60");
+        }
+        schedulerUl: <ulSchedulerType> like ILteSchedulerEnbUl {
+            @display("p=180,60");
+        }
 }
 

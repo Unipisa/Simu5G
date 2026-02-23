@@ -9,14 +9,11 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.mac.amc;
+package simu5g.stack.mac.scheduler;
 
 //
-// LTE Adaptive Modulation and Coding (AMC) module.
+// Module interface for the eNB/gNB downlink scheduler.
 //
-simple LteAmc like ILteAmc
+moduleinterface ILteSchedulerEnbDl
 {
-    parameters:
-        @class(LteAmc);
-        @display("i=block/table2");
 }
