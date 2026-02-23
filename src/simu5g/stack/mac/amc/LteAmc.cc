@@ -1306,4 +1306,11 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
 
 void LteAmc::setPilotMode(PilotComputationModes mode) { pilot_->setMode(mode); }
 
+// Temporary dummy module class for the AMC submodule (will be replaced in a subsequent step)
+class Dummy : public cSimpleModule {
+  protected:
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("Dummy does not handle messages"); }
+};
+Define_Module(Dummy);
+
 } //namespace

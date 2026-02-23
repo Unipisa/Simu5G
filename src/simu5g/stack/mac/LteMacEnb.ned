@@ -13,6 +13,8 @@
 
 package simu5g.stack.mac;
 
+import simu5g.stack.mac.amc.ILteAmc;
+
 //
 // Extends the ~LteMacBase module by providing specific MAC functions
 // on the eNodeB side. Specifically, it initializes and manages the scheduling classes
@@ -89,5 +91,8 @@ module LteMacEnb extends LteMacBase
         @statistic[avgServedBlocksDl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksDl"; record=mean,vector);
         @signal[avgServedBlocksUl];
         @statistic[avgServedBlocksUl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksUl"; record=mean,vector);
+
+    submodules:
+        amc: <amcType> like ILteAmc;
 }
 
