@@ -21,11 +21,7 @@ using namespace omnetpp;
 * PUBLIC FUNCTIONS
 ********************/
 
-NrAmc::NrAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas)
-    : LteAmc(mac, binder, cellInfo, numAntennas)
-{
-}
-
+Define_Module(NrAmc);
 
 unsigned int NrAmc::getSymbolsPerSlot(GHz carrierFrequency, Direction dir)
 {

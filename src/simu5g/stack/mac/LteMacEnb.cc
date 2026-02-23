@@ -58,7 +58,6 @@ LteMacEnb::LteMacEnb() :
 
 LteMacEnb::~LteMacEnb()
 {
-    delete amc_;
     delete enbSchedulerDl_;
     delete enbSchedulerUl_;
 
@@ -152,15 +151,9 @@ void LteMacEnb::initialize(int stage)
         binder_->addEnbInfo(info);
     }
     else if (stage == INITSTAGE_SIMU5G_AMC_SETUP) {
-        // Create and initialize AMC module
-        std::string amcType = par("amcType").stdstringValue();
-        int numAntennas = getNumAntennas();
-        if (amcType == "NrAmc")
-            amc_ = new NrAmc(this, binder_, cellInfo_, numAntennas);
-        else if (amcType == "LteAmc")
-            amc_ = new LteAmc(this, binder_, cellInfo_, numAntennas);
-        else
-            throw cRuntimeError("The amcType '%s' not recognized", amcType.c_str());
+        // Initialize AMC submodule
+        amc_ = check_and_cast<LteAmc *>(getSubmodule("amc"));
+        amc_->initialize_orig(this, binder_, cellInfo_, getNumAntennas());
 
         std::string modeString = par("pilotMode").stdstringValue();
 

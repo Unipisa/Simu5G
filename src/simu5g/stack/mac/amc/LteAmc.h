@@ -42,7 +42,7 @@ typedef std::map<Remote, std::vector<std::vector<LteSummaryBuffer>>> History_;
  *
  * TODO
  */
-class LteAmc
+class LteAmc : public cSimpleModule
 {
   private:
     AmcPilot *getAmcPilot(const cPar& amcMode);
@@ -102,11 +102,14 @@ class LteAmc
     History_ *getHistory(Direction dir, GHz carrierFrequency);
 
   public:
-    LteAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas);
-    LteAmc(const LteAmc& other) { operator=(other); }
-    LteAmc& operator=(const LteAmc& other);
-    void initialize();
+    LteAmc() {}
+    void initialize_orig(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas);
     virtual ~LteAmc();
+
+  protected:
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("LteAmc does not handle messages"); }
+
+  public:
     void setfType(int f)
     {
         fType_ = f;

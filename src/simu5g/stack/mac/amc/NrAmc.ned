@@ -16,4 +16,6 @@ package simu5g.stack.mac.amc;
 //
 simple NrAmc extends LteAmc
 {
+    parameters:
+        @class(NrAmc);
 }

@@ -163,65 +163,13 @@ void LteAmc::printTxParams(Direction dir, GHz carrierFrequency)
 * PUBLIC FUNCTIONS
 ********************/
 
-LteAmc::LteAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas) : mac_(mac), binder_(binder), cellInfo_(cellInfo), numAntennas_(numAntennas)
+void LteAmc::initialize_orig(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas)
 {
-    initialize();
-}
+    mac_ = mac;
+    binder_ = binder;
+    cellInfo_ = cellInfo;
+    numAntennas_ = numAntennas;
 
-LteAmc& LteAmc::operator=(const LteAmc& other)
-{
-    if (&other == this)
-        return *this;
-
-    mac_ = other.mac_;
-    binder_ = other.binder_;
-    cellInfo_ = other.cellInfo_;
-    pilot_ = getAmcPilot(mac_->par("amcMode"));
-
-    allocationType_ = other.allocationType_;
-    numBands_ = other.numBands_;
-    nodeId_ = other.nodeId_;
-    cellId_ = other.cellId_;
-    dlMcsTable_ = other.dlMcsTable_;
-    ulMcsTable_ = other.ulMcsTable_;
-    d2dMcsTable_ = other.d2dMcsTable_;
-    mcsScaleDl_ = other.mcsScaleDl_;
-    mcsScaleUl_ = other.mcsScaleUl_;
-    mcsScaleD2D_ = other.mcsScaleD2D_;
-    numAntennas_ = other.numAntennas_;
-    remoteSet_ = other.remoteSet_;
-    dlConnectedUe_ = other.dlConnectedUe_;
-    ulConnectedUe_ = other.ulConnectedUe_;
-    d2dConnectedUe_ = other.d2dConnectedUe_;
-    dlNodeIndex_ = other.dlNodeIndex_;
-    ulNodeIndex_ = other.ulNodeIndex_;
-    d2dNodeIndex_ = other.d2dNodeIndex_;
-    dlRevNodeIndex_ = other.dlRevNodeIndex_;
-    ulRevNodeIndex_ = other.ulRevNodeIndex_;
-    d2dRevNodeIndex_ = other.d2dRevNodeIndex_;
-
-    dlTxParams_ = other.dlTxParams_;
-    ulTxParams_ = other.ulTxParams_;
-    d2dTxParams_ = other.d2dTxParams_;
-
-    fType_ = other.fType_;
-
-    dlFeedbackHistory_ = other.dlFeedbackHistory_;
-    ulFeedbackHistory_ = other.ulFeedbackHistory_;
-    d2dFeedbackHistory_ = other.d2dFeedbackHistory_;
-
-    fbhbCapacityDl_ = other.fbhbCapacityDl_;
-    fbhbCapacityUl_ = other.fbhbCapacityUl_;
-    fbhbCapacityD2D_ = other.fbhbCapacityD2D_;
-    lb_ = other.lb_;
-    ub_ = other.ub_;
-    cqiComputationWeight_ = other.cqiComputationWeight_;
-
-    return *this;
-}
-
-void LteAmc::initialize()
-{
     // Get MacNodeId and MacCellId
     nodeId_ = mac_->getMacNodeId();
     cellId_ = mac_->getMacCellId();
@@ -1306,11 +1254,6 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
 
 void LteAmc::setPilotMode(PilotComputationModes mode) { pilot_->setMode(mode); }
 
-// Temporary dummy module class for the AMC submodule (will be replaced in a subsequent step)
-class Dummy : public cSimpleModule {
-  protected:
-    void handleMessage(cMessage *msg) override { throw cRuntimeError("Dummy does not handle messages"); }
-};
-Define_Module(Dummy);
+Define_Module(LteAmc);
 
 } //namespace

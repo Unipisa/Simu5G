@@ -17,5 +17,5 @@ package simu5g.stack.mac.amc;
 simple LteAmc like ILteAmc
 {
     parameters:
-        @class(Dummy);
+        @class(LteAmc);
 }
