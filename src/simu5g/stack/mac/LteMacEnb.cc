@@ -57,9 +57,6 @@ LteMacEnb::LteMacEnb() :
 
 LteMacEnb::~LteMacEnb()
 {
-    delete enbSchedulerDl_;
-    delete enbSchedulerUl_;
-
     for (auto &[key, value] : bsrbuf_)
         delete value;
 
@@ -154,19 +151,14 @@ void LteMacEnb::initialize(int stage)
         amc_ = check_and_cast<LteAmc *>(getSubmodule("amc"));
     }
     else if (stage == INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION) {
-        // Create and initialize MAC Downlink scheduler
-        if (enbSchedulerDl_ == nullptr) {
-            enbSchedulerDl_ = new LteSchedulerEnbDl();
-            (enbSchedulerDl_->resourceBlocks()) = cellInfo_->getNumBands();
-            enbSchedulerDl_->initialize(DL, this, binder_);
-        }
+        // Initialize scheduler submodules
+        enbSchedulerDl_ = check_and_cast<LteSchedulerEnbDl *>(getSubmodule("schedulerDl"));
+        enbSchedulerDl_->resourceBlocks() = cellInfo_->getNumBands();
+        enbSchedulerDl_->initialize_orig(DL, this, binder_);
 
-        // Create and initialize MAC Uplink scheduler
-        if (enbSchedulerUl_ == nullptr) {
-            enbSchedulerUl_ = new LteSchedulerEnbUl();
-            (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
-            enbSchedulerUl_->initialize(UL, this, binder_);
-        }
+        enbSchedulerUl_ = check_and_cast<LteSchedulerEnbUl *>(getSubmodule("schedulerUl"));
+        enbSchedulerUl_->resourceBlocks() = cellInfo_->getNumBands();
+        enbSchedulerUl_->initialize_orig(UL, this, binder_);
 
         const CarrierInfoMap& carriers = cellInfo_->getCarrierInfoMap();
         int i = 0;

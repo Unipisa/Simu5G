@@ -31,7 +31,7 @@ class LteMacEnb;
  * @class LteSchedulerEnb
  *
  */
-class LteSchedulerEnb
+class LteSchedulerEnb : public cSimpleModule
 {
     /******************
     * Friend classes
@@ -119,17 +119,7 @@ class LteSchedulerEnb
     /**
      * Default constructor.
      */
-    LteSchedulerEnb();
-
-    /**
-     * Copy constructor and operator=
-     */
-    LteSchedulerEnb(const LteSchedulerEnb& other)
-    {
-        operator=(other);
-    }
-
-    LteSchedulerEnb& operator=(const LteSchedulerEnb& other);
+    LteSchedulerEnb() {}
 
     /**
      * Destructor.
@@ -142,7 +132,12 @@ class LteSchedulerEnb
      * @param mac pointer to MAC module
      * @param binder pointer to Binder module
      */
-    void initialize(Direction dir, LteMacEnb *mac, Binder *binder);
+    void initialize_orig(Direction dir, LteMacEnb *mac, Binder *binder);
+
+  protected:
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("LteSchedulerEnb does not handle messages"); }
+
+  public:
 
     /*
      * Initialize counters for schedulers

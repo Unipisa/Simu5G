@@ -16,4 +16,6 @@ package simu5g.stack.mac.scheduler;
 //
 simple NrSchedulerGnbUl extends LteSchedulerEnbUl
 {
+    parameters:
+        @class(NrSchedulerGnbUl);
 }

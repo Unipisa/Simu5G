@@ -17,6 +17,6 @@ package simu5g.stack.mac.scheduler;
 simple LteSchedulerEnbDl like ILteSchedulerEnbDl
 {
     parameters:
-        @class(SchedulerDummy);
+        @class(LteSchedulerEnbDl);
         @display("i=block/cogwheel");
 }

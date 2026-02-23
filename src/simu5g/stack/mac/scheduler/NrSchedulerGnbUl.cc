@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+Define_Module(NrSchedulerGnbUl);
+
 bool NrSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency)
 {
     HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);

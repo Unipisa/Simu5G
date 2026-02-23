@@ -33,51 +33,6 @@ using namespace omnetpp;
 simsignal_t LteSchedulerEnb::avgServedBlocksDlSignal_ = cComponent::registerSignal("avgServedBlocksDl");
 simsignal_t LteSchedulerEnb::avgServedBlocksUlSignal_ = cComponent::registerSignal("avgServedBlocksUl");
 
-LteSchedulerEnb::LteSchedulerEnb() : mac_(nullptr)
-{
-}
-
-LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
-{
-    if (&other == this)
-        return *this;
-
-    mac_ = other.mac_;
-    binder_ = other.binder_;
-
-    direction_ = other.direction_;
-    activeConnectionSet_ = other.activeConnectionSet_;
-    scheduleList_ = other.scheduleList_;
-    allocatedCws_ = other.allocatedCws_;
-    harqTxBuffers_ = other.harqTxBuffers_;
-    harqRxBuffers_ = other.harqRxBuffers_;
-    resourceBlocks_ = other.resourceBlocks_;
-
-    emptyBandLim_ = other.emptyBandLim_;
-
-    // Copy schedulers
-    SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
-
-    const CarrierInfoMap& carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    LteScheduler *newSched = nullptr;
-    for (auto& item : carriers) {
-        newSched = getScheduler(discipline);
-        newSched->setEnbScheduler(this);
-        newSched->setCarrierFrequency(item.second.carrierFrequency);
-        newSched->setNumerologyIndex(item.second.numerologyIndex);     // set periodicity for this scheduler according to numerology
-        newSched->initializeBandLimit();
-        scheduler_.push_back(newSched);
-    }
-
-    // Copy Allocator
-    if (discipline == ALLOCATOR_BESTFIT)                                            // NOTE: create this type of allocator for every scheduler using Frequency Reuse
-        allocator_ = new LteAllocationModuleFrequencyReuse(mac_, direction_);
-    else
-        allocator_ = new LteAllocationModule(mac_, direction_);
-
-    return *this;
-}
-
 LteSchedulerEnb::~LteSchedulerEnb()
 {
     delete allocator_;
@@ -85,7 +40,7 @@ LteSchedulerEnb::~LteSchedulerEnb()
         delete item;
 }
 
-void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
+void LteSchedulerEnb::initialize_orig(Direction dir, LteMacEnb *mac, Binder *binder)
 {
     direction_ = dir;
     mac_ = mac;
@@ -972,12 +927,5 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
             ++it;
     }
 }
-
-// Temporary dummy module class for scheduler submodules (will be replaced when converting to cSimpleModule)
-class SchedulerDummy : public cSimpleModule {
-  protected:
-    void handleMessage(cMessage *msg) override { throw cRuntimeError("SchedulerDummy does not handle messages"); }
-};
-Define_Module(SchedulerDummy);
 
 } //namespace
