@@ -75,6 +75,12 @@ void LteSchedulerEnb::initialize(int stage)
         allocator_ = new LteAllocationModule(mac_, direction_);
 
     initializeAllocator();
+
+    WATCH(direction_);
+    WATCH(resourceBlocks_);
+    WATCH(utilization_);
+    WATCH_SET(activeConnectionSet_);
+    WATCH_MAP(allocatedCws_);
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)

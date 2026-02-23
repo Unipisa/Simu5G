@@ -272,6 +272,32 @@ void LteAmc::initialize(int stage)
         setPilotMode(ROBUST_CQI);
     else
         throw cRuntimeError("LteAmc::initialize - Unknown Pilot Mode %s", modeString.c_str());
+
+    WATCH(allocationType_);
+    WATCH(numBands_);
+    WATCH(nodeId_);
+    WATCH(cellId_);
+    WATCH(mcsScaleDl_);
+    WATCH(mcsScaleUl_);
+    WATCH(mcsScaleD2D_);
+    WATCH(numAntennas_);
+    WATCH(fType_);
+    WATCH(fbhbCapacityDl_);
+    WATCH(fbhbCapacityUl_);
+    WATCH(fbhbCapacityD2D_);
+    WATCH(lb_);
+    WATCH(ub_);
+    WATCH(cqiComputationWeight_);
+    WATCH_SET(remoteSet_);
+    WATCH_MAP(dlConnectedUe_);
+    WATCH_MAP(ulConnectedUe_);
+    WATCH_MAP(d2dConnectedUe_);
+    WATCH_MAP(dlNodeIndex_);
+    WATCH_MAP(ulNodeIndex_);
+    WATCH_MAP(d2dNodeIndex_);
+    WATCH_VECTOR(dlRevNodeIndex_);
+    WATCH_VECTOR(ulRevNodeIndex_);
+    WATCH_VECTOR(d2dRevNodeIndex_);
 }
 
 void LteAmc::rescaleMcs(double rePerRb, Direction dir)
