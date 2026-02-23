@@ -19,9 +19,23 @@
 #include "simu5g/stack/mac/amc/AmcPilotAuto.h"
 #include "simu5g/stack/mac/amc/AmcPilotD2D.h"
 
+using namespace omnetpp;
+
 namespace simu5g {
 
-using namespace omnetpp;
+
+inline std::ostream& operator<<(std::ostream& os, const McsTable& t)
+{
+    os << "[";
+    for (int i = 0; i < CQI2ITBSSIZE; i++) {
+        if (i > 0) os << ", ";
+        os << "{mod=" << t.at(i).mod_ << " iTbs=" << t.at(i).iTbs_ << " thr=" << t.at(i).threshold_ << "}";
+    }
+    os << "]";
+    return os;
+}
+
+
 LteAmc::~LteAmc()
 {
     delete pilot_;
@@ -273,6 +287,9 @@ void LteAmc::initialize(int stage)
     else
         throw cRuntimeError("LteAmc::initialize - Unknown Pilot Mode %s", modeString.c_str());
 
+    WATCH(dlMcsTable_);
+    WATCH(ulMcsTable_);
+    WATCH(d2dMcsTable_);
     WATCH(allocationType_);
     WATCH(numBands_);
     WATCH(nodeId_);
