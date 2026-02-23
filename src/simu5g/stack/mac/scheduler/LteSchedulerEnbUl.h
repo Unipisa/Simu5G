@@ -26,6 +26,8 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
 {
   protected:
 
+    Direction getDirection() const override { return UL; }
+
     typedef std::map<MacNodeId, unsigned char> HarqStatus;
     typedef std::map<MacNodeId, bool> RacStatus;
 

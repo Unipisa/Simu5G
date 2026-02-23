@@ -32,7 +32,7 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
 
   protected:
 
-    //---------------------------------------------
+    Direction getDirection() const override { return DL; }
 
     /**
      * Checks HARQ descriptors and returns the first free codeword.

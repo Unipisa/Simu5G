@@ -151,14 +151,9 @@ void LteMacEnb::initialize(int stage)
         amc_ = check_and_cast<LteAmc *>(getSubmodule("amc"));
     }
     else if (stage == INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION) {
-        // Initialize scheduler submodules
+        // Cache pointers to scheduler submodules (they initialize themselves)
         enbSchedulerDl_ = check_and_cast<LteSchedulerEnbDl *>(getSubmodule("schedulerDl"));
-        enbSchedulerDl_->resourceBlocks() = cellInfo_->getNumBands();
-        enbSchedulerDl_->initialize_orig(DL, this, binder_);
-
         enbSchedulerUl_ = check_and_cast<LteSchedulerEnbUl *>(getSubmodule("schedulerUl"));
-        enbSchedulerUl_->resourceBlocks() = cellInfo_->getNumBands();
-        enbSchedulerUl_->initialize_orig(UL, this, binder_);
 
         const CarrierInfoMap& carriers = cellInfo_->getCarrierInfoMap();
         int i = 0;

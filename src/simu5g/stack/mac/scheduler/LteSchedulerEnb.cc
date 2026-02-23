@@ -10,6 +10,7 @@
 // and cannot be removed from it.
 //
 
+#include "simu5g/common/InitStages.h"
 #include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
 #include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 #include "simu5g/stack/mac/allocator/LteAllocationModuleFrequencyReuse.h"
@@ -40,12 +41,15 @@ LteSchedulerEnb::~LteSchedulerEnb()
         delete item;
 }
 
-void LteSchedulerEnb::initialize_orig(Direction dir, LteMacEnb *mac, Binder *binder)
+void LteSchedulerEnb::initialize(int stage)
 {
-    direction_ = dir;
-    mac_ = mac;
+    if (stage != INITSTAGE_SIMU5G_AMC_SETUP)
+        return;
 
-    binder_ = binder;
+    mac_ = check_and_cast<LteMacEnb *>(getParentModule());
+    binder_ = check_and_cast<Binder *>(getModuleByPath(mac_->par("binderModule").stringValue()));
+    direction_ = getDirection();
+    resourceBlocks_ = mac_->getCellInfo()->getNumBands();
 
     harqTxBuffers_ = mac_->getHarqTxBuffers();
     harqRxBuffers_ = mac_->getHarqRxBuffers();

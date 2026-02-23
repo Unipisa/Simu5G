@@ -126,16 +126,12 @@ class LteSchedulerEnb : public cSimpleModule
      */
     virtual ~LteSchedulerEnb();
 
-    /**
-     * Set Direction and bind the internal pointers to the MAC objects.
-     * @param dir link direction
-     * @param mac pointer to MAC module
-     * @param binder pointer to Binder module
-     */
-    void initialize_orig(Direction dir, LteMacEnb *mac, Binder *binder);
-
   protected:
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override { throw cRuntimeError("LteSchedulerEnb does not handle messages"); }
+
+    virtual Direction getDirection() const = 0;
 
   public:
 
