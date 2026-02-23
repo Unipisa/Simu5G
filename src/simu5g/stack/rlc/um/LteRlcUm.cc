@@ -114,8 +114,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
 
     DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
     UmTxEntity *txbuf = lookupTxBuffer(id);
-    if (txbuf == nullptr)
-        txbuf = createTxBuffer(id, lteInfo.get());
+    ASSERT(txbuf != nullptr);
 
     // Extract sequence number from PDCP header
     auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
@@ -167,8 +166,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         // get the corresponding Tx buffer
         DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
         UmTxEntity *txbuf = lookupTxBuffer(id);
-        if (txbuf == nullptr)
-            txbuf = createTxBuffer(id, lteInfo.get());
+        ASSERT(txbuf != nullptr);
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -187,8 +185,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
         DrbKey id = DrbKey(nodeId, lteInfo->getDrbId());
         UmRxEntity *rxbuf = lookupRxBuffer(id);
-        if (rxbuf == nullptr)
-            rxbuf = createRxBuffer(id, lteInfo.get());
+        ASSERT(rxbuf != nullptr);
         drop(pkt);
 
         // Bufferize PDU
