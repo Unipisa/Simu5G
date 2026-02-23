@@ -18,7 +18,7 @@ package simu5g.stack.mac;
 // ~LteMacEnbD2D module by initializing the NR version of the uplink scheduler and
 // using, by default, the NR version of the Adaptive Modulation and Coding (AMC) module.
 //
-simple NrMacGnb extends LteMacEnbD2D
+module NrMacGnb extends LteMacEnbD2D
 {
     parameters:
         @class("NrMacGnb");

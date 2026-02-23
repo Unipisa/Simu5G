@@ -19,7 +19,7 @@ package simu5g.stack.mac;
 // communication between User Equipments (UEs), i.e., it allocates resources for D2D transmissions.
 // Network-assisted D2D is only implemented (out-of-coverage D2D is not supported).
 //
-simple LteMacEnbD2D extends LteMacEnb
+module LteMacEnbD2D extends LteMacEnb
 {
     parameters:
         @class("LteMacEnbD2D");

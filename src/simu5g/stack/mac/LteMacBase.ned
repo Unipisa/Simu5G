@@ -21,7 +21,7 @@ package simu5g.stack.mac;
 // Data Units (SDUs) with the Radio Link Control (RLC) layer, and MAC Protocol Data
 // Units (PDUs) with the physical layer.
 //
-simple LteMacBase like ILteMac
+module LteMacBase like ILteMac
 {
     parameters:
         @display("i=block/mac");

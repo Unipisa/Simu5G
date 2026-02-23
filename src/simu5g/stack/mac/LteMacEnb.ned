@@ -24,7 +24,7 @@ package simu5g.stack.mac;
 // layer when it is ready to receive MAC Service Data Units (SDUs) to build MAC
 // Protocol Data Units (PDUs) and transmit them to the physical layer.
 //
-simple LteMacEnb extends LteMacBase
+module LteMacEnb extends LteMacBase
 {
     parameters:
         @class("LteMacEnb");

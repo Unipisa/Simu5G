@@ -21,7 +21,7 @@ package simu5g.stack.mac;
 // grant from the eNodeB, it is responsible for managing the local connections' scheduler and
 // constructing MAC Protocol Data Units (PDUs) to be transmitted to the physical layer.
 //
-simple LteMacUe extends LteMacBase
+module LteMacUe extends LteMacBase
 {
     parameters:
         @class("LteMacUe");

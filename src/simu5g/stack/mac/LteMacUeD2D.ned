@@ -19,7 +19,7 @@ package simu5g.stack.mac;
 // of MAC Protocol Data Units (PDUs), Channel Status Information (CSI), and Buffer Status Reports (BSRs) over a
 // D2D link. It supports D2D multicast transmission to nearby UEs belonging to a given multicast group.
 //
-simple LteMacUeD2D extends LteMacUe
+module LteMacUeD2D extends LteMacUe
 {
     parameters:
         @class("LteMacUeD2D");

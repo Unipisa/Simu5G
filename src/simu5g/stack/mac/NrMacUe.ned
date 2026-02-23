@@ -18,7 +18,7 @@ package simu5g.stack.mac;
 // the ~LteMacUeD2D module by redefining functions to support different numerology
 // parameterizations.
 //
-simple NrMacUe extends LteMacUeD2D
+module NrMacUe extends LteMacUeD2D
 {
     parameters:
         @class("NrMacUe");
