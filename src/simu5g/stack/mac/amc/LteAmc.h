@@ -103,10 +103,11 @@ class LteAmc : public cSimpleModule
 
   public:
     LteAmc() {}
-    void initialize_orig(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas);
     virtual ~LteAmc();
 
   protected:
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override { throw cRuntimeError("LteAmc does not handle messages"); }
 
   public:

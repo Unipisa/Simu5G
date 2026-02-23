@@ -11,6 +11,7 @@
 //
 //
 #include "simu5g/common/LteDefs.h"
+#include "simu5g/common/InitStages.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 
@@ -163,12 +164,15 @@ void LteAmc::printTxParams(Direction dir, GHz carrierFrequency)
 * PUBLIC FUNCTIONS
 ********************/
 
-void LteAmc::initialize_orig(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas)
+void LteAmc::initialize(int stage)
 {
-    mac_ = mac;
-    binder_ = binder;
-    cellInfo_ = cellInfo;
-    numAntennas_ = numAntennas;
+    if (stage != INITSTAGE_SIMU5G_BINDER_ACCESS)
+        return;
+
+    mac_ = check_and_cast<LteMacEnb *>(getParentModule());
+    binder_ = check_and_cast<Binder *>(getModuleByPath(mac_->par("binderModule").stringValue()));
+    cellInfo_ = mac_->getCellInfo();
+    numAntennas_ = mac_->getNumAntennas();
 
     // Get MacNodeId and MacCellId
     nodeId_ = mac_->getMacNodeId();
@@ -252,6 +256,22 @@ void LteAmc::initialize_orig(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo,
     //printFbhb(UL);
     //printTxParams(DL);
     //printTxParams(UL);
+
+    // Set pilot mode
+    std::string modeString = mac_->par("pilotMode").stdstringValue();
+    // TODO use cEnum::get("simu5g::PilotComputationModes")->lookup(modeString);
+    if (modeString == "AVG_CQI")
+        setPilotMode(AVG_CQI);
+    else if (modeString == "MAX_CQI")
+        setPilotMode(MAX_CQI);
+    else if (modeString == "MIN_CQI")
+        setPilotMode(MIN_CQI);
+    else if (modeString == "MEDIAN_CQI")
+        setPilotMode(MEDIAN_CQI);
+    else if (modeString == "ROBUST_CQI")
+        setPilotMode(ROBUST_CQI);
+    else
+        throw cRuntimeError("LteAmc::initialize - Unknown Pilot Mode %s", modeString.c_str());
 }
 
 void LteAmc::rescaleMcs(double rePerRb, Direction dir)

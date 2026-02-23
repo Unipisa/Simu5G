@@ -27,7 +27,6 @@
 #include "simu5g/stack/mac/packet/LteSchedulingGrant.h"
 #include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
-#include "simu5g/stack/mac/amc/NrAmc.h"
 #include "simu5g/stack/mac/amc/UserTxParams.h"
 #include "simu5g/stack/mac/packet/LteRac_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
@@ -151,25 +150,8 @@ void LteMacEnb::initialize(int stage)
         binder_->addEnbInfo(info);
     }
     else if (stage == INITSTAGE_SIMU5G_AMC_SETUP) {
-        // Initialize AMC submodule
+        // Cache pointer to AMC submodule (it initializes itself)
         amc_ = check_and_cast<LteAmc *>(getSubmodule("amc"));
-        amc_->initialize_orig(this, binder_, cellInfo_, getNumAntennas());
-
-        std::string modeString = par("pilotMode").stdstringValue();
-
-        // TODO use cEnum::get("simu5g::PilotComputationModes")->lookup(modeString);
-        if (modeString == "AVG_CQI")
-            amc_->setPilotMode(AVG_CQI);
-        else if (modeString == "MAX_CQI")
-            amc_->setPilotMode(MAX_CQI);
-        else if (modeString == "MIN_CQI")
-            amc_->setPilotMode(MIN_CQI);
-        else if (modeString == "MEDIAN_CQI")
-            amc_->setPilotMode(MEDIAN_CQI);
-        else if (modeString == "ROBUST_CQI")
-            amc_->setPilotMode(ROBUST_CQI);
-        else
-            throw cRuntimeError("LteMacEnb::initialize - Unknown Pilot Mode %s \n", modeString.c_str());
     }
     else if (stage == INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION) {
         // Create and initialize MAC Downlink scheduler
