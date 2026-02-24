@@ -77,6 +77,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // technology selection for outgoing packets
         technologyDecision: <default("TechnologyDecision")> like ITechnologyDecision {
+            nodeType = parent.nodeType;
             @display("p=475,67");
         }
         // bridge between radio nic and network layer

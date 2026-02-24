@@ -9,6 +9,8 @@ simple TechnologyDecision like ITechnologyDecision
 {
     parameters:
         @display("i=block/fork");
+        string nodeType;
+        string binderModule = default("binder");
     gates:
         input upperLayerIn;
         output lowerLayerOut;

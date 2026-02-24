@@ -13,7 +13,6 @@
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
-#include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -53,14 +52,6 @@ void Ip2Nic::initialize(int stage)
         }
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-        if (nodeType_ == UE) {
-            // get serving node IDs -- note the this is STLL not late enough to pick up the result of dynamic cell association
-            if (nodeId_ != NODEID_NONE)
-                servingNodeId_ = binder_->getServingNode(nodeId_);
-            if (nrNodeId_ != NODEID_NONE)
-                nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
-        }
-
         // Initialize flags from PDCP module's NED parameters
         cModule *pdcpModule = networkIf->getSubmodule("pdcp");
         isNR_ = pdcpModule->par("isNR").boolValue();
@@ -161,89 +152,6 @@ void Ip2Nic::toStackBs(Packet *pkt)
     analyzePacket(pkt, srcAddr, destAddr, tos);
 
     send(pkt, stackGateOut_);
-}
-
-bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)
-{
-    // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
-    // to follow based on the Type of Service (TOS) field:
-    // - use master eNB if tos < 10
-    // - use secondary gNB if 10 <= tos < 20
-    // - use split bearer if tos >= 20
-    //
-    // To change the policy, change the implementation of the Ip2Nic::markPacket() function
-    //
-    // TODO use a better policy
-    // TODO make it configurable from INI or XML?
-
-    if (nodeType_ == NODEB) {
-        MacNodeId ueId = binder_->getMacNodeId(dstAddr);
-        MacNodeId nrUeId = binder_->getNrMacNodeId(dstAddr);
-        bool ueLteStack = (binder_->getServingNodeOrSelf(ueId) != NODEID_NONE);
-        bool ueNrStack = (binder_->getServingNodeOrSelf(nrUeId) != NODEID_NONE);
-
-        if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && typeOfService >= 20) { // use split bearer TODO fix threshold
-            // even packets go through the LTE eNodeB
-            // odd packets go through the gNodeB
-
-            FlowKey key{srcAddr.getInt(), dstAddr.getInt(), typeOfService};
-            int sentPackets = splitBearersTable_[key]++;
-
-            if (sentPackets % 2 == 0)
-                useNR = false;
-            else
-                useNR = true;
-        }
-        else {
-            if (ueLteStack && ueNrStack) {
-                if (typeOfService >= 10)                                                     // use secondary cell group bearer TODO fix threshold
-                    useNR = true;
-                else                                                  // use master cell group bearer
-                    useNR = false;
-            }
-            else if (ueLteStack)
-                useNR = false;
-            else if (ueNrStack)
-                useNR = true;
-            else
-                return false;
-        }
-    }
-
-    if (nodeType_ == UE) {
-        bool ueLteStack = (binder_->getServingNodeOrSelf(nodeId_) != NODEID_NONE);
-        bool ueNrStack = (binder_->getServingNodeOrSelf(nrNodeId_) != NODEID_NONE);
-        if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && typeOfService >= 20) { // use split bearer TODO fix threshold
-            FlowKey key{srcAddr.getInt(), dstAddr.getInt(), typeOfService};
-            int sentPackets = splitBearersTable_[key]++;
-
-            if (sentPackets % 2 == 0)
-                useNR = false;
-            else
-                useNR = true;
-        }
-        else {
-            // KLUDGE: this is necessary to prevent a runtime error in one of the simulations:
-            //
-            //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketHolder), #476 (Ip2Nic)
-            //    after: ueLteStack=true, ueNrStack=true, servingNodeId=1, nrServingNodeId=2, typeOfService=10 --> useNr = true (ip2nic.cc#319: UE branch, not dualconn("else") )
-            //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketHolder.cc#360)
-            //
-            auto handoverPacketHolder = check_and_cast<HandoverPacketHolderUe*>(getParentModule()->getSubmodule("handoverPacketHolder"));
-            servingNodeId_ = handoverPacketHolder->getServingNodeId();
-            nrServingNodeId_ = handoverPacketHolder->getNrServingNodeId();
-            // servingNodeId_ = binder_->getServingNode(nodeId_);
-            // nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
-
-            if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ != NODEID_NONE)  // 5G-connected only
-                useNR = true;
-            else if (servingNodeId_ != NODEID_NONE && nrServingNodeId_ == NODEID_NONE)  // LTE-connected only
-                useNR = false;
-            else // both
-                useNR = (typeOfService >= 10);   // use secondary cell group bearer TODO fix threshold
-        }
-    }
-    return true;
 }
 
 LteTrafficClass Ip2Nic::getTrafficCategory(cPacket *pkt)
