@@ -107,16 +107,7 @@ void Ip2Nic::toStackUe(Packet *pkt)
 
     // TODO: Add support for IPv6 (=> see L3Tools.cc of INET)
 
-    // mark packet for using NR
-    bool useNR;
-    if (!markPacket(srcAddr, destAddr, tos, useNR)) {
-        EV << "Ip2Nic::toStackUe - UE is not attached to any serving node. Delete packet." << endl;
-        delete pkt;
-        return;
-    }
-
-    // Set useNR on the packet control info
-    pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
+    // TechnologyReq tag (useNR) is already set by TechnologyDecision
 
     // Classify the packet and fill FlowControlInfo tag
     analyzePacket(pkt, srcAddr, destAddr, tos);
@@ -164,21 +155,12 @@ void Ip2Nic::toStackBs(Packet *pkt)
     auto destAddr = ipHeader->getDestAddress();
     short int tos = ipHeader->getTypeOfService();
 
-    // mark packet for using NR
-    bool useNR;
-    if (!markPacket(srcAddr, destAddr, tos, useNR)) {
-        EV << "Ip2Nic::toStackBs - UE is not attached to any serving node. Delete packet." << endl;
-        delete pkt;
-    }
-    else {
-        // Set useNR on the packet control info
-        pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
+    // TechnologyReq tag (useNR) is already set by TechnologyDecision
 
-        // Classify the packet and fill FlowControlInfo tag
-        analyzePacket(pkt, srcAddr, destAddr, tos);
+    // Classify the packet and fill FlowControlInfo tag
+    analyzePacket(pkt, srcAddr, destAddr, tos);
 
-        send(pkt, stackGateOut_);
-    }
+    send(pkt, stackGateOut_);
 }
 
 bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)

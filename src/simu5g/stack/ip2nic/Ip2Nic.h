@@ -124,19 +124,6 @@ class Ip2Nic : public cSimpleModule
     virtual void toStackBs(inet::Packet *datagram);
     virtual void toStackUe(inet::Packet *datagram);
 
-    // mark packet for using LTE, NR or split bearer
-    //
-    // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
-    // to follow based on the Type of Service (TOS) field:
-    // - use master eNB if tos < 10
-    // - use secondary gNB if 10 <= tos < 20
-    // - use split bearer if tos >= 20
-    //
-    // To change the policy, change the implementation of the Ip2Nic::markPacket() function
-    //
-    // TODO use a better policy
-    bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
-
     // Packet analysis (moved from PDCP): classifies the packet and fills FlowControlInfo tag
     void analyzePacket(inet::Packet *pkt, inet::Ipv4Address srcAddr, inet::Ipv4Address destAddr, uint16_t typeOfService);
     MacNodeId getNextHopNodeId(const inet::Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
@@ -146,6 +133,9 @@ class Ip2Nic : public cSimpleModule
 
   public:
     ~Ip2Nic() override;
+
+    // mark packet for using LTE, NR or split bearer (called by TechnologyDecision)
+    bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
 };
 
 } //namespace

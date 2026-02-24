@@ -8,10 +8,13 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class Ip2Nic;
+
 class TechnologyDecision : public cSimpleModule
 {
   protected:
     cGate *lowerLayerOut_ = nullptr;
+    Ip2Nic *ip2nic_ = nullptr;
 
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
