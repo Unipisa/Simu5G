@@ -407,7 +407,7 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
 
     if (isEnb) {
         // ENB: set D2D peer IDs to none
-        lteInfo->setD2dTxPeerId(NODEID_NONE);
+        lteInfo->setD2dTxPeerId(NODEID_NONE); // nem kell
         lteInfo->setD2dRxPeerId(NODEID_NONE);
     }
     else {
