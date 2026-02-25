@@ -26,8 +26,8 @@ simple UmTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
-        string packetFlowObserverModule = default("");
         string umModule = default("^.um");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
+        @signal[rlcPduCreated];
 }
 

@@ -61,7 +61,6 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
-            *.packetFlowObserverModule = parent.hasRniSupport ? "^.^.nrPacketFlowObserver" : "";
             um.nodeType = parent.nodeType;
         }
         // MAC Layer

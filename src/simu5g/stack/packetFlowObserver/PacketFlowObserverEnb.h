@@ -133,7 +133,7 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
   public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override;
-    void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+    void insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) override;
     void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
     void macPduArrived(inet::Ptr<const LteMacPdu>) override;
     void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;

@@ -112,7 +112,7 @@ class PacketFlowObserverBase : public cSimpleModule, public cListener
      * It records the mapping between the RLC PDU and its contained PDCP SDUs in the tracking
      * data structures, along with burst status information for throughput measurement.
      */
-    virtual void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
+    virtual void insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) = 0;
 
     /**
      * This method is called when a MAC PDU is inserted into the HARQ buffer for transmission.

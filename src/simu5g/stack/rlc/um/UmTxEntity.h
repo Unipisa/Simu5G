@@ -16,7 +16,6 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
@@ -26,7 +25,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteRlcUm;
-class PacketFlowObserverBase;
 
 /**
  * @class UmTxEntity
@@ -53,6 +51,7 @@ class PacketFlowObserverBase;
  */
 class UmTxEntity : public cSimpleModule
 {
+    static simsignal_t rlcPduCreatedSignal_;
     struct FragmentInfo {
         inet::Packet *pkt = nullptr;
         int size = 0;
@@ -135,8 +134,6 @@ class UmTxEntity : public cSimpleModule
      * is not mandatory for a correct network simulation.
      * It is useful, e.g., for RNI service within MEC
      */
-    inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
-
     RlcBurstStatus burstStatus_;
 
     /*

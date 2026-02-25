@@ -141,7 +141,7 @@ void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
     EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno << " added. DRB ID " << drbId << endl;
 }
 
-void PacketFlowObserverUe::insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
+void PacketFlowObserverUe::insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status)
 {
     ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {

@@ -194,7 +194,7 @@ void PacketFlowObserverEnb::receivedPdcpSdu(inet::Packet *pdcpPkt)
     EV << pfmType << "::insertPdcpSdu - UL PDPC sdu bits: " << sduDataVolume_[nodeId].ulBits << " received from node: " << nodeId << endl;
 }
 
-void PacketFlowObserverEnb::insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {
+void PacketFlowObserverEnb::insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) {
     EV << pfmType << "::insertRlcPdu - DRB ID: " << drbId << endl;
 
     auto cit = connectionMap_.find(drbId);

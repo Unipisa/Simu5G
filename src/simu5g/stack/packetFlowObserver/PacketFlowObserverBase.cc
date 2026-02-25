@@ -17,6 +17,7 @@
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "PacketFlowObserverBase.h"
 
@@ -37,6 +38,11 @@ void PacketFlowObserverBase::initialize(int stage)
         simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
         pdcpModule->subscribe(pdcpSduSentSignal, this);
         pdcpModule->subscribe(pdcpSduReceivedSignal, this);
+
+        // Subscribe to RLC signal (on compound RLC module, catches dynamic UmTxEntity children)
+        cModule *rlcModule = getModuleFromPar<cModule>(par("rlcModule"), this);
+        simsignal_t rlcPduCreatedSignal = registerSignal("rlcPduCreated");
+        rlcModule->subscribe(rlcPduCreatedSignal, this);
     }
 }
 
@@ -45,6 +51,7 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
     static simsignal_t pdcpSduSentSignal = registerSignal("pdcpSduSent");
     static simsignal_t pdcpSduSentNrSignal = registerSignal("pdcpSduSentNr");
     static simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
+    static simsignal_t rlcPduCreatedSignal = registerSignal("rlcPduCreated");
 
     if (signalID == pdcpSduSentSignal || signalID == pdcpSduSentNrSignal) {
         auto pkt = check_and_cast<inet::Packet *>(obj);
@@ -53,6 +60,10 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
     else if (signalID == pdcpSduReceivedSignal) {
         auto pkt = check_and_cast<inet::Packet *>(obj);
         receivedPdcpSdu(pkt);
+    }
+    else if (signalID == rlcPduCreatedSignal) {
+        auto info = check_and_cast<RlcPduSignalInfo *>(obj);
+        insertRlcPdu(info->drbId, info->rlcPdu, info->burstStatus);
     }
 }
 

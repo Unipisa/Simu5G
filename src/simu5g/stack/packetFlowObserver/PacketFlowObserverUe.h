@@ -62,7 +62,7 @@ class PacketFlowObserverUe : public PacketFlowObserverBase
   public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override { /*TODO*/ }
-    void insertRlcPdu(DrbId drbId, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+    void insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) override;
     void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
     void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) override;
     void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
