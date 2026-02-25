@@ -30,6 +30,15 @@ class TechnologyDecision : public cSimpleModule
         }
     };
 
+    // Custom resolver that provides variable bindings for the policy expressions
+    class PolicyResolver : public cDynamicExpression::IResolver {
+        TechnologyDecision *module_;
+      public:
+        PolicyResolver(TechnologyDecision *module) : module_(module) {}
+        IResolver *dup() const override { return new PolicyResolver(module_); }
+        cValue readVariable(cExpression::Context *context, const char *name) override;
+    };
+
     cGate *lowerLayerOut_ = nullptr;
 
     RanNodeType nodeType_;      // UE or NODEB
@@ -42,24 +51,26 @@ class TechnologyDecision : public cSimpleModule
     // NR MAC node id of this node (if enabled)
     MacNodeId nrNodeId_ = NODEID_NONE;
 
-    // LTE MAC node id of this node's master
-    MacNodeId servingNodeId_ = NODEID_NONE;
-    // NR MAC node id of this node's master (if enabled)
-    MacNodeId nrServingNodeId_ = NODEID_NONE;
-
     // Enable for dual connectivity
     bool dualConnectivityEnabled_;
 
-    // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
+    // Per-flow packet counter (for split bearer alternation via packetOrdinal)
     std::unordered_map<FlowKey, int, FlowKeyHash> splitBearersTable_;
+
+    // Policy expressions (from NED parameters)
+    cDynamicExpression *dcExpression_ = nullptr;
+    cDynamicExpression *useNrExpression_ = nullptr;
+
+    // Current evaluation context (set before each evaluate() call)
+    int currentTypeOfService_ = 0;
+    int currentPacketOrdinal_ = 0;
 
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
   public:
-    // mark packet for using LTE, NR or split bearer
-    bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
+    ~TechnologyDecision() override;
 };
 
 } //namespace
