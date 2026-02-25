@@ -46,7 +46,7 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
 
     // TODO NRRxEntity could delete this packet in handlePdcpSdu()...
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+    if (hasListeners(pdcpSduReceivedSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
         emit(pdcpSduReceivedSignal_, pkt);
     }
 

@@ -291,9 +291,11 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
         emit(signal, sample);
 
         // discard the RLC
-        unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-        RlcDiscardSignalInfo discardInfo(lteInfo->getDrbId(), rlcSno);
-        emit(rlcPduDiscardedSignal_, &discardInfo);
+        if (hasListeners(rlcPduDiscardedSignal_)) {
+            unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+            RlcDiscardSignalInfo discardInfo(lteInfo->getDrbId(), rlcSno);
+            emit(rlcPduDiscardedSignal_, &discardInfo);
+        }
 
         delete pkt;
         return false;

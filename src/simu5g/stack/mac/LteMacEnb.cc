@@ -411,8 +411,10 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
              *   tSched: the point in time when the UL MAC SDU i is scheduled as
              *   per the scheduling grant provided
              */
-            GrantSignalInfo grantInfo(nodeId, grant->getGrantId());
-            emit(grantSentSignal_, &grantInfo);
+            if (hasListeners(grantSentSignal_)) {
+                GrantSignalInfo grantInfo(nodeId, grant->getGrantId());
+                emit(grantSentSignal_, &grantInfo);
+            }
 
             // Send grant to PHY layer
             sendLowerPackets(pkt);
@@ -630,8 +632,10 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
 
     // Notify the pfm about the successful arrival of a TB from a UE.
     // From ETSI TS 138314 V16.0.0 (2020-07)
-    GrantSignalInfo ulInfo(userInfo->getSourceId(), userInfo->getGrantId());
-    emit(ulMacPduArrivedSignal_, &ulInfo);
+    if (hasListeners(ulMacPduArrivedSignal_)) {
+        GrantSignalInfo ulInfo(userInfo->getSourceId(), userInfo->getGrantId());
+        emit(ulMacPduArrivedSignal_, &ulInfo);
+    }
 
     while (macPdu->hasSdu()) {
         // Extract and send SDU
@@ -712,9 +716,11 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
         emit(signal, sample);
 
         // discard the RLC
-        unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-        RlcDiscardSignalInfo discardInfo(lteInfo->getDrbId(), rlcSno);
-        emit(rlcPduDiscardedSignal_, &discardInfo);
+        if (hasListeners(rlcPduDiscardedSignal_)) {
+            unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+            RlcDiscardSignalInfo discardInfo(lteInfo->getDrbId(), rlcSno);
+            emit(rlcPduDiscardedSignal_, &discardInfo);
+        }
 
         delete pkt;
         return false;

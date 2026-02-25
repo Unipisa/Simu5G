@@ -183,7 +183,7 @@ void UmTxEntity::rlcPduMake(int pduLength)
      */
     if (flowControlInfo_->getDirection() == DL || flowControlInfo_->getDirection() == UL) {
         // notify packetFlowObserver via signal
-        if (len != 0) {
+        if (len != 0 && hasListeners(rlcPduCreatedSignal_)) {
             DrbId drbId = flowControlInfo_->getDrbId();
 
             /*

@@ -214,7 +214,7 @@ void LtePdcp::sendToLowerLayer(Packet *pkt)
             lteInfo->setSourceId(nrNodeId_);
 
             // notify observers via signal (only for non-D2D)
-            if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+            if (hasListeners(pdcpSduSentNrSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
                 emit(pdcpSduSentNrSignal_, pkt);
             }
 
@@ -226,7 +226,7 @@ void LtePdcp::sendToLowerLayer(Packet *pkt)
 
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
 
-    if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+    if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
         emit(pdcpSduSentSignal_, pkt);
     }
 
