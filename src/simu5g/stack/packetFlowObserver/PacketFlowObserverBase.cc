@@ -47,7 +47,6 @@ void PacketFlowObserverBase::initialize(int stage)
 
         // Subscribe to MAC signals
         cModule *macModule = getModuleFromPar<cModule>(par("macModule"), this);
-        macModule->subscribe(registerSignal("macPduInserted"), this);
         macModule->subscribe(registerSignal("macPduAcked"), this);
         macModule->subscribe(registerSignal("macPduDiscarded"), this);
         macModule->subscribe(registerSignal("rlcPduDiscarded"), this);
@@ -62,7 +61,6 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
     static simsignal_t pdcpSduSentNrSignal = registerSignal("pdcpSduSentNr");
     static simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
     static simsignal_t rlcPduCreatedSignal = registerSignal("rlcPduCreated");
-    static simsignal_t macPduInsertedSignal = registerSignal("macPduInserted");
     static simsignal_t macPduAckedSignal = registerSignal("macPduAcked");
     static simsignal_t macPduDiscardedSignal = registerSignal("macPduDiscarded");
     static simsignal_t rlcPduDiscardedSignal = registerSignal("rlcPduDiscarded");
@@ -81,20 +79,13 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
         auto info = check_and_cast<RlcPduSignalInfo *>(obj);
         insertRlcPdu(info->drbId, info->rlcPdu, info->burstStatus);
     }
-    else if (signalID == macPduInsertedSignal) {
-        auto pkt = check_and_cast<inet::Packet *>(obj);
-        auto pdu = pkt->peekAtFront<LteMacPdu>();
-        insertMacPdu(pdu);
-    }
     else if (signalID == macPduAckedSignal) {
-        auto pkt = check_and_cast<inet::Packet *>(obj);
-        auto pdu = pkt->peekAtFront<LteMacPdu>();
-        macPduArrived(pdu);
+        auto info = check_and_cast<MacPduSignalInfo *>(obj);
+        macPduArrived(info->macPdu);
     }
     else if (signalID == macPduDiscardedSignal) {
-        auto pkt = check_and_cast<inet::Packet *>(obj);
-        auto pdu = pkt->peekAtFront<LteMacPdu>();
-        discardMacPdu(pdu);
+        auto info = check_and_cast<MacPduSignalInfo *>(obj);
+        discardMacPdu(info->macPdu);
     }
     else if (signalID == rlcPduDiscardedSignal) {
         auto info = check_and_cast<RlcDiscardSignalInfo *>(obj);

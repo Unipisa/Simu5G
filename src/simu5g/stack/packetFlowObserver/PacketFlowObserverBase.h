@@ -115,18 +115,11 @@ class PacketFlowObserverBase : public cSimpleModule, public cListener
     virtual void insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) = 0;
 
     /**
-     * This method is called when a MAC PDU is inserted into the HARQ buffer for transmission.
-     * It records the mapping between the MAC PDU and its contained RLC PDUs in the tracking
-     * data structures for downlink packet flow management.
-     */
-    virtual void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) = 0;
-
-    /**
      * This method is called when a downlink MAC PDU is successfully acknowledged by the UE.
      * It processes the acknowledgment to determine if complete PDCP SDUs have been delivered,
      * calculates packet delays, and updates statistics for downlink transmission.
      */
-    virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) = 0;
+    virtual void macPduArrived(const LteMacPdu *macPdu) = 0;
 
     /**
      * This method is called when an uplink MAC PDU is received from a UE at the eNodeB.
@@ -140,7 +133,7 @@ class PacketFlowObserverBase : public cSimpleModule, public cListener
      * reached. The PDCP, RLC sequence numbers referred to the MAC PDU are cleared from the
      * data structures.
      */
-    virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) = 0;
+    virtual void discardMacPdu(const LteMacPdu *macPdu) = 0;
 
     /**
      * This method is used to keep track of all discarded RLC PDUs. If all RLC PDUs

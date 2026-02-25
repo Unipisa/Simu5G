@@ -30,7 +30,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-simsignal_t LteMacBase::macPduInsertedSignal_ = registerSignal("macPduInserted");
 simsignal_t LteMacBase::macPduAckedSignal_ = registerSignal("macPduAcked");
 simsignal_t LteMacBase::macPduDiscardedSignal_ = registerSignal("macPduDiscarded");
 simsignal_t LteMacBase::rlcPduDiscardedSignal_ = registerSignal("rlcPduDiscarded");
@@ -443,25 +442,16 @@ void LteMacBase::handleMessage(cMessage *msg)
     }
 }
 
-void LteMacBase::insertMacPdu(const inet::Packet *macPdu)
-{
-    if (hasListeners(macPduInsertedSignal_)) {
-        auto lteInfo = macPdu->getTag<UserControlInfo>();
-        Direction dir = lteInfo->getDirection();
-        if (dir == DL || dir == UL) {
-            EV << "LteMacBase::insertMacPdu" << endl;
-            emit(macPduInsertedSignal_, const_cast<inet::Packet *>(macPdu));
-        }
-    }
-}
-
 void LteMacBase::harqAckToFlowObserver(const inet::Packet *macPdu)
 {
     if (hasListeners(macPduAckedSignal_)) {
         auto lteInfo = macPdu->getTag<UserControlInfo>();
         Direction dir = lteInfo->getDirection();
-        if (dir == DL || dir == UL)
-            emit(macPduAckedSignal_, const_cast<inet::Packet *>(macPdu));
+        if (dir == DL || dir == UL) {
+            auto pdu = macPdu->peekAtFront<LteMacPdu>();
+            MacPduSignalInfo info(pdu.get());
+            emit(macPduAckedSignal_, &info);
+        }
     }
 }
 
@@ -471,7 +461,9 @@ void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
         auto lteInfo = macPdu->getTag<UserControlInfo>();
         Direction dir = lteInfo->getDirection();
         if (dir == DL || dir == UL) {
-            emit(macPduDiscardedSignal_, const_cast<inet::Packet *>(macPdu));
+            auto pdu = macPdu->peekAtFront<LteMacPdu>();
+            MacPduSignalInfo info(pdu.get());
+            emit(macPduDiscardedSignal_, &info);
         }
     }
 }

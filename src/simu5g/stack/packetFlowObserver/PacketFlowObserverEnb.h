@@ -115,6 +115,7 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
      * @bool ack PDCP acknowledgment flag
      */
     void removePdcpBurstRLC(StatusDescriptor *desc, unsigned int rlcSno, bool ack);
+    void ensureMacPduMapping(const LteMacPdu *macPdu);
 
     /*
      * This method creates a pdcpStatus structure when a PDCP SDU arrives at the PDCP layer.
@@ -134,10 +135,9 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override;
     void insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcPdu, RlcBurstStatus status) override;
-    void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
-    void macPduArrived(inet::Ptr<const LteMacPdu>) override;
+    void macPduArrived(const LteMacPdu *macPdu) override;
     void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;
-    void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
+    void discardMacPdu(const LteMacPdu *macPdu) override;
     void discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool fromMac = false) override;
     void grantSent(MacNodeId nodeId, unsigned int grantId) override;
 

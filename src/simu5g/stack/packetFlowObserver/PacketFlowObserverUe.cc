@@ -252,65 +252,45 @@ void PacketFlowObserverUe::discardRlcPdu(DrbId drbId, unsigned int rlcSno, bool 
     desc->rlcSdusPerPdu_.erase(rlcSno);
 }
 
-void PacketFlowObserverUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::ensureMacPduMapping(const LteMacPdu *macPdu)
 {
-    EV << pfmType << "::insertMacPdu" << endl;
-
-    /*
-     * retrieve the macPduId and the Lcid
-     */
     int macPduId = macPdu->getId();
     int len = macPdu->getSduArraySize();
     if (len == 0)
         return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
-        auto rlcPdu = macPdu->getSdu(i);
-        DrbId drbId = DrbId(num(macPdu->getLcid(i)));  // MAC's LCID maps 1:1 to DRB ID
+        DrbId drbId = DrbId(num(macPdu->getLcid(i)));
 
         ConnectionMap::iterator cit = connectionMap_.find(drbId);
-        if (cit == connectionMap_.end()) {
-            // this may occur after a handover, when data structures are cleared
-            throw cRuntimeError("%s::insertMacPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
-        }
+        if (cit == connectionMap_.end())
+            throw cRuntimeError("%s::ensureMacPduMapping - DRB ID %d not present", pfmType.c_str(), num(drbId));
 
-        // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
         if (desc->macSdusPerPdu_.find(macPduId) != desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for DRB ID %d", pfmType.c_str(), macPduId, num(drbId));
+            continue; // already mapped
 
         auto macSdu = macPdu->getSdu(i).peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
 
-        EV << "ALE LCID: " << macPdu->getLcid(i) << endl;
-
-        EV << "MAC pdu: " << macPduId << " has RLC pdu: " << rlcSno << endl;
-
-        // ??????
-        // record the association RLC PDU - MAC PDU only if the RLC PDU contains at least one entire SDU
-        // the condition holds if the RLC PDU SN is stored in the data structure rlcSdusPerPdu_
-
-        std::map<unsigned int, SequenceNumberSet>::iterator tit = desc->rlcSdusPerPdu_.find(rlcSno);
+        auto tit = desc->rlcSdusPerPdu_.find(rlcSno);
         if (tit == desc->rlcSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - RLC PDU ID %d not present in the status descriptor of drbId %d ", pfmType.c_str(), rlcSno, num(drbId));
+            throw cRuntimeError("%s::ensureMacPduMapping - RLC PDU ID %d not present in the status descriptor of drbId %d", pfmType.c_str(), rlcSno, num(drbId));
 
-        // store the MAC SDUs (RLC PDUs) included in the MAC PDU
         desc->macSdusPerPdu_[macPduId].insert(rlcSno);
-        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertMacPdu - drbId[" << drbId << "], insert RLC PDU " << rlcSno << " in MAC PDU " << macPduId << endl;
 
-        // set the pdcp pdus related to this RLC as sent over the air since this method is called after the MAC ID
-        // has been inserted in the HARQBuffer
         SequenceNumberSet pdcpSet = tit->second;
         for (auto pdcpSno : pdcpSet) {
             auto sdit = desc->pdcpStatus_.find(pdcpSno);
-            if (sdit == desc->pdcpStatus_.end())
-                throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen", pfmType.c_str(), pdcpSno);
-            sdit->second.sentOverTheAir = true;
+            if (sdit != desc->pdcpStatus_.end())
+                sdit->second.sentOverTheAir = true;
         }
     }
 }
 
-void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::macPduArrived(const LteMacPdu *macPdu)
 {
+    ensureMacPduMapping(macPdu);
+
     EV << pfmType << "::macPduArrived" << endl;
     /*
      * retrieve the macPduId and the Lcid
@@ -419,8 +399,10 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::discardMacPdu(const LteMacPdu *macPdu)
 {
+    ensureMacPduMapping(macPdu);
+
     /*
      * retrieve the macPduId and the Lcid
      */

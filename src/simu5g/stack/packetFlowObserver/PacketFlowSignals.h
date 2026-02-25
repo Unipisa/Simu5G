@@ -19,6 +19,7 @@
 namespace simu5g {
 
 class LteRlcUmDataPdu;
+class LteMacPdu;
 
 /**
  * Signal value struct for RLC PDU creation events (rlcPduCreated signal).
@@ -59,6 +60,17 @@ struct GrantSignalInfo : public omnetpp::cObject
 
     GrantSignalInfo(MacNodeId nodeId, unsigned int grantId)
         : nodeId(nodeId), grantId(grantId) {}
+};
+
+/**
+ * Signal value struct for MAC PDU events (macPduAcked, macPduDiscarded signals).
+ * Carries a plain C pointer to the LteMacPdu header to avoid inet::Ptr overhead.
+ */
+struct MacPduSignalInfo : public omnetpp::cObject
+{
+    const LteMacPdu *macPdu;
+
+    MacPduSignalInfo(const LteMacPdu *macPdu) : macPdu(macPdu) {}
 };
 
 } //namespace

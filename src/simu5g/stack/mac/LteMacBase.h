@@ -160,7 +160,6 @@ class LteMacBase : public cSimpleModule
     opp_component_ptr<LtePhyBase> phy_;
 
     // signals for PacketFlowObserver
-    static simsignal_t macPduInsertedSignal_;
     static simsignal_t macPduAckedSignal_;
     static simsignal_t macPduDiscardedSignal_;
     static simsignal_t rlcPduDiscardedSignal_;
@@ -379,7 +378,6 @@ class LteMacBase : public cSimpleModule
      * methods called by mac layer and the HarqBuffers to notify
      * MAC pdus events to packetFlowObserver
      */
-    virtual void insertMacPdu(const inet::Packet *macPdu);
     virtual void harqAckToFlowObserver(const inet::Packet *macPdu);
     virtual void discardMacPdu(const inet::Packet *macPdu);
 
