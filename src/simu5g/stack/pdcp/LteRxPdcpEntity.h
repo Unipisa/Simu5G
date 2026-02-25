@@ -32,6 +32,8 @@ using namespace inet;
  */
 class LteRxPdcpEntity : public cSimpleModule
 {
+    static simsignal_t pdcpSduReceivedSignal_;
+
   protected:
     // reference to the PDCP layer
     LtePdcp *pdcp_ = nullptr;

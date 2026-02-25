@@ -29,9 +29,7 @@ Define_Module(PacketFlowObserverUe);
 
 void PacketFlowObserverUe::initialize(int stage)
 {
-    if (stage == inet::INITSTAGE_LOCAL) {
-        PacketFlowObserverBase::initialize(stage);
-    }
+    PacketFlowObserverBase::initialize(stage);
 }
 
 bool PacketFlowObserverUe::hasDrbId(DrbId drbId)

@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include <inet/common/ModuleAccess.h>
+#include <inet/common/packet/Packet.h>
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
@@ -28,8 +29,33 @@ void PacketFlowObserverBase::initialize(int stage)
         nodeType_ = mac->getNodeType();
         harqProcesses_ = mac->harqProcesses();
         pfmType = par("pfmType").stringValue();
+
+        // Subscribe to PDCP signals
+        cModule *pdcpModule = getModuleFromPar<cModule>(par("pdcpModule"), this);
+        bool isNrObserver = par("isNrObserver").boolValue();
+        simsignal_t pdcpSduSentSignal = registerSignal(isNrObserver ? "pdcpSduSentNr" : "pdcpSduSent");
+        simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
+        pdcpModule->subscribe(pdcpSduSentSignal, this);
+        pdcpModule->subscribe(pdcpSduReceivedSignal, this);
     }
 }
+
+void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
+{
+    static simsignal_t pdcpSduSentSignal = registerSignal("pdcpSduSent");
+    static simsignal_t pdcpSduSentNrSignal = registerSignal("pdcpSduSentNr");
+    static simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
+
+    if (signalID == pdcpSduSentSignal || signalID == pdcpSduSentNrSignal) {
+        auto pkt = check_and_cast<inet::Packet *>(obj);
+        insertPdcpSdu(pkt);
+    }
+    else if (signalID == pdcpSduReceivedSignal) {
+        auto pkt = check_and_cast<inet::Packet *>(obj);
+        receivedPdcpSdu(pkt);
+    }
+}
+
 
 void PacketFlowObserverBase::resetDiscardCounter()
 {

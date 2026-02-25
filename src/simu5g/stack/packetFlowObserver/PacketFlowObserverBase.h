@@ -49,7 +49,7 @@ struct StatusDescriptor;
  *  - calculate the delay time of a packet, from PDCP SDU to last HARQ ACK of the
  *    corresponding seq number.
  */
-class PacketFlowObserverBase : public cSimpleModule
+class PacketFlowObserverBase : public cSimpleModule, public cListener
 {
   protected:
 
@@ -157,6 +157,9 @@ class PacketFlowObserverBase : public cSimpleModule
     virtual void grantSent(MacNodeId nodeId, unsigned int grantId) {}
 
     virtual void resetDiscardCounter();
+
+    // cListener interface for receiving signals from protocol layers
+    void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details) override;
 };
 
 } //namespace

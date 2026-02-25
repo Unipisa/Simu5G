@@ -22,7 +22,6 @@
 #include "simu5g/stack/pdcp/LteTxPdcpEntity.h"
 #include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 
 namespace simu5g {
 
@@ -68,8 +67,6 @@ class LtePdcp : public cSimpleModule
   protected:
     // Modules references
     inet::ModuleRefByPar<Binder> binder_;
-    inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
-    inet::ModuleRefByPar<PacketFlowObserverBase> NRpacketFlowObserver_;
 
     // Identifier for this node
     MacNodeId nodeId_;
@@ -109,6 +106,8 @@ class LtePdcp : public cSimpleModule
     static simsignal_t receivedPacketFromLowerLayerSignal_;
     static simsignal_t sentPacketToUpperLayerSignal_;
     static simsignal_t sentPacketToLowerLayerSignal_;
+    static simsignal_t pdcpSduSentSignal_;
+    static simsignal_t pdcpSduSentNrSignal_;
 
   public:
 
@@ -249,7 +248,6 @@ class LtePdcp : public cSimpleModule
      */
     virtual void sendToLowerLayer(inet::Packet *pkt);
 
-    virtual PacketFlowObserverBase *getPacketFlowObserver() { return packetFlowObserver_.getNullable(); }
 
 };
 

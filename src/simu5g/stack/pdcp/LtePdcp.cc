@@ -17,7 +17,6 @@
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -36,6 +35,8 @@ simsignal_t LtePdcp::receivedPacketFromUpperLayerSignal_ = registerSignal("recei
 simsignal_t LtePdcp::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
 simsignal_t LtePdcp::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 simsignal_t LtePdcp::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t LtePdcp::pdcpSduSentSignal_ = registerSignal("pdcpSduSent");
+simsignal_t LtePdcp::pdcpSduSentNrSignal_ = registerSignal("pdcpSduSentNr");
 
 LtePdcp::~LtePdcp()
 {
@@ -212,12 +213,9 @@ void LtePdcp::sendToLowerLayer(Packet *pkt)
             // use NR id as source
             lteInfo->setSourceId(nrNodeId_);
 
-            // notify the packetFlowObserver only with UL packet
+            // notify observers via signal (only for non-D2D)
             if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-                if (NRpacketFlowObserver_ != nullptr) {
-                    EV << "LteTxPdcpEntity::handlePacketFromUpperLayer - notify NRpacketFlowObserver_" << endl;
-                    NRpacketFlowObserver_->insertPdcpSdu(pkt);
-                }
+                emit(pdcpSduSentNrSignal_, pkt);
             }
 
             send(pkt, nrRlcOutGate_);
@@ -229,8 +227,7 @@ void LtePdcp::sendToLowerLayer(Packet *pkt)
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
 
     if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-        if (packetFlowObserver_ != nullptr)
-            packetFlowObserver_->insertPdcpSdu(pkt);
+        emit(pdcpSduSentSignal_, pkt);
     }
 
     // Send message
@@ -253,16 +250,6 @@ void LtePdcp::initialize(int stage)
         binder_.reference(this, "binderModule", true);
 
         nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
-
-        packetFlowObserver_.reference(this, "packetFlowObserverModule", false);
-        NRpacketFlowObserver_.reference(this, "nrPacketFlowObserverModule", false);
-
-        if (packetFlowObserver_) {
-            EV << "LtePdcp::initialize - PacketFlowObserver present" << endl;
-        }
-        if (NRpacketFlowObserver_) {
-            EV << "LtePdcp::initialize - NRpacketFlowObserver present" << endl;
-        }
 
         const char *rxEntityModuleTypeName = par("rxEntityModuleType").stringValue();
         rxEntityModuleType_ = cModuleType::get(rxEntityModuleTypeName);

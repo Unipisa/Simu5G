@@ -24,8 +24,6 @@ simple LtePdcp like ILtePdcp
     parameters:
         @display("i=block/fork");
         string binderModule = default("binder");
-        string packetFlowObserverModule = default("^.packetFlowObserver"); // optional
-        string nrPacketFlowObserverModule = default("^.nrPacketFlowObserver"); // optional
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
         string rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
         string txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
@@ -41,6 +39,9 @@ simple LtePdcp like ILtePdcp
         @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @signal[pdcpSduSent];
+        @signal[pdcpSduSentNr];
+        @signal[pdcpSduReceived];
     gates:
         //#
         //# Gates connecting UE/eNB and PDCP/RRC Layer
