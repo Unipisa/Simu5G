@@ -25,6 +25,7 @@
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 
 namespace simu5g {
 
@@ -290,10 +291,9 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
         emit(signal, sample);
 
         // discard the RLC
-        if (packetFlowObserver_ != nullptr) {
-            unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-            packetFlowObserver_->discardRlcPdu(lteInfo->getDrbId(), rlcSno);
-        }
+        unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+        RlcDiscardSignalInfo discardInfo(lteInfo->getDrbId(), rlcSno);
+        emit(rlcPduDiscardedSignal_, &discardInfo);
 
         delete pkt;
         return false;

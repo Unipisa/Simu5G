@@ -18,7 +18,7 @@
 #include "simu5g/stack/mac/scheduler/LteSchedulerEnbUl.h"
 #include "simu5g/stack/mac/packet/LteSchedulingGrant.h"
 #include "simu5g/stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 
 namespace simu5g {
 
@@ -130,8 +130,8 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
 
     // Notify the packet flow manager about the successful arrival of a TB from a UE.
     // From ETSI TS 138314 V16.0.0 (2020-07)
-    if (packetFlowObserver_ != nullptr)
-        packetFlowObserver_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
+    GrantSignalInfo ulInfo(userInfo->getSourceId(), userInfo->getGrantId());
+    emit(ulMacPduArrivedSignal_, &ulInfo);
 
     while (macPdu->hasSdu()) {
         // Extract and send SDU
@@ -271,8 +271,8 @@ void LteMacEnbD2D::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
              *   tSched: the point in time when the UL MAC SDU i is scheduled as
              *   per the scheduling grant provided
              */
-            if (packetFlowObserver_ != nullptr)
-                packetFlowObserver_->grantSent(nodeId, grant->getGrantId());
+            GrantSignalInfo grantInfo(nodeId, grant->getGrantId());
+            emit(grantSentSignal_, &grantInfo);
 
             // send grant to PHY layer
             pkt->insertAtFront(grant);

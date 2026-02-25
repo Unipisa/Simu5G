@@ -18,6 +18,7 @@
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "PacketFlowObserverBase.h"
 
@@ -43,6 +44,15 @@ void PacketFlowObserverBase::initialize(int stage)
         cModule *rlcModule = getModuleFromPar<cModule>(par("rlcModule"), this);
         simsignal_t rlcPduCreatedSignal = registerSignal("rlcPduCreated");
         rlcModule->subscribe(rlcPduCreatedSignal, this);
+
+        // Subscribe to MAC signals
+        cModule *macModule = getModuleFromPar<cModule>(par("macModule"), this);
+        macModule->subscribe(registerSignal("macPduInserted"), this);
+        macModule->subscribe(registerSignal("macPduAcked"), this);
+        macModule->subscribe(registerSignal("macPduDiscarded"), this);
+        macModule->subscribe(registerSignal("rlcPduDiscarded"), this);
+        macModule->subscribe(registerSignal("grantSent"), this);
+        macModule->subscribe(registerSignal("ulMacPduArrived"), this);
     }
 }
 
@@ -52,6 +62,12 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
     static simsignal_t pdcpSduSentNrSignal = registerSignal("pdcpSduSentNr");
     static simsignal_t pdcpSduReceivedSignal = registerSignal("pdcpSduReceived");
     static simsignal_t rlcPduCreatedSignal = registerSignal("rlcPduCreated");
+    static simsignal_t macPduInsertedSignal = registerSignal("macPduInserted");
+    static simsignal_t macPduAckedSignal = registerSignal("macPduAcked");
+    static simsignal_t macPduDiscardedSignal = registerSignal("macPduDiscarded");
+    static simsignal_t rlcPduDiscardedSignal = registerSignal("rlcPduDiscarded");
+    static simsignal_t grantSentSignal = registerSignal("grantSent");
+    static simsignal_t ulMacPduArrivedSignal = registerSignal("ulMacPduArrived");
 
     if (signalID == pdcpSduSentSignal || signalID == pdcpSduSentNrSignal) {
         auto pkt = check_and_cast<inet::Packet *>(obj);
@@ -64,6 +80,33 @@ void PacketFlowObserverBase::receiveSignal(cComponent *source, simsignal_t signa
     else if (signalID == rlcPduCreatedSignal) {
         auto info = check_and_cast<RlcPduSignalInfo *>(obj);
         insertRlcPdu(info->drbId, info->rlcPdu, info->burstStatus);
+    }
+    else if (signalID == macPduInsertedSignal) {
+        auto pkt = check_and_cast<inet::Packet *>(obj);
+        auto pdu = pkt->peekAtFront<LteMacPdu>();
+        insertMacPdu(pdu);
+    }
+    else if (signalID == macPduAckedSignal) {
+        auto pkt = check_and_cast<inet::Packet *>(obj);
+        auto pdu = pkt->peekAtFront<LteMacPdu>();
+        macPduArrived(pdu);
+    }
+    else if (signalID == macPduDiscardedSignal) {
+        auto pkt = check_and_cast<inet::Packet *>(obj);
+        auto pdu = pkt->peekAtFront<LteMacPdu>();
+        discardMacPdu(pdu);
+    }
+    else if (signalID == rlcPduDiscardedSignal) {
+        auto info = check_and_cast<RlcDiscardSignalInfo *>(obj);
+        discardRlcPdu(info->drbId, info->rlcSno);
+    }
+    else if (signalID == grantSentSignal) {
+        auto info = check_and_cast<GrantSignalInfo *>(obj);
+        grantSent(info->nodeId, info->grantId);
+    }
+    else if (signalID == ulMacPduArrivedSignal) {
+        auto info = check_and_cast<GrantSignalInfo *>(obj);
+        ulMacPduArrived(info->nodeId, info->grantId);
     }
 }
 

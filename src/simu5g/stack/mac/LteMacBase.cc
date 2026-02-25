@@ -23,12 +23,19 @@
 #include "simu5g/stack/mac/packet/LteMacPdu.h"
 #include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 #include <assert.h>
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
+
+simsignal_t LteMacBase::macPduInsertedSignal_ = registerSignal("macPduInserted");
+simsignal_t LteMacBase::macPduAckedSignal_ = registerSignal("macPduAcked");
+simsignal_t LteMacBase::macPduDiscardedSignal_ = registerSignal("macPduDiscarded");
+simsignal_t LteMacBase::rlcPduDiscardedSignal_ = registerSignal("rlcPduDiscarded");
+simsignal_t LteMacBase::grantSentSignal_ = registerSignal("grantSent");
+simsignal_t LteMacBase::ulMacPduArrivedSignal_ = registerSignal("ulMacPduArrived");
 
 // register signals
 simsignal_t LteMacBase::macBufferOverflowDlSignal_ = registerSignal("macBufferOverFlowDl");
@@ -442,27 +449,26 @@ void LteMacBase::insertMacPdu(const inet::Packet *macPdu)
 {
     auto lteInfo = macPdu->getTag<UserControlInfo>();
     Direction dir = lteInfo->getDirection();
-    if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL)) {
+    if (dir == DL || dir == UL) {
         EV << "LteMacBase::insertMacPdu" << endl;
-        auto pdu = macPdu->peekAtFront<LteMacPdu>();
-        packetFlowObserver_->insertMacPdu(pdu);
+        emit(macPduInsertedSignal_, const_cast<inet::Packet *>(macPdu));
     }
 }
 
-void LteMacBase::harqAckToFlowObserver(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu)
+void LteMacBase::harqAckToFlowObserver(const inet::Packet *macPdu)
 {
+    auto lteInfo = macPdu->getTag<UserControlInfo>();
     Direction dir = lteInfo->getDirection();
-    if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL))
-        packetFlowObserver_->macPduArrived(macPdu);
+    if (dir == DL || dir == UL)
+        emit(macPduAckedSignal_, const_cast<inet::Packet *>(macPdu));
 }
 
 void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
 {
     auto lteInfo = macPdu->getTag<UserControlInfo>();
     Direction dir = lteInfo->getDirection();
-    if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL)) {
-        auto pdu = macPdu->peekAtFront<LteMacPdu>();
-        packetFlowObserver_->discardMacPdu(pdu);
+    if (dir == DL || dir == UL) {
+        emit(macPduDiscardedSignal_, const_cast<inet::Packet *>(macPdu));
     }
 }
 
@@ -470,8 +476,10 @@ void LteMacBase::discardRlcPdu(inet::Ptr<const UserControlInfo> lteInfo, unsigne
 {
     Direction dir = lteInfo->getDirection();
     LogicalCid lcid = lteInfo->getPacketLcid();
-    if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL))
-        packetFlowObserver_->discardRlcPdu(lcidToDrbId(lcid), rlcSno);
+    if (dir == DL || dir == UL) {
+        RlcDiscardSignalInfo info(lcidToDrbId(lcid), rlcSno);
+        emit(rlcPduDiscardedSignal_, &info);
+    }
 }
 
 void LteMacBase::deleteModule() {

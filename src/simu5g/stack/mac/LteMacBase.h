@@ -18,6 +18,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 
 namespace simu5g {
 
@@ -28,7 +29,6 @@ class LteHarqBufferRx;
 class Binder;
 class FlowControlInfo;
 class LteMacBuffer;
-class PacketFlowObserverBase;
 
 /**
  * Map associating a nodeId with the corresponding TX H-ARQ buffer.
@@ -163,6 +163,14 @@ class LteMacBase : public cSimpleModule
     // @author Alessandro Noferi
     // reference to the packetFlowObserver
     inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
+
+    // signals for PacketFlowObserver
+    static simsignal_t macPduInsertedSignal_;
+    static simsignal_t macPduAckedSignal_;
+    static simsignal_t macPduDiscardedSignal_;
+    static simsignal_t rlcPduDiscardedSignal_;
+    static simsignal_t grantSentSignal_;
+    static simsignal_t ulMacPduArrivedSignal_;
 
     // support to different numerologies
     struct NumerologyPeriodCounter {
@@ -377,7 +385,7 @@ class LteMacBase : public cSimpleModule
      * MAC pdus events to packetFlowObserver
      */
     virtual void insertMacPdu(const inet::Packet *macPdu);
-    virtual void harqAckToFlowObserver(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu);
+    virtual void harqAckToFlowObserver(const inet::Packet *macPdu);
     virtual void discardMacPdu(const inet::Packet *macPdu);
     virtual void discardRlcPdu(inet::IntrusivePtr<const UserControlInfo> lteInfo, unsigned int rlcSno);
 

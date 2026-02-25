@@ -209,9 +209,7 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
      * since it deletes the pdu
      */
     if (harqResult == HARQACK) {
-        auto macPdu = processes_[acid]->getPdu(cw)->peekAtFront<LteMacPdu>();
-        auto userInfo = pkt->getTag<UserControlInfo>();
-        macOwner_->harqAckToFlowObserver(userInfo, macPdu);
+        macOwner_->harqAckToFlowObserver(processes_[acid]->getPdu(cw));
     }
 
     bool reset = processes_[acid]->pduFeedback(harqResult, cw);

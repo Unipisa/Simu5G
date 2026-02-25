@@ -102,6 +102,12 @@ module LteMacBase like ILteMac
         @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @signal[macPduInserted];
+        @signal[macPduAcked];
+        @signal[macPduDiscarded];
+        @signal[rlcPduDiscarded];
+        @signal[grantSent];
+        @signal[ulMacPduArrived];
 
     gates:
         //#
