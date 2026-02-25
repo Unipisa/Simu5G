@@ -49,7 +49,6 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.nrHandoverController";
-        nrMac.packetFlowObserverModule = hasRniSupport ? "^.nrPacketFlowObserver" : "";
         nrHandoverController.macModule = "^.nrMac";
         nrHandoverController.rlcUmModule = "^.nrRlc.um";
         nrHandoverController.feedbackGeneratorModule = "^.nrDlFbGen";

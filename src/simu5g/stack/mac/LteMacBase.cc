@@ -23,8 +23,8 @@
 #include "simu5g/stack/mac/packet/LteMacPdu.h"
 #include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 #include <assert.h>
-#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 
 namespace simu5g {
 
@@ -408,8 +408,6 @@ void LteMacBase::initialize(int stage)
         // statistics
         statDisplay_ = par("statDisplay");
 
-        packetFlowObserver_.reference(this, "packetFlowObserverModule", false);
-
         WATCH(queueSize_);
         WATCH(nodeId_);
         // WATCH_MAP(connDescOut_);
@@ -469,16 +467,6 @@ void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
     Direction dir = lteInfo->getDirection();
     if (dir == DL || dir == UL) {
         emit(macPduDiscardedSignal_, const_cast<inet::Packet *>(macPdu));
-    }
-}
-
-void LteMacBase::discardRlcPdu(inet::Ptr<const UserControlInfo> lteInfo, unsigned int rlcSno)
-{
-    Direction dir = lteInfo->getDirection();
-    LogicalCid lcid = lteInfo->getPacketLcid();
-    if (dir == DL || dir == UL) {
-        RlcDiscardSignalInfo info(lcidToDrbId(lcid), rlcSno);
-        emit(rlcPduDiscardedSignal_, &info);
     }
 }
 
