@@ -5,7 +5,7 @@ package simu5g.stack.ip2nic;
 // Type of Service field and dual connectivity configuration.
 // Sits above ~Ip2Nic in the outgoing packet path.
 //
-simple TechnologyDecision
+simple TechnologyDecision like ITechnologyDecision
 {
     parameters:
         @display("i=block/fork");

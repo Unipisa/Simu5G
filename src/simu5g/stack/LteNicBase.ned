@@ -16,7 +16,7 @@ package simu5g.stack;
 import inet.networklayer.common.NetworkInterface;
 import simu5g.stack.ip2nic.IHandoverPacketHolder;
 import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
-import simu5g.stack.ip2nic.TechnologyDecision;
+import simu5g.stack.ip2nic.ITechnologyDecision;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.pdcp.ILtePdcp;
@@ -76,7 +76,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=412,67");
         }
         // technology selection for outgoing packets
-        technologyDecision: TechnologyDecision {
+        technologyDecision: <default("TechnologyDecision")> like ITechnologyDecision {
             @display("p=475,67");
         }
         // bridge between radio nic and network layer
