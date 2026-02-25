@@ -94,6 +94,9 @@ module NrNicUe extends LteNicUeD2D
         //#
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {
             @display("p=200,300");
+            macModule = "^.nrMac";
+            rlcModule = "^.nrRlc";
+            isNrObserver = true;
         }
 
     connections:

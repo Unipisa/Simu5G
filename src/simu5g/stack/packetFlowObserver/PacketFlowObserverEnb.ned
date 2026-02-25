@@ -22,6 +22,9 @@ simple PacketFlowObserverEnb like IPacketFlowObserver
     @class("PacketFlowObserverEnb");
 
     string macModule = default("^.mac");
+    string pdcpModule = default("^.pdcp");
+    string rlcModule = default("^.rlc");
+    bool isNrObserver = default(false);
     string pfmType = default("PacketFlowObserverEnb");
 }
 
