@@ -74,7 +74,7 @@ void LtePdcp::fromDataPort(cPacket *pktAux)
         }
     }
 
-    LteTxPdcpEntity *entity = lookupTxEntity(id);
+    PdcpTxEntityBase *entity = lookupTxEntity(id);
 
     // get the PDCP entity for this DRB ID and process the packet
     EV << "fromDataPort in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
@@ -162,7 +162,7 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
         }
     }
 
-    LteRxPdcpEntity *entity = lookupRxEntity(id);
+    PdcpRxEntityBase *entity = lookupRxEntity(id);
 
     EV << "fromLowerLayer in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
        <<  ": Processing packet " << pkt->getName() << " src=" << lteInfo->getSourceId() << " dest=" << lteInfo->getDestId()
@@ -367,13 +367,13 @@ void LtePdcp::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
     // add here specific behavior for handling mode switch at the PDCP layer
 }
 
-LteTxPdcpEntity *LtePdcp::lookupTxEntity(DrbKey id)
+PdcpTxEntityBase *LtePdcp::lookupTxEntity(DrbKey id)
 {
     auto it = txEntities_.find(id);
     return it != txEntities_.end() ? it->second : nullptr;
 }
 
-LteTxPdcpEntity *LtePdcp::createTxEntity(DrbKey id)
+PdcpTxEntityBase *LtePdcp::createTxEntity(DrbKey id)
 {
     std::stringstream buf;
     buf << "tx-" << id.getNodeId() << "-" << id.getDrbId();
@@ -383,7 +383,7 @@ LteTxPdcpEntity *LtePdcp::createTxEntity(DrbKey id)
     module->buildInside();
     module->scheduleStart(simTime());
     module->callInitialize();
-    LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(module);
+    PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
     txEntities_[id] = txEnt;
 
     EV << "LtePdcp::createTxEntity - Added new TxPdcpEntity for " << id << "\n";
@@ -392,13 +392,13 @@ LteTxPdcpEntity *LtePdcp::createTxEntity(DrbKey id)
 }
 
 
-LteRxPdcpEntity *LtePdcp::lookupRxEntity(DrbKey id)
+PdcpRxEntityBase *LtePdcp::lookupRxEntity(DrbKey id)
 {
     auto it = rxEntities_.find(id);
     return it != rxEntities_.end() ? it->second : nullptr;
 }
 
-LteRxPdcpEntity *LtePdcp::createRxEntity(DrbKey id)
+PdcpRxEntityBase *LtePdcp::createRxEntity(DrbKey id)
 {
     std::stringstream buf;
     buf << "rx-" << id.getNodeId() << "-" << id.getDrbId();
@@ -408,7 +408,7 @@ LteRxPdcpEntity *LtePdcp::createRxEntity(DrbKey id)
     module->buildInside();
     module->scheduleStart(simTime());
     module->callInitialize();
-    LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(module);
+    PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
     rxEntities_[id] = rxEnt;
 
     EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for " << id << "\n";

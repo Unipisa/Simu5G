@@ -16,6 +16,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
@@ -33,7 +34,7 @@ using namespace inet;
  *
  * This is the PDCP RX entity of the LTE Stack.
  */
-class LteRxPdcpEntity : public cSimpleModule
+class LteRxPdcpEntity : public PdcpRxEntityBase
 {
     static simsignal_t receivedPacketFromLowerLayerSignal_;
     static simsignal_t pdcpSduReceivedSignal_;
@@ -68,10 +69,9 @@ class LteRxPdcpEntity : public cSimpleModule
 
 
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     // obtain the IP datagram from the PDCP PDU
-    void handlePacketFromLowerLayer(Packet *pkt);
+    void handlePacketFromLowerLayer(Packet *pkt) override;
 
     /*
      * @author Alessandro Noferi
@@ -81,7 +81,7 @@ class LteRxPdcpEntity : public cSimpleModule
      * RNI service requests the number of active users
      * in UL, that also counts buffered UL data in PDCP.
      */
-    virtual bool isEmpty() const { return true; }
+    bool isEmpty() const override { return true; }
 };
 
 } //namespace

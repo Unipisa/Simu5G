@@ -16,6 +16,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
@@ -40,7 +41,7 @@ using namespace inet;
  * - maintain numbering of one logical connection
  *
  */
-class LteTxPdcpEntity : public cSimpleModule
+class LteTxPdcpEntity : public PdcpTxEntityBase
 {
   protected:
     static simsignal_t receivedPacketFromUpperLayerSignal_;
@@ -72,10 +73,9 @@ class LteTxPdcpEntity : public cSimpleModule
 
 
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     // create a PDCP PDU from the IP datagram
-    void handlePacketFromUpperLayer(Packet *pkt);
+    void handlePacketFromUpperLayer(Packet *pkt) override;
 };
 
 } //namespace

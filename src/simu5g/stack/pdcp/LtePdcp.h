@@ -19,16 +19,16 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
-#include "simu5g/stack/pdcp/LteTxPdcpEntity.h"
-#include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
+#include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
+#include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
-class LteTxPdcpEntity;
-class LteRxPdcpEntity;
+class PdcpTxEntityBase;
+class PdcpRxEntityBase;
 
 /**
  * @class LtePdcp
@@ -90,8 +90,8 @@ class LtePdcp : public cSimpleModule
     /**
      * The entities map associates each DrbKey with a PDCP Entity, identified by its ID
      */
-    typedef std::map<DrbKey, LteTxPdcpEntity *> PdcpTxEntities;
-    typedef std::map<DrbKey, LteRxPdcpEntity *> PdcpRxEntities;
+    typedef std::map<DrbKey, PdcpTxEntityBase *> PdcpTxEntities;
+    typedef std::map<DrbKey, PdcpRxEntityBase *> PdcpRxEntities;
     PdcpTxEntities txEntities_;
     PdcpRxEntities rxEntities_;
 
@@ -111,7 +111,7 @@ class LtePdcp : public cSimpleModule
      * @param id Node + DRB ID
      * @return pointer to the existing TX PDCP entity, or nullptr if not found
      */
-    virtual LteTxPdcpEntity *lookupTxEntity(DrbKey id);
+    virtual PdcpTxEntityBase *lookupTxEntity(DrbKey id);
 
     /**
      * createTxEntity() creates a new TX PDCP entity for the given node+DRB ID and adds it to the entities map.
@@ -119,7 +119,7 @@ class LtePdcp : public cSimpleModule
      * @param id Node + DRB ID
      * @return pointer to the newly created TX PDCP entity
      */
-    virtual LteTxPdcpEntity *createTxEntity(DrbKey id);
+    virtual PdcpTxEntityBase *createTxEntity(DrbKey id);
 
     /**
      * lookupRxEntity() searches for an existing RX PDCP entity for the given node+DRB ID.
@@ -127,7 +127,7 @@ class LtePdcp : public cSimpleModule
      * @param id Node + DRB ID
      * @return pointer to the existing RX PDCP entity, or nullptr if not found
      */
-    virtual LteRxPdcpEntity *lookupRxEntity(DrbKey id);
+    virtual PdcpRxEntityBase *lookupRxEntity(DrbKey id);
 
     /**
      * createRxEntity() creates a new RX PDCP entity for the given node+DRB ID and adds it to the entities map.
@@ -135,7 +135,7 @@ class LtePdcp : public cSimpleModule
      * @param id Node + DRB ID
      * @return pointer to the newly created RX PDCP entity
      */
-    virtual LteRxPdcpEntity *createRxEntity(DrbKey id);
+    virtual PdcpRxEntityBase *createRxEntity(DrbKey id);
 
   protected:
     /*
