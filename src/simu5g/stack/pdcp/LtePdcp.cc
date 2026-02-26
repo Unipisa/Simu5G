@@ -99,15 +99,9 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
 
-    // NrPdcpEnb: if DC enabled and this is a secondary node, forward to master
+    // NrPdcpEnb: trim packet for NR gNBs (removes trailing RLC/MAC padding)
     if (isNR_ && getNodeTypeById(nodeId_) == NODEB) {
         pkt->trim();
-        MacNodeId masterId = binder_->getMasterNodeOrSelf(nodeId_);
-        if (dualConnectivityEnabled_ && (nodeId_ != masterId)) {
-            EV << NOW << " LtePdcp::fromLowerLayer - forward packet to the master node - id [" << masterId << "]" << endl;
-            forwardDataToTargetNode(pkt, masterId);
-            return;
-        }
     }
 
     ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
