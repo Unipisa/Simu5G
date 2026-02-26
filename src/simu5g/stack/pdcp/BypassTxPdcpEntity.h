@@ -28,6 +28,9 @@ class LtePdcp;
  */
 class BypassTxPdcpEntity : public PdcpTxEntityBase
 {
+    static omnetpp::simsignal_t sentPacketToLowerLayerSignal_;
+    static omnetpp::simsignal_t pdcpSduSentSignal_;
+
   protected:
     LtePdcp *pdcp_ = nullptr;
 

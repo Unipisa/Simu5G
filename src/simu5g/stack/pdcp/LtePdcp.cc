@@ -359,7 +359,19 @@ void LtePdcp::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
     if (ctrlInfo->getDirection() == DL) {
         MacNodeId destId = ctrlInfo->getDestId();
         EV << NOW << " LtePdcp::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
-        sendToLowerLayer(pkt);
+
+        // Look up the bypass TX entity for this DRB on the secondary node.
+        // The entity was keyed using the UE's NR node ID (from the NR connection setup),
+        // but the X2-forwarded packet may carry the UE's LTE node ID. Normalize if needed.
+        DrbKey id = DrbKey(destId, ctrlInfo->getDrbId());
+        if (binder_->isGNodeB(nodeId_) != isNrUe(destId)) {
+            MacNodeId otherDestId = binder_->getUeNodeId(destId, !isNrUe(destId));
+            ASSERT(otherDestId != NODEID_NONE);
+            id = DrbKey(otherDestId, ctrlInfo->getDrbId());
+        }
+        PdcpTxEntityBase *entity = lookupTxEntity(id);
+        ASSERT(entity != nullptr);
+        entity->handlePacketFromUpperLayer(pkt);
     }
     else { // UL
         EV << NOW << " LtePdcp::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
