@@ -32,11 +32,18 @@ namespace simu5g {
 
 Define_Module(LteTxPdcpEntity);
 
+simsignal_t LteTxPdcpEntity::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteTxPdcpEntity::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteTxPdcpEntity::pdcpSduSentSignal_ = registerSignal("pdcpSduSent");
+
 void LteTxPdcpEntity::initialize(int stage) {
     if (stage == inet::INITSTAGE_LOCAL) {
         pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
 
-        headerCompressedSize_ = B(pdcp_->par("headerCompressedSize"));
+        binder_.reference(this, "binderModule", true);
+        nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
+
+        headerCompressedSize_ = B(par("headerCompressedSize"));
         if (headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED && headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE)
             throw cRuntimeError("Size of compressed header must not be less than %" PRId64 "B.", MIN_COMPRESSED_HEADER_SIZE.get());
     }
@@ -44,6 +51,8 @@ void LteTxPdcpEntity::initialize(int stage) {
 
 void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
 {
+    emit(receivedPacketFromUpperLayerSignal_, pkt);
+
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - processing packet " << pkt->getName() << " from IP layer" << endl;
 
@@ -124,7 +133,12 @@ void LteTxPdcpEntity::compressHeader(Packet *pkt)
 
 void LteTxPdcpEntity::deliverPdcpPdu(Packet *pdcpPkt)
 {
-    pdcp_->sendToLowerLayer(pdcpPkt);
+    auto lteInfo = pdcpPkt->getTag<FlowControlInfo>();
+    if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+        emit(pdcpSduSentSignal_, pdcpPkt);
+    }
+    emit(sentPacketToLowerLayerSignal_, pdcpPkt);
+    pdcp_->sendToRlc(pdcpPkt);
 }
 
 } //namespace

@@ -13,31 +13,38 @@
 #include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include <inet/common/ProtocolTag_m.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
-#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 
 Define_Module(LteRxPdcpEntity);
 
+simsignal_t LteRxPdcpEntity::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
 simsignal_t LteRxPdcpEntity::pdcpSduReceivedSignal_ = registerSignal("pdcpSduReceived");
+simsignal_t LteRxPdcpEntity::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 
 
 void LteRxPdcpEntity::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
-        headerCompressionEnabled_ = pdcp_->par("headerCompressedSize").intValue() > 0;  // TODO a.k.a. LTE_PDCP_HEADER_COMPRESSION_DISABLED
+
+        binder_.reference(this, "binderModule", true);
+        nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
+
+        headerCompressionEnabled_ = par("headerCompressedSize").intValue() > 0;
     }
 }
 
 void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
 {
     take(pkt);
+    emit(receivedPacketFromLowerLayerSignal_, pkt);
     EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - DRB ID[" << drbId_ << "] - processing packet from RLC layer" << endl;
 
     // Extract sequence number from PDCP header before popping it
@@ -67,7 +74,14 @@ void LteRxPdcpEntity::handlePdcpSdu(Packet *pkt, unsigned int sequenceNumber)
     EV << NOW << " LteRxPdcpEntity::handlePdcpSdu - processing PDCP SDU with SN[" << sequenceNumber << "]" << endl;
 
     // deliver to IP layer
-    pdcp_->toDataPort(pkt);
+    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+    deliverSduToUpperLayer(pkt);
+}
+
+void LteRxPdcpEntity::deliverSduToUpperLayer(Packet *pkt)
+{
+    emit(sentPacketToUpperLayerSignal_, pkt);
+    pdcp_->sendToUpperLayer(pkt);
 }
 
 void LteRxPdcpEntity::decompressHeader(Packet *pkt)

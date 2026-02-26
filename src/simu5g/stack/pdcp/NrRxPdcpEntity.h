@@ -68,6 +68,9 @@ class NrRxPdcpEntity : public LteRxPdcpEntity
 {
   protected:
 
+    // Dual Connectivity support
+    bool dualConnectivityEnabled_ = false;
+
     // if true, deliver packets to the upper layer without reordering
     // NOTE: reordering can apply for Split Bearers only
     bool outOfOrderDelivery_;

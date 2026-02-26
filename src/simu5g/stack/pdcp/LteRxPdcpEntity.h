@@ -13,8 +13,11 @@
 #ifndef _LTE_LTERXPDCPENTITY_H_
 #define _LTE_LTERXPDCPENTITY_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
@@ -32,11 +35,19 @@ using namespace inet;
  */
 class LteRxPdcpEntity : public cSimpleModule
 {
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
     static simsignal_t pdcpSduReceivedSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
 
   protected:
     // reference to the PDCP layer
     LtePdcp *pdcp_ = nullptr;
+
+    // Modules references
+    inet::ModuleRefByPar<Binder> binder_;
+
+    // Identifier for this node
+    MacNodeId nodeId_;
 
     // whether headers are compressed
     bool headerCompressionEnabled_;
@@ -46,6 +57,8 @@ class LteRxPdcpEntity : public cSimpleModule
 
     // handler for PDCP SDU
     virtual void handlePdcpSdu(Packet *pkt, unsigned int sequenceNumber);
+
+    void deliverSduToUpperLayer(inet::Packet *pkt);
 
     virtual void decompressHeader(inet::Packet *pkt);
 

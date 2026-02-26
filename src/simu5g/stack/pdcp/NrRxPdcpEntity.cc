@@ -12,6 +12,8 @@
 
 #include "simu5g/stack/pdcp/NrRxPdcpEntity.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
@@ -21,6 +23,8 @@ Define_Module(NrRxPdcpEntity);
 
 void NrRxPdcpEntity::initialize(int stage)
 {
+    LteRxPdcpEntity::initialize(stage);
+
     if (stage == inet::INITSTAGE_LOCAL) {
         outOfOrderDelivery_ = par("outOfOrderDelivery").boolValue();
         rxWindowDesc_.windowSize_ = par("rxWindowSize");
@@ -28,9 +32,10 @@ void NrRxPdcpEntity::initialize(int stage)
 
         received_.resize(rxWindowDesc_.windowSize_, false);
         t_reordering_.setTimerId(REORDERING_T);
-    }
 
-    LteRxPdcpEntity::initialize(stage);
+        inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
+    }
 }
 
 void NrRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
@@ -41,9 +46,10 @@ void NrRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
 
     EV << NOW << " NrRxPdcpEntity::handlePdcpSdu - processing PDCP SDU with SN[" << rcvdSno << "]" << endl;
 
-    if (!(pdcp_->isDualConnectivityEnabled()) || outOfOrderDelivery_) { // deliver packet to upper layer
+    if (!dualConnectivityEnabled_ || outOfOrderDelivery_) { // deliver packet to upper layer
         EV << NOW << " NrRxPdcpEntity::handlePdcpSdu - Deliver SDU SN[" << rcvdSno << "] to upper layer" << endl;
-        pdcp_->toDataPort(pdcpSdu);
+        pdcpSdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+        deliverSduToUpperLayer(pdcpSdu);
         return;
     }
     // else dual connectivity is enabled and reordering needs to be done
@@ -77,18 +83,20 @@ void NrRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
     if (rcvdSno == rxWindowDesc_.rxDeliv_) {
         // this SDU is the next one to be delivered
         EV << NOW << " NrRxPdcpEntity::handlePdcpSdu - Deliver SDU SN[" << rcvdSno << "] to upper layer" << endl;
-        pdcp_->toDataPort(pdcpSdu);
+        pdcpSdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+        deliverSduToUpperLayer(pdcpSdu);
 
         rxWindowDesc_.rxDeliv_++;
 
         // try to deliver in-order, buffered SDUs, if any
         int pos = 1;
         while (pos < rxWindowDesc_.windowSize_ && received_.at(pos)) {
-            cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(pos));
+            auto *sdu = check_and_cast<Packet *>(sduBuffer_.remove(pos));
             received_.at(pos) = false;
 
             EV << NOW << " NrRxPdcpEntity::handlePdcpSdu - Deliver SDU buffered at index[" << pos << "] to upper layer" << endl;
-            pdcp_->toDataPort(sdu);
+            sdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+            deliverSduToUpperLayer(sdu);
 
             rxWindowDesc_.rxDeliv_++;
             pos++;
@@ -142,16 +150,18 @@ void NrRxPdcpEntity::handleMessage(cMessage *msg)
             int pos = rxWindowDesc_.rxDeliv_ - old;
             if (received_.at(pos) == true) {
                 EV << NOW << " NrRxPdcpEntity::handleMessage - Deliver SDU buffered at index[" << pos << "] to upper layer" << endl;
-                cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(pos));
-                pdcp_->toDataPort(sdu);
+                auto *sdu = check_and_cast<Packet *>(sduBuffer_.remove(pos));
+                sdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+                deliverSduToUpperLayer(sdu);
             }
             rxWindowDesc_.rxDeliv_++;
         }
 
         while (received_.at(rxWindowDesc_.rxDeliv_ - old) == true) {
             EV << NOW << " NrRxPdcpEntity::handleMessage - Deliver SDU buffered at index[" << (rxWindowDesc_.rxDeliv_ - old) << "] to upper layer" << endl;
-            cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(rxWindowDesc_.rxDeliv_ - old));
-            pdcp_->toDataPort(sdu);
+            auto *sdu = check_and_cast<Packet *>(sduBuffer_.remove(rxWindowDesc_.rxDeliv_ - old));
+            sdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+            deliverSduToUpperLayer(sdu);
 
             rxWindowDesc_.rxDeliv_++;
             if (rxWindowDesc_.rxDeliv_ == rxWindowDesc_.rxNext_)

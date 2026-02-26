@@ -32,7 +32,15 @@ class LtePdcp;
  */
 class NrTxPdcpEntity : public LteTxPdcpEntity
 {
+    static simsignal_t pdcpSduSentNrSignal_;
+
   protected:
+
+    // Dual Connectivity support
+    bool dualConnectivityEnabled_ = false;
+
+    // NR node ID (for UEs with dual connectivity)
+    MacNodeId nrNodeId_ = NODEID_NONE;
 
     // deliver the PDCP PDU to the lower layer or to the X2
     void deliverPdcpPdu(Packet *pkt) override;

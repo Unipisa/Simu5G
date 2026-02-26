@@ -48,8 +48,6 @@ LtePdcp::~LtePdcp()
 
 void LtePdcp::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
-
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
@@ -111,8 +109,6 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
             return;
         }
     }
-
-    emit(receivedPacketFromLowerLayerSignal_, pkt);
 
     ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
 
@@ -178,22 +174,14 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
     entity->handlePacketFromLowerLayer(pkt);
 }
 
-void LtePdcp::toDataPort(cPacket *pktAux)
+void LtePdcp::sendToUpperLayer(Packet *pkt)
 {
-    Enter_Method_Silent("LtePdcp::toDataPort");
-
-    auto pkt = check_and_cast<Packet *>(pktAux);
+    Enter_Method_Silent("sendToUpperLayer");
     take(pkt);
 
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port upperLayerOut\n";
 
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port upperLayerOut\n";
-
-    // Send message
     send(pkt, upperLayerOutGate_);
-    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 /*
@@ -233,6 +221,36 @@ void LtePdcp::sendToLowerLayer(Packet *pkt)
     // Send message
     send(pkt, rlcOutGate_);
     emit(sentPacketToLowerLayerSignal_, pkt);
+}
+
+void LtePdcp::sendToRlc(Packet *pkt)
+{
+    Enter_Method_Silent("sendToRlc");
+    take(pkt);
+
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
+
+    send(pkt, rlcOutGate_);
+}
+
+void LtePdcp::sendToNrRlc(Packet *pkt)
+{
+    Enter_Method_Silent("sendToNrRlc");
+    take(pkt);
+
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
+
+    send(pkt, nrRlcOutGate_);
+}
+
+void LtePdcp::sendToX2(Packet *pkt)
+{
+    Enter_Method_Silent("sendToX2");
+    take(pkt);
+
+    EV << NOW << " LtePdcp::sendToX2 - Send PDCP packet via X2" << endl;
+
+    send(pkt, "dcManagerOut");
 }
 
 /*
@@ -359,7 +377,13 @@ LteTxPdcpEntity *LtePdcp::createTxEntity(DrbKey id)
 {
     std::stringstream buf;
     buf << "tx-" << id.getNodeId() << "-" << id.getDrbId();
-    LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
+    auto *module = txEntityModuleType_->create(buf.str().c_str(), this);
+    module->par("headerCompressedSize") = par("headerCompressedSize");
+    module->finalizeParameters();
+    module->buildInside();
+    module->scheduleStart(simTime());
+    module->callInitialize();
+    LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(module);
     txEntities_[id] = txEnt;
 
     EV << "LtePdcp::createTxEntity - Added new TxPdcpEntity for " << id << "\n";
@@ -378,7 +402,13 @@ LteRxPdcpEntity *LtePdcp::createRxEntity(DrbKey id)
 {
     std::stringstream buf;
     buf << "rx-" << id.getNodeId() << "-" << id.getDrbId();
-    LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
+    auto *module = rxEntityModuleType_->create(buf.str().c_str(), this);
+    module->par("headerCompressedSize") = par("headerCompressedSize");
+    module->finalizeParameters();
+    module->buildInside();
+    module->scheduleStart(simTime());
+    module->callInitialize();
+    LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(module);
     rxEntities_[id] = rxEnt;
 
     EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for " << id << "\n";

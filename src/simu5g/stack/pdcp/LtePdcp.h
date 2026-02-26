@@ -58,12 +58,6 @@ class LteRxPdcpEntity;
  */
 class LtePdcp : public cSimpleModule
 {
-    friend class LteTxPdcpEntity;
-    friend class LteRxPdcpEntity;
-    friend class NrTxPdcpEntity;
-    friend class NrRxPdcpEntity;
-    friend class DualConnectivityManager;
-
   protected:
     // Modules references
     inet::ModuleRefByPar<Binder> binder_;
@@ -229,16 +223,6 @@ class LtePdcp : public cSimpleModule
      */
     virtual void fromLowerLayer(cPacket *pkt);
 
-    /**
-     * toDataPort() performs the following steps:
-     * - decompresses the header, restoring the original packet
-     * - decapsulates the packet
-     * - sends the PDCP SDU to the IP layer
-     *
-     * @param pkt incoming packet
-     */
-    virtual void toDataPort(cPacket *pkt);
-
     /*
      * Forwarding Handlers
      */
@@ -247,6 +231,16 @@ class LtePdcp : public cSimpleModule
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
      */
     virtual void sendToLowerLayer(inet::Packet *pkt);
+
+  public:
+    /*
+     * Thin wrappers for entities to send packets via root module gates.
+     * These are pure take+send operations; signal emissions are done by entities.
+     */
+    void sendToUpperLayer(inet::Packet *pkt);
+    void sendToRlc(inet::Packet *pkt);
+    void sendToNrRlc(inet::Packet *pkt);
+    void sendToX2(inet::Packet *pkt);
 
 
 };

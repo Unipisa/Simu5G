@@ -13,8 +13,11 @@
 #ifndef _LTE_LTETXPDCPENTITY_H_
 #define _LTE_LTETXPDCPENTITY_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
@@ -40,8 +43,17 @@ using namespace inet;
 class LteTxPdcpEntity : public cSimpleModule
 {
   protected:
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
+    static simsignal_t pdcpSduSentSignal_;
     // reference to the PDCP layer
     LtePdcp *pdcp_ = nullptr;
+
+    // Modules references
+    inet::ModuleRefByPar<Binder> binder_;
+
+    // Identifier for this node
+    MacNodeId nodeId_;
 
     // Header size after ROHC (RObust Header Compression)
     inet::B headerCompressedSize_;

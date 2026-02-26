@@ -12,46 +12,85 @@
 
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
 Define_Module(NrTxPdcpEntity);
 
+simsignal_t NrTxPdcpEntity::pdcpSduSentNrSignal_ = registerSignal("pdcpSduSentNr");
+
 
 void NrTxPdcpEntity::initialize(int stage)
 {
     LteTxPdcpEntity::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL) {
+        inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
+
+        if (getNodeTypeById(nodeId_) == UE) {
+            nrNodeId_ = MacNodeId(getContainingNode(this)->par("nrMacNodeId").intValue());
+        }
+    }
 }
 
 void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
 {
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
-    if (getNodeTypeById(pdcp_->nodeId_) == UE) {
-        EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to lower layer" << endl;
-        LteTxPdcpEntity::deliverPdcpPdu(pkt);
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    if (getNodeTypeById(nodeId_) == UE) {
+        // NR UE: route to NR or LTE RLC depending on DC and useNR flag
+        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
+        if (!dualConnectivityEnabled_ || useNR) {
+            EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to NR RLC" << endl;
+            lteInfo->setSourceId(nrNodeId_);
+            if (hasListeners(pdcpSduSentNrSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+                emit(pdcpSduSentNrSignal_, pkt);
+            }
+            emit(sentPacketToLowerLayerSignal_, pkt);
+            pdcp_->sendToNrRlc(pkt);
+        }
+        else {
+            EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to LTE RLC" << endl;
+            if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+                emit(pdcpSduSentSignal_, pkt);
+            }
+            emit(sentPacketToLowerLayerSignal_, pkt);
+            pdcp_->sendToRlc(pkt);
+        }
     }
     else { // ENODEB
         MacNodeId destId = lteInfo->getDestId();
         if (getNodeTypeById(destId) != UE)
             throw cRuntimeError("NrTxPdcpEntity::deliverPdcpPdu - destination must be a UE");
 
-        if (!pdcp_->isDualConnectivityEnabled()) {
+        if (!dualConnectivityEnabled_) {
             EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - the destination is a UE. Sending packet to lower layer" << endl;
-            LteTxPdcpEntity::deliverPdcpPdu(pkt);
+            if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+                emit(pdcpSduSentSignal_, pkt);
+            }
+            emit(sentPacketToLowerLayerSignal_, pkt);
+            pdcp_->sendToRlc(pkt);
         }
         else {
             bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
 
             if (!useNR) {
                 EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] useNR[" << useNR << "] - the destination is a UE. Sending packet to lower layer." << endl;
-                LteTxPdcpEntity::deliverPdcpPdu(pkt);
+                if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
+                    emit(pdcpSduSentSignal_, pkt);
+                }
+                emit(sentPacketToLowerLayerSignal_, pkt);
+                pdcp_->sendToRlc(pkt);
             }
             else { // useNR
                 EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - the destination is under the control of a secondary node" << endl;
-                MacNodeId secondaryNodeId = pdcp_->binder_->getSecondaryNode(pdcp_->nodeId_);
+                MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
                 ASSERT(secondaryNodeId != NODEID_NONE);
-                ASSERT(secondaryNodeId != pdcp_->nodeId_);
-                pdcp_->forwardDataToTargetNode(pkt, secondaryNodeId);
+                ASSERT(secondaryNodeId != nodeId_);
+                auto tag = pkt->addTagIfAbsent<X2TargetReq>();
+                tag->setTargetNode(secondaryNodeId);
+                pdcp_->sendToX2(pkt);
             }
         }
     }

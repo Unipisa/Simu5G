@@ -23,5 +23,10 @@ simple LteTxPdcpEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        @signal[receivedPacketFromUpperLayer];
+        @signal[sentPacketToLowerLayer];
+        @signal[pdcpSduSent];
+        string binderModule = default("binder");
+        int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
 }
 
