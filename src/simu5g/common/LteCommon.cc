@@ -314,6 +314,35 @@ const std::string planeToA(Plane p)
     }
 }
 
+/*
+ * Obtain the DrbKey for TX context (key by destination, i.e. remote receiver)
+ */
+DrbKey ctrlInfoToTxDrbKey(const FlowControlInfo *info)
+{
+    if (info->getDirection() == D2D_MULTI) {
+        ASSERT(info->getMulticastGroupId() != NODEID_NONE);
+        return DrbKey(info->getMulticastGroupId(), info->getDrbId());
+    }
+    return DrbKey(info->getDestId(), info->getDrbId());
+}
+
+/*
+ * Obtain the DrbKey for RX context (key by source, i.e. remote sender).
+ *
+ * For D2D_MULTI, we use sourceId (not multicastGroupId) because multiple
+ * senders can relay to the same multicast group, and each needs its own
+ * RX buffer. Using multicastGroupId would cause key collisions across
+ * senders. In theory, (sourceId, drbId) could collide if the same sender
+ * participates in multiple multicast groups that share the same drbId,
+ * but in practice each group uses a distinct drbId so this does not occur.
+ * A fully correct solution would require extending DrbKey to three fields
+ * (sourceId, multicastGroupId, drbId).
+ */
+DrbKey ctrlInfoToRxDrbKey(const FlowControlInfo *info)
+{
+    return DrbKey(info->getSourceId(), info->getDrbId());
+}
+
 const std::string DeploymentScenarioToA(DeploymentScenario type)
 {
     const char * str = omnetpp::cEnum::get("simu5g::DeploymentScenario")->getStringFor((intval_t)type);
@@ -330,14 +359,6 @@ bool isMulticastConnection(FlowControlInfo *lteInfo)
     return lteInfo->getMulticastGroupId() != NODEID_NONE;
 }
 
-
-/*
- * Obtain the DrbKey from the Control Info
- */
-DrbKey ctrlInfoToDrbKey(const FlowControlInfo *info)
-{
-    return DrbKey(ctrlInfoToUeId(info), info->getDrbId());
-}
 
 /*
  * Obtain the MacNodeId of a UE from packet control info

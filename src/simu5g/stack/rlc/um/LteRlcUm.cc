@@ -112,7 +112,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
 
-    DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
+    DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
     UmTxEntity *txbuf = lookupTxBuffer(id);
     ASSERT(txbuf != nullptr);
 
@@ -164,7 +164,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
-        DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
+        DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
         UmTxEntity *txbuf = lookupTxBuffer(id);
         ASSERT(txbuf != nullptr);
 
@@ -182,8 +182,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         emit(receivedPacketFromLowerLayerSignal_, pkt);
 
         // Extract information from fragment
-        MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-        DrbKey id = DrbKey(nodeId, lteInfo->getDrbId());
+        DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
         UmRxEntity *rxbuf = lookupRxBuffer(id);
         ASSERT(rxbuf != nullptr);
         drop(pkt);

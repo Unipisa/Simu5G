@@ -407,7 +407,8 @@ char *cStringToLower(char *str);
 LteRlcType aToRlcType(std::string s);
 const std::string planeToA(Plane p);
 MacNodeId ctrlInfoToUeId(const FlowControlInfo *info);
-DrbKey ctrlInfoToDrbKey(const FlowControlInfo *info);  // get the DrbKey from the packet control info
+DrbKey ctrlInfoToTxDrbKey(const FlowControlInfo *info); // DrbKey for TX context: key by dest (remote receiver)
+DrbKey ctrlInfoToRxDrbKey(const FlowControlInfo *info); // DrbKey for RX context: key by source (remote sender)
 const std::string DeploymentScenarioToA(DeploymentScenario type);
 DeploymentScenario aToDeploymentScenario(std::string s);
 bool isMulticastConnection(FlowControlInfo *lteInfo);

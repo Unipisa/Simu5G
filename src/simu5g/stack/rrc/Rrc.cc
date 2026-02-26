@@ -197,8 +197,7 @@ void Rrc::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     mac->createIncomingConnection(cid, desc);
 
     // RLC: only UM works
-    MacNodeId nodeIdForRlc = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-    DrbKey rlcId = DrbKey(nodeIdForRlc, lteInfo->getDrbId());
+    DrbKey rlcId = ctrlInfoToRxDrbKey(lteInfo);
     auto rlcUm = (nodeType==UE && isNrUe(lteInfo->getDestId())) ? nrRlcUmModule.get() : rlcUmModule.get(); //TODO FIXME! DOES NOT WORK FOR MULTICAST!!!!!
     rlcUm->createRxBuffer(rlcId, lteInfo);
 
@@ -229,7 +228,7 @@ void Rrc::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     mac->createOutgoingConnection(cid, desc);
 
     // RLC: only UM works
-    DrbKey rlcId = ctrlInfoToDrbKey(lteInfo);
+    DrbKey rlcId = ctrlInfoToTxDrbKey(lteInfo);
     auto rlcUm = (nodeType==UE && isNrUe(lteInfo->getSourceId())) ? nrRlcUmModule.get() : rlcUmModule.get();
     rlcUm->createTxBuffer(rlcId, lteInfo);
 

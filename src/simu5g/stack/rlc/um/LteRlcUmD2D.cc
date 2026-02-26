@@ -51,7 +51,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
         if (switchPkt->getTxSide()) {
             // get the corresponding Tx buffer & call handler
-            DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
+            DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
             UmTxEntity *txbuf = lookupTxBuffer(id);
             if (txbuf == nullptr)
                 txbuf = createTxBuffer(id, lteInfo.get());
@@ -63,8 +63,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
         }
         else { // rx side
             // get the corresponding Rx buffer & call handler
-            MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-            DrbKey id = DrbKey(nodeId, lteInfo->getDrbId());
+            DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
             UmRxEntity *rxbuf = lookupRxBuffer(id);
             if (rxbuf == nullptr)
                 rxbuf = createRxBuffer(id, lteInfo.get());
