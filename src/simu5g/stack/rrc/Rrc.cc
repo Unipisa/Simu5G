@@ -21,6 +21,8 @@
 
 namespace simu5g {
 
+using namespace inet;
+
 Define_Module(Rrc);
 
 void Rrc::initialize(int stage)
@@ -201,10 +203,14 @@ void Rrc::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     auto rlcUm = (nodeType==UE && isNrUe(lteInfo->getDestId())) ? nrRlcUmModule.get() : rlcUmModule.get(); //TODO FIXME! DOES NOT WORK FOR MULTICAST!!!!!
     rlcUm->createRxBuffer(rlcId, lteInfo);
 
-    // PDCP is not needed on Secondary nodes
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
         pdcpModule->createRxEntity(id);
+    }
+    else {
+        // DC secondary node: create bypass RX entity (forwards UL to master via X2)
+        DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
+        pdcpModule->createBypassRxEntity(id);
     }
 }
 
@@ -232,10 +238,14 @@ void Rrc::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     auto rlcUm = (nodeType==UE && isNrUe(lteInfo->getSourceId())) ? nrRlcUmModule.get() : rlcUmModule.get();
     rlcUm->createTxBuffer(rlcId, lteInfo);
 
-    // PDCP is not needed on Secondary nodes
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
         pdcpModule->createTxEntity(id);
+    }
+    else {
+        // DC secondary node: create bypass TX entity (forwards DL from master to RLC)
+        DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
+        pdcpModule->createBypassTxEntity(id);
     }
 }
 

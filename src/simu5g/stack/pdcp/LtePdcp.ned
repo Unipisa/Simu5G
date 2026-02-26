@@ -27,6 +27,8 @@ simple LtePdcp like ILtePdcp
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
         string rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
         string txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
+        string bypassRxEntityModuleType = default("simu5g.stack.pdcp.BypassRxPdcpEntity");
+        string bypassTxEntityModuleType = default("simu5g.stack.pdcp.BypassTxPdcpEntity");
         bool isNR = default(false);           // true for NR PDCP variants (NrPdcpEnb, NrPdcpUe)
         bool hasD2DSupport = default(false);  // true for D2D-capable variants
 

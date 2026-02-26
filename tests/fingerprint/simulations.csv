@@ -111,7 +111,7 @@
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-DL -r 0,            5s,         2eff-8836/tplx;866f-cb9e/tilx;b7f4-9c95/~tNl;414f-e927/sz, PASS,
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-UL -r 0,            5s,         28cd-10fb/tplx;3fd3-1dee/tilx;de85-58ec/~tNl;fb4b-da81/sz, PASS,
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c MultiCell-CBR-DL -r 0,                5s,         aaf0-87ba/tplx;ea3c-cf23/tilx;a5bf-e85c/~tNl;5a56-8fc1/sz, PASS,
-/simulations/nr/test_numerology/,        -f omnetpp.ini -c MultiCell-CBR-UL -r 0,                5s,         2eb6-4097/tplx;5061-1302/tilx;5faf-816a/~tNl;770a-57d8/sz, PASS,
+/simulations/nr/test_numerology/,        -f omnetpp.ini -c MultiCell-CBR-UL -r 0,                5s,         2eb6-4097/tplx;c666-6b3d/tilx;5faf-816a/~tNl;770a-57d8/sz, PASS,
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-DL -r 0,               5s,         2698-02f2/tplx;1b8c-d1cb/tilx;08e6-2564/~tNl;53b6-147a/sz, PASS,
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-UL -r 0,               5s,         6eb5-2495/tplx;c2e5-a2ee/tilx;e2aa-be0e/~tNl;6ae2-90fd/sz, PASS,
 /simulations/nr/test_tdd/,               -f omnetpp.ini -c TestTdd -r 0,                         5s,         0aae-412a/tplx;bcd1-2d6b/tilx;9d02-1496/~tNl;55c8-1285/sz, PASS,

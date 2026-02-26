@@ -81,6 +81,8 @@ class LtePdcp : public cSimpleModule
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;
+    cModuleType *bypassRxEntityModuleType_ = nullptr;
+    cModuleType *bypassTxEntityModuleType_ = nullptr;
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
@@ -136,6 +138,16 @@ class LtePdcp : public cSimpleModule
      * @return pointer to the newly created RX PDCP entity
      */
     virtual PdcpRxEntityBase *createRxEntity(DrbKey id);
+
+    /**
+     * createBypassTxEntity() creates a bypass TX entity for DC secondary nodes.
+     */
+    virtual PdcpTxEntityBase *createBypassTxEntity(DrbKey id);
+
+    /**
+     * createBypassRxEntity() creates a bypass RX entity for DC secondary nodes.
+     */
+    virtual PdcpRxEntityBase *createBypassRxEntity(DrbKey id);
 
   protected:
     /*

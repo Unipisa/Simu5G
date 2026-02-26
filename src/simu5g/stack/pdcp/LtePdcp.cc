@@ -275,6 +275,12 @@ void LtePdcp::initialize(int stage)
         const char *txEntityModuleTypeName = par("txEntityModuleType").stringValue();
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
 
+        const char *bypassRxEntityModuleTypeName = par("bypassRxEntityModuleType").stringValue();
+        bypassRxEntityModuleType_ = cModuleType::get(bypassRxEntityModuleTypeName);
+
+        const char *bypassTxEntityModuleTypeName = par("bypassTxEntityModuleType").stringValue();
+        bypassTxEntityModuleType_ = cModuleType::get(bypassTxEntityModuleTypeName);
+
         // Set flags from NED parameters
         isNR_ = par("isNR").boolValue();
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
@@ -412,6 +418,42 @@ PdcpRxEntityBase *LtePdcp::createRxEntity(DrbKey id)
     rxEntities_[id] = rxEnt;
 
     EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for " << id << "\n";
+
+    return rxEnt;
+}
+
+PdcpTxEntityBase *LtePdcp::createBypassTxEntity(DrbKey id)
+{
+    std::stringstream buf;
+    buf << "bypass-tx-" << id.getNodeId() << "-" << id.getDrbId();
+    auto *module = bypassTxEntityModuleType_->create(buf.str().c_str(), this);
+    module->par("headerCompressedSize") = par("headerCompressedSize");
+    module->finalizeParameters();
+    module->buildInside();
+    module->scheduleStart(simTime());
+    module->callInitialize();
+    PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
+    txEntities_[id] = txEnt;
+
+    EV << "LtePdcp::createBypassTxEntity - Added new BypassTxPdcpEntity for " << id << "\n";
+
+    return txEnt;
+}
+
+PdcpRxEntityBase *LtePdcp::createBypassRxEntity(DrbKey id)
+{
+    std::stringstream buf;
+    buf << "bypass-rx-" << id.getNodeId() << "-" << id.getDrbId();
+    auto *module = bypassRxEntityModuleType_->create(buf.str().c_str(), this);
+    module->par("headerCompressedSize") = par("headerCompressedSize");
+    module->finalizeParameters();
+    module->buildInside();
+    module->scheduleStart(simTime());
+    module->callInitialize();
+    PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
+    rxEntities_[id] = rxEnt;
+
+    EV << "LtePdcp::createBypassRxEntity - Added new BypassRxPdcpEntity for " << id << "\n";
 
     return rxEnt;
 }
