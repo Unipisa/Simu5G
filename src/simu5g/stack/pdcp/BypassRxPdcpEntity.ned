@@ -22,4 +22,8 @@ simple BypassRxPdcpEntity
         @dynamic(true);
         @display("i=block/segm");
         string binderModule = default("binder");
+
+    gates:
+        input in;
+        output out;
 }

@@ -28,6 +28,9 @@ namespace simu5g {
  */
 class PdcpTxEntityBase : public omnetpp::cSimpleModule
 {
+  protected:
+    void handleMessage(omnetpp::cMessage *msg) override;
+
   public:
     virtual void handlePacketFromUpperLayer(inet::Packet *pkt) = 0;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }

@@ -24,4 +24,8 @@ simple BypassTxPdcpEntity
         @signal[sentPacketToLowerLayer];
         @signal[pdcpSduSent];
         string binderModule = default("binder");
+
+    gates:
+        input in;
+        output out;
 }

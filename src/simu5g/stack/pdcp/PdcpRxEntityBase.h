@@ -28,6 +28,9 @@ namespace simu5g {
  */
 class PdcpRxEntityBase : public omnetpp::cSimpleModule
 {
+  protected:
+    void handleMessage(omnetpp::cMessage *msg) override;
+
   public:
     virtual void handlePacketFromLowerLayer(inet::Packet *pkt) = 0;
     virtual bool isEmpty() const { return true; }

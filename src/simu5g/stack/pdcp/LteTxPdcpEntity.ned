@@ -28,5 +28,9 @@ simple LteTxPdcpEntity
         @signal[pdcpSduSent];
         string binderModule = default("binder");
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
+
+    gates:
+        input in;
+        output out;
 }
 
