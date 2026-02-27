@@ -28,8 +28,6 @@ void BypassRxPdcpEntity::initialize(int stage)
 
 void BypassRxPdcpEntity::handlePacketFromLowerLayer(inet::Packet *pkt)
 {
-    take(pkt);
-
     // DC bypass: forward PDCP PDU to the master node via X2
     // without any PDCP processing (no header removal, no decompression).
     pkt->trim();

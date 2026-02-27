@@ -138,6 +138,11 @@ void NrRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
 
 void NrRxPdcpEntity::handleMessage(cMessage *msg)
 {
+    if (!msg->isSelfMessage()) {
+        // Packet from gate — delegate to base class handler
+        PdcpRxEntityBase::handleMessage(msg);
+        return;
+    }
     if (msg->isName("timer")) {
         t_reordering_.handle();
 

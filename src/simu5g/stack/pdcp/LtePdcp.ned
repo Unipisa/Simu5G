@@ -66,5 +66,8 @@ simple LtePdcp like ILtePdcp
         output nrRlcOut @loose;    // to NR RLC layer (for Dual Connectivity UE)
         input dcManagerIn @loose;  // from Dual Connectivity Manager (for NR eNB)
         output dcManagerOut @loose;// to Dual Connectivity Manager (for NR eNB)
+
+        output toTxEntity[];       // dynamic: dispatches to TX entity in gates
+        output toRxEntity[];       // dynamic: dispatches to RX entity in gates
 }
 
