@@ -69,5 +69,7 @@ simple LtePdcp like ILtePdcp
 
         output toTxEntity[];       // dynamic: dispatches to TX entity in gates
         output toRxEntity[];       // dynamic: dispatches to RX entity in gates
+        input fromTxEntity[];      // dynamic: receives from TX entity out gates
+        input fromRxEntity[];      // dynamic: receives from RX entity out gates
 }
 

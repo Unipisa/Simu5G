@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/pdcp/BypassRxPdcpEntity.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 
 namespace simu5g {
 
@@ -46,7 +47,8 @@ void BypassRxPdcpEntity::handlePacketFromLowerLayer(inet::Packet *pkt)
     auto tag = pkt->addTagIfAbsent<X2TargetReq>();
     tag->setTargetNode(masterId);
 
-    pdcp_->sendToX2(pkt);
+    pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_X2);
+    send(pkt, "out");
 }
 
 } // namespace simu5g

@@ -22,6 +22,7 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 
 namespace simu5g {
 
@@ -223,6 +224,39 @@ void PdcpMux::handleMessage(cMessage *msg)
     if (incoming == upperLayerInGate_) {
         fromDataPort(pkt);
     }
+    else if (incoming->isName("fromTxEntity")) {
+        // Packet from a TX entity — route based on PdcpOutputRoutingTag
+        auto inetPkt = check_and_cast<Packet *>(pkt);
+        auto routeTag = inetPkt->removeTag<PdcpOutputRoutingTag>();
+        switch (routeTag->getRoute()) {
+            case PDCP_OUT_RLC:
+                send(pkt, rlcOutGate_);
+                break;
+            case PDCP_OUT_NR_RLC:
+                send(pkt, nrRlcOutGate_);
+                break;
+            case PDCP_OUT_X2:
+                send(pkt, "dcManagerOut");
+                break;
+            default:
+                throw cRuntimeError("PdcpMux: unexpected route %d from TX entity", (int)routeTag->getRoute());
+        }
+    }
+    else if (incoming->isName("fromRxEntity")) {
+        // Packet from an RX entity — route based on PdcpOutputRoutingTag
+        auto inetPkt = check_and_cast<Packet *>(pkt);
+        auto routeTag = inetPkt->removeTag<PdcpOutputRoutingTag>();
+        switch (routeTag->getRoute()) {
+            case PDCP_OUT_UPPER:
+                send(pkt, upperLayerOutGate_);
+                break;
+            case PDCP_OUT_X2:
+                send(pkt, "dcManagerOut");
+                break;
+            default:
+                throw cRuntimeError("PdcpMux: unexpected route %d from RX entity", (int)routeTag->getRoute());
+        }
+    }
     else {
         fromLowerLayer(pkt);
     }
@@ -275,6 +309,11 @@ PdcpTxEntityBase *PdcpMux::createTxEntity(DrbKey id)
     setGateSize("toTxEntity", idx + 1);
     gate("toTxEntity", idx)->connectTo(module->gate("in"));
 
+    // Wire entity output gate back to mux input gate
+    int fromIdx = gateSize("fromTxEntity");
+    setGateSize("fromTxEntity", fromIdx + 1);
+    module->gate("out")->connectTo(gate("fromTxEntity", fromIdx));
+
     module->scheduleStart(simTime());
     module->callInitialize();
     PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
@@ -306,6 +345,11 @@ PdcpRxEntityBase *PdcpMux::createRxEntity(DrbKey id)
     setGateSize("toRxEntity", idx + 1);
     gate("toRxEntity", idx)->connectTo(module->gate("in"));
 
+    // Wire entity output gate back to mux input gate
+    int fromIdx = gateSize("fromRxEntity");
+    setGateSize("fromRxEntity", fromIdx + 1);
+    module->gate("out")->connectTo(gate("fromRxEntity", fromIdx));
+
     module->scheduleStart(simTime());
     module->callInitialize();
     PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
@@ -329,6 +373,11 @@ PdcpTxEntityBase *PdcpMux::createBypassTxEntity(DrbKey id)
     setGateSize("toTxEntity", idx + 1);
     gate("toTxEntity", idx)->connectTo(module->gate("in"));
 
+    // Wire entity output gate back to mux input gate
+    int fromIdx = gateSize("fromTxEntity");
+    setGateSize("fromTxEntity", fromIdx + 1);
+    module->gate("out")->connectTo(gate("fromTxEntity", fromIdx));
+
     module->scheduleStart(simTime());
     module->callInitialize();
     PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
@@ -351,6 +400,11 @@ PdcpRxEntityBase *PdcpMux::createBypassRxEntity(DrbKey id)
     int idx = gateSize("toRxEntity");
     setGateSize("toRxEntity", idx + 1);
     gate("toRxEntity", idx)->connectTo(module->gate("in"));
+
+    // Wire entity output gate back to mux input gate
+    int fromIdx = gateSize("fromRxEntity");
+    setGateSize("fromRxEntity", fromIdx + 1);
+    module->gate("out")->connectTo(gate("fromRxEntity", fromIdx));
 
     module->scheduleStart(simTime());
     module->callInitialize();

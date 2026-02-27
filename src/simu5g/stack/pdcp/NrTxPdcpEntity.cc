@@ -13,6 +13,7 @@
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
@@ -51,7 +52,8 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentNrSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pdcp_->sendToNrRlc(pkt);
+            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_NR_RLC);
+            send(pkt, "out");
         }
         else {
             EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to LTE RLC" << endl;
@@ -59,7 +61,8 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pdcp_->sendToRlc(pkt);
+            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
+            send(pkt, "out");
         }
     }
     else { // ENODEB
@@ -73,7 +76,8 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pdcp_->sendToRlc(pkt);
+            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
+            send(pkt, "out");
         }
         else {
             bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
@@ -84,7 +88,8 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                     emit(pdcpSduSentSignal_, pkt);
                 }
                 emit(sentPacketToLowerLayerSignal_, pkt);
-                pdcp_->sendToRlc(pkt);
+                pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
+                send(pkt, "out");
             }
             else { // useNR
                 EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - the destination is under the control of a secondary node" << endl;
@@ -100,7 +105,8 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
 
                 auto tag = pkt->addTagIfAbsent<X2TargetReq>();
                 tag->setTargetNode(secondaryNodeId);
-                pdcp_->sendToX2(pkt);
+                pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_X2);
+                send(pkt, "out");
             }
         }
     }
