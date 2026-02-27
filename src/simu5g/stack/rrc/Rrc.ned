@@ -26,7 +26,7 @@ simple Rrc like IRrc
         string binderModule = default("binder");
 
         // Module references for accessing other stack layers
-        string pdcpModule = default("^.pdcp.mux");
+        string pdcpModule = default("^.pdcp.entityManager");
         string rlcUmModule = default("^.rlc.um");
         string nrRlcUmModule = default("^.nrRlc.um");
         string macModule = default("^.mac");

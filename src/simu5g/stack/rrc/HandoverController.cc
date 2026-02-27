@@ -18,7 +18,7 @@
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp/PdcpMux.h"
+#include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/InitStages.h"
@@ -495,7 +495,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     // delete pdcpEntities[nodeId_] at old serving node
     // In case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
     MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(servingNodeId);
-    PdcpMux *masterPdcp = check_and_cast<PdcpMux *>(binder_->getPdcpByNodeId(pdcpNodeId));
+    PdcpEntityManager *masterPdcp = check_and_cast<PdcpEntityManager *>(binder_->getPdcpByNodeId(pdcpNodeId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for serving node at this UE

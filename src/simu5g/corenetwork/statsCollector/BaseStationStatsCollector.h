@@ -21,7 +21,7 @@
 #include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
-#include "simu5g/stack/pdcp/PdcpMux.h"
+#include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/packetFlowObserver/PacketFlowObserverEnb.h"
 
@@ -49,7 +49,7 @@ class BaseStationStatsCollector : public cSimpleModule
     mec::Ecgi ecgi_;
 
     // LTE NIC layers
-    inet::ModuleRefByPar<PdcpMux> pdcp_;
+    inet::ModuleRefByPar<PdcpEntityManager> pdcp_;
     inet::ModuleRefByPar<LteMacEnb> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlc_;
     inet::ModuleRefByPar<PacketFlowObserverEnb> packetFlowObserver_;

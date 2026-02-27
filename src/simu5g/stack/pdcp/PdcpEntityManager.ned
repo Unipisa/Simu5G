@@ -24,10 +24,10 @@ package simu5g.stack.pdcp;
 // lookup) for external callers (RRC, HandoverController, MAC). Delegates to
 // ~UpperMux and ~LowerMux for actual packet handling and entity storage.
 //
-simple LtePdcp
+simple PdcpEntityManager
 {
     parameters:
-        @class("PdcpMux");
+        @class("PdcpEntityManager");
         @display("p=180,150;i=block/cogwheel");
         bool isNR = default(false);
         bool hasD2DSupport = default(false);

@@ -37,7 +37,7 @@
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp/PdcpMux.h"
+#include "simu5g/stack/pdcp/PdcpEntityManager.h"
 
 namespace simu5g {
 
@@ -1025,7 +1025,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
         if (pdcp->par("isNR").boolValue()) {
-            auto *nrPdpc = check_and_cast<PdcpMux *>(pdcp);
+            auto *nrPdpc = check_and_cast<PdcpEntityManager *>(pdcp);
             std::set<MacNodeId> activePdcpUe;
             nrPdpc->activeUeUL(&activePdcpUe);
             for (auto ue: activePdcpUe) {

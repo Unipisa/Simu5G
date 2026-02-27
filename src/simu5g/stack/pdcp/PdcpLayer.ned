@@ -44,7 +44,7 @@ module PdcpLayer like ILtePdcp
         output dcManagerOut @loose;
 
     submodules:
-        mux: LtePdcp {
+        entityManager: PdcpEntityManager {
             isNR = parent.isNR;
             hasD2DSupport = parent.hasD2DSupport;
             @display("p=180,150");

@@ -10,8 +10,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _PDCP_MUX_H_
-#define _PDCP_MUX_H_
+#ifndef _PDCP_ENTITY_MANAGER_H_
+#define _PDCP_ENTITY_MANAGER_H_
 
 #include <set>
 #include "simu5g/common/LteCommon.h"
@@ -27,21 +27,21 @@ class UpperMux;
 class LowerMux;
 
 /**
- * @class PdcpMux
+ * @class PdcpEntityManager
  * @brief Thin facade for PDCP entity management.
  *
  * Provides the public API for entity creation, deletion, and lookup.
  * Delegates to UpperMux (TX entities) and LowerMux (RX + bypass entities)
  * for actual storage and gate wiring. Does not handle packets itself.
  */
-class PdcpMux : public cSimpleModule
+class PdcpEntityManager : public cSimpleModule
 {
   protected:
     UpperMux *upperMux_ = nullptr;
     LowerMux *lowerMux_ = nullptr;
 
   public:
-    ~PdcpMux() override;
+    ~PdcpEntityManager() override;
 
     PdcpTxEntityBase *lookupTxEntity(DrbKey id);
     PdcpTxEntityBase *createTxEntity(DrbKey id);

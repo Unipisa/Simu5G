@@ -22,7 +22,7 @@ using namespace omnetpp;
 namespace simu5g {
 
 class LteMacBase;
-class PdcpMux;
+class PdcpEntityManager;
 class LteRlcUm;
 
 /**
@@ -39,7 +39,7 @@ class Rrc : public cSimpleModule
     opp_component_ptr<inet::NetworkInterface> networkIf;
 
     inet::ModuleRefByPar<Binder> binder;
-    inet::ModuleRefByPar<PdcpMux> pdcpModule;
+    inet::ModuleRefByPar<PdcpEntityManager> pdcpModule;
     inet::ModuleRefByPar<LteRlcUm> rlcUmModule;  // Compound module with TM/UM/AM submodules
     inet::ModuleRefByPar<LteRlcUm> nrRlcUmModule;  // same
     inet::ModuleRefByPar<LteMacBase> macModule;
