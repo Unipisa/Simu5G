@@ -32,6 +32,10 @@ moduleinterface ILtePdcp
         output upperLayerOut;
         input rlcIn;
         output rlcOut;
+        input nrRlcIn @loose;             // from NR RLC layer (for Dual Connectivity UE)
+        output nrRlcOut @loose;            // to NR RLC layer (for Dual Connectivity UE)
+        input dcManagerIn @loose;          // from Dual Connectivity Manager (for NR eNB)
+        output dcManagerOut @loose;        // to Dual Connectivity Manager (for NR eNB)
 }
 
 
