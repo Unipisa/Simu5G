@@ -38,7 +38,8 @@ simsignal_t LteTxPdcpEntity::pdcpSduSentSignal_ = registerSignal("pdcpSduSent");
 
 void LteTxPdcpEntity::initialize(int stage) {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
+        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule());
+        ASSERT(pdcp_ != nullptr);
 
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());

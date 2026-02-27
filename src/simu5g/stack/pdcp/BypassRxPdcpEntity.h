@@ -15,12 +15,11 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
+#include "simu5g/stack/pdcp/IPdcpGateway.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
-
-class LtePdcp;
 
 /**
  * @class BypassRxPdcpEntity
@@ -33,7 +32,7 @@ class LtePdcp;
 class BypassRxPdcpEntity : public PdcpRxEntityBase
 {
   protected:
-    LtePdcp *pdcp_ = nullptr;
+    IPdcpGateway *pdcp_ = nullptr;
     inet::ModuleRefByPar<Binder> binder_;
     MacNodeId nodeId_ = NODEID_NONE;
 

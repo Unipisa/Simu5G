@@ -19,6 +19,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/pdcp/IPdcpGateway.h"
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
 #include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
@@ -56,7 +57,7 @@ class PdcpRxEntityBase;
  * that uniquely identifies a connection in the whole network.
  *
  */
-class LtePdcp : public cSimpleModule
+class LtePdcp : public cSimpleModule, public IPdcpGateway
 {
   protected:
     // Modules references
@@ -231,10 +232,10 @@ class LtePdcp : public cSimpleModule
      * Thin wrappers for entities to send packets via root module gates.
      * These are pure take+send operations; signal emissions are done by entities.
      */
-    void sendToUpperLayer(inet::Packet *pkt);
-    void sendToRlc(inet::Packet *pkt);
-    void sendToNrRlc(inet::Packet *pkt);
-    void sendToX2(inet::Packet *pkt);
+    void sendToUpperLayer(inet::Packet *pkt) override;
+    void sendToRlc(inet::Packet *pkt) override;
+    void sendToNrRlc(inet::Packet *pkt) override;
+    void sendToX2(inet::Packet *pkt) override;
 
 
 };

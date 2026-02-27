@@ -10,7 +10,6 @@
 //
 
 #include "simu5g/stack/pdcp/BypassTxPdcpEntity.h"
-#include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
 namespace simu5g {
@@ -23,7 +22,8 @@ simsignal_t BypassTxPdcpEntity::pdcpSduSentSignal_ = registerSignal("pdcpSduSent
 void BypassTxPdcpEntity::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
+        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule());
+        ASSERT(pdcp_ != nullptr);
     }
 }
 
