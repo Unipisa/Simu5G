@@ -19,57 +19,17 @@ package simu5g.stack.pdcp;
 // to different Radio Link Control (RLC) modes. This module dynamically creates
 // ~LteTxPdcpEntity and ~LteRxPdcpEntity submodules to handle individual transmission/reception connections
 //
-simple LtePdcp like ILtePdcp
+//
+// Thin facade module that provides the entity management API (create, delete,
+// lookup) for external callers (RRC, HandoverController, MAC). Delegates to
+// ~UpperMux and ~LowerMux for actual packet handling and entity storage.
+//
+simple LtePdcp
 {
     parameters:
         @class("PdcpMux");
-        @display("i=block/fork");
-        string binderModule = default("binder");
-        int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
-        string rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
-        string txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
-        string bypassRxEntityModuleType = default("simu5g.stack.pdcp.BypassRxPdcpEntity");
-        string bypassTxEntityModuleType = default("simu5g.stack.pdcp.BypassTxPdcpEntity");
-        bool isNR = default(false);           // true for NR PDCP variants (NrPdcpEnb, NrPdcpUe)
-        bool hasD2DSupport = default(false);  // true for D2D-capable variants
-
-        //# Statistics
-        @signal[receivedPacketFromUpperLayer];
-        @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[receivedPacketFromLowerLayer];
-        @statistic[receivedPacketFromLowerLayer](source="receivedPacketFromLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[sentPacketToUpperLayer];
-        @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[sentPacketToLowerLayer];
-        @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[pdcpSduSent];
-        @signal[pdcpSduSentNr];
-        @signal[pdcpSduReceived];
-    gates:
-        //#
-        //# Gates connecting UE/eNB and PDCP/RRC Layer
-        //#
-        //# Data Ports
-
-        input upperLayerIn;        // Port to receive data packets from upper layer
-        output upperLayerOut;      // Port to send data packets to upper layer
-
-        //#
-        //# Gates connecting PDCP/RRC and RLC Layer
-        //#
-        //# Data Ports
-
-        input rlcIn;               // from RLC layer
-        output rlcOut;             // to RLC layer
-
-        input nrRlcIn @loose;      // from NR RLC layer (for Dual Connectivity UE)
-        output nrRlcOut @loose;    // to NR RLC layer (for Dual Connectivity UE)
-        input dcManagerIn @loose;  // from Dual Connectivity Manager (for NR eNB)
-        output dcManagerOut @loose;// to Dual Connectivity Manager (for NR eNB)
-
-        output toTxEntity[];       // dynamic: dispatches to TX entity in gates
-        output toRxEntity[];       // dynamic: dispatches to RX entity in gates
-        input fromTxEntity[];      // dynamic: receives from TX entity out gates
-        input fromRxEntity[];      // dynamic: receives from RX entity out gates
+        @display("p=180,150;i=block/cogwheel");
+        bool isNR = default(false);
+        bool hasD2DSupport = default(false);
 }
 

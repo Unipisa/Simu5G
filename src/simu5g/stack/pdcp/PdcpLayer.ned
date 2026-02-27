@@ -45,24 +45,28 @@ module PdcpLayer like ILtePdcp
 
     submodules:
         mux: LtePdcp {
-            headerCompressedSize = parent.headerCompressedSize;
-            binderModule = parent.binderModule;
-            rxEntityModuleType = parent.rxEntityModuleType;
-            txEntityModuleType = parent.txEntityModuleType;
-            bypassRxEntityModuleType = parent.bypassRxEntityModuleType;
-            bypassTxEntityModuleType = parent.bypassTxEntityModuleType;
             isNR = parent.isNR;
             hasD2DSupport = parent.hasD2DSupport;
-            @display("p=100,100");
+            @display("p=180,150");
+        }
+        upperMux: UpperMux {
+            binderModule = parent.binderModule;
+            @display("p=80,80");
+        }
+        lowerMux: LowerMux {
+            binderModule = parent.binderModule;
+            isNR = parent.isNR;
+            hasD2DSupport = parent.hasD2DSupport;
+            @display("p=80,220");
         }
 
     connections allowunconnected:
-        upperLayerIn --> mux.upperLayerIn;
-        mux.upperLayerOut --> upperLayerOut;
-        rlcIn --> mux.rlcIn;
-        mux.rlcOut --> rlcOut;
-        nrRlcIn --> mux.nrRlcIn if mux.isNR;
-        mux.nrRlcOut --> nrRlcOut if mux.isNR;
-        dcManagerIn --> mux.dcManagerIn if mux.isNR;
-        mux.dcManagerOut --> dcManagerOut if mux.isNR;
+        upperLayerIn --> upperMux.upperLayerIn;
+        upperMux.upperLayerOut --> upperLayerOut;
+        rlcIn --> lowerMux.rlcIn;
+        lowerMux.rlcOut --> rlcOut;
+        nrRlcIn --> lowerMux.nrRlcIn if lowerMux.isNR;
+        lowerMux.nrRlcOut --> nrRlcOut if lowerMux.isNR;
+        dcManagerIn --> lowerMux.dcManagerIn if lowerMux.isNR;
+        lowerMux.dcManagerOut --> dcManagerOut if lowerMux.isNR;
 }
