@@ -38,7 +38,7 @@ simsignal_t LteTxPdcpEntity::pdcpSduSentSignal_ = registerSignal("pdcpSduSent");
 
 void LteTxPdcpEntity::initialize(int stage) {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule());
+        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule()->getSubmodule("mux"));
         ASSERT(pdcp_ != nullptr);
 
         binder_.reference(this, "binderModule", true);
