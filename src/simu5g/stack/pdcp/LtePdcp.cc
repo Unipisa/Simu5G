@@ -377,7 +377,6 @@ PdcpTxEntityBase *LtePdcp::createBypassTxEntity(DrbKey id)
     std::stringstream buf;
     buf << "bypass-tx-" << id.getNodeId() << "-" << id.getDrbId();
     auto *module = bypassTxEntityModuleType_->create(buf.str().c_str(), this);
-    module->par("headerCompressedSize") = par("headerCompressedSize");
     module->finalizeParameters();
     module->buildInside();
     module->scheduleStart(simTime());
@@ -395,7 +394,6 @@ PdcpRxEntityBase *LtePdcp::createBypassRxEntity(DrbKey id)
     std::stringstream buf;
     buf << "bypass-rx-" << id.getNodeId() << "-" << id.getDrbId();
     auto *module = bypassRxEntityModuleType_->create(buf.str().c_str(), this);
-    module->par("headerCompressedSize") = par("headerCompressedSize");
     module->finalizeParameters();
     module->buildInside();
     module->scheduleStart(simTime());

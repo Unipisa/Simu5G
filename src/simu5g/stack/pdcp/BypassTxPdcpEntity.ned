@@ -24,5 +24,4 @@ simple BypassTxPdcpEntity
         @signal[sentPacketToLowerLayer];
         @signal[pdcpSduSent];
         string binderModule = default("binder");
-        int headerCompressedSize @unit(B) = default(-1B);    // unused, present for factory compatibility
 }

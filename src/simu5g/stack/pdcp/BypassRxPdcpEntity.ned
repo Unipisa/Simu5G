@@ -22,5 +22,4 @@ simple BypassRxPdcpEntity
         @dynamic(true);
         @display("i=block/segm");
         string binderModule = default("binder");
-        int headerCompressedSize @unit(B) = default(-1B);    // unused, present for factory compatibility
 }
