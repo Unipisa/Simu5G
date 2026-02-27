@@ -97,13 +97,6 @@ class LtePdcp : public cSimpleModule
     PdcpTxEntities txEntities_;
     PdcpRxEntities rxEntities_;
 
-    // statistics
-    static simsignal_t receivedPacketFromUpperLayerSignal_;
-    static simsignal_t receivedPacketFromLowerLayerSignal_;
-    static simsignal_t sentPacketToUpperLayerSignal_;
-    static simsignal_t sentPacketToLowerLayerSignal_;
-    static simsignal_t pdcpSduSentSignal_;
-    static simsignal_t pdcpSduSentNrSignal_;
 
   public:
 
@@ -154,8 +147,6 @@ class LtePdcp : public cSimpleModule
      * Dual Connectivity support
      */
     bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
-
-    void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode);
 
     void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode);
 
@@ -234,15 +225,6 @@ class LtePdcp : public cSimpleModule
      * @param pkt incoming packet
      */
     virtual void fromLowerLayer(cPacket *pkt);
-
-    /*
-     * Forwarding Handlers
-     */
-
-    /*
-     * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
-     */
-    virtual void sendToLowerLayer(inet::Packet *pkt);
 
   public:
     /*

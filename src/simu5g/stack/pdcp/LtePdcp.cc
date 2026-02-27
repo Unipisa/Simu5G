@@ -30,13 +30,6 @@ Define_Module(LtePdcp);
 using namespace omnetpp;
 using namespace inet;
 
-// statistics
-simsignal_t LtePdcp::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LtePdcp::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LtePdcp::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
-simsignal_t LtePdcp::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
-simsignal_t LtePdcp::pdcpSduSentSignal_ = registerSignal("pdcpSduSent");
-simsignal_t LtePdcp::pdcpSduSentNrSignal_ = registerSignal("pdcpSduSentNr");
 
 LtePdcp::~LtePdcp()
 {
@@ -178,45 +171,6 @@ void LtePdcp::sendToUpperLayer(Packet *pkt)
     send(pkt, upperLayerOutGate_);
 }
 
-/*
- * Forwarding Handlers
- */
-
-void LtePdcp::sendToLowerLayer(Packet *pkt)
-{
-    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-
-    // NrPdcpUe: route to NR or LTE RLC depending on DC and useNR flag
-    if (isNR_ && nrRlcOutGate_ != nullptr) {
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
-        if (!dualConnectivityEnabled_ || useNR) {
-            EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
-
-            // use NR id as source
-            lteInfo->setSourceId(nrNodeId_);
-
-            // notify observers via signal (only for non-D2D)
-            if (hasListeners(pdcpSduSentNrSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-                emit(pdcpSduSentNrSignal_, pkt);
-            }
-
-            send(pkt, nrRlcOutGate_);
-            emit(sentPacketToLowerLayerSignal_, pkt);
-            return;
-        }
-    }
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
-
-    if (hasListeners(pdcpSduSentSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-        emit(pdcpSduSentSignal_, pkt);
-    }
-
-    // Send message
-    send(pkt, rlcOutGate_);
-    emit(sentPacketToLowerLayerSignal_, pkt);
-}
-
 void LtePdcp::sendToRlc(Packet *pkt)
 {
     Enter_Method_Silent("sendToRlc");
@@ -332,16 +286,6 @@ void LtePdcp::handleMessage(cMessage *msg)
     else {
         fromLowerLayer(pkt);
     }
-}
-
-void LtePdcp::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
-{
-    EV << NOW << " LtePdcp::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
-
-    auto tag = pkt->addTagIfAbsent<X2TargetReq>();
-    tag->setTargetNode(targetNode);
-
-    send(pkt, "dcManagerOut");
 }
 
 void LtePdcp::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
