@@ -38,6 +38,13 @@ void BypassRxPdcpEntity::handlePacketFromLowerLayer(inet::Packet *pkt)
     EV << NOW << " BypassRxPdcpEntity::handlePacketFromLowerLayer - forwarding packet " << pkt->getName()
        << " to master node " << masterId << " via X2 (DC bypass)" << endl;
 
+    // Translate sourceId from NR UE ID to LTE UE ID so the master's
+    // RX entity (keyed by LTE UE ID) can find it without normalization
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    MacNodeId lteSourceId = binder_->getUeNodeId(lteInfo->getSourceId(), false);
+    ASSERT(lteSourceId != NODEID_NONE);
+    lteInfo->setSourceId(lteSourceId);
+
     auto tag = pkt->addTagIfAbsent<X2TargetReq>();
     tag->setTargetNode(masterId);
 

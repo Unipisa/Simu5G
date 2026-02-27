@@ -43,7 +43,10 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
         bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
         if (!dualConnectivityEnabled_ || useNR) {
             EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to NR RLC" << endl;
+            // Translate to NR-leg IDs for NR RLC buffer lookup
             lteInfo->setSourceId(nrNodeId_);
+            if (dualConnectivityEnabled_)
+                lteInfo->setDestId(binder_->getServingNodeOrSelf(nrNodeId_));
             if (hasListeners(pdcpSduSentNrSignal_) && lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
                 emit(pdcpSduSentNrSignal_, pkt);
             }
@@ -88,6 +91,13 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
                 ASSERT(secondaryNodeId != NODEID_NONE);
                 ASSERT(secondaryNodeId != nodeId_);
+
+                // Translate to NR-leg IDs for the secondary gNB's bypass entity
+                MacNodeId nrDestId = binder_->getUeNodeId(lteInfo->getDestId(), true);
+                ASSERT(nrDestId != NODEID_NONE);
+                lteInfo->setSourceId(secondaryNodeId);
+                lteInfo->setDestId(nrDestId);
+
                 auto tag = pkt->addTagIfAbsent<X2TargetReq>();
                 tag->setTargetNode(secondaryNodeId);
                 pdcp_->sendToX2(pkt);

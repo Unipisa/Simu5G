@@ -341,20 +341,25 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
 
     // --- Source and Dest IDs ---
     if (isNR_) {
-        lteInfo->setSourceId(isEnb ? nodeId_ : (useNR ? nrNodeId_ : nodeId_));
-
-        if (lteInfo->getMulticastGroupId() != NODEID_NONE)
-            lteInfo->setDestId(nodeId_);
-        else
-            lteInfo->setDestId(getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId()));
-
-        // NrPdcpEnb only: Dual Connectivity adjustment
+        // For PDCP entity dispatch, always use technology-neutral (LTE/master-leg) IDs.
+        // The TechnologyReq::useNR flag carries the LTE-vs-NR routing decision separately;
+        // NrTxPdcpEntity reads it in deliverPdcpPdu() to decide local RLC vs X2 forwarding.
         if (isEnb) {
-            MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
-            if (dualConnectivityEnabled_ && secondaryNodeId != NODEID_NONE && useNR) {
-                lteInfo->setSourceId(secondaryNodeId);
-                lteInfo->setDestId(binder_->getNrMacNodeId(destAddr));
-            }
+            lteInfo->setSourceId(nodeId_);
+            if (lteInfo->getMulticastGroupId() != NODEID_NONE)
+                lteInfo->setDestId(nodeId_);
+            else
+                lteInfo->setDestId(getNextHopNodeId(destAddr, !dualConnectivityEnabled_ && useNR, nodeId_));
+        }
+        else {
+            // UE: use LTE UE ID when DC is enabled (both legs share one PDCP entity),
+            // NR UE ID when non-DC NR (entity was created with NR IDs)
+            MacNodeId ueSourceId = (dualConnectivityEnabled_ ? nodeId_ : (useNR ? nrNodeId_ : nodeId_));
+            lteInfo->setSourceId(ueSourceId);
+            if (lteInfo->getMulticastGroupId() != NODEID_NONE)
+                lteInfo->setDestId(nodeId_);
+            else
+                lteInfo->setDestId(getNextHopNodeId(destAddr, !dualConnectivityEnabled_ && useNR, ueSourceId));
         }
     }
     else {

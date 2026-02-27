@@ -47,26 +47,6 @@ void LtePdcp::fromDataPort(cPacket *pktAux)
     verifyControlInfo(lteInfo.get());
 
     DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
-
-    if (isDualConnectivityEnabled() && lteInfo->getMulticastGroupId() == NODEID_NONE) {
-        // Handle DC setup: Assume packet arrives in Master nodeB (LTE), and wants to use Secondary nodeB (NR).
-        // Packet is processed by local PDCP entity, then needs to be tunneled over X2 to Secondary for transmission.
-        // However, local PDCP entity is keyed on LTE nodeIds, so we need to tweak the id and replace NR nodeId
-        // with LTE nodeId so that lookup succeeds.
-        if (getNodeTypeById(nodeId_) == NODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getDestId()) ) {
-            // use another ID whose technology matches the nodeB
-            MacNodeId otherDestId = binder_->getUeNodeId(lteInfo->getDestId(), !isNrUe(lteInfo->getDestId()));
-            ASSERT(otherDestId != NODEID_NONE);
-            id = DrbKey(otherDestId, lteInfo->getDrbId());
-        }
-
-        // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
-        if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getDestId()) == NODEB)  {
-            MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
-            id = DrbKey(lteNodeB, lteInfo->getDrbId());
-        }
-    }
-
     PdcpTxEntityBase *entity = lookupTxEntity(id);
 
     // get the PDCP entity for this DRB ID and process the packet
@@ -102,51 +82,11 @@ void LtePdcp::fromLowerLayer(cPacket *pktAux)
     auto lteInfo = pkt->getTag<FlowControlInfo>();
     DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
 
-    if (isDualConnectivityEnabled()) {
-        // Handle DC setup: Assume packet arrives at this Master nodeB (LTE) from Secondary (NR) over X2.
-        // Packet needs to be processed by local PDCP entity. However, local PDCP entity is keyed on LTE nodeIds,
-        // so we need to tweak the id and replace NR nodeId with LTE nodeId so that lookup succeeds.
-        if (getNodeTypeById(nodeId_) == NODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getSourceId()) ) {
-            // use another ID whose technology matches the nodeB
-            MacNodeId otherSourceId = binder_->getUeNodeId(lteInfo->getSourceId(), !isNrUe(lteInfo->getSourceId()));
-            ASSERT(otherSourceId != NODEID_NONE);
-            id = DrbKey(otherSourceId, lteInfo->getDrbId());
-        }
-
-        // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
-        if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getSourceId()) == NODEB)  {
-            MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
-            id = DrbKey(lteNodeB, lteInfo->getDrbId());
-        }
-    }
-
-    // Handle DC setup on UE side: UE receives packet from base station
-    // and needs to use the correct PDCP entity based on technology matching
-    if (getNodeTypeById(nodeId_) == UE && lteInfo->getMulticastGroupId() == NODEID_NONE && isDualConnectivityEnabled()) {
-        MacNodeId servingNodeId = binder_->getServingNode(nodeId_);
-
-        // Check if there's a technology mismatch between packet source and UE's serving base station
-        if (servingNodeId != NODEID_NONE &&
-            binder_->isGNodeB(lteInfo->getSourceId()) != binder_->isGNodeB(servingNodeId)) {
-
-            // Use alternate base station nodeId (Master or Secondary) for proper PDCP entity lookup
-            MacNodeId otherSrcId;
-            if (binder_->isGNodeB(lteInfo->getSourceId())) {
-                // Packet came from gNodeB, get its master (LTE eNodeB)
-                otherSrcId = binder_->getMasterNodeOrSelf(lteInfo->getSourceId());
-            } else {
-                // Packet came from eNodeB, get its secondary (NR gNodeB)
-                otherSrcId = binder_->getSecondaryNode(lteInfo->getSourceId());
-            }
-
-            if (otherSrcId != NODEID_NONE && otherSrcId != lteInfo->getSourceId()) {
-                id = DrbKey(otherSrcId, lteInfo->getDrbId());
-
-                EV << "LtePdcp: UE DC RX - Using alternate base station ID " << otherSrcId
-                   << " instead of " << lteInfo->getSourceId()
-                   << " for technology match with serving node " << servingNodeId << endl;
-            }
-        }
+    // UE with DC: both RLC legs (LTE from eNB, NR from gNB) must reach the same
+    // reordering entity, which is keyed by the serving (master) base station ID.
+    if (isDualConnectivityEnabled() && getNodeTypeById(nodeId_) == UE
+            && lteInfo->getMulticastGroupId() == NODEID_NONE) {
+        id = DrbKey(binder_->getServingNode(nodeId_), lteInfo->getDrbId());
     }
 
     PdcpRxEntityBase *entity = lookupRxEntity(id);
@@ -298,15 +238,7 @@ void LtePdcp::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
         MacNodeId destId = ctrlInfo->getDestId();
         EV << NOW << " LtePdcp::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
 
-        // Look up the bypass TX entity for this DRB on the secondary node.
-        // The entity was keyed using the UE's NR node ID (from the NR connection setup),
-        // but the X2-forwarded packet may carry the UE's LTE node ID. Normalize if needed.
         DrbKey id = DrbKey(destId, ctrlInfo->getDrbId());
-        if (binder_->isGNodeB(nodeId_) != isNrUe(destId)) {
-            MacNodeId otherDestId = binder_->getUeNodeId(destId, !isNrUe(destId));
-            ASSERT(otherDestId != NODEID_NONE);
-            id = DrbKey(otherDestId, ctrlInfo->getDrbId());
-        }
         PdcpTxEntityBase *entity = lookupTxEntity(id);
         ASSERT(entity != nullptr);
         entity->handlePacketFromUpperLayer(pkt);
