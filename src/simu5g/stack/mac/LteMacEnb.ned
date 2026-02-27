@@ -90,7 +90,7 @@ module LteMacEnb extends LteMacBase
 
         string cellInfoModule;
         string rlcUmModule = default("^.rlc.um");
-        string pdcpModule = default("^.pdcp");
+        string pdcpModule = default("^.pdcp.mux");
 
         //#
         //# Statistics related to resource blocks occupancy

@@ -46,7 +46,7 @@ simple HandoverController
         string binderModule = default("binder");
         string macModule = default("^.mac");
         string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"
-        string pdcpModule = default("^.pdcp");
+        string pdcpModule = default("^.pdcp.mux");
         string handoverPacketHolderModule = default("^.handoverPacketHolder");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
         string otherHandoverControllerModule = default("");

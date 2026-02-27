@@ -25,7 +25,7 @@ import simu5g.stack.rrc.HandoverController;
 module LteNicUe extends LteNicBase
 {
     parameters:
-        pdcp.typename = default("LtePdcpUe");
+        pdcp.typename = default("PdcpLayer");
         mac.typename = default("LteMacUe");
         phy.typename = default("LtePhyUe");
         handoverPacketHolder.typename = default("HandoverPacketHolderUe");

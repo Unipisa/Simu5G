@@ -56,7 +56,7 @@ module PdcpLayer like ILtePdcp
             @display("p=100,100");
         }
 
-    connections:
+    connections allowunconnected:
         upperLayerIn --> mux.upperLayerIn;
         mux.upperLayerOut --> upperLayerOut;
         rlcIn --> mux.rlcIn;

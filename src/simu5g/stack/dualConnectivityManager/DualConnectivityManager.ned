@@ -22,7 +22,7 @@ simple DualConnectivityManager like IDualConnectivityManager
     parameters:
         @display("i=block/cogwheel");
         @class("DualConnectivityManager");
-        string pdcpModule = default("^.pdcp");
+        string pdcpModule = default("^.pdcp.mux");
 
     gates:
         //# connections to the X2 Manager

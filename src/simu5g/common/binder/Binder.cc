@@ -922,7 +922,10 @@ cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)
     if (module == nullptr) {
         return nullptr;
     }
-    return module->getSubmodule("cellularNic")->getSubmodule("pdcp");
+    cModule *pdcp = module->getSubmodule("cellularNic")->getSubmodule("pdcp");
+    // If pdcp is a compound module (PdcpLayer), return its mux submodule
+    cModule *mux = pdcp->getSubmodule("mux");
+    return mux ? mux : pdcp;
 }
 
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)

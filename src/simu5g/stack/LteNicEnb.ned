@@ -30,7 +30,7 @@ import simu5g.x2.LteX2Manager;
 module LteNicEnb extends LteNicBase
 {
     parameters:
-        pdcp.typename = default("LtePdcpEnb");
+        pdcp.typename = default("PdcpLayer");
         mac.typename = default("LteMacEnb");
         phy.typename = default("LtePhyEnb");
         handoverPacketHolder.typename = default("HandoverPacketHolderEnb");
