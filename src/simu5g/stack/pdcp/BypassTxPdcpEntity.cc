@@ -22,10 +22,7 @@ simsignal_t BypassTxPdcpEntity::pdcpSduSentSignal_ = registerSignal("pdcpSduSent
 
 void BypassTxPdcpEntity::initialize(int stage)
 {
-    if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule()->getSubmodule("mux"));
-        ASSERT(pdcp_ != nullptr);
-    }
+    (void)stage; // nothing to initialize
 }
 
 void BypassTxPdcpEntity::handlePacketFromUpperLayer(inet::Packet *pkt)

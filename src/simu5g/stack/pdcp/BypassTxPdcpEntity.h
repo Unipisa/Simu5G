@@ -13,7 +13,6 @@
 #define _BYPASS_TX_PDCP_ENTITY_H_
 
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
-#include "simu5g/stack/pdcp/IPdcpGateway.h"
 
 namespace simu5g {
 
@@ -29,9 +28,6 @@ class BypassTxPdcpEntity : public PdcpTxEntityBase
 {
     static omnetpp::simsignal_t sentPacketToLowerLayerSignal_;
     static omnetpp::simsignal_t pdcpSduSentSignal_;
-
-  protected:
-    IPdcpGateway *pdcp_ = nullptr;
 
   public:
     void initialize(int stage) override;

@@ -19,7 +19,6 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
-#include "simu5g/stack/pdcp/IPdcpGateway.h"
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
 #include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
@@ -38,9 +37,8 @@ class PdcpRxEntityBase;
  * Receives packets from the upper layer and RLC, dispatches them
  * to the correct TX/RX PDCP entity by DrbKey lookup. Also manages
  * entity creation/deletion and provides output gate forwarding
- * methods (IPdcpGateway) for entities.
  */
-class PdcpMux : public cSimpleModule, public IPdcpGateway
+class PdcpMux : public cSimpleModule
 {
   protected:
     // Modules references
@@ -209,17 +207,6 @@ class PdcpMux : public cSimpleModule, public IPdcpGateway
      * @param pkt incoming packet
      */
     virtual void fromLowerLayer(cPacket *pkt);
-
-  public:
-    /*
-     * Thin wrappers for entities to send packets via root module gates.
-     * These are pure take+send operations; signal emissions are done by entities.
-     */
-    void sendToUpperLayer(inet::Packet *pkt) override;
-    void sendToRlc(inet::Packet *pkt) override;
-    void sendToNrRlc(inet::Packet *pkt) override;
-    void sendToX2(inet::Packet *pkt) override;
-
 
 };
 

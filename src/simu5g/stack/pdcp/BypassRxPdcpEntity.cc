@@ -20,8 +20,6 @@ Define_Module(BypassRxPdcpEntity);
 void BypassRxPdcpEntity::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = dynamic_cast<IPdcpGateway *>(getParentModule()->getSubmodule("mux"));
-        ASSERT(pdcp_ != nullptr);
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macNodeId").intValue());
     }

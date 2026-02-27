@@ -102,46 +102,6 @@ void PdcpMux::fromLowerLayer(cPacket *pktAux)
     send(pkt, entity->gate("in")->getPreviousGate());
 }
 
-void PdcpMux::sendToUpperLayer(Packet *pkt)
-{
-    Enter_Method_Silent("sendToUpperLayer");
-    take(pkt);
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port upperLayerOut\n";
-
-    send(pkt, upperLayerOutGate_);
-}
-
-void PdcpMux::sendToRlc(Packet *pkt)
-{
-    Enter_Method_Silent("sendToRlc");
-    take(pkt);
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
-
-    send(pkt, rlcOutGate_);
-}
-
-void PdcpMux::sendToNrRlc(Packet *pkt)
-{
-    Enter_Method_Silent("sendToNrRlc");
-    take(pkt);
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
-
-    send(pkt, nrRlcOutGate_);
-}
-
-void PdcpMux::sendToX2(Packet *pkt)
-{
-    Enter_Method_Silent("sendToX2");
-    take(pkt);
-
-    EV << NOW << " PdcpMux::sendToX2 - Send PDCP packet via X2" << endl;
-
-    send(pkt, "dcManagerOut");
-}
-
 /*
  * Main functions
  */
