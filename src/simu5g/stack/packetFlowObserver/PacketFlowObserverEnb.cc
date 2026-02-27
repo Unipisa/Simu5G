@@ -12,7 +12,7 @@
 
 #include "PacketFlowObserverEnb.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/pdcp/LtePdcp.h"
+#include "simu5g/stack/pdcp/PdcpMux.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"

@@ -20,7 +20,7 @@ package simu5g.stack.pdcp;
 simple NrPdcpUe extends LtePdcpUeD2D
 {
     parameters:
-        @class("LtePdcp");
+        @class("PdcpMux");
         rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         isNR = true;

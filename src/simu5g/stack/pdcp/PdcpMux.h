@@ -10,8 +10,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_LTEPDCP_H_
-#define _LTE_LTEPDCP_H_
+#ifndef _PDCP_MUX_H_
+#define _PDCP_MUX_H_
 
 #include <unordered_map>
 #include <inet/common/ModuleRefByPar.h>
@@ -32,32 +32,15 @@ class PdcpTxEntityBase;
 class PdcpRxEntityBase;
 
 /**
- * @class LtePdcp
- * @brief PDCP Layer
+ * @class PdcpMux
+ * @brief PDCP packet dispatcher and entity manager.
  *
- * TODO REVIEW COMMENTS
- *
- * This is the PDCP/RRC layer of the LTE Stack.
- *
- * The PDCP part performs the following tasks:
- * - Header compression/decompression
- * - association of the terminal with its eNodeB, thus storing its MacNodeId.
- *
- * The PDCP layer attaches a header to the packet. The size
- * of this header is fixed at 2 bytes.
- *
- * The RRC part performs the following actions:
- * - Binding the Local IP Address of this Terminal with
- *   its module id (MacNodeId) by informing these details
- *   to the oracle.
- * - Assign a Data Radio Bearer IDentifier (DRB ID)
- *   for each connection request (coming from PDCP).
- *
- * The couple < MacNodeId, DRB ID > constitutes the CID,
- * that uniquely identifies a connection in the whole network.
- *
+ * Receives packets from the upper layer and RLC, dispatches them
+ * to the correct TX/RX PDCP entity by DrbKey lookup. Also manages
+ * entity creation/deletion and provides output gate forwarding
+ * methods (IPdcpGateway) for entities.
  */
-class LtePdcp : public cSimpleModule, public IPdcpGateway
+class PdcpMux : public cSimpleModule, public IPdcpGateway
 {
   protected:
     // Modules references
@@ -158,7 +141,7 @@ class LtePdcp : public cSimpleModule, public IPdcpGateway
     /**
      * Cleans the connection table
      */
-    ~LtePdcp() override;
+    ~PdcpMux() override;
 
     /*
      * Delete TX/RX entities

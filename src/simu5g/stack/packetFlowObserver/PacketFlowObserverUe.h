@@ -21,7 +21,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteRlcUmDataPdu;
-class LtePdcpUe;
 
 /**
  * The UE-specific version of Packet Flow Manager.

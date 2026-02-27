@@ -18,7 +18,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
 #include "simu5g/stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
-#include "simu5g/stack/pdcp/LtePdcp.h"
+#include "simu5g/stack/pdcp/PdcpMux.h"
 
 namespace simu5g {
 
@@ -33,7 +33,7 @@ class DualConnectivityManager : public cSimpleModule
   protected:
 
     // reference to PDCP layer
-    inet::ModuleRefByPar<LtePdcp> pdcp_;
+    inet::ModuleRefByPar<PdcpMux> pdcp_;
 
     // X2 identifier
     X2NodeId nodeId_;

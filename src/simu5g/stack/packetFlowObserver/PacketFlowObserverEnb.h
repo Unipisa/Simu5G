@@ -17,7 +17,7 @@
 #include "simu5g/mec/utils/MecCommon.h"
 
 #include "PacketFlowObserverBase.h"
-#include "simu5g/stack/pdcp/LtePdcp.h"
+#include "simu5g/stack/pdcp/PdcpMux.h"
 #include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 
 namespace simu5g {
@@ -87,7 +87,7 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     typedef  std::map<DrbId, StatusDescriptor> ConnectionMap;
     ConnectionMap connectionMap_; // DRB ID to the corresponding StatusDescriptor
 
-    opp_component_ptr<LtePdcp> pdcp_;
+    opp_component_ptr<PdcpMux> pdcp_;
 
     std::map<MacNodeId, Delay> ULPktDelay_;
     std::map<MacNodeId, std::vector<Grant>> ulGrants_;

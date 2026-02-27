@@ -20,7 +20,7 @@ package simu5g.stack.pdcp;
 //
 simple LtePdcpEnbD2D extends LtePdcpEnb
 {
-    @class("LtePdcp");
+    @class("PdcpMux");
     rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
     txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
     hasD2DSupport = true;

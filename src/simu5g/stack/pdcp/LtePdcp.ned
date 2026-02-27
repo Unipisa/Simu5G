@@ -22,6 +22,7 @@ package simu5g.stack.pdcp;
 simple LtePdcp like ILtePdcp
 {
     parameters:
+        @class("PdcpMux");
         @display("i=block/fork");
         string binderModule = default("binder");
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
