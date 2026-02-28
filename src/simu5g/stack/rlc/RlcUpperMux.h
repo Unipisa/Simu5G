@@ -28,6 +28,8 @@ class UmTxEntity;
 class RlcUpperMux : public cSimpleModule
 {
   protected:
+    static simsignal_t sentPacketToUpperLayerSignal_;
+
     inet::ModuleRefByPar<Binder> binder_;
 
     RlcLowerMux *lowerMux_ = nullptr;

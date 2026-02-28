@@ -12,6 +12,9 @@ simple RlcUpperMux
         @class("RlcUpperMux");
         @display("p=100,50;i=block/dispatch");
         string binderModule = default("binder");
+
+        @signal[sentPacketToUpperLayer];
+        @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
     gates:
         input upperLayerIn;
         output upperLayerOut;

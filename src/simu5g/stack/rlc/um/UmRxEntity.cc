@@ -257,8 +257,6 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     // in the TX-side MAC, but its cumbersome to implement -- so do it here for now.
     pktAux->removeTagIfPresent<PdcpTrackingTag>();
 
-    LteRlcUm *lteRlc = this->rlc_;
-
     auto lteInfo = pktAux->getTag<FlowControlInfo>();
     unsigned int length = pktAux->getByteLength();
     simtime_t ts = pktAux->getCreationTime();
@@ -304,7 +302,7 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     EV << NOW << " UmRxEntity::toPdcp Created PDCP PDU with length " << pktAux->getByteLength() << " bytes" << endl;
     EV << NOW << " UmRxEntity::toPdcp Send packet to upper layer" << endl;
 
-    lteRlc->sendToUpperLayer(pktAux);
+    send(pktAux, "out");
 }
 
 void UmRxEntity::reassemble(unsigned int index)

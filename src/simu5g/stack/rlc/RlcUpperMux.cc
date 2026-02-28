@@ -5,6 +5,8 @@ namespace simu5g {
 
 Define_Module(RlcUpperMux);
 
+simsignal_t RlcUpperMux::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+
 void RlcUpperMux::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
@@ -34,6 +36,11 @@ void RlcUpperMux::handleMessage(cMessage *msg)
         send(msg, toUmGate_);
     }
     else if (incoming == fromUmGate_) {
+        send(msg, upperLayerOutGate_);
+    }
+    else if (incoming->isName("fromRxEntity")) {
+        // Packet from an RX entity — forward to upper layer
+        emit(sentPacketToUpperLayerSignal_, msg);
         send(msg, upperLayerOutGate_);
     }
     else {
