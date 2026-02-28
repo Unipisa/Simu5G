@@ -15,6 +15,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/utils/utils.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
@@ -52,6 +53,7 @@ class LteRlcUm : public cSimpleModule
 {
   protected:
     RanNodeType nodeType;
+    bool hasD2DSupport_ = false;
 
     // statistics
     static simsignal_t receivedPacketFromUpperLayerSignal_;
@@ -77,6 +79,9 @@ class LteRlcUm : public cSimpleModule
     typedef std::map<DrbKey, UmRxEntity *> UmRxEntities;
     UmTxEntities txEntities_;
     UmRxEntities rxEntities_;
+
+    // D2D: per-peer TX entity tracking (only used when hasD2DSupport_ is true)
+    std::map<MacNodeId, std::set<UmTxEntity *, simu5g::utils::cModule_LessId>> perPeerTxEntities_;
 
     /**
     * @author Alessandro Noferi

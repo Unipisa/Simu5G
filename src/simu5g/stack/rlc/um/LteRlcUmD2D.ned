@@ -25,6 +25,7 @@ simple LteRlcUmD2D extends LteRlcUm
     parameters:
         @class("LteRlcUmD2D");
         @display("i=block/wheelbarrow");
+        hasD2DSupport = true;
 
         //# SDU-level statistics
         @signal[rlcDelayD2D];

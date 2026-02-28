@@ -29,6 +29,7 @@ simple LteRlcUm like ILteRlcUm
 
         @display("i=block/wheelbarrow");
 
+        bool hasD2DSupport = default(false);
         string txEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
         string rxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
 

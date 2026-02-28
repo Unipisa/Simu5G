@@ -232,6 +232,7 @@ void LteRlcUm::initialize(int stage)
         downOutGate_ = gate("UM_Sap_down$o");
 
         // parameters
+        hasD2DSupport_ = par("hasD2DSupport").boolValue();
         txEntityModuleType_ = cModuleType::get(par("txEntityModuleType").stringValue());
         rxEntityModuleType_ = cModuleType::get(par("rxEntityModuleType").stringValue());
 
