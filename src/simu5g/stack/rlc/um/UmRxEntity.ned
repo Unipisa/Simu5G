@@ -30,5 +30,9 @@ simple UmRxEntity
         string macModule = default("^.^.mac");  // TODO set to "^.^.nrMac" when parent module name is "nrRlc"
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
         int rxWindowSize = default(16);
+
+    gates:
+        input in;       // PDUs from lower mux (MAC)
+        output out;     // reassembled SDUs to upper mux (PDCP)
 }
 

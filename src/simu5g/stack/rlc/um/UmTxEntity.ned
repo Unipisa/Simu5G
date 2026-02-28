@@ -29,5 +29,10 @@ simple UmTxEntity
         string umModule = default("^.um");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
         @signal[rlcPduCreated];
+
+    gates:
+        input in;       // SDUs from upper mux (PDCP)
+        input macIn;    // SDU requests from lower mux (MAC)
+        output out;     // PDUs and new-data notifications to lower mux (MAC)
 }
 
