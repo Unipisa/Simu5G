@@ -15,6 +15,7 @@
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
+#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 #include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 
@@ -43,6 +44,45 @@ void UmTxEntity::initialize(int stage)
         queueSize_ = lteRlc_->par("queueSize");
 
         burstStatus_ = INACTIVE;
+    }
+}
+
+void UmTxEntity::handleSdu(inet::Packet *pkt)
+{
+    Enter_Method("handleSdu()");
+    take(pkt);
+
+    EV << NOW << " UmTxEntity::handleSdu - Received SDU from upper layer, size " << pkt->getByteLength() << "\n";
+
+    // Extract sequence number from PDCP header
+    auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
+    unsigned int sequenceNumber = pdcpHeader->getSequenceNumber();
+
+    // Add PDCP tracking information
+    auto pdcpTag = pkt->addTag<PdcpTrackingTag>();
+    pdcpTag->setPdcpSequenceNumber(sequenceNumber);
+    pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+
+    if (holdingDownstreamInPackets_) {
+        // do not store in the TX buffer and do not signal the MAC layer
+        EV << "UmTxEntity::handleSdu - Enqueue packet into the Holding Buffer\n";
+        enqueHoldingPackets(pkt);
+    }
+    else {
+        if (enque(pkt)) {
+            EV << "UmTxEntity::handleSdu - Enqueue packet into the Tx Buffer\n";
+
+            // create a message to notify the MAC layer that the queue contains new data
+            auto pktDup = pkt->dup();
+            pktDup->addTag<LteRlcNewDataTag>();
+
+            EV << "UmTxEntity::handleSdu - Sending new data indication to MAC\n";
+            lteRlc_->sendNewDataIndication(pktDup);
+        }
+        else {
+            // Queue is full - drop SDU
+            dropBufferOverflow(pkt);
+        }
     }
 }
 

@@ -126,6 +126,12 @@ class LteRlcUm : public cSimpleModule
      */
     void sendToLowerLayer(cPacket *pkt);
 
+    /**
+     * sendNewDataIndication() sends a new-data notification to the MAC layer.
+     * Called by TXEntities after enqueuing a new SDU.
+     */
+    void sendNewDataIndication(cPacket *pkt);
+
     void resumeDownstreamInPackets(MacNodeId peerId);
 
     bool isEmptyingTxBuffer(MacNodeId peerId);

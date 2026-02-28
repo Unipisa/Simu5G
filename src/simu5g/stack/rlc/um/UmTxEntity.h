@@ -67,6 +67,13 @@ class UmTxEntity : public cSimpleModule
         delete flowControlInfo_;
     }
 
+    /**
+     * handleSdu() is the main entry point for SDUs from the upper layer.
+     * It adds the PDCP tracking tag, then enqueues/holds/drops the packet
+     * and sends a new-data indication to MAC on successful enqueue.
+     */
+    void handleSdu(inet::Packet *pkt);
+
     /*
      * Enqueues an upper layer packet into the SDU buffer
      * @param pkt the packet to be enqueued

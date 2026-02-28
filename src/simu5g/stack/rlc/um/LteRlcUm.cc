@@ -16,9 +16,7 @@
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
-#include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
-#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 
@@ -114,6 +112,14 @@ void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
+void LteRlcUm::sendNewDataIndication(cPacket *pktAux)
+{
+    Enter_Method_Silent("sendNewDataIndication()");
+    take(pktAux);
+    EV << "LteRlcUm : Sending new data indication to port UM_Sap_down$o\n";
+    send(pktAux, downOutGate_);
+}
+
 void LteRlcUm::handleUpperMessage(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
@@ -121,48 +127,14 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
-    auto chunk = pkt->peekAtFront<inet::Chunk>();
-    EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
+    EV << "LteRlcUm::handleUpperMessage - Received packet from upper layer, size " << pktAux->getByteLength() << "\n";
 
     DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
     UmTxEntity *txbuf = lookupTxBuffer(id);
     ASSERT(txbuf != nullptr);
 
-    // Extract sequence number from PDCP header
-    auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
-    unsigned int sequenceNumber = pdcpHeader->getSequenceNumber();
-
-    // Add PDCP tracking information
-    auto pdcpTag = pkt->addTag<PdcpTrackingTag>();
-    pdcpTag->setPdcpSequenceNumber(sequenceNumber);
-    pdcpTag->setOriginalPacketLength(pkt->getByteLength());
-
     drop(pkt);
-
-    if (txbuf->isHoldingDownstreamInPackets()) {
-        // do not store in the TX buffer and do not signal the MAC layer
-        EV << "LteRlcUm::handleUpperMessage - Enqueue packet into the Holding Buffer\n";
-        txbuf->enqueHoldingPackets(pkt);
-    }
-    else {
-        if (txbuf->enque(pkt)) {
-            EV << "LteRlcUm::handleUpperMessage - Enqueue packet into the Tx Buffer\n";
-
-            // create a message to notify the MAC layer that the queue contains new data
-            // make a copy of the RLC SDU
-            auto pktDup = pkt->dup();
-            // add tag to indicate new data availability to MAC
-            pktDup->addTag<LteRlcNewDataTag>();
-            // the MAC will only be interested in the size of this packet
-
-            EV << "LteRlcUm::handleUpperMessage - Sending new data indication to port UM_Sap_down$o\n";
-            send(pktDup, downOutGate_);
-        }
-        else {
-            // Queue is full - drop SDU
-            txbuf->dropBufferOverflow(pkt);
-        }
-    }
+    txbuf->handleSdu(pkt);
 }
 
 void LteRlcUm::handleLowerMessage(cPacket *pktAux)
