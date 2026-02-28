@@ -1,10 +1,12 @@
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
+#include "simu5g/common/LteControlInfoTags_m.h"
 
 namespace simu5g {
 
 Define_Module(RlcUpperMux);
 
+simsignal_t RlcUpperMux::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
 simsignal_t RlcUpperMux::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 
 void RlcUpperMux::initialize(int stage)
@@ -33,7 +35,7 @@ void RlcUpperMux::handleMessage(cMessage *msg)
 {
     cGate *incoming = msg->getArrivalGate();
     if (incoming == upperLayerInGate_) {
-        send(msg, toUmGate_);
+        fromUpperLayer(check_and_cast<cPacket *>(msg));
     }
     else if (incoming == fromUmGate_) {
         send(msg, upperLayerOutGate_);
@@ -46,6 +48,22 @@ void RlcUpperMux::handleMessage(cMessage *msg)
     else {
         throw cRuntimeError("RlcUpperMux: unexpected message from gate %s", incoming->getFullName());
     }
+}
+
+void RlcUpperMux::fromUpperLayer(cPacket *pktAux)
+{
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
+
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+
+    EV << "RlcUpperMux::fromUpperLayer - Received packet from upper layer, size " << pktAux->getByteLength() << "\n";
+
+    DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+    UmTxEntity *txbuf = lookupTxBuffer(id);
+    ASSERT(txbuf != nullptr);
+
+    send(pkt, txbuf->gate("in")->getPreviousGate());
 }
 
 UmTxEntity *RlcUpperMux::lookupTxBuffer(DrbKey id)

@@ -28,6 +28,7 @@ class UmTxEntity;
 class RlcUpperMux : public cSimpleModule
 {
   protected:
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
     static simsignal_t sentPacketToUpperLayerSignal_;
 
     inet::ModuleRefByPar<Binder> binder_;
@@ -61,6 +62,8 @@ class RlcUpperMux : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
+
+    virtual void fromUpperLayer(cPacket *pkt);
 };
 
 } // namespace simu5g

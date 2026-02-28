@@ -50,11 +50,23 @@ void UmTxEntity::initialize(int stage)
     }
 }
 
+void UmTxEntity::handleMessage(cMessage *msg)
+{
+    cPacket *pkt = check_and_cast<cPacket *>(msg);
+    cGate *incoming = pkt->getArrivalGate();
+    if (incoming->isName("in")) {
+        handleSdu(check_and_cast<inet::Packet *>(pkt));
+    }
+    else if (incoming->isName("macIn")) {
+        handleMacSduRequest(check_and_cast<inet::Packet *>(pkt));
+    }
+    else {
+        throw cRuntimeError("UmTxEntity: unexpected message from gate %s", incoming->getFullName());
+    }
+}
+
 void UmTxEntity::handleSdu(inet::Packet *pkt)
 {
-    Enter_Method("handleSdu()");
-    take(pkt);
-
     EV << NOW << " UmTxEntity::handleSdu - Received SDU from upper layer, size " << pkt->getByteLength() << "\n";
 
     // Extract sequence number from PDCP header
@@ -91,8 +103,11 @@ void UmTxEntity::handleSdu(inet::Packet *pkt)
 
 void UmTxEntity::handleMacSduRequest(inet::Packet *pkt)
 {
+    // Enter_Method + take needed while still called as direct method from LteRlcUm::handleLowerMessage
+    // (will be removed when LowerMux dispatches directly via macIn gate)
     Enter_Method("handleMacSduRequest()");
-    take(pkt);
+    if (pkt->getOwner() != this)
+        take(pkt);
 
     auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
     unsigned int size = macSduRequest->getSduSize();
