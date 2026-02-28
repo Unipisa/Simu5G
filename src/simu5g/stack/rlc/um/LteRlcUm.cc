@@ -14,6 +14,7 @@
 #include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
@@ -32,36 +33,12 @@ simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacket
 
 UmTxEntity *LteRlcUm::lookupTxBuffer(DrbKey id)
 {
-    UmTxEntities::iterator it = txEntities_.find(id);
-    return (it != txEntities_.end()) ? it->second : nullptr;
+    return upperMux_->lookupTxBuffer(id);
 }
 
 UmTxEntity *LteRlcUm::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
-    if (txEntities_.find(id) != txEntities_.end())
-        throw cRuntimeError("RLC-UM connection TX entity for %s already exists", id.str().c_str());
-
-    std::stringstream buf;
-    buf << "UmTxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
-    UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
-    txEntities_[id] = txEnt;
-
-    txEnt->setFlowControlInfo(lteInfo);
-
-    // D2D: store per-peer map
-    if (hasD2DSupport_) {
-        MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
-        if (d2dPeer != NODEID_NONE)
-            perPeerTxEntities_[d2dPeer].insert(txEnt);
-
-        // if other Tx buffers for this peer are already holding, the new one should hold too
-        if (isEmptyingTxBuffer(d2dPeer))
-            txEnt->startHoldingDownstreamInPackets();
-    }
-
-    EV << "LteRlcUm::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for " << id << "\n";
-
-    return txEnt;
+    return upperMux_->createTxBuffer(id, lteInfo);
 }
 
 
@@ -205,28 +182,10 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    // at the UE, delete all connections
-    // at the eNB, delete connections related to the given UE
-    for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
-        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
-        if (hasD2DSupport_ && tit->second->isD2DMultiConnection()) {
-            ++tit;
-            continue;
-        }
+    // delegate TX entity deletion to UpperMux
+    upperMux_->deleteTxEntities(nodeId);
 
-        if (nodeType == UE || (nodeType == NODEB && tit->first.getNodeId() == nodeId)) {
-            tit->second->deleteModule(); // Delete Entity
-            tit = txEntities_.erase(tit);    // Delete Element
-        }
-        else {
-            ++tit;
-        }
-    }
-
-    // D2D: clear per-peer tracking
-    if (hasD2DSupport_)
-        perPeerTxEntities_.clear();
-
+    // RX entity deletion remains here for now
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end();) {
         // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
         if (hasD2DSupport_ && rit->second->isD2DMultiConnection()) {
@@ -258,13 +217,13 @@ void LteRlcUm::initialize(int stage)
 
         // parameters
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
-        txEntityModuleType_ = cModuleType::get(par("txEntityModuleType").stringValue());
         rxEntityModuleType_ = cModuleType::get(par("rxEntityModuleType").stringValue());
 
         std::string nodeTypeStr = par("nodeType").stdstringValue();
         nodeType = aToNodeType(nodeTypeStr);
 
-        WATCH_MAP(txEntities_);
+        upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
+
         WATCH_MAP(rxEntities_);
     }
 }
@@ -285,35 +244,12 @@ void LteRlcUm::handleMessage(cMessage *msg)
 
 void LteRlcUm::resumeDownstreamInPackets(MacNodeId peerId)
 {
-    if (!hasD2DSupport_)
-        return;
-
-    if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
-        return;
-
-    for (auto& txEntity : perPeerTxEntities_.at(peerId)) {
-        if (txEntity->isHoldingDownstreamInPackets())
-            txEntity->resumeDownstreamInPackets();
-    }
+    upperMux_->resumeDownstreamInPackets(peerId);
 }
 
 bool LteRlcUm::isEmptyingTxBuffer(MacNodeId peerId)
 {
-    if (!hasD2DSupport_)
-        return false;
-
-    EV << NOW << " LteRlcUm::isEmptyingTxBuffer - peerId " << peerId << endl;
-
-    if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
-        return false;
-
-    for (auto& entity : perPeerTxEntities_.at(peerId)) {
-        if (entity->isEmptyingBuffer()) {
-            EV << NOW << " LteRlcUm::isEmptyingTxBuffer - found " << endl;
-            return true;
-        }
-    }
-    return false;
+    return upperMux_->isEmptyingTxBuffer(peerId);
 }
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
