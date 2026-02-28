@@ -38,15 +38,28 @@ module LteRlc
         output macOut;          // to MAC
 
     submodules:
+        upperMux: RlcUpperMux {
+            @display("p=200,50");
+        }
+
         um: LteRlcUm {
             hasD2DSupport = parent.d2dCapable;
             @display("p=200,100;");
         }
 
+        lowerMux: RlcLowerMux {
+            @display("p=200,200");
+        }
+
     connections:
-        um.UM_Sap_up$i <-- upperLayerIn;
-        um.UM_Sap_up$o --> upperLayerOut;
-        um.UM_Sap_down$i <-- macIn;
-        um.UM_Sap_down$o --> macOut;
+        upperMux.upperLayerIn <-- upperLayerIn;
+        upperMux.upperLayerOut --> upperLayerOut;
+        upperMux.toUm --> um.UM_Sap_up$i;
+        upperMux.fromUm <-- um.UM_Sap_up$o;
+
+        lowerMux.macIn <-- macIn;
+        lowerMux.macOut --> macOut;
+        lowerMux.toUm --> um.UM_Sap_down$i;
+        lowerMux.fromUm <-- um.UM_Sap_down$o;
 }
 
