@@ -13,8 +13,6 @@
 
 package simu5g.stack.rlc;
 
-import simu5g.stack.rlc.am.LteRlcAm;
-import simu5g.stack.rlc.tm.LteRlcTm;
 import simu5g.stack.rlc.um.LteRlcUm;
 
 
@@ -34,77 +32,21 @@ module LteRlc
         bool d2dCapable;                                             // inherit the value from the parent module
 
     gates:
-        //#
-        //# Gates connecting PDCP/RRC and RLC Layers
-        //#
-
         input upperLayerIn;     // from PDCP
         output upperLayerOut;   // to PDCP
-
-
-        //#
-        //# Gates connecting RLC and MAC Layers
-        //#
-
-        input macIn;         // from MAC
-        output macOut;       // to MAC
+        input macIn;            // from MAC
+        output macOut;          // to MAC
 
     submodules:
-        // TM Module
-        tm: LteRlcTm {
-            @display("p=100,100;");
-        }
-
-        // UM Module
         um: LteRlcUm {
             hasD2DSupport = parent.d2dCapable;
             @display("p=200,100;");
         }
 
-        // AM Module
-        am: LteRlcAm {
-            @display("p=300,100;");
-        }
-
-        // Upper Layer Dispatcher Module
-        dispatcher: RlcUpperLayerDispatcher {
-            @display("p=200,50");
-        }
-
-        // Muxer Module
-        mux: LteRlcMux {
-            @display("p=200,200");
-        }
-
     connections:
-        //#
-        //# Connections from upper layer
-        //# to dispatcher
-        //#
-        dispatcher.upperLayerIn <-- upperLayerIn;
-        dispatcher.upperLayerOut --> upperLayerOut;
-
-        //#
-        //# Connections from dispatcher
-        //# to TM/UM/AM modules
-        //#
-        dispatcher.TM_Sap <--> tm.TM_Sap_up;
-        dispatcher.UM_Sap <--> um.UM_Sap_up;
-        dispatcher.AM_Sap <--> am.AM_Sap_up;
-
-        //#
-        //# Connections from TM/UM/AM
-        //# modules to the RLC Mux
-        //#
-        tm.TM_Sap_down <--> mux.TM_Sap;
-        um.UM_Sap_down <--> mux.UM_Sap;
-        am.AM_Sap_down <--> mux.AM_Sap;
-
-        //#
-        //# Connections between Mux
-        //# and RLC (down)
-        //#
-        mux.macIn <-- macIn;
-        mux.macOut --> macOut;
+        um.UM_Sap_up$i <-- upperLayerIn;
+        um.UM_Sap_up$o --> upperLayerOut;
+        um.UM_Sap_down$i <-- macIn;
+        um.UM_Sap_down$o --> macOut;
 }
 
