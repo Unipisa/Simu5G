@@ -11,6 +11,9 @@ simple RlcLowerMux
     parameters:
         @class("RlcLowerMux");
         @display("p=100,200;i=block/dispatch");
+
+        @signal[sentPacketToLowerLayer];
+        @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
     gates:
         input macIn;
         output macOut;

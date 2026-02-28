@@ -5,6 +5,8 @@ namespace simu5g {
 
 Define_Module(RlcLowerMux);
 
+simsignal_t RlcLowerMux::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+
 void RlcLowerMux::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
@@ -33,6 +35,11 @@ void RlcLowerMux::handleMessage(cMessage *msg)
         send(msg, toUmGate_);
     }
     else if (incoming == fromUmGate_) {
+        send(msg, macOutGate_);
+    }
+    else if (incoming->isName("fromTxEntity")) {
+        // Packet from a TX entity — forward to MAC
+        emit(sentPacketToLowerLayerSignal_, msg);
         send(msg, macOutGate_);
     }
     else {

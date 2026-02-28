@@ -26,6 +26,8 @@ class UmRxEntity;
 class RlcLowerMux : public cSimpleModule
 {
   protected:
+    static simsignal_t sentPacketToLowerLayerSignal_;
+
     RlcUpperMux *upperMux_ = nullptr;
 
     bool hasD2DSupport_ = false;

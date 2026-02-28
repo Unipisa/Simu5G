@@ -10,6 +10,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ProtocolTag_m.h>
+
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
@@ -78,7 +80,7 @@ void UmTxEntity::handleSdu(inet::Packet *pkt)
             pktDup->addTag<LteRlcNewDataTag>();
 
             EV << "UmTxEntity::handleSdu - Sending new data indication to MAC\n";
-            lteRlc_->sendNewDataIndication(pktDup);
+            send(pktDup, "out");
         }
         else {
             // Queue is full - drop SDU
@@ -292,8 +294,9 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
     // send to MAC layer
     pkt->insertAtFront(rlcPdu);
+    pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
     EV << NOW << " UmTxEntity::rlcPduMake - send PDU " << rlcPdu->getPduSequenceNumber() << " with size " << pkt->getByteLength() << " bytes to lower layer" << endl;
-    lteRlc_->sendToLowerLayer(pkt);
+    send(pkt, "out");
 
     // if incoming connection was halted
     if (notifyEmptyBuffer_ && sduQueue_.isEmpty()) {
@@ -372,7 +375,7 @@ void UmTxEntity::resumeDownstreamInPackets()
             // add tag to indicate new data availability to MAC
             pktRlcdup->addTag<LteRlcNewDataTag>();
             // send the new data indication to the MAC
-            lteRlc_->sendToLowerLayer(pktRlcdup);
+            send(pktRlcdup, "out");
         }
         else {
             // Queue is full - drop SDU
