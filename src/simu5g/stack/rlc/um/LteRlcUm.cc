@@ -14,6 +14,7 @@
 #include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
@@ -48,6 +49,17 @@ UmTxEntity *LteRlcUm::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
     txEntities_[id] = txEnt;
 
     txEnt->setFlowControlInfo(lteInfo);
+
+    // D2D: store per-peer map
+    if (hasD2DSupport_) {
+        MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
+        if (d2dPeer != NODEID_NONE)
+            perPeerTxEntities_[d2dPeer].insert(txEnt);
+
+        // if other Tx buffers for this peer are already holding, the new one should hold too
+        if (isEmptyingTxBuffer(d2dPeer))
+            txEnt->startHoldingDownstreamInPackets();
+    }
 
     EV << "LteRlcUm::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for " << id << "\n";
 
@@ -162,6 +174,37 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
 
+    // D2D: handle mode switch notification
+    if (hasD2DSupport_ && inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
+        auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
+
+        // add here specific behavior for handling mode switch at the RLC layer
+
+        if (switchPkt->getTxSide()) {
+            // get the corresponding Tx buffer & call handler
+            DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+            UmTxEntity *txbuf = lookupTxBuffer(id);
+            if (txbuf == nullptr)
+                txbuf = createTxBuffer(id, lteInfo.get());
+            txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
+
+            // forward packet to PDCP
+            EV << "LteRlcUm::handleLowerMessage - Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
+            send(pkt, upOutGate_);
+        }
+        else { // rx side
+            // get the corresponding Rx buffer & call handler
+            DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
+            UmRxEntity *rxbuf = lookupRxBuffer(id);
+            if (rxbuf == nullptr)
+                rxbuf = createRxBuffer(id, lteInfo.get());
+            rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
+
+            delete pkt;
+        }
+        return;
+    }
+
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
         DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
@@ -200,6 +243,12 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE
     for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
+        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
+        if (hasD2DSupport_ && tit->second->isD2DMultiConnection()) {
+            ++tit;
+            continue;
+        }
+
         if (nodeType == UE || (nodeType == NODEB && tit->first.getNodeId() == nodeId)) {
             tit->second->deleteModule(); // Delete Entity
             tit = txEntities_.erase(tit);    // Delete Element
@@ -208,7 +257,18 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
             ++tit;
         }
     }
+
+    // D2D: clear per-peer tracking
+    if (hasD2DSupport_)
+        perPeerTxEntities_.clear();
+
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end();) {
+        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
+        if (hasD2DSupport_ && rit->second->isD2DMultiConnection()) {
+            ++rit;
+            continue;
+        }
+
         if (nodeType == UE || (nodeType == NODEB && rit->first.getNodeId() == nodeId)) {
             rit->second->deleteModule(); // Delete Entity
             rit = rxEntities_.erase(rit);    // Delete Element
@@ -256,6 +316,39 @@ void LteRlcUm::handleMessage(cMessage *msg)
     else if (incoming == downInGate_) {
         handleLowerMessage(pkt);
     }
+}
+
+void LteRlcUm::resumeDownstreamInPackets(MacNodeId peerId)
+{
+    if (!hasD2DSupport_)
+        return;
+
+    if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
+        return;
+
+    for (auto& txEntity : perPeerTxEntities_.at(peerId)) {
+        if (txEntity->isHoldingDownstreamInPackets())
+            txEntity->resumeDownstreamInPackets();
+    }
+}
+
+bool LteRlcUm::isEmptyingTxBuffer(MacNodeId peerId)
+{
+    if (!hasD2DSupport_)
+        return false;
+
+    EV << NOW << " LteRlcUm::isEmptyingTxBuffer - peerId " << peerId << endl;
+
+    if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
+        return false;
+
+    for (auto& entity : perPeerTxEntities_.at(peerId)) {
+        if (entity->isEmptyingBuffer()) {
+            EV << NOW << " LteRlcUm::isEmptyingTxBuffer - found " << endl;
+            return true;
+        }
+    }
+    return false;
 }
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)

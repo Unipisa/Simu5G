@@ -27,55 +27,10 @@ using namespace omnetpp;
  * This is the UM Module of RLC (with support for D2D)
  *
  */
+// Empty subclass — all D2D logic has been merged into LteRlcUm (guarded by hasD2DSupport_ flag).
+// Kept temporarily for NED type compatibility; will be removed in a subsequent step.
 class LteRlcUmD2D : public LteRlcUm
 {
-  public:
-
-    void resumeDownstreamInPackets(MacNodeId peerId) override;
-    bool isEmptyingTxBuffer(MacNodeId peerId) override;
-
-  protected:
-
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-
-    /**
-     * createTxBuffer() creates a new TXBuffer for the given DrbKey and flow info.
-     * Overridden to add D2D-specific functionality like peer tracking and holding packets.
-     *
-     * @param id DrbKey for the new buffer
-     * @param lteInfo flow-related info
-     * @return pointer to the newly created TXBuffer
-     */
-    UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo) override;
-
-    /**
-     * UM Mode
-     *
-     * handler for traffic coming from
-     * lower layer (DTCH, MTCH, MCCH).
-     *
-     * handleLowerMessage() performs the following tasks:
-     *
-     * - Search (or add) the proper RXBuffer, depending
-     *   on the packet CID
-     * - Calls the RXBuffer, which from now on takes
-     *   care of the packet
-     *
-     * @param pkt packet to process
-     */
-    void handleLowerMessage(cPacket *pkt) override;
-
-    /**
-     * deleteQueues() must be called on handover
-     * to delete queues for a given user
-     *
-     * @param nodeId Id of the node whose queues are deleted
-     */
-    void deleteQueues(MacNodeId nodeId) override;
-
-  private:
-
-    std::map<MacNodeId, std::set<UmTxEntity *, simu5g::utils::cModule_LessId>> perPeerTxEntities_;
 };
 
 } //namespace

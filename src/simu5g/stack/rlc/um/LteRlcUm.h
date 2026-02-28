@@ -115,7 +115,7 @@ class LteRlcUm : public cSimpleModule
      *
      * @param nodeId Id of the node whose queues are deleted
      */
-    virtual void deleteQueues(MacNodeId nodeId);
+    void deleteQueues(MacNodeId nodeId);
 
     /**
      * sendToLowerLayer() is invoked by the TXEntity as a direct method
@@ -124,11 +124,11 @@ class LteRlcUm : public cSimpleModule
      *
      * @param pkt packet to forward
      */
-    virtual void sendToLowerLayer(cPacket *pkt);
+    void sendToLowerLayer(cPacket *pkt);
 
-    virtual void resumeDownstreamInPackets(MacNodeId peerId) {}
+    void resumeDownstreamInPackets(MacNodeId peerId);
 
-    virtual bool isEmptyingTxBuffer(MacNodeId peerId) { return false; }
+    bool isEmptyingTxBuffer(MacNodeId peerId);
 
     /**
      * @author Alessandro Noferi
@@ -171,7 +171,7 @@ class LteRlcUm : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    virtual UmTxEntity *lookupTxBuffer(DrbKey id);
+    UmTxEntity *lookupTxBuffer(DrbKey id);
 
     /**
      * createTxBuffer() creates a new TXBuffer for the given DrbKey and flow info.
@@ -180,7 +180,7 @@ class LteRlcUm : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created TXBuffer
      */
-    virtual UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
 
     /**
@@ -189,7 +189,7 @@ class LteRlcUm : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the RXBuffer if found, nullptr otherwise
      */
-    virtual UmRxEntity *lookupRxBuffer(DrbKey id);
+    UmRxEntity *lookupRxBuffer(DrbKey id);
 
     /**
      * createRxBuffer() creates a new RXBuffer for the given DrbKey and flow info.
@@ -198,7 +198,7 @@ class LteRlcUm : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created RXBuffer
      */
-    virtual UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
   protected:
     /**
@@ -216,7 +216,7 @@ class LteRlcUm : public cSimpleModule
      *
      * @param pkt packet to process
      */
-    virtual void handleUpperMessage(cPacket *pkt);
+    void handleUpperMessage(cPacket *pkt);
 
     /**
      * UM Mode
@@ -233,7 +233,7 @@ class LteRlcUm : public cSimpleModule
      *
      * @param pkt packet to process
      */
-    virtual void handleLowerMessage(cPacket *pkt);
+    void handleLowerMessage(cPacket *pkt);
 
 };
 
