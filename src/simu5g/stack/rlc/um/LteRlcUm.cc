@@ -15,6 +15,7 @@
 
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
+#include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
@@ -44,26 +45,12 @@ UmTxEntity *LteRlcUm::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 
 UmRxEntity *LteRlcUm::lookupRxBuffer(DrbKey id)
 {
-    UmRxEntities::iterator it = rxEntities_.find(id);
-    return (it != rxEntities_.end()) ? it->second : nullptr;
+    return lowerMux_->lookupRxBuffer(id);
 }
 
 UmRxEntity *LteRlcUm::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
-    if (rxEntities_.find(id) != rxEntities_.end())
-        throw cRuntimeError("RLC-UM connection RX entity for %s already exists", id.str().c_str());
-
-    std::stringstream buf;
-    buf << "UmRxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
-    UmRxEntity *rxEnt = check_and_cast<UmRxEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
-    rxEntities_[id] = rxEnt;
-
-    // configure entity
-    rxEnt->setFlowControlInfo(lteInfo);
-
-    EV << "LteRlcUm::createRxBuffer - Added new UmRxEntity: " << rxEnt->getId() << " for " << id << "\n";
-
-    return rxEnt;
+    return lowerMux_->createRxBuffer(id, lteInfo);
 }
 
 
@@ -182,25 +169,8 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    // delegate TX entity deletion to UpperMux
     upperMux_->deleteTxEntities(nodeId);
-
-    // RX entity deletion remains here for now
-    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end();) {
-        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
-        if (hasD2DSupport_ && rit->second->isD2DMultiConnection()) {
-            ++rit;
-            continue;
-        }
-
-        if (nodeType == UE || (nodeType == NODEB && rit->first.getNodeId() == nodeId)) {
-            rit->second->deleteModule(); // Delete Entity
-            rit = rxEntities_.erase(rit);    // Delete Element
-        }
-        else {
-            ++rit;
-        }
-    }
+    lowerMux_->deleteRxEntities(nodeId);
 }
 
 /*
@@ -217,14 +187,12 @@ void LteRlcUm::initialize(int stage)
 
         // parameters
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
-        rxEntityModuleType_ = cModuleType::get(par("rxEntityModuleType").stringValue());
 
         std::string nodeTypeStr = par("nodeType").stdstringValue();
         nodeType = aToNodeType(nodeTypeStr);
 
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
-
-        WATCH_MAP(rxEntities_);
+        lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
     }
 }
 
@@ -254,11 +222,7 @@ bool LteRlcUm::isEmptyingTxBuffer(MacNodeId peerId)
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    for (const auto& [id, entity] : rxEntities_) {
-        MacNodeId nodeId = id.getNodeId();
-        if ((ueSet->find(nodeId) == ueSet->end()) && !entity->isEmpty())
-            ueSet->insert(nodeId);
-    }
+    lowerMux_->activeUeUL(ueSet);
 }
 
 void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughput)
