@@ -83,6 +83,12 @@ class UmTxEntity : public cSimpleModule
     bool enque(cPacket *pkt);
 
     /**
+     * handleMacSduRequest() handles a MAC SDU request packet.
+     * Extracts the requested size and calls rlcPduMake().
+     */
+    void handleMacSduRequest(inet::Packet *pkt);
+
+    /**
      * rlcPduMake() creates a PDU having the specified size
      * and sends it to the lower layer
      *

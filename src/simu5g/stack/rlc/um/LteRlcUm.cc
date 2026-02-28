@@ -183,15 +183,8 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         UmTxEntity *txbuf = lookupTxBuffer(id);
         ASSERT(txbuf != nullptr);
 
-        auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
-        unsigned int size = macSduRequest->getSduSize();
-
         drop(pkt);
-
-        // do segmentation/concatenation and send a pdu to the lower layer
-        txbuf->rlcPduMake(size);
-
-        delete pkt;
+        txbuf->handleMacSduRequest(pkt);
     }
     else {
         emit(receivedPacketFromLowerLayerSignal_, pkt);

@@ -12,6 +12,7 @@
 
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
@@ -84,6 +85,22 @@ void UmTxEntity::handleSdu(inet::Packet *pkt)
             dropBufferOverflow(pkt);
         }
     }
+}
+
+void UmTxEntity::handleMacSduRequest(inet::Packet *pkt)
+{
+    Enter_Method("handleMacSduRequest()");
+    take(pkt);
+
+    auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
+    unsigned int size = macSduRequest->getSduSize();
+
+    EV << NOW << " UmTxEntity::handleMacSduRequest - MAC requests PDU of size " << size << "\n";
+
+    // do segmentation/concatenation and send a PDU to the lower layer
+    rlcPduMake(size);
+
+    delete pkt;
 }
 
 bool UmTxEntity::enque(cPacket *pkt)
