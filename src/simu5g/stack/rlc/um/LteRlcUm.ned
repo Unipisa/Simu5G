@@ -72,6 +72,20 @@ simple LteRlcUm like ILteRlcUm
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
 
+        //# D2D statistics (only relevant when hasD2DSupport is true)
+        @signal[rlcDelayD2D];
+        @statistic[rlcDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcDelayD2D"; record=mean,vector);
+        @signal[rlcThroughputD2D];
+        @statistic[rlcThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcThroughputD2D"; record=simu5g_rateavg,vector);
+
+        @signal[rlcCellThroughputD2D];
+        @statistic[rlcCellThroughputD2D](title="Cell Throughput at the rlc layer D2D"; unit="Bps"; source="rlcCellThroughputD2D"; record=simu5g_rateavg,vector);
+
+        @signal[rlcPduDelayD2D];
+        @statistic[rlcPduDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcPduDelayD2D"; record=mean,vector);
+        @signal[rlcPduThroughputD2D];
+        @statistic[rlcPduThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcPduThroughputD2D"; record=simu5g_rateavg,vector);
+
     gates:
         //#
         //# Gates connecting RLC and UM

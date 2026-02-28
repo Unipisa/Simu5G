@@ -33,11 +33,6 @@ void LteMacEnbD2D::initialize(int stage)
 {
     LteMacEnb::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        cModule *rlcUm = inet::getModuleFromPar<cModule>(par("rlcUmModule"), this);
-        std::string rlcUmType = rlcUm->getComponentType()->getName();
-        if (rlcUmType != "LteRlcUmD2D")
-            throw cRuntimeError("LteMacEnbD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'", par("rlcUmModule").stringValue(), rlcUmType.c_str());
-
         reuseD2D_ = par("reuseD2D");
         reuseD2DMulti_ = par("reuseD2DMulti");
 

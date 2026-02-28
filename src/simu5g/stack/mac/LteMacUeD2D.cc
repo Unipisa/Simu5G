@@ -35,12 +35,6 @@ void LteMacUeD2D::initialize(int stage)
 {
     LteMacUe::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        // check the RLC module type: if it is not "D2D", abort simulation
-        cModule *rlcUm = inet::getModuleFromPar<cModule>(par("rlcUmModule"), this);
-        std::string rlcUmType = rlcUm->getComponentType()->getName();
-        if (rlcUmType != "LteRlcUmD2D")
-            throw cRuntimeError("LteMacUeD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'", par("rlcUmModule").stringValue(), rlcUmType.c_str());
-
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
         if (!pdcp->par("hasD2DSupport").boolValue())
             throw cRuntimeError("LteMacUeD2D::initialize - PDCP module '%s' does not have D2D support", pdcp->getComponentType()->getName());
