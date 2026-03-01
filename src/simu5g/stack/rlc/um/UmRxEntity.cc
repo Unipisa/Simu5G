@@ -11,7 +11,8 @@
 //
 
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/rlc/um//UmRxEntity.h"
+#include "simu5g/stack/rlc/um/UmRxEntity.h"
+#include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"

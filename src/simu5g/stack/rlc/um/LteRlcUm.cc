@@ -10,8 +10,6 @@
 // and cannot be removed from it.
 //
 
-#include <inet/common/ModuleAccess.h>
-
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
@@ -59,12 +57,6 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 void LteRlcUm::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        // parameters
-        hasD2DSupport_ = par("hasD2DSupport").boolValue();
-
-        std::string nodeTypeStr = par("nodeType").stdstringValue();
-        nodeType = aToNodeType(nodeTypeStr);
-
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
         lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
     }
