@@ -25,10 +25,8 @@ simple LowerMux
         input nrRlcIn @loose;
         output nrRlcOut @loose;
         input dcManagerIn @loose;
-        output dcManagerOut @loose;
 
         output toRxEntity[];           // dynamic: dispatches to RX entity in gates
         input fromTxEntity[];          // dynamic: receives from TX entity out gates
         output toBypassTxEntity[];     // dynamic: dispatches to bypass TX entity in gates
-        input fromBypassRxEntity[];    // dynamic: receives from bypass RX entity out gates
 }

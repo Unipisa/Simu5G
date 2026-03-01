@@ -14,6 +14,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LowerMux;
+class DcMux;
 
 /**
  * @class UpperMux
@@ -26,6 +27,7 @@ class UpperMux : public cSimpleModule
 {
   protected:
     LowerMux *lowerMux_ = nullptr;
+    DcMux *dcMux_ = nullptr;
 
     cModuleType *txEntityModuleType_ = nullptr;
 

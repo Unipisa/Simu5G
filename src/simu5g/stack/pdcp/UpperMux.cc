@@ -1,5 +1,6 @@
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/LowerMux.h"
+#include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -18,6 +19,7 @@ void UpperMux::initialize(int stage)
         upperLayerOutGate_ = gate("upperLayerOut");
 
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
 
         const char *txEntityModuleTypeName = getParentModule()->par("txEntityModuleType").stringValue();
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
@@ -89,6 +91,13 @@ PdcpTxEntityBase *UpperMux::createTxEntity(DrbKey id)
     int fromIdx = lowerMux_->gateSize("fromTxEntity");
     lowerMux_->setGateSize("fromTxEntity", fromIdx + 1);
     module->gate("out")->connectTo(lowerMux_->gate("fromTxEntity", fromIdx));
+
+    // Wire dcOut gate to DcMux (if entity has one, e.g. NrTxPdcpEntity)
+    if (module->hasGate("dcOut")) {
+        int dcIdx = dcMux_->gateSize("fromEntity");
+        dcMux_->setGateSize("fromEntity", dcIdx + 1);
+        module->gate("dcOut")->connectTo(dcMux_->gate("fromEntity", dcIdx));
+    }
 
     module->scheduleStart(simTime());
     module->callInitialize();
