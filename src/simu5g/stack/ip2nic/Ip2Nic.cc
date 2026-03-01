@@ -283,6 +283,9 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
             lteInfo->setDestId(nodeId_);
         else
             lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
+
+        if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+            binder_->establishUnidirectionalDataConnection(lteInfo.get());
         return;
     }
 
@@ -379,6 +382,9 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
     ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
     DrbId drbId = lookupOrAssignDrbId(key);
     lteInfo->setDrbId(drbId);
+
+    if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+        binder_->establishUnidirectionalDataConnection(lteInfo.get());
 
     // Debug logging (UE subclasses only)
     if (!isEnb) {

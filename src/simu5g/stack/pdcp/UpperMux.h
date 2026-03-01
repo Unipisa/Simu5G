@@ -3,9 +3,7 @@
 
 #include <map>
 #include <set>
-#include <inet/common/ModuleRefByPar.h>
 
-#include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
@@ -27,9 +25,6 @@ class LowerMux;
 class UpperMux : public cSimpleModule
 {
   protected:
-    inet::ModuleRefByPar<Binder> binder_;
-    MacNodeId nodeId_;
-
     LowerMux *lowerMux_ = nullptr;
 
     cModuleType *txEntityModuleType_ = nullptr;
