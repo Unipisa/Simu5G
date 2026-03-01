@@ -8,6 +8,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
+#include "simu5g/stack/rlc/um/UmTxEntity.h"
 
 namespace simu5g {
 
@@ -26,6 +27,7 @@ class UmRxEntity;
 class RlcLowerMux : public cSimpleModule
 {
   protected:
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
     static simsignal_t sentPacketToLowerLayerSignal_;
 
     RlcUpperMux *upperMux_ = nullptr;
@@ -52,6 +54,8 @@ class RlcLowerMux : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
+
+    virtual void fromMacLayer(cPacket *pkt);
 };
 
 } // namespace simu5g

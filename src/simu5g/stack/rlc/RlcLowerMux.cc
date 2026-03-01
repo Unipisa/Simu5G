@@ -1,10 +1,15 @@
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
+#include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
+#include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 
 namespace simu5g {
 
 Define_Module(RlcLowerMux);
 
+simsignal_t RlcLowerMux::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
 simsignal_t RlcLowerMux::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
 void RlcLowerMux::initialize(int stage)
@@ -32,7 +37,7 @@ void RlcLowerMux::handleMessage(cMessage *msg)
 {
     cGate *incoming = msg->getArrivalGate();
     if (incoming == macInGate_) {
-        send(msg, toUmGate_);
+        fromMacLayer(check_and_cast<cPacket *>(msg));
     }
     else if (incoming == fromUmGate_) {
         send(msg, macOutGate_);
@@ -44,6 +49,64 @@ void RlcLowerMux::handleMessage(cMessage *msg)
     }
     else {
         throw cRuntimeError("RlcLowerMux: unexpected message from gate %s", incoming->getFullName());
+    }
+}
+
+void RlcLowerMux::fromMacLayer(cPacket *pktAux)
+{
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
+    EV << "RlcLowerMux::fromMacLayer - Received packet " << pkt->getName() << " from lower layer\n";
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    auto chunk = pkt->peekAtFront<inet::Chunk>();
+
+    ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
+
+    // D2D: handle mode switch notification
+    if (hasD2DSupport_ && inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
+        auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
+
+        if (switchPkt->getTxSide()) {
+            // get the corresponding Tx buffer & call handler
+            DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+            UmTxEntity *txbuf = upperMux_->lookupTxBuffer(id);
+            if (txbuf == nullptr)
+                txbuf = upperMux_->createTxBuffer(id, lteInfo.get());
+            txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
+
+            // forward packet to PDCP via UpperMux
+            EV << "RlcLowerMux::fromMacLayer - Forwarding D2D switch to PDCP via toUpperMux\n";
+            send(pkt, "toUpperMux");
+        }
+        else { // rx side
+            DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
+            UmRxEntity *rxbuf = lookupRxBuffer(id);
+            if (rxbuf == nullptr)
+                rxbuf = createRxBuffer(id, lteInfo.get());
+            rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
+
+            delete pkt;
+        }
+        return;
+    }
+
+    if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
+        // MAC SDU request — dispatch to TX entity via macToTxEntity gate
+        DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+        UmTxEntity *txbuf = upperMux_->lookupTxBuffer(id);
+        ASSERT(txbuf != nullptr);
+
+        send(pkt, txbuf->gate("macIn")->getPreviousGate());
+    }
+    else {
+        // RLC PDU — dispatch to RX entity via toRxEntity gate
+        emit(receivedPacketFromLowerLayerSignal_, pkt);
+
+        DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
+        UmRxEntity *rxbuf = lookupRxBuffer(id);
+        ASSERT(rxbuf != nullptr);
+
+        EV << "RlcLowerMux::fromMacLayer - Enqueue packet " << pkt->getName() << " into RX entity\n";
+        send(pkt, rxbuf->gate("in")->getPreviousGate());
     }
 }
 

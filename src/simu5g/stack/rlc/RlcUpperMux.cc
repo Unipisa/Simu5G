@@ -45,6 +45,10 @@ void RlcUpperMux::handleMessage(cMessage *msg)
         emit(sentPacketToUpperLayerSignal_, msg);
         send(msg, upperLayerOutGate_);
     }
+    else if (incoming->isName("fromLowerMux")) {
+        // D2D switch notification forwarded from LowerMux to PDCP
+        send(msg, upperLayerOutGate_);
+    }
     else {
         throw cRuntimeError("RlcUpperMux: unexpected message from gate %s", incoming->getFullName());
     }

@@ -22,6 +22,7 @@ simple RlcUpperMux
         output upperLayerOut;
         output toUm;
         input fromUm;
+        input fromLowerMux;            // for D2D switch notifications forwarded to PDCP
         output toTxEntity[];           // dynamic: dispatches to TX entity in gates
         input fromRxEntity[];          // dynamic: receives from RX entity out gates
 }

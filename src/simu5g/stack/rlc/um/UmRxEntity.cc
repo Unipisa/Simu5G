@@ -658,7 +658,7 @@ void UmRxEntity::initialize(int stage)
 
 void UmRxEntity::handleMessage(cMessage *msg)
 {
-    if (msg->isName("timer")) {
+    if (msg->isSelfMessage()) {
         t_reordering_.handle();
 
         EV << NOW << " UmRxEntity::handleMessage : t_reordering timer has expired " << endl;
@@ -686,6 +686,15 @@ void UmRxEntity::handleMessage(cMessage *msg)
         }
 
         delete msg;
+    }
+    else if (msg->getArrivalGate() && msg->getArrivalGate()->isName("in")) {
+        // RLC PDU from LowerMux — enqueue for reassembly
+        auto pkt = check_and_cast<inet::Packet *>(msg);
+        EV << "UmRxEntity::handleMessage - Enqueue packet " << pkt->getName() << " from LowerMux\n";
+        enque(pkt);
+    }
+    else {
+        throw cRuntimeError("UmRxEntity: unexpected message %s", msg->getFullName());
     }
 }
 

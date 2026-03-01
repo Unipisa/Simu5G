@@ -12,6 +12,8 @@ simple RlcLowerMux
         @class("RlcLowerMux");
         @display("p=100,200;i=block/dispatch");
 
+        @signal[receivedPacketFromLowerLayer];
+        @statistic[receivedPacketFromLowerLayer](source="receivedPacketFromLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
     gates:
@@ -22,4 +24,5 @@ simple RlcLowerMux
         output toRxEntity[];          // dynamic: dispatches to RX entity in gates
         input fromTxEntity[];         // dynamic: receives from TX entity out gates
         output macToTxEntity[];       // dynamic: dispatches MAC SDU requests to TX entity macIn gates
+        output toUpperMux;             // for forwarding D2D switch notifications to PDCP
 }
