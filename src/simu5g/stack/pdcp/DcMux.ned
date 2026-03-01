@@ -23,5 +23,5 @@ simple DcMux
         input dcManagerIn @loose;
         output dcManagerOut @loose;
         output toLowerMux @loose;
-        input fromLowerMux @loose;
+        input fromEntity[];
 }

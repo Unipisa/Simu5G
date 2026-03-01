@@ -105,8 +105,7 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
 
                 auto tag = pkt->addTagIfAbsent<X2TargetReq>();
                 tag->setTargetNode(secondaryNodeId);
-                pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_X2);
-                send(pkt, "out");
+                send(pkt, "dcOut");
             }
         }
     }

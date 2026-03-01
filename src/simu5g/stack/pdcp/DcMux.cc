@@ -18,18 +18,17 @@ Define_Module(DcMux);
 void DcMux::initialize()
 {
     dcManagerInGate_ = gate("dcManagerIn");
-    fromLowerMuxGate_ = gate("fromLowerMux");
 }
 
 void DcMux::handleMessage(cMessage *msg)
 {
     cGate *incoming = msg->getArrivalGate();
     if (incoming == dcManagerInGate_) {
-        // Passthrough: forward DC manager input to LowerMux
+        // Incoming from DC manager: forward to LowerMux for dispatch
         send(msg, "toLowerMux");
     }
-    else if (incoming == fromLowerMuxGate_) {
-        // Passthrough: forward LowerMux output to DC manager
+    else if (incoming->isName("fromEntity")) {
+        // Outgoing from PDCP entity: forward to DC manager
         send(msg, "dcManagerOut");
     }
     else {

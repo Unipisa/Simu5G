@@ -1,5 +1,6 @@
 #include "simu5g/stack/pdcp/LowerMux.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
+#include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
@@ -24,6 +25,7 @@ void LowerMux::initialize(int stage)
         nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
 
         upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("upperMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
 
         isNR_ = par("isNR").boolValue();
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
@@ -94,20 +96,9 @@ void LowerMux::handleMessage(cMessage *msg)
             case PDCP_OUT_NR_RLC:
                 send(pkt, nrRlcOutGate_);
                 break;
-            case PDCP_OUT_X2:
-                send(pkt, "dcManagerOut");
-                break;
             default:
                 throw cRuntimeError("LowerMux: unexpected route %d from TX entity", (int)routeTag->getRoute());
         }
-    }
-    else if (incoming->isName("fromBypassRxEntity")) {
-        // Packet from a bypass RX entity — route to DC manager
-        auto inetPkt = check_and_cast<Packet *>(pkt);
-        auto routeTag = inetPkt->removeTag<PdcpOutputRoutingTag>();
-        if (routeTag->getRoute() != PDCP_OUT_X2)
-            throw cRuntimeError("LowerMux: unexpected route %d from bypass RX entity", (int)routeTag->getRoute());
-        send(pkt, "dcManagerOut");
     }
     else {
         throw cRuntimeError("LowerMux: unexpected message from gate %s", incoming->getFullName());
@@ -251,10 +242,10 @@ PdcpRxEntityBase *LowerMux::createBypassRxEntity(DrbKey id)
     setGateSize("toRxEntity", idx + 1);
     gate("toRxEntity", idx)->connectTo(module->gate("in"));
 
-    // Wire entity output gate to LowerMux bypass RX input (routes to dcManagerOut)
-    int fromIdx = gateSize("fromBypassRxEntity");
-    setGateSize("fromBypassRxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(gate("fromBypassRxEntity", fromIdx));
+    // Wire entity output gate to DcMux (bypass RX sends to X2 via DcMux)
+    int fromIdx = dcMux_->gateSize("fromEntity");
+    dcMux_->setGateSize("fromEntity", fromIdx + 1);
+    module->gate("out")->connectTo(dcMux_->gate("fromEntity", fromIdx));
 
     module->scheduleStart(simTime());
     module->callInitialize();
