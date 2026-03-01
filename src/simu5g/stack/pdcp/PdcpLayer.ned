@@ -58,6 +58,9 @@ module PdcpLayer like ILtePdcp
             hasD2DSupport = parent.hasD2DSupport;
             @display("p=80,220");
         }
+        dcMux: DcMux {
+            @display("p=280,150");
+        }
 
     connections allowunconnected:
         upperLayerIn --> upperMux.upperLayerIn;
