@@ -19,4 +19,9 @@ simple DcMux
 {
     parameters:
         @display("i=block/dispatch");
+    gates:
+        input dcManagerIn @loose;
+        output dcManagerOut @loose;
+        output toLowerMux @loose;
+        input fromLowerMux @loose;
 }

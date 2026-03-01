@@ -21,6 +21,10 @@ using namespace omnetpp;
 class DcMux : public cSimpleModule
 {
   protected:
+    cGate *dcManagerInGate_ = nullptr;
+    cGate *fromLowerMuxGate_ = nullptr;
+
+    void initialize() override;
     void handleMessage(cMessage *msg) override;
 };
 

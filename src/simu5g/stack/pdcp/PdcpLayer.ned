@@ -69,6 +69,8 @@ module PdcpLayer like ILtePdcp
         lowerMux.rlcOut --> rlcOut;
         nrRlcIn --> lowerMux.nrRlcIn if lowerMux.isNR;
         lowerMux.nrRlcOut --> nrRlcOut if lowerMux.isNR;
-        dcManagerIn --> lowerMux.dcManagerIn if lowerMux.isNR;
-        lowerMux.dcManagerOut --> dcManagerOut if lowerMux.isNR;
+        dcManagerIn --> dcMux.dcManagerIn if lowerMux.isNR;
+        dcMux.dcManagerOut --> dcManagerOut if lowerMux.isNR;
+        dcMux.toLowerMux --> lowerMux.dcManagerIn if lowerMux.isNR;
+        lowerMux.dcManagerOut --> dcMux.fromLowerMux if lowerMux.isNR;
 }

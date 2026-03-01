@@ -15,9 +15,26 @@ namespace simu5g {
 
 Define_Module(DcMux);
 
+void DcMux::initialize()
+{
+    dcManagerInGate_ = gate("dcManagerIn");
+    fromLowerMuxGate_ = gate("fromLowerMux");
+}
+
 void DcMux::handleMessage(cMessage *msg)
 {
-    throw cRuntimeError("DcMux: not yet implemented");
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == dcManagerInGate_) {
+        // Passthrough: forward DC manager input to LowerMux
+        send(msg, "toLowerMux");
+    }
+    else if (incoming == fromLowerMuxGate_) {
+        // Passthrough: forward LowerMux output to DC manager
+        send(msg, "dcManagerOut");
+    }
+    else {
+        throw cRuntimeError("DcMux: unexpected message from gate %s", incoming->getFullName());
+    }
 }
 
 } // namespace simu5g
