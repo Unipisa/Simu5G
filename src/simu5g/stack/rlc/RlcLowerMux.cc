@@ -26,6 +26,7 @@ void RlcLowerMux::initialize(int stage)
         // get RX entity module type and nodeType from the entity manager
         cModule *um = getParentModule()->getSubmodule("entityManager");
         rxEntityModuleType_ = cModuleType::get(um->par("rxEntityModuleType").stringValue());
+        tmRxEntityModuleType_ = cModuleType::get(um->par("tmRxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 
         WATCH_MAP(rxEntities_);
@@ -119,9 +120,14 @@ RlcRxEntityBase *RlcLowerMux::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo
     if (rxEntities_.find(id) != rxEntities_.end())
         throw cRuntimeError("RLC RX entity for %s already exists", id.str().c_str());
 
+    // Pick entity type based on RLC mode
+    LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
+    cModuleType *moduleType = (rlcType == TM) ? tmRxEntityModuleType_ : rxEntityModuleType_;
+    const char *prefix = (rlcType == TM) ? "TmRxEntity" : "UmRxEntity";
+
     std::stringstream buf;
-    buf << "UmRxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
-    auto *module = rxEntityModuleType_->create(buf.str().c_str(), getParentModule());
+    buf << prefix << " Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
+    auto *module = moduleType->create(buf.str().c_str(), getParentModule());
     module->finalizeParameters();
     module->buildInside();
 
