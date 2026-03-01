@@ -50,7 +50,6 @@ module PdcpLayer like ILtePdcp
             @display("p=180,150");
         }
         upperMux: UpperMux {
-            binderModule = parent.binderModule;
             @display("p=80,80");
         }
         lowerMux: LowerMux {

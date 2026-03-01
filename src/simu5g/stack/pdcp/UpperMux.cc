@@ -1,6 +1,7 @@
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/LowerMux.h"
 #include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
+#include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
 namespace simu5g {
@@ -16,15 +17,10 @@ void UpperMux::initialize(int stage)
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
 
-        binder_.reference(this, "binderModule", true);
-        nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
-
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
 
         const char *txEntityModuleTypeName = getParentModule()->par("txEntityModuleType").stringValue();
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
-
-        WATCH(nodeId_);
     }
 }
 
@@ -62,13 +58,9 @@ void UpperMux::fromDataPort(cPacket *pktAux)
     EV << "fromDataPort in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
        << ": Processing packet " << pkt->getName() << " src=" << lteInfo->getSourceId() << " dest=" << lteInfo->getDestId()
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
-       << " ---> " << id << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
+       << " ---> " << id << std::endl;
 
-    if (entity == nullptr) {
-        binder_->establishUnidirectionalDataConnection((FlowControlInfo *)lteInfo.get());
-        entity = lookupTxEntity(id);
-        ASSERT(entity != nullptr);
-    }
+    ASSERT2(entity != nullptr, "TX entity not found -- connection should have been established by Ip2Nic");
 
     send(pkt, entity->gate("in")->getPreviousGate());
 }
@@ -110,6 +102,7 @@ PdcpTxEntityBase *UpperMux::createTxEntity(DrbKey id)
 
 void UpperMux::deleteTxEntities(MacNodeId nodeId)
 {
+    MacNodeId nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
     bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
     bool isNR = getParentModule()->par("isNR").boolValue();
 

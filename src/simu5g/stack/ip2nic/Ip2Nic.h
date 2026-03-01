@@ -14,6 +14,7 @@
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
+#include <set>
 #include <unordered_map>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -81,6 +82,11 @@ class Ip2Nic : public cSimpleModule
     // DRB ID counter and table (for DRB ID assignment)
     unsigned short drbId_ = 1;
     std::unordered_map<ConnectionKey, DrbId, ConnectionKeyHash> drbIdTable_;
+
+    // Tracks (drbId, destId) pairs for which connections have been established.
+    // A new entry triggers establishUnidirectionalDataConnection(); this also
+    // handles re-establishment after handover (same drbId, different destId).
+    std::set<std::pair<DrbId, MacNodeId>> establishedConnections_;
 
     cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
     cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer
