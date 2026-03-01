@@ -25,7 +25,7 @@ void RlcLowerMux::initialize(int stage)
 
         // get RX entity module type and nodeType from the entity manager
         cModule *um = getParentModule()->getSubmodule("entityManager");
-        rxEntityModuleType_ = cModuleType::get(um->par("rxEntityModuleType").stringValue());
+        rxEntityModuleType_ = cModuleType::get(um->par("umRxEntityModuleType").stringValue());
         tmRxEntityModuleType_ = cModuleType::get(um->par("tmRxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 
