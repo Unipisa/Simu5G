@@ -19,8 +19,6 @@ simple RlcLowerMux
     gates:
         input macIn;
         output macOut;
-        output toUm;
-        input fromUm;
         output toRxEntity[];          // dynamic: dispatches to RX entity in gates
         input fromTxEntity[];         // dynamic: receives from TX entity out gates
         output macToTxEntity[];       // dynamic: dispatches MAC SDU requests to TX entity macIn gates

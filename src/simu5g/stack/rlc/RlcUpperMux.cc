@@ -14,8 +14,6 @@ void RlcUpperMux::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
-        toUmGate_ = gate("toUm");
-        fromUmGate_ = gate("fromUm");
 
         binder_.reference(this, "binderModule", true);
         lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
@@ -36,9 +34,6 @@ void RlcUpperMux::handleMessage(cMessage *msg)
     cGate *incoming = msg->getArrivalGate();
     if (incoming == upperLayerInGate_) {
         fromUpperLayer(check_and_cast<cPacket *>(msg));
-    }
-    else if (incoming == fromUmGate_) {
-        send(msg, upperLayerOutGate_);
     }
     else if (incoming->isName("fromRxEntity")) {
         // Packet from an RX entity — forward to upper layer

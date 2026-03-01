@@ -22,7 +22,7 @@ package simu5g.stack.rlc.um;
 // a RLC Service Data Unit (SDU) or Protocol Data Unit (PDU) belongs and routing it to
 // the corresponding transmitting or receiving entity for further processing.
 //
-simple LteRlcUm like ILteRlcUm
+simple LteRlcUm
 {
     parameters:
         @class("LteRlcUm");
@@ -63,15 +63,6 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcPduThroughputUl];
         @statistic[rlcPduThroughputUl](title="Throughput at the rlc layer UL"; unit="Bps"; source="rlcPduThroughputUl"; record=simu5g_rateavg,vector);
 
-        @signal[receivedPacketFromUpperLayer];
-        @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[receivedPacketFromLowerLayer];
-        @statistic[receivedPacketFromLowerLayer](source="receivedPacketFromLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[sentPacketToUpperLayer];
-        @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        @signal[sentPacketToLowerLayer];
-        @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-
         //# D2D statistics (only relevant when hasD2DSupport is true)
         @signal[rlcDelayD2D];
         @statistic[rlcDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcDelayD2D"; record=mean,vector);
@@ -86,11 +77,5 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcPduThroughputD2D];
         @statistic[rlcPduThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcPduThroughputD2D"; record=simu5g_rateavg,vector);
 
-    gates:
-        //#
-        //# Gates connecting RLC and UM
-        //#
-        inout UM_Sap_up;    // Gate to PDCP
-        inout UM_Sap_down;    // Gate to RLC Mux
 }
 

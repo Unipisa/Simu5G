@@ -38,8 +38,6 @@ class RlcLowerMux : public cSimpleModule
 
     cGate *macInGate_ = nullptr;
     cGate *macOutGate_ = nullptr;
-    cGate *toUmGate_ = nullptr;
-    cGate *fromUmGate_ = nullptr;
 
     typedef std::map<DrbKey, UmRxEntity *> UmRxEntities;
     UmRxEntities rxEntities_;

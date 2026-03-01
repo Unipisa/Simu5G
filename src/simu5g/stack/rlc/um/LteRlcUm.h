@@ -60,14 +60,6 @@ class LteRlcUm : public cSimpleModule
     RlcUpperMux *upperMux_ = nullptr;
     RlcLowerMux *lowerMux_ = nullptr;
 
-    // statistics
-    static simsignal_t receivedPacketFromUpperLayerSignal_;
-    static simsignal_t receivedPacketFromLowerLayerSignal_;
-    static simsignal_t sentPacketToUpperLayerSignal_;
-    static simsignal_t sentPacketToLowerLayerSignal_;
-    static simsignal_t rlcPacketLossDlSignal_;
-    static simsignal_t rlcPacketLossUlSignal_;
-
     // (TX entities are managed by RlcUpperMux, RX entities by RlcLowerMux)
 
     /**
@@ -80,21 +72,7 @@ class LteRlcUm : public cSimpleModule
     typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
     ULThroughputPerUE ulThroughput_;
 
-    cGate *upInGate_ = nullptr;
-    cGate *upOutGate_ = nullptr;
-    cGate *downInGate_ = nullptr;
-    cGate *downOutGate_ = nullptr;
-
   public:
-
-    /**
-     * sendToUpperLayer() is invoked by the RXBuffer as a direct method
-     * call and is used to forward fragments to upper layers. This is needed
-     * since the RXBuffer itself has no output gates
-     *
-     * @param pkt packet to forward
-     */
-    void sendToUpperLayer(cPacket *pkt);
 
     /**
      * deleteQueues() must be called on handover
@@ -103,21 +81,6 @@ class LteRlcUm : public cSimpleModule
      * @param nodeId Id of the node whose queues are deleted
      */
     void deleteQueues(MacNodeId nodeId);
-
-    /**
-     * sendToLowerLayer() is invoked by the TXEntity as a direct method
-     * call and is used to forward fragments to lower layers. This is needed
-     * since the TXBuffer itself has no output gates
-     *
-     * @param pkt packet to forward
-     */
-    void sendToLowerLayer(cPacket *pkt);
-
-    /**
-     * sendNewDataIndication() sends a new-data notification to the MAC layer.
-     * Called by TXEntities after enqueuing a new SDU.
-     */
-    void sendNewDataIndication(cPacket *pkt);
 
     void resumeDownstreamInPackets(MacNodeId peerId);
 
@@ -142,20 +105,12 @@ class LteRlcUm : public cSimpleModule
     void resetThroughputStats(MacNodeId nodeId);
 
   protected:
-    /**
-     * Initialize watches
-     */
     void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     void finish() override
     {
     }
-
-    /**
-     * Analyze the gate of the incoming packet
-     * and call the proper handler
-     */
-    void handleMessage(cMessage *msg) override;
 
   public:
     /**
@@ -192,41 +147,6 @@ class LteRlcUm : public cSimpleModule
      * @return pointer to the newly created RXBuffer
      */
     UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
-
-  protected:
-    /**
-     * handler for traffic coming
-     * from the upper layer (PDCP)
-     *
-     * handleUpperMessage() performs the following tasks:
-     * - Adds the RLC-UM header to the packet, containing
-     *   the CID, the Traffic Type and the Sequence Number
-     *   of the packet (extracted from the IP Datagram)
-     * - Searches (or adds) the proper TXBuffer, depending
-     *   on the packet CID
-     * - Calls the TXBuffer, which from now on takes
-     *   care of the packet
-     *
-     * @param pkt packet to process
-     */
-    void handleUpperMessage(cPacket *pkt);
-
-    /**
-     * UM Mode
-     *
-     * handler for traffic coming from
-     * the lower layer (DTCH, MTCH, MCCH).
-     *
-     * handleLowerMessage() performs the following task:
-     *
-     * - Searches (or adds) the proper RXBuffer, depending
-     *   on the packet CID
-     * - Calls the RXBuffer, which from now on takes
-     *   care of the packet
-     *
-     * @param pkt packet to process
-     */
-    void handleLowerMessage(cPacket *pkt);
 
 };
 

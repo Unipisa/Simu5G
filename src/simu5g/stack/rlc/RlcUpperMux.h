@@ -41,8 +41,6 @@ class RlcUpperMux : public cSimpleModule
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
-    cGate *toUmGate_ = nullptr;
-    cGate *fromUmGate_ = nullptr;
 
     typedef std::map<DrbKey, UmTxEntity *> UmTxEntities;
     UmTxEntities txEntities_;

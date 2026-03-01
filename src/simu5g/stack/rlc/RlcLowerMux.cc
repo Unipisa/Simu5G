@@ -17,8 +17,6 @@ void RlcLowerMux::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         macInGate_ = gate("macIn");
         macOutGate_ = gate("macOut");
-        toUmGate_ = gate("toUm");
-        fromUmGate_ = gate("fromUm");
 
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
 
@@ -38,9 +36,6 @@ void RlcLowerMux::handleMessage(cMessage *msg)
     cGate *incoming = msg->getArrivalGate();
     if (incoming == macInGate_) {
         fromMacLayer(check_and_cast<cPacket *>(msg));
-    }
-    else if (incoming == fromUmGate_) {
-        send(msg, macOutGate_);
     }
     else if (incoming->isName("fromTxEntity")) {
         // Packet from a TX entity — forward to MAC

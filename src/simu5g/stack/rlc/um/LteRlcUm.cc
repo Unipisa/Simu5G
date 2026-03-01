@@ -11,26 +11,16 @@
 //
 
 #include <inet/common/ModuleAccess.h>
-#include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
-#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
-#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
-#include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 
 namespace simu5g {
 
 Define_Module(LteRlcUm);
 
 using namespace omnetpp;
-
-// statistics
-simsignal_t LteRlcUm::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LteRlcUm::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LteRlcUm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
-simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
 UmTxEntity *LteRlcUm::lookupTxBuffer(DrbKey id)
 {
@@ -54,117 +44,6 @@ UmRxEntity *LteRlcUm::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 }
 
 
-void LteRlcUm::sendToUpperLayer(cPacket *pkt)
-{
-    Enter_Method_Silent("sendDefragmented()");                    // Direct Method Call
-    take(pkt);                                                    // Take ownership
-
-    EV << "LteRlcUm : Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
-    send(pkt, upOutGate_);
-
-    emit(sentPacketToUpperLayerSignal_, pkt);
-}
-
-void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
-{
-    Enter_Method_Silent("sendToLowerLayer()");                    // Direct Method Call
-    take(pktAux);                                                    // Take ownership
-    auto pkt = check_and_cast<inet::Packet *>(pktAux);
-    pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
-    EV << "LteRlcUm : Sending packet " << pktAux->getName() << " to port UM_Sap_down$o\n";
-    send(pktAux, downOutGate_);
-    emit(sentPacketToLowerLayerSignal_, pkt);
-}
-
-void LteRlcUm::sendNewDataIndication(cPacket *pktAux)
-{
-    Enter_Method_Silent("sendNewDataIndication()");
-    take(pktAux);
-    EV << "LteRlcUm : Sending new data indication to port UM_Sap_down$o\n";
-    send(pktAux, downOutGate_);
-}
-
-void LteRlcUm::handleUpperMessage(cPacket *pktAux)
-{
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
-
-    auto pkt = check_and_cast<inet::Packet *>(pktAux);
-    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-
-    EV << "LteRlcUm::handleUpperMessage - Received packet from upper layer, size " << pktAux->getByteLength() << "\n";
-
-    DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-    UmTxEntity *txbuf = lookupTxBuffer(id);
-    ASSERT(txbuf != nullptr);
-
-    drop(pkt);
-    txbuf->handleSdu(pkt);
-}
-
-void LteRlcUm::handleLowerMessage(cPacket *pktAux)
-{
-    auto pkt = check_and_cast<inet::Packet *>(pktAux);
-    EV << "LteRlcUm::handleLowerMessage - Received packet " << pkt->getName() << " from lower layer\n";
-    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    auto chunk = pkt->peekAtFront<inet::Chunk>();
-
-    ASSERT(pkt->findTag<PdcpTrackingTag>() == nullptr);
-
-    // D2D: handle mode switch notification
-    if (hasD2DSupport_ && inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
-        auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
-
-        // add here specific behavior for handling mode switch at the RLC layer
-
-        if (switchPkt->getTxSide()) {
-            // get the corresponding Tx buffer & call handler
-            DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-            UmTxEntity *txbuf = lookupTxBuffer(id);
-            if (txbuf == nullptr)
-                txbuf = createTxBuffer(id, lteInfo.get());
-            txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
-
-            // forward packet to PDCP
-            EV << "LteRlcUm::handleLowerMessage - Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
-            send(pkt, upOutGate_);
-        }
-        else { // rx side
-            // get the corresponding Rx buffer & call handler
-            DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
-            UmRxEntity *rxbuf = lookupRxBuffer(id);
-            if (rxbuf == nullptr)
-                rxbuf = createRxBuffer(id, lteInfo.get());
-            rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
-
-            delete pkt;
-        }
-        return;
-    }
-
-    if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
-        // get the corresponding Tx buffer
-        DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-        UmTxEntity *txbuf = lookupTxBuffer(id);
-        ASSERT(txbuf != nullptr);
-
-        drop(pkt);
-        txbuf->handleMacSduRequest(pkt);
-    }
-    else {
-        emit(receivedPacketFromLowerLayerSignal_, pkt);
-
-        // Extract information from fragment
-        DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
-        UmRxEntity *rxbuf = lookupRxBuffer(id);
-        ASSERT(rxbuf != nullptr);
-        drop(pkt);
-
-        // Bufferize PDU
-        EV << "LteRlcUm::handleLowerMessage - Enqueue packet " << pkt->getName() << " into the Rx Buffer\n";
-        rxbuf->enque(pkt);
-    }
-}
-
 void LteRlcUm::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
@@ -180,11 +59,6 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 void LteRlcUm::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        upInGate_ = gate("UM_Sap_up$i");
-        upOutGate_ = gate("UM_Sap_up$o");
-        downInGate_ = gate("UM_Sap_down$i");
-        downOutGate_ = gate("UM_Sap_down$o");
-
         // parameters
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
 
@@ -193,20 +67,6 @@ void LteRlcUm::initialize(int stage)
 
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
         lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
-    }
-}
-
-void LteRlcUm::handleMessage(cMessage *msg)
-{
-    cPacket *pkt = check_and_cast<cPacket *>(msg);
-    EV << "LteRlcUm : Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
-
-    cGate *incoming = pkt->getArrivalGate();
-    if (incoming == upInGate_) {
-        handleUpperMessage(pkt);
-    }
-    else if (incoming == downInGate_) {
-        handleLowerMessage(pkt);
     }
 }
 
