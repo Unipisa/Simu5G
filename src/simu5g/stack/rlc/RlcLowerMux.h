@@ -7,15 +7,14 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/rlc/RlcRxEntityBase.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
-#include "simu5g/stack/rlc/um/UmTxEntity.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 class RlcUpperMux;
-class UmRxEntity;
 
 /**
  * @class RlcLowerMux
@@ -39,12 +38,12 @@ class RlcLowerMux : public cSimpleModule
     cGate *macInGate_ = nullptr;
     cGate *macOutGate_ = nullptr;
 
-    typedef std::map<DrbKey, UmRxEntity *> UmRxEntities;
-    UmRxEntities rxEntities_;
+    typedef std::map<DrbKey, RlcRxEntityBase *> RxEntities;
+    RxEntities rxEntities_;
 
   public:
-    UmRxEntity *lookupRxBuffer(DrbKey id);
-    UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    RlcRxEntityBase *lookupRxBuffer(DrbKey id);
+    RlcRxEntityBase *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 

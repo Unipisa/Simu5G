@@ -23,8 +23,8 @@ using namespace omnetpp;
 
 class RlcUpperMux;
 class RlcLowerMux;
-class UmTxEntity;
-class UmRxEntity;
+class RlcTxEntityBase;
+class RlcRxEntityBase;
 
 /**
  * @class RlcEntityManager
@@ -100,7 +100,7 @@ class RlcEntityManager : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    UmTxEntity *lookupTxBuffer(DrbKey id);
+    RlcTxEntityBase *lookupTxBuffer(DrbKey id);
 
     /**
      * createTxBuffer() creates a new TXBuffer for the given DrbKey and flow info.
@@ -109,7 +109,7 @@ class RlcEntityManager : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created TXBuffer
      */
-    UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    RlcTxEntityBase *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
 
     /**
@@ -118,7 +118,7 @@ class RlcEntityManager : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the RXBuffer if found, nullptr otherwise
      */
-    UmRxEntity *lookupRxBuffer(DrbKey id);
+    RlcRxEntityBase *lookupRxBuffer(DrbKey id);
 
     /**
      * createRxBuffer() creates a new RXBuffer for the given DrbKey and flow info.
@@ -127,7 +127,7 @@ class RlcEntityManager : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created RXBuffer
      */
-    UmRxEntity *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    RlcRxEntityBase *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
 };
 

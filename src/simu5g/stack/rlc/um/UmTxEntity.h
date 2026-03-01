@@ -17,6 +17,7 @@
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
+#include "simu5g/stack/rlc/RlcTxEntityBase.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
 
@@ -49,7 +50,7 @@ class RlcEntityManager;
  *
  * The size of PDUs is signaled by the lower layer.
  */
-class UmTxEntity : public cSimpleModule
+class UmTxEntity : public RlcTxEntityBase
 {
     static simsignal_t rlcPduCreatedSignal_;
     struct FragmentInfo {
@@ -64,7 +65,6 @@ class UmTxEntity : public cSimpleModule
     ~UmTxEntity() override
     {
         delete fragmentInfo;
-        delete flowControlInfo_;
     }
 
     /**
@@ -95,9 +95,6 @@ class UmTxEntity : public cSimpleModule
      * @param size of a PDU
      */
     void rlcPduMake(int pduSize);
-
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
-    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // force the sequence number to assume the sno passed as an argument
     void setNextSequenceNumber(unsigned int nextSno) { sno_ = nextSno; }
@@ -150,12 +147,6 @@ class UmTxEntity : public cSimpleModule
     RlcBurstStatus burstStatus_;
 
     /*
-     * Flow-related info.
-     * Initialized with the control info of the first packet of the flow
-     */
-    FlowControlInfo *flowControlInfo_ = nullptr;
-
-    /*
      * The SDU enqueue buffer.
      */
     inet::cPacketQueue sduQueue_;
@@ -196,7 +187,6 @@ class UmTxEntity : public cSimpleModule
      * watches
      */
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
   private:

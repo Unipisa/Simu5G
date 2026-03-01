@@ -59,22 +59,22 @@ void RlcUpperMux::fromUpperLayer(cPacket *pktAux)
     EV << "RlcUpperMux::fromUpperLayer - Received packet from upper layer, size " << pktAux->getByteLength() << "\n";
 
     DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-    UmTxEntity *txbuf = lookupTxBuffer(id);
+    RlcTxEntityBase *txbuf = lookupTxBuffer(id);
     ASSERT(txbuf != nullptr);
 
     send(pkt, txbuf->gate("in")->getPreviousGate());
 }
 
-UmTxEntity *RlcUpperMux::lookupTxBuffer(DrbKey id)
+RlcTxEntityBase *RlcUpperMux::lookupTxBuffer(DrbKey id)
 {
     auto it = txEntities_.find(id);
     return (it != txEntities_.end()) ? it->second : nullptr;
 }
 
-UmTxEntity *RlcUpperMux::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+RlcTxEntityBase *RlcUpperMux::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     if (txEntities_.find(id) != txEntities_.end())
-        throw cRuntimeError("RLC-UM connection TX entity for %s already exists", id.str().c_str());
+        throw cRuntimeError("RLC TX entity for %s already exists", id.str().c_str());
 
     std::stringstream buf;
     buf << "UmTxEntity Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
@@ -100,23 +100,26 @@ UmTxEntity *RlcUpperMux::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
     module->scheduleStart(simTime());
     module->callInitialize();
 
-    UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(module);
+    RlcTxEntityBase *txEnt = check_and_cast<RlcTxEntityBase *>(module);
     txEntities_[id] = txEnt;
 
     txEnt->setFlowControlInfo(lteInfo);
 
-    // D2D: store per-peer map
+    // D2D: store per-peer map (UM entities only)
     if (hasD2DSupport_) {
-        MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
-        if (d2dPeer != NODEID_NONE)
-            perPeerTxEntities_[d2dPeer].insert(txEnt);
+        UmTxEntity *umTxEnt = dynamic_cast<UmTxEntity *>(txEnt);
+        if (umTxEnt != nullptr) {
+            MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
+            if (d2dPeer != NODEID_NONE)
+                perPeerTxEntities_[d2dPeer].insert(umTxEnt);
 
-        // if other Tx buffers for this peer are already holding, the new one should hold too
-        if (isEmptyingTxBuffer(d2dPeer))
-            txEnt->startHoldingDownstreamInPackets();
+            // if other Tx buffers for this peer are already holding, the new one should hold too
+            if (isEmptyingTxBuffer(d2dPeer))
+                umTxEnt->startHoldingDownstreamInPackets();
+        }
     }
 
-    EV << "RlcUpperMux::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for " << id << "\n";
+    EV << "RlcUpperMux::createTxBuffer - Added new TX entity: " << txEnt->getId() << " for " << id << "\n";
 
     return txEnt;
 }
@@ -127,9 +130,12 @@ void RlcUpperMux::deleteTxEntities(MacNodeId nodeId)
 
     for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
         // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
-        if (hasD2DSupport_ && tit->second->isD2DMultiConnection()) {
-            ++tit;
-            continue;
+        if (hasD2DSupport_) {
+            UmTxEntity *umEnt = dynamic_cast<UmTxEntity *>(tit->second);
+            if (umEnt != nullptr && umEnt->isD2DMultiConnection()) {
+                ++tit;
+                continue;
+            }
         }
 
         if (nodeType_ == UE || (nodeType_ == NODEB && tit->first.getNodeId() == nodeId)) {
