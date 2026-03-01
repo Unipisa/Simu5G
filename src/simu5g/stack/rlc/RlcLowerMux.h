@@ -34,6 +34,7 @@ class RlcLowerMux : public cSimpleModule
     bool hasD2DSupport_ = false;
     RanNodeType nodeType_;
     cModuleType *rxEntityModuleType_ = nullptr;
+    cModuleType *tmRxEntityModuleType_ = nullptr;
 
     cGate *macInGate_ = nullptr;
     cGate *macOutGate_ = nullptr;

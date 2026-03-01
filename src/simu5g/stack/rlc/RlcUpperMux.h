@@ -38,6 +38,7 @@ class RlcUpperMux : public cSimpleModule
     bool hasD2DSupport_ = false;
     RanNodeType nodeType_;
     cModuleType *txEntityModuleType_ = nullptr;
+    cModuleType *tmTxEntityModuleType_ = nullptr;
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;

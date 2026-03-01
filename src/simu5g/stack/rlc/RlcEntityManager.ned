@@ -27,6 +27,8 @@ simple RlcEntityManager
         bool hasD2DSupport = default(false);
         string txEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
         string rxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
+        string tmTxEntityModuleType = default("simu5g.stack.rlc.tm.TmTxEntity");
+        string tmRxEntityModuleType = default("simu5g.stack.rlc.tm.TmRxEntity");
 
         //# Rlc Queue
         int queueSize @unit(B) = default(2MiB);              // RLC TX entity SDU queue size (0: unlimited)
