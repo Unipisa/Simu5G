@@ -13,7 +13,6 @@
 #ifndef _LTE_AMTXBUFFER_H_
 #define _LTE_AMTXBUFFER_H_
 
-#include <inet/common/ModuleRefByPar.h>
 #include <inet/common/packet/Packet.h>
 
 #include "simu5g/common/LteCommon.h"
@@ -21,8 +20,8 @@
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
+#include "simu5g/stack/rlc/RlcTxEntityBase.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
-#include "simu5g/stack/rlc/am/LteRlcAm.h"
 
 namespace simu5g {
 
@@ -40,14 +39,9 @@ using namespace omnetpp;
  */
 
 using namespace inet;
-class AmTxQueue : public cSimpleModule
+class AmTxQueue : public RlcTxEntityBase
 {
   protected:
-
-    /*
-     * Reference to the corresponding RLC AM module
-     */
-    inet::ModuleRefByPar<LteRlcAm> lteRlc_;
 
     /*
      * SDU (upper layer PDU) currently being processed
@@ -174,7 +168,6 @@ class AmTxQueue : public cSimpleModule
      * Initialize
      */
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     /*
      * Analyze the gate of incoming packet and call proper handler
      * @param msg
@@ -192,6 +185,8 @@ class AmTxQueue : public cSimpleModule
      * @param pdu PDU to be sent
      */
     void bufferPdu(cPacket *pdu);
+
+    void sendNewDataNotification(inet::Packet *pkt);
 
     /* Move the transmitter window based upon the reception of an ACK control message
      *

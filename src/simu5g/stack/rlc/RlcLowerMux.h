@@ -35,6 +35,7 @@ class RlcLowerMux : public cSimpleModule
     RanNodeType nodeType_;
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *tmRxEntityModuleType_ = nullptr;
+    cModuleType *amRxEntityModuleType_ = nullptr;
 
     cGate *macInGate_ = nullptr;
     cGate *macOutGate_ = nullptr;
