@@ -23,7 +23,7 @@ namespace simu5g {
 
 class LteMacBase;
 class PdcpEntityManager;
-class LteRlcUm;
+class RlcEntityManager;
 
 /**
  * @brief RRC (Radio Resource Control) module for LTE/NR networks.
@@ -40,8 +40,8 @@ class Rrc : public cSimpleModule
 
     inet::ModuleRefByPar<Binder> binder;
     inet::ModuleRefByPar<PdcpEntityManager> pdcpModule;
-    inet::ModuleRefByPar<LteRlcUm> rlcUmModule;  // Compound module with TM/UM/AM submodules
-    inet::ModuleRefByPar<LteRlcUm> nrRlcUmModule;  // same
+    inet::ModuleRefByPar<RlcEntityManager> rlcUmModule;  // Compound module with TM/UM/AM submodules
+    inet::ModuleRefByPar<RlcEntityManager> nrRlcUmModule;  // same
     inet::ModuleRefByPar<LteMacBase> macModule;
     inet::ModuleRefByPar<LteMacBase> nrMacModule;
 

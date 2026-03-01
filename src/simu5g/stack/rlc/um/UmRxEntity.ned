@@ -25,7 +25,7 @@ simple UmRxEntity
         @dynamic(true);
         @display("i=block/segm");
         string binderModule = default("binder");
-        string umModule = default("^.um");
+        string umModule = default("^.entityManager");
         string macModule = default("^.^.mac");  // TODO set to "^.^.nrMac" when parent module name is "nrRlc"
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
         int rxWindowSize = default(16);

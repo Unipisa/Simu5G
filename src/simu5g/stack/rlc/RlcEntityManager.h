@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_LTERLCUM_H_
-#define _LTE_LTERLCUM_H_
+#ifndef _RLC_ENTITY_MANAGER_H_
+#define _RLC_ENTITY_MANAGER_H_
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -26,27 +26,15 @@ class UmTxEntity;
 class UmRxEntity;
 
 /**
- * @class LteRlcUm
- * @brief UM Module
+ * @class RlcEntityManager
+ * @brief RLC entity lifecycle manager.
  *
- * This is the UM Module of RLC.
- * It implements the unacknowledged mode (UM):
- *
- * - Unacknowledged mode (UM):
- *   This mode is used for data traffic. Packets arriving on
- *   this port have already been assigned a CID.
- *   UM implements fragmentation and reassembly of packets.
- *   To perform this task there is a TxEntity module for
- *   every CID = <NODE_ID,LCID>. RLC PDUs are created by the
- *   sender and reassembly is performed at the receiver by
- *   simply returning the original packet to him.
- *   Traffic on this port is then forwarded on ports
- *
- *   UM mode attaches a header to the packet. The size
- *   of this header is fixed at 2 bytes.
- *
+ * Thin facade that delegates entity creation and lookup
+ * to RlcUpperMux (TX entities) and RlcLowerMux (RX entities).
+ * Also manages per-UE throughput statistics and provides
+ * deleteQueues() for handover cleanup.
  */
-class LteRlcUm : public cSimpleModule
+class RlcEntityManager : public cSimpleModule
 {
   protected:
     RlcUpperMux *upperMux_ = nullptr;

@@ -35,7 +35,7 @@
 #include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 
 namespace simu5g {
@@ -961,7 +961,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
 
         // check the presence of UM
-        LteRlcUm *rlcUm = inet::findModuleFromPar<LteRlcUm>(par("rlcUmModule"), this);
+        RlcEntityManager *rlcUm = inet::findModuleFromPar<RlcEntityManager>(par("rlcUmModule"), this);
         if (rlcUm != nullptr) {
             std::set<MacNodeId> activeRlcUe;
             rlcUm->activeUeUL(&activeRlcUe);

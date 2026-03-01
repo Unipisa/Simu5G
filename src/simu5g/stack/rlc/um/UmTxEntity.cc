@@ -11,6 +11,7 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
@@ -102,8 +103,7 @@ void UmTxEntity::handleSdu(inet::Packet *pkt)
 
 void UmTxEntity::handleMacSduRequest(inet::Packet *pkt)
 {
-    // Enter_Method + take needed while still called as direct method from LteRlcUm::handleLowerMessage
-    // (will be removed when LowerMux dispatches directly via macIn gate)
+    // Enter_Method + take needed for context switch when called via gate from LowerMux
     Enter_Method("handleMacSduRequest()");
     if (pkt->getOwner() != this)
         take(pkt);
@@ -323,7 +323,7 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
 void UmTxEntity::dropBufferOverflow(cPacket *pkt)
 {
-    EV << "LteRlcUm : Dropping packet " << pkt->getName() << " (queue full) \n";
+    EV << "UmTxEntity : Dropping packet " << pkt->getName() << " (queue full) \n";
     delete pkt;
 }
 

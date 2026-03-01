@@ -9,39 +9,39 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 
 namespace simu5g {
 
-Define_Module(LteRlcUm);
+Define_Module(RlcEntityManager);
 
 using namespace omnetpp;
 
-UmTxEntity *LteRlcUm::lookupTxBuffer(DrbKey id)
+UmTxEntity *RlcEntityManager::lookupTxBuffer(DrbKey id)
 {
     return upperMux_->lookupTxBuffer(id);
 }
 
-UmTxEntity *LteRlcUm::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+UmTxEntity *RlcEntityManager::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     return upperMux_->createTxBuffer(id, lteInfo);
 }
 
 
-UmRxEntity *LteRlcUm::lookupRxBuffer(DrbKey id)
+UmRxEntity *RlcEntityManager::lookupRxBuffer(DrbKey id)
 {
     return lowerMux_->lookupRxBuffer(id);
 }
 
-UmRxEntity *LteRlcUm::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+UmRxEntity *RlcEntityManager::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     return lowerMux_->createRxBuffer(id, lteInfo);
 }
 
 
-void LteRlcUm::deleteQueues(MacNodeId nodeId)
+void RlcEntityManager::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
@@ -53,7 +53,7 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
  * Main functions
  */
 
-void LteRlcUm::initialize(int stage)
+void RlcEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
@@ -61,35 +61,35 @@ void LteRlcUm::initialize(int stage)
     }
 }
 
-void LteRlcUm::resumeDownstreamInPackets(MacNodeId peerId)
+void RlcEntityManager::resumeDownstreamInPackets(MacNodeId peerId)
 {
     upperMux_->resumeDownstreamInPackets(peerId);
 }
 
-bool LteRlcUm::isEmptyingTxBuffer(MacNodeId peerId)
+bool RlcEntityManager::isEmptyingTxBuffer(MacNodeId peerId)
 {
     return upperMux_->isEmptyingTxBuffer(peerId);
 }
 
-void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
+void RlcEntityManager::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     lowerMux_->activeUeUL(ueSet);
 }
 
-void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughput)
+void RlcEntityManager::addUeThroughput(MacNodeId nodeId, Throughput throughput)
 {
     auto& nodeUlThroughput = ulThroughput_[nodeId];
     nodeUlThroughput.pktSizeCount += throughput.pktSizeCount;
     nodeUlThroughput.time += throughput.time;
 }
 
-double LteRlcUm::getUeThroughput(MacNodeId nodeId)
+double RlcEntityManager::getUeThroughput(MacNodeId nodeId)
 {
     ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
     return it == ulThroughput_.end() ? 0 : it->second.pktSizeCount / it->second.time.dbl();
 }
 
-void LteRlcUm::resetThroughputStats(MacNodeId nodeId)
+void RlcEntityManager::resetThroughputStats(MacNodeId nodeId)
 {
     auto& nodeUlThroughput = ulThroughput_[nodeId];
     nodeUlThroughput.pktSizeCount = 0;

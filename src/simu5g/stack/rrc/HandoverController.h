@@ -28,7 +28,7 @@ class LteMacUe;
 class LteAmc;
 class LteAirFrame;
 class UserControlInfo;
-class LteRlcUm;
+class RlcEntityManager;
 class PdcpEntityManager;
 class HandoverPacketHolderUe;
 class LteDlFeedbackGenerator;
@@ -102,7 +102,7 @@ class HandoverController : public cSimpleModule
 
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<LteMacUe> mac_;
-    inet::ModuleRefByPar<LteRlcUm> rlcUm_;
+    inet::ModuleRefByPar<RlcEntityManager> rlcUm_;
     inet::ModuleRefByPar<PdcpEntityManager> pdcp_;
     inet::ModuleRefByPar<HandoverPacketHolderUe> handoverPacketHolder_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;

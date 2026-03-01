@@ -47,13 +47,13 @@ module NrNicUe extends LteNicUeD2D
         											// PHY layer (needed at handover)
 
         @display("bgb=694,443");
-        nrPhy.rlcUmModule = "^.nrRlc.um";
+        nrPhy.rlcUmModule = "^.nrRlc.entityManager";
         nrHandoverController.otherHandoverControllerModule = "^.handoverController";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.nrHandoverController";
         nrHandoverController.macModule = "^.nrMac";
-        nrHandoverController.rlcUmModule = "^.nrRlc.um";
+        nrHandoverController.rlcUmModule = "^.nrRlc.entityManager";
         nrHandoverController.feedbackGeneratorModule = "^.nrDlFbGen";
         handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 
@@ -63,7 +63,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
-            um.nodeType = parent.nodeType;
+            entityManager.nodeType = parent.nodeType;
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {

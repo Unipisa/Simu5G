@@ -86,7 +86,7 @@ module LteMacEnb extends LteMacBase
         string pilotMode @enum(IN_CQI,MAX_CQI,AVG_CQI,MEDIAN_CQI,ROBUST_CQI) = default("ROBUST_CQI");
 
         string cellInfoModule;
-        string rlcUmModule = default("^.rlc.um");
+        string rlcUmModule = default("^.rlc.entityManager");
         string pdcpModule = default("^.pdcp.entityManager");
 
         //#

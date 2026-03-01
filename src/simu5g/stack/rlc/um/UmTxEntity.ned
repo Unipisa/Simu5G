@@ -25,7 +25,7 @@ simple UmTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
-        string umModule = default("^.um");
+        string umModule = default("^.entityManager");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
         @signal[rlcPduCreated];
 

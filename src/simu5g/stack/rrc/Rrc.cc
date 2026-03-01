@@ -14,7 +14,7 @@
 #include <inet/networklayer/ipv4/Ipv4Route.h>
 #include "simu5g/stack/rrc/Rrc.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/am/LteRlcAm.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/common/InitStages.h"

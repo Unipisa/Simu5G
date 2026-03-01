@@ -97,7 +97,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=362,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.mac";
-            um.nodeType = parent.nodeType;
+            entityManager.nodeType = parent.nodeType;
         }
         // MAC Layer
         mac: <> like ILteMac {

@@ -10,21 +10,17 @@
 //
 
 
-package simu5g.stack.rlc.um;
+package simu5g.stack.rlc;
 
 //
-// Implements the functionalities of the Unacknowledged Mode (UM) of the
-// Radio Link Control (RLC) layer.
-// Transmitting- and receiving-side functionalities are provided by the ~UmTxEntity and
-// ~UmRxEntity submodules, respectively. The latter are created dynamically whenever
-// a new connection is detected. This module is responsible for identifying the flow to which
-// a RLC Service Data Unit (SDU) or Protocol Data Unit (PDU) belongs and routing it to
-// the corresponding transmitting or receiving entity for further processing.
+// RLC entity lifecycle manager.
+// Delegates entity creation/lookup to ~RlcUpperMux (TX) and ~RlcLowerMux (RX).
+// Manages per-UE throughput statistics and provides deleteQueues() for handover.
 //
-simple LteRlcUm
+simple RlcEntityManager
 {
     parameters:
-        @class("LteRlcUm");
+        @class("RlcEntityManager");
 
         @display("i=block/wheelbarrow");
 
