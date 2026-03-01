@@ -25,8 +25,8 @@ simple RlcEntityManager
         @display("i=block/wheelbarrow");
 
         bool hasD2DSupport = default(false);
-        string txEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
-        string rxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
+        string umTxEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
+        string umRxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
         string tmTxEntityModuleType = default("simu5g.stack.rlc.tm.TmTxEntity");
         string tmRxEntityModuleType = default("simu5g.stack.rlc.tm.TmRxEntity");
 

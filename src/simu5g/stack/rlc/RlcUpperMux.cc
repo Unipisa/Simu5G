@@ -22,7 +22,7 @@ void RlcUpperMux::initialize(int stage)
 
         // get TX entity module type and nodeType from the entity manager
         cModule *um = getParentModule()->getSubmodule("entityManager");
-        txEntityModuleType_ = cModuleType::get(um->par("txEntityModuleType").stringValue());
+        txEntityModuleType_ = cModuleType::get(um->par("umTxEntityModuleType").stringValue());
         tmTxEntityModuleType_ = cModuleType::get(um->par("tmTxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 
