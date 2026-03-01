@@ -13,7 +13,6 @@
 
 package simu5g.stack.rlc;
 
-import simu5g.stack.rlc.um.LteRlcUm;
 
 
 //
@@ -42,7 +41,7 @@ module LteRlc
             @display("p=200,50");
         }
 
-        um: LteRlcUm {
+        entityManager: RlcEntityManager {
             hasD2DSupport = parent.d2dCapable;
             @display("p=200,100;");
         }

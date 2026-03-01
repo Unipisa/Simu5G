@@ -20,8 +20,8 @@ void RlcUpperMux::initialize(int stage)
 
         hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
 
-        // get TX entity module type and nodeType from the UM module
-        cModule *um = getParentModule()->getSubmodule("um");
+        // get TX entity module type and nodeType from the entity manager
+        cModule *um = getParentModule()->getSubmodule("entityManager");
         txEntityModuleType_ = cModuleType::get(um->par("txEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 

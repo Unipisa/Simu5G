@@ -22,8 +22,8 @@ void RlcLowerMux::initialize(int stage)
 
         hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
 
-        // get RX entity module type and nodeType from the UM module
-        cModule *um = getParentModule()->getSubmodule("um");
+        // get RX entity module type and nodeType from the entity manager
+        cModule *um = getParentModule()->getSubmodule("entityManager");
         rxEntityModuleType_ = cModuleType::get(um->par("rxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 

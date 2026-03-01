@@ -27,8 +27,8 @@ simple Rrc like IRrc
 
         // Module references for accessing other stack layers
         string pdcpModule = default("^.pdcp.entityManager");
-        string rlcUmModule = default("^.rlc.um");
-        string nrRlcUmModule = default("^.nrRlc.um");
+        string rlcUmModule = default("^.rlc.entityManager");
+        string nrRlcUmModule = default("^.nrRlc.entityManager");
         string macModule = default("^.mac");
         string nrMacModule = default("^.nrMac");
 }

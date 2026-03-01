@@ -16,7 +16,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
 
@@ -24,7 +24,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class LteRlcUm;
+class RlcEntityManager;
 
 /**
  * @class UmTxEntity
@@ -135,7 +135,7 @@ class UmTxEntity : public cSimpleModule
   protected:
 
     // reference to the parent's RLC layer
-    inet::ModuleRefByPar<LteRlcUm> lteRlc_;
+    inet::ModuleRefByPar<RlcEntityManager> lteRlc_;
 
     /*
      * @author Alessandro Noferi

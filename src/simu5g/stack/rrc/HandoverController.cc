@@ -17,7 +17,7 @@
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/binder/Binder.h"
@@ -485,7 +485,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     // Delete RLC UM Buffers
 
     // delete UmTxQueue[nodeId_] at old serving node
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(servingNodeId, UM));
+    RlcEntityManager *masterRlcUm = check_and_cast<RlcEntityManager *>(binder_->getRlcByNodeId(servingNodeId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for serving node at this UE

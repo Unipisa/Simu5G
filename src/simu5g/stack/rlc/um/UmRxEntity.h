@@ -16,7 +16,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
@@ -27,7 +27,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteMacBase;
-class LteRlcUm;
+class RlcEntityManager;
 class LteRlcUmDataPdu;
 
 /**
@@ -51,7 +51,7 @@ class UmRxEntity : public cSimpleModule
     // Node id of the owner module
     MacNodeId ownerNodeId_;
 
-    inet::ModuleRefByPar<LteRlcUm> rlc_;
+    inet::ModuleRefByPar<RlcEntityManager> rlc_;
 
     /*
      * Flow-related info.
