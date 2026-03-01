@@ -9,9 +9,11 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ProtocolTag_m.h>
+
 #include "simu5g/stack/rlc/am/AmTxQueue.h"
-#include "simu5g/stack/rlc/am/LteRlcAm.h"
-#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
+#include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 
 namespace simu5g {
@@ -41,8 +43,6 @@ void AmTxQueue::initialize(int stage)
         received_.resize(txWindowDesc_.windowSize_, false);
         discarded_.resize(txWindowDesc_.windowSize_ + 1, false);
 
-        // Reference to corresponding RLC AM module
-        lteRlc_.reference(this, "amModule", true);
     }
 }
 
@@ -491,13 +491,13 @@ void AmTxQueue::bufferControlPdu(cPacket *pkt) {
 
 void AmTxQueue::bufferPdu(cPacket *pktAux)
 {
-    Enter_Method("bufferFragmented()"); // Direct Method Call
+    Enter_Method("bufferPdu()"); // Direct Method Call (from RX entity cross-module)
     take(pktAux); // Take ownership
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
 
     EV << NOW << " AmTxQueue : Enqueuing " << pkt->getName() << " of size "
-       << pkt->getByteLength() << "  for port AM_Sap_down$o\n";
+       << pkt->getByteLength() << " for sending\n";
 
     // notify MAC that new data is available
     bool needToTriggerMac = pduBuffer_.isEmpty();
@@ -506,8 +506,16 @@ void AmTxQueue::bufferPdu(cPacket *pktAux)
     pduBuffer_.insert(pkt);
 
     if (needToTriggerMac) {
-        lteRlc_->indicateNewDataToMac(pkt);
+        sendNewDataNotification(pkt);
     }
+}
+
+void AmTxQueue::sendNewDataNotification(inet::Packet *pkt)
+{
+    auto newData = new inet::Packet("AM-NewData");
+    newData->copyTags(*pkt);
+    newData->addTag<LteRlcNewDataTag>();
+    send(newData, "out");
 }
 
 void AmTxQueue::sendPdus(int size) {
@@ -536,10 +544,12 @@ void AmTxQueue::sendPdus(int size) {
         pkt = pktCopy; // send modified copy; the original packet will be sent when it fits
     }
 
-    lteRlc_->sendFragmented(pkt);
+    auto inetPkt = check_and_cast<inet::Packet *>(pkt);
+    inetPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
+    send(inetPkt, "out");
 
     if (!pduBuffer_.isEmpty()) {
-        lteRlc_->indicateNewDataToMac(pduBuffer_.front());
+        sendNewDataNotification(check_and_cast<inet::Packet *>(pduBuffer_.front()));
     }
 }
 
@@ -775,7 +785,7 @@ void AmTxQueue::mrwTimerHandle(const int sn)
 
 void AmTxQueue::handleMessage(cMessage *msg)
 {
-    if (msg->isName("timer")) {
+    if (msg->isSelfMessage()) {
         // message received from a timer
         TTimerMsg *tmsg = check_and_cast<TTimerMsg *>(msg);
         // check timer id
@@ -805,6 +815,33 @@ void AmTxQueue::handleMessage(cMessage *msg)
         }
         // delete timer event message.
         delete tmsg;
+    }
+    else {
+        cGate *incoming = msg->getArrivalGate();
+        if (incoming->isName("in")) {
+            // SDU from upper mux
+            auto pkt = check_and_cast<Packet *>(msg);
+
+            // Add PDCP tracking information
+            auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
+            unsigned int sequenceNumber = pdcpHeader->getSequenceNumber();
+            auto pdcpTag = pkt->addTag<PdcpTrackingTag>();
+            pdcpTag->setPdcpSequenceNumber(sequenceNumber);
+            pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+
+            enque(pkt);
+        }
+        else if (incoming->isName("macIn")) {
+            // MAC SDU request
+            auto pkt = check_and_cast<Packet *>(msg);
+            auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
+            unsigned int size = macSduRequest->getSduSize();
+            sendPdus(size);
+            delete pkt;
+        }
+        else {
+            throw cRuntimeError("AmTxQueue: unexpected message from gate %s", incoming->getFullName());
+        }
     }
 }
 

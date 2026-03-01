@@ -18,19 +18,20 @@
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
-#include "simu5g/stack/rlc/am/LteRlcAm.h"
+#include "simu5g/stack/rlc/RlcRxEntityBase.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
-class AmRxQueue : public cSimpleModule
+class RlcUpperMux;
+
+class AmRxQueue : public RlcRxEntityBase
 {
   protected:
 
-    // parent RLC AM module
-    inet::ModuleRefByPar<LteRlcAm> lteRlc_;
+    RlcUpperMux *upperMux_ = nullptr;
 
     // Binder module
     inet::ModuleRefByPar<Binder> binder_;
@@ -74,7 +75,7 @@ class AmRxQueue : public cSimpleModule
     /*
      * FlowControlInfo matrix: used for CTRL messages generation
      */
-    FlowControlInfo *flowControlInfo_ = nullptr;
+    FlowControlInfo *ackFlowControlInfo_ = nullptr;
 
     //Statistics
     static unsigned int totalCellRcvdBytes_;
@@ -103,7 +104,6 @@ class AmRxQueue : public cSimpleModule
 
     //initialize
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
   protected:
 
@@ -140,6 +140,12 @@ class AmRxQueue : public cSimpleModule
 
     //! Defragment received frame
     inet::Packet *defragmentFrames(std::deque<inet::Packet *>& fragmentFrames);
+
+    //! Route an incoming control PDU (ACK/MRW_ACK) to the corresponding TX entity
+    void routeControlToTxEntity(inet::Packet *pkt);
+
+    //! Buffer an outgoing control PDU (ACK/MRW_ACK) via the corresponding TX entity for transmission
+    void bufferControlViaTxEntity(inet::Packet *pkt);
 };
 
 } //namespace

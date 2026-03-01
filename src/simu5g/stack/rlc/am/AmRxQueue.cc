@@ -9,13 +9,16 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ProtocolTag_m.h>
+
 #include "simu5g/stack/rlc/am/AmRxQueue.h"
+#include "simu5g/stack/rlc/am/AmTxQueue.h"
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/rlc/am/LteRlcAm.h"
+#include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 
 namespace simu5g {
@@ -55,7 +58,7 @@ void AmRxQueue::initialize(int stage)
         discarded_.resize(rxWindowDesc_.windowSize_);
         received_.resize(rxWindowDesc_.windowSize_);
         binder_.reference(this, "binderModule", true);
-        lteRlc_.reference(this, "amModule", true);
+        upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
 
         // Statistics
         LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("macOut"), 0);
@@ -66,27 +69,35 @@ void AmRxQueue::initialize(int stage)
 
 void AmRxQueue::handleMessage(cMessage *msg)
 {
-    if (!(msg->isSelfMessage()))
-        throw cRuntimeError("Unexpected message received from AmRxQueue");
+    if (msg->isSelfMessage()) {
+        EV << NOW << "AmRxQueue::handleMessage timer event received, sending status report " << endl;
 
-    EV << NOW << "AmRxQueue::handleMessage timer event received, sending status report " << endl;
+        // Signal timer event handled
+        timer_.handle();
 
-    // Signal timer event handled
-    timer_.handle();
+        // Send status report to the AM Tx entity
+        sendStatusReport();
 
-    // Send status report to the AM Tx entity
-    sendStatusReport();
+        // Reschedule the timer if there are PDUs in the buffer
+        for (unsigned int i = 0; i < rxWindowDesc_.windowSize_; i++) {
+            if (pduBuffer_.get(i) != nullptr) {
+                timer_.start(statusReportInterval_);
+                break;
+            }
+        }
 
-    // Reschedule the timer if there are PDUs in the buffer
-
-    for (unsigned int i = 0; i < rxWindowDesc_.windowSize_; i++) {
-        if (pduBuffer_.get(i) != nullptr) {
-            timer_.start(statusReportInterval_);
-            break;
+        delete msg;
+    }
+    else {
+        cGate *incoming = msg->getArrivalGate();
+        if (incoming->isName("in")) {
+            auto pkt = check_and_cast<Packet *>(msg);
+            enque(pkt);
+        }
+        else {
+            throw cRuntimeError("AmRxQueue: unexpected message from gate %s", incoming->getFullName());
         }
     }
-
-    delete msg;
 }
 
 Packet *AmRxQueue::defragmentFrames(std::deque<Packet *>& fragmentFrames)
@@ -165,18 +176,14 @@ void AmRxQueue::discard(const int sn)
 
 void AmRxQueue::enque(Packet *pkt)
 {
-    Enter_Method("enque()");
-
-    take(pkt);
-
     auto pdu = pkt->peekAtFront<LteRlcAmPdu>();
 
     // Check if a control PDU has been received
     if (pdu->getAmType() != DATA) {
         if ((pdu->getAmType() == ACK)) {
             EV << NOW << " AmRxQueue::enque Received ACK message" << endl;
-            // Forwarding ACK to associated transmitting entity
-            lteRlc_->routeControlMessage(pkt);
+            // Forward ACK to associated transmitting entity
+            routeControlToTxEntity(pkt);
         }
         else if ((pdu->getAmType() == MRW)) {
             EV << NOW << " AmRxQueue::enque MRW command [" <<
@@ -196,9 +203,9 @@ void AmRxQueue::enque(Packet *pkt)
             mrw->setChunkLength(B(RLC_HEADER_AM));
             pktAux->insertAtFront(mrw);
             // Set flow control info
-            *pktAux->addTagIfAbsent<FlowControlInfo>() = *flowControlInfo_;
-            // Sending control PDU
-            lteRlc_->bufferControlPdu(pktAux);
+            *pktAux->addTagIfAbsent<FlowControlInfo>() = *ackFlowControlInfo_;
+            // Buffer control PDU via TX entity for transmission
+            bufferControlViaTxEntity(pktAux);
             EV << NOW << " AmRxQueue::enque sending MRW_ACK message " << pdu->getSnoMainPacket() << endl;
 
             delete pkt;
@@ -206,7 +213,7 @@ void AmRxQueue::enque(Packet *pkt)
         else if ((pdu->getAmType() == MRW_ACK)) {
             EV << NOW << " MRW ACK routing to TX entity " << endl;
             // Route message to reverse link TX entity
-            lteRlc_->routeControlMessage(pkt);
+            routeControlToTxEntity(pkt);
         }
         else {
             throw cRuntimeError("RLC AM - Unknown status PDU");
@@ -224,18 +231,18 @@ void AmRxQueue::enque(Packet *pkt)
         EV << NOW << " AmRxQueue::enque reporting timer was already on, will fire at " << NOW.dbl() + timer_.remaining().dbl() << endl;
     }
 
-    // Check if we need to extract FlowControlInfo for building up the matrix
-    if (flowControlInfo_ == nullptr) {
+    // Check if we need to extract FlowControlInfo for building up the ACK control info
+    if (ackFlowControlInfo_ == nullptr) {
         auto orig = pkt->getTag<FlowControlInfo>();
         // Make a copy of the original control info
-        flowControlInfo_ = orig->dup();
+        ackFlowControlInfo_ = orig->dup();
 
         // Swap source and destination fields
-        flowControlInfo_->setSourceId(orig->getDestId());
-        flowControlInfo_->setDestId(orig->getSourceId());
+        ackFlowControlInfo_->setSourceId(orig->getDestId());
+        ackFlowControlInfo_->setDestId(orig->getSourceId());
 
         // Set up other fields
-        flowControlInfo_->setDirection((orig->getDirection() == DL) ? UL : DL);
+        ackFlowControlInfo_->setDirection((orig->getDirection() == DL) ? UL : DL);
     }
 
     // Get the RLC PDU Transmission sequence number
@@ -380,8 +387,9 @@ void AmRxQueue::passUp(const int index)
         ue->emit(rlcPacketLossSignal_[dir_], 0.0);
     }
 
-    // Get the SDU and pass it to the upper layers - PDU // SDU // PDCPPDU
-    lteRlc_->sendDefragmented(pkt);
+    // Send the reassembled SDU to the upper layer
+    pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
+    send(pkt, "out");
 
     // send buffer status report
     sendStatusReport();
@@ -590,10 +598,10 @@ void AmRxQueue::sendStatusReport()
         // todo setting byte size
         pdu->setChunkLength(B(RLC_HEADER_AM));
         // set flowcontrolinfo
-        *pktPdu->addTagIfAbsent<FlowControlInfo>() = *flowControlInfo_;
+        *pktPdu->addTagIfAbsent<FlowControlInfo>() = *ackFlowControlInfo_;
         // sending control PDU
         pktPdu->insertAtFront(pdu);
-        lteRlc_->bufferControlPdu(pktPdu);
+        bufferControlViaTxEntity(pktPdu);
         lastSentAck_ = NOW;
     }
     else {
@@ -703,7 +711,33 @@ AmRxQueue::~AmRxQueue()
     }
     pendingPduBuffer_.clear();
 
-    delete flowControlInfo_;
+    delete ackFlowControlInfo_;
+}
+
+void AmRxQueue::routeControlToTxEntity(Packet *pkt)
+{
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+
+    auto *txEntity = upperMux_->lookupTxBuffer(id);
+    if (txEntity == nullptr)
+        throw cRuntimeError("AmRxQueue::routeControlToTxEntity: TX entity for %s not found", id.str().c_str());
+
+    auto *amTx = check_and_cast<AmTxQueue *>(txEntity);
+    amTx->handleControlPacket(pkt);
+}
+
+void AmRxQueue::bufferControlViaTxEntity(Packet *pkt)
+{
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
+
+    auto *txEntity = upperMux_->lookupTxBuffer(id);
+    if (txEntity == nullptr)
+        throw cRuntimeError("AmRxQueue::bufferControlViaTxEntity: TX entity for %s not found", id.str().c_str());
+
+    auto *amTx = check_and_cast<AmTxQueue *>(txEntity);
+    amTx->bufferControlPdu(pkt);
 }
 
 } //namespace

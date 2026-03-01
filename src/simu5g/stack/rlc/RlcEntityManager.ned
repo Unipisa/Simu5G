@@ -29,6 +29,8 @@ simple RlcEntityManager
         string umRxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
         string tmTxEntityModuleType = default("simu5g.stack.rlc.tm.TmTxEntity");
         string tmRxEntityModuleType = default("simu5g.stack.rlc.tm.TmRxEntity");
+        string amTxEntityModuleType = default("simu5g.stack.rlc.am.AmTxQueue");
+        string amRxEntityModuleType = default("simu5g.stack.rlc.am.AmRxQueue");
 
         //# Rlc Queue
         int queueSize @unit(B) = default(2MiB);              // RLC TX entity SDU queue size (0: unlimited)

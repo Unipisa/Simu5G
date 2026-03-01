@@ -26,5 +26,10 @@ simple AmTxQueue
         double ctrlPduRtxTimeout @unit(s) = default(2.0s);
         double bufferStatusTimeout @unit(s) = default(2.0s);
         int txWindowSize = default(200);
+
+    gates:
+        input in;       // SDUs from upper mux (PDCP)
+        input macIn;    // SDU requests from lower mux (MAC)
+        output out;     // PDUs and new-data notifications to lower mux (MAC)
 }
 

@@ -20,12 +20,15 @@ simple AmRxQueue
     parameters:
         @dynamic(true);
         @display("i=block/segm");
-        string amModule = default("^.am");
         string binderModule = default("binder");
         int rxWindowSize = default(200);
         double ackReportInterval @unit(s) = 0.10s;
         double statusReportInterval @unit(s) = 0.20s;
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
+
+    gates:
+        input in;       // PDUs from lower mux (MAC)
+        output out;     // reassembled SDUs to upper mux (PDCP)
 }
 
 //
