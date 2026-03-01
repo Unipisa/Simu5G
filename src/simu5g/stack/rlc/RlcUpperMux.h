@@ -9,6 +9,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/utils/utils.h"
+#include "simu5g/stack/rlc/RlcTxEntityBase.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 
 namespace simu5g {
@@ -16,7 +17,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 class RlcLowerMux;
-class UmTxEntity;
 
 /**
  * @class RlcUpperMux
@@ -42,15 +42,15 @@ class RlcUpperMux : public cSimpleModule
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
 
-    typedef std::map<DrbKey, UmTxEntity *> UmTxEntities;
-    UmTxEntities txEntities_;
+    typedef std::map<DrbKey, RlcTxEntityBase *> TxEntities;
+    TxEntities txEntities_;
 
-    // D2D: per-peer TX entity tracking
+    // D2D: per-peer TX entity tracking (UM entities only)
     std::map<MacNodeId, std::set<UmTxEntity *, simu5g::utils::cModule_LessId>> perPeerTxEntities_;
 
   public:
-    UmTxEntity *lookupTxBuffer(DrbKey id);
-    UmTxEntity *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    RlcTxEntityBase *lookupTxBuffer(DrbKey id);
+    RlcTxEntityBase *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     void deleteTxEntities(MacNodeId nodeId);
 
     void resumeDownstreamInPackets(MacNodeId peerId);

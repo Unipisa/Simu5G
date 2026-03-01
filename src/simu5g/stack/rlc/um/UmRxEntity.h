@@ -16,6 +16,7 @@
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
+#include "simu5g/stack/rlc/RlcRxEntityBase.h"
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
@@ -38,7 +39,7 @@ class LteRlcUmDataPdu;
  *
  * It implements the procedures described in 3GPP TS 36.322
  */
-class UmRxEntity : public cSimpleModule
+class UmRxEntity : public RlcRxEntityBase
 {
   protected:
 
@@ -51,11 +52,6 @@ class UmRxEntity : public cSimpleModule
     MacNodeId ownerNodeId_;
 
     inet::ModuleRefByPar<RlcEntityManager> rlc_;
-
-    /*
-     * Flow-related info.
-     */
-    FlowControlInfo *flowControlInfo_ = nullptr;
 
     // The PDU enqueue buffer.
     cArray pduBuffer_;
@@ -139,9 +135,6 @@ class UmRxEntity : public cSimpleModule
      */
     void enque(cPacket *pkt);
 
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
-    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
-
     // returns true if this entity is for a D2D_MULTI connection
     bool isD2DMultiConnection() { return flowControlInfo_->getDirection() == D2D_MULTI; }
 
@@ -156,7 +149,6 @@ class UmRxEntity : public cSimpleModule
      * Initialize watches
      */
     void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
   private:

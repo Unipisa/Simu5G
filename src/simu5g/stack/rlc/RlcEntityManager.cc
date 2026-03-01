@@ -19,23 +19,23 @@ Define_Module(RlcEntityManager);
 
 using namespace omnetpp;
 
-UmTxEntity *RlcEntityManager::lookupTxBuffer(DrbKey id)
+RlcTxEntityBase *RlcEntityManager::lookupTxBuffer(DrbKey id)
 {
     return upperMux_->lookupTxBuffer(id);
 }
 
-UmTxEntity *RlcEntityManager::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+RlcTxEntityBase *RlcEntityManager::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     return upperMux_->createTxBuffer(id, lteInfo);
 }
 
 
-UmRxEntity *RlcEntityManager::lookupRxBuffer(DrbKey id)
+RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
 {
     return lowerMux_->lookupRxBuffer(id);
 }
 
-UmRxEntity *RlcEntityManager::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+RlcRxEntityBase *RlcEntityManager::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     return lowerMux_->createRxBuffer(id, lteInfo);
 }

@@ -55,7 +55,6 @@ UmRxEntity::~UmRxEntity()
 {
     Enter_Method("~UmRxEntity");
     delete buffered_.pkt;
-    delete flowControlInfo_;
 }
 
 void UmRxEntity::enque(cPacket *pktAux)
