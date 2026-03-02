@@ -19,8 +19,6 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
-import simu5g.stack.rrc.HandoverController;
-
 
 //
 // Defines a User Equipment (UE) network interface card that
@@ -49,14 +47,16 @@ module NrNicUe extends LteNicUeD2D
 
         @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlc.entityManager";
-        nrHandoverController.otherHandoverControllerModule = "^.handoverController";
+        rrc.hasNrHandoverController = true;
+        rrc.nrHandoverController.isNr = true;
+        rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
-        nrPhy.handoverControllerModule = "^.nrHandoverController";
-        nrHandoverController.macModule = "^.nrMac";
-        nrHandoverController.rlcUmModule = "^.nrRlc.entityManager";
-        nrHandoverController.feedbackGeneratorModule = "^.nrDlFbGen";
-        handoverController.otherHandoverControllerModule = "^.nrHandoverController";
+        nrPhy.handoverControllerModule = "^.rrc.nrHandoverController";
+        rrc.nrHandoverController.macModule = "^.^.nrMac";
+        rrc.nrHandoverController.rlcUmModule = "^.^.nrRlc.entityManager";
+        rrc.nrHandoverController.feedbackGeneratorModule = "^.^.nrDlFbGen";
+        rrc.handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 
     submodules:
         // RLC Layer
@@ -85,11 +85,6 @@ module NrNicUe extends LteNicUeD2D
             phyModule = "^.nrPhy";
         }
 
-        // NR handover controller
-        nrHandoverController: HandoverController {
-            @display("p=144,100;is=s");
-            isNr = true;
-        }
 
         //#
         //# Modules used to take trace of PDCP pkt flow
