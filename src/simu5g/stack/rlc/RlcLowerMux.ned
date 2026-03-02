@@ -11,6 +11,8 @@ simple RlcLowerMux
     parameters:
         @class("RlcLowerMux");
         @display("p=100,200;i=block/dispatch");
+        string upperMuxModule;
+        string entityManagerModule;
 
         @signal[receivedPacketFromLowerLayer];
         @statistic[receivedPacketFromLowerLayer](source="receivedPacketFromLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);

@@ -58,10 +58,10 @@ void AmRxQueue::initialize(int stage)
         discarded_.resize(rxWindowDesc_.windowSize_);
         received_.resize(rxWindowDesc_.windowSize_);
         binder_.reference(this, "binderModule", true);
-        upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
+        upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
 
         // Statistics
-        LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("macOut"), 0);
+        LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
 
         dir_ = mac->getNodeType() == NODEB ? UL : DL;
     }

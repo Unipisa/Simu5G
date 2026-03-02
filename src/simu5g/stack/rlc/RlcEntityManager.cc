@@ -45,8 +45,8 @@ void RlcEntityManager::deleteQueues(MacNodeId nodeId)
 void RlcEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
-        lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
+        upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
+        lowerMux_ = check_and_cast<RlcLowerMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
     }
 }
 

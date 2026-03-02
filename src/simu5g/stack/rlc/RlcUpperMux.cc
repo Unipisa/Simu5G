@@ -1,6 +1,7 @@
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
@@ -16,12 +17,12 @@ void RlcUpperMux::initialize(int stage)
         upperLayerOutGate_ = gate("upperLayerOut");
 
         binder_.reference(this, "binderModule", true);
-        lowerMux_ = check_and_cast<RlcLowerMux *>(getParentModule()->getSubmodule("lowerMux"));
+        lowerMux_ = check_and_cast<RlcLowerMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
 
-        hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
+        hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();
 
-        cModule *um = getParentModule()->getSubmodule("entityManager");
-        nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
+        cModule *em = getModuleByPath(par("entityManagerModule").stringValue());
+        nodeType_ = aToNodeType(em->par("nodeType").stdstringValue());
 
         WATCH_MAP(txEntities_);
     }

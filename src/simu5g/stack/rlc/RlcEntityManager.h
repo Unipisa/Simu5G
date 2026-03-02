@@ -100,6 +100,8 @@ class RlcEntityManager : public cSimpleModule
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
     cModule *getRlcCompoundModule() { return getParentModule(); }
+    RlcUpperMux *getUpperMux() { return upperMux_; }
+    RlcLowerMux *getLowerMux() { return lowerMux_; }
 
     RlcTxEntityBase *lookupTxBuffer(DrbKey id);
 

@@ -37,15 +37,21 @@ module LteRlc
 
     submodules:
         upperMux: RlcUpperMux {
+            lowerMuxModule = "^.lowerMux";
+            entityManagerModule = "^.entityManager";
             @display("p=200,50");
         }
 
         entityManager: RlcEntityManager {
+            upperMuxModule = "^.upperMux";
+            lowerMuxModule = "^.lowerMux";
             hasD2DSupport = parent.d2dCapable;
             @display("p=200,100;");
         }
 
         lowerMux: RlcLowerMux {
+            upperMuxModule = "^.upperMux";
+            entityManagerModule = "^.entityManager";
             @display("p=200,200");
         }
 
