@@ -23,7 +23,6 @@ simple DcMux
     gates:
         input dcManagerIn @loose;
         output dcManagerOut @loose;
-        output toLowerMux @loose;
         input fromEntity[];
         output toBypassTxEntity[];
 }

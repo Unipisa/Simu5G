@@ -54,12 +54,6 @@ void LowerMux::handleMessage(cMessage *msg)
     EV << "LowerMux : Received packet " << pkt->getName() << " from port "
        << pkt->getArrivalGate()->getName() << endl;
 
-    // UL data forwarded from DcMux (originally from secondary node via X2)
-    if (msg->getArrivalGate()->isName("dcManagerIn")) {
-        fromLowerLayer(pkt);
-        return;
-    }
-
     // D2D mode switch notification
     if (hasD2DSupport_) {
         auto inet_pkt = check_and_cast<inet::Packet *>(pkt);
