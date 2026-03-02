@@ -28,6 +28,7 @@ class UpperMux : public cSimpleModule
   protected:
     LowerMux *lowerMux_ = nullptr;
     DcMux *dcMux_ = nullptr;
+    bool isNR_ = false;
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;

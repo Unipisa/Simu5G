@@ -12,6 +12,7 @@ simple UpperMux
     parameters:
         @class("UpperMux");
         @display("p=80,100;i=block/dispatch");
+        bool isNR = default(false);
     gates:
         input upperLayerIn;
         output upperLayerOut;
