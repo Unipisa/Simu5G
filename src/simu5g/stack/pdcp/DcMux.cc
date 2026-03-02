@@ -64,7 +64,7 @@ void DcMux::handleMessage(cMessage *msg)
 
             EV << NOW << " DcMux::handleMessage - Received UL PDCP PDU from secondary node " << sourceNode
                << " for " << id << " - dispatching to RX entity" << endl;
-            sendDirect(pkt, entity->gate("dcIn"));
+            send(pkt, entity->gate("dcIn")->getPreviousGate());
         }
     }
     else if (incoming->isName("fromEntity")) {

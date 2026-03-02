@@ -29,6 +29,6 @@ simple LteRxPdcpEntity
 
     gates:
         input in;
-        input dcIn @directIn @loose;
+        input dcIn @loose;
         output out;
 }
