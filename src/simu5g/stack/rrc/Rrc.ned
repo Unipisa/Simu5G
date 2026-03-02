@@ -29,7 +29,10 @@ module Rrc like IRrc
         *.routingTableModule = default(absPath(this.routingTableModule));
 
     submodules:
-        bearerManagement: BearerManagement {
+        registration: Registration {
             @display("p=100,80");
+        }
+        bearerManagement: BearerManagement {
+            @display("p=250,80");
         }
 }
