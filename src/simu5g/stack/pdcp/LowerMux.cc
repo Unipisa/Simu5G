@@ -153,6 +153,13 @@ PdcpRxEntityBase *LowerMux::createRxEntity(DrbKey id)
     upperMux_->setGateSize("fromRxEntity", fromIdx + 1);
     module->gate("out")->connectTo(upperMux_->gate("fromRxEntity", fromIdx));
 
+    // Wire DcMux output gate to entity dcIn gate (for UL X2 dispatch)
+    if (module->hasGate("dcIn")) {
+        int dcIdx = dcMux_->gateSize("toRxEntity");
+        dcMux_->setGateSize("toRxEntity", dcIdx + 1);
+        dcMux_->gate("toRxEntity", dcIdx)->connectTo(module->gate("dcIn"));
+    }
+
     module->scheduleStart(simTime());
     module->callInitialize();
     PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);

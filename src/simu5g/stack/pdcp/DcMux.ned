@@ -25,4 +25,5 @@ simple DcMux
         output dcManagerOut @loose;
         input fromEntity[];
         output toBypassTxEntity[];
+        output toRxEntity[];
 }
