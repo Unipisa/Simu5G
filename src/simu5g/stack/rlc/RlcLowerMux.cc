@@ -3,6 +3,7 @@
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
@@ -20,13 +21,13 @@ void RlcLowerMux::initialize(int stage)
         macInGate_ = gate("macIn");
         macOutGate_ = gate("macOut");
 
-        upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
-        bearerManagement_ = check_and_cast<BearerManagement *>(getParentModule()->getParentModule()->getSubmodule("rrc")->getSubmodule("bearerManagement"));
+        upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
+        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
 
-        hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
+        hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();
 
-        cModule *um = getParentModule()->getSubmodule("entityManager");
-        nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
+        cModule *em = getModuleByPath(par("entityManagerModule").stringValue());
+        nodeType_ = aToNodeType(em->par("nodeType").stdstringValue());
 
         WATCH_MAP(rxEntities_);
     }

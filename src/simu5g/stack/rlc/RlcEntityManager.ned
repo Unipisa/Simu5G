@@ -25,6 +25,8 @@ simple RlcEntityManager
 
         @display("i=block/wheelbarrow");
 
+        string upperMuxModule;
+        string lowerMuxModule;
         bool hasD2DSupport = default(false);
 
         //# Rlc Queue

@@ -249,8 +249,8 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     module->buildInside();
 
     // Wire gates: UpperMux → entity → LowerMux
-    auto *upperMux = check_and_cast<RlcUpperMux *>(rlcCompound->getSubmodule("upperMux"));
-    auto *lowerMux = check_and_cast<RlcLowerMux *>(rlcCompound->getSubmodule("lowerMux"));
+    auto *upperMux = rlcMgr->getUpperMux();
+    auto *lowerMux = rlcMgr->getLowerMux();
 
     // Wire UpperMux → entity in gate
     int idx = upperMux->gateSize("toTxEntity");
@@ -277,7 +277,7 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     upperMux->registerTxBuffer(id, txEnt);
 
     // D2D: register per-peer tracking (UM entities only)
-    bool hasD2DSupport = rlcCompound->par("d2dCapable").boolValue();
+    bool hasD2DSupport = rlcMgr->par("hasD2DSupport").boolValue();
     if (hasD2DSupport) {
         UmTxEntity *umTxEnt = dynamic_cast<UmTxEntity *>(txEnt);
         if (umTxEnt != nullptr)
@@ -304,8 +304,8 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     module->buildInside();
 
     // Wire gates: LowerMux → entity → UpperMux
-    auto *upperMux = check_and_cast<RlcUpperMux *>(rlcCompound->getSubmodule("upperMux"));
-    auto *lowerMux = check_and_cast<RlcLowerMux *>(rlcCompound->getSubmodule("lowerMux"));
+    auto *upperMux = rlcMgr->getUpperMux();
+    auto *lowerMux = rlcMgr->getLowerMux();
 
     // Wire LowerMux → entity in gate
     int idx = lowerMux->gateSize("toRxEntity");
