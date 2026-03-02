@@ -40,8 +40,8 @@ simple BearerManagement
 
         // Module references for accessing other stack layers
         string pdcpModule = default("^.^.pdcpEntityManager");
-        string rlcUmModule = default("^.^.rlc.entityManager");
-        string nrRlcUmModule = default("^.^.nrRlc.entityManager");
+        string rlcUmModule = default("^.^.rlcEntityManager");
+        string nrRlcUmModule = default("^.^.nrRlcEntityManager");
         string macModule = default("^.^.mac");
         string nrMacModule = default("^.^.nrMac");
 }

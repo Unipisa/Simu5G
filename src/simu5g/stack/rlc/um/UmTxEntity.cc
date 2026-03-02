@@ -37,7 +37,7 @@ using namespace inet;
 void UmTxEntity::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("macOut"), 0);
+        LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
 
         // store the node id of the owner module
         ownerNodeId_ = mac->getMacNodeId();

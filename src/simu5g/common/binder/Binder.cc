@@ -910,8 +910,8 @@ cModule *Binder::getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType)
         return nullptr;
     }
     if (isNrUe(nodeId))
-        return module->getSubmodule("cellularNic")->getSubmodule("nrRlc")->getSubmodule("entityManager");
-    return module->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule("entityManager");
+        return module->getSubmodule("cellularNic")->getSubmodule("nrRlcEntityManager");
+    return module->getSubmodule("cellularNic")->getSubmodule("rlcEntityManager");
 }
 
 cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)

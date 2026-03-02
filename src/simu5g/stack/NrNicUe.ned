@@ -17,7 +17,9 @@ import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
-import simu5g.stack.rlc.LteRlc;
+import simu5g.stack.rlc.RlcEntityManager;
+import simu5g.stack.rlc.RlcLowerMux;
+import simu5g.stack.rlc.RlcUpperMux;
 
 //
 // Defines a User Equipment (UE) network interface card that
@@ -47,7 +49,7 @@ module NrNicUe extends LteNicUeD2D
         											// PHY layer (needed at handover)
 
         @display("bgb=694,443");
-        nrPhy.rlcUmModule = "^.nrRlc.entityManager";
+        nrPhy.rlcUmModule = "^.nrRlcEntityManager";
         rrc.hasNrHandoverController = true;
         rrc.nrHandoverController.isNr = true;
         rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
@@ -59,12 +61,24 @@ module NrNicUe extends LteNicUeD2D
         rrc.handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 
     submodules:
-        // RLC Layer
-        nrRlc: LteRlc {
-            @display("p=466,226");
-            d2dCapable = parent.d2dCapable;
-            *.macModule = "^.^.nrMac";
-            entityManager.nodeType = parent.nodeType;
+        // NR RLC submodules (flattened from former LteRlc compound)
+        nrRlcUpperMux: RlcUpperMux {
+            lowerMuxModule = "^.nrRlcLowerMux";
+            entityManagerModule = "^.nrRlcEntityManager";
+            @display("p=466,196");
+        }
+        nrRlcLowerMux: RlcLowerMux {
+            upperMuxModule = "^.nrRlcUpperMux";
+            entityManagerModule = "^.nrRlcEntityManager";
+            @display("p=466,256");
+        }
+        nrRlcEntityManager: RlcEntityManager {
+            upperMuxModule = "^.nrRlcUpperMux";
+            lowerMuxModule = "^.nrRlcLowerMux";
+            macModule = "^.nrMac";
+            hasD2DSupport = parent.d2dCapable;
+            nodeType = parent.nodeType;
+            @display("p=536,226");
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {
@@ -92,19 +106,22 @@ module NrNicUe extends LteNicUeD2D
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {
             @display("p=200,300");
             macModule = "^.nrMac";
-            rlcModule = "^.nrRlc";
+            rlcModule = "^";
             isNrObserver = true;
         }
 
     connections:
 
         //# PDCP <-> NR RLC
-        pdcpLowerMux.nrRlcOut --> nrRlc.upperLayerIn;
-        pdcpLowerMux.nrRlcIn <-- nrRlc.upperLayerOut;
+        pdcpLowerMux.nrRlcOut --> nrRlcUpperMux.upperLayerIn;
+        pdcpLowerMux.nrRlcIn <-- nrRlcUpperMux.upperLayerOut;
 
-        //# RLC <-> MAC
-        nrRlc.macOut --> nrMac.upperLayerIn;
-        nrRlc.macIn <-- nrMac.upperLayerOut;
+        //# NR RLC internal
+        nrRlcLowerMux.toUpperMux --> nrRlcUpperMux.fromLowerMux;
+
+        //# NR RLC <-> MAC
+        nrRlcLowerMux.macOut --> nrMac.upperLayerIn;
+        nrRlcLowerMux.macIn <-- nrMac.upperLayerOut;
 
         //#
         //# Connections from LTE Stack to radio interface

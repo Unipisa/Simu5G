@@ -21,7 +21,7 @@ simple PacketFlowObserverUe like IPacketFlowObserver
     @class("PacketFlowObserverUe");
     string macModule = default("^.mac");
     string pdcpModule = default("^");
-    string rlcModule = default("^.rlc");
+    string rlcModule = default("^");
     bool isNrObserver = default(false);
     string pfmType = default("PacketFlowObserverUe");
 }

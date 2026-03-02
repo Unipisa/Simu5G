@@ -25,7 +25,7 @@ module LteMacUeD2D extends LteMacUe
 
         bool usePreconfiguredTxParams = default(false);
         int d2dCqi = default(7);
-        string rlcUmModule = default("^.rlc.entityManager");
+        string rlcUmModule = default("^.rlcEntityManager");
         string pdcpModule = default("^.pdcpEntityManager");
 
         @signal[harqErrorRate_1st_D2D];

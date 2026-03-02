@@ -125,9 +125,8 @@ void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
 
     ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {
-        // this may occur after a handover, when data structures are cleared
-        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - DRB ID " << drbId << " not present." << endl;
-        throw cRuntimeError("%s::insertPdcpSdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
+        // this may occur after a handover (when data structures are cleared),
+        // or when the observer receives signals from the other RLC stack in DC scenarios
         return;
     }
 
@@ -144,8 +143,8 @@ void PacketFlowObserverUe::insertRlcPdu(DrbId drbId, const LteRlcUmDataPdu *rlcP
 {
     ConnectionMap::iterator cit = connectionMap_.find(drbId);
     if (cit == connectionMap_.end()) {
-        // this may occur after a handover, when data structures are cleared
-        throw cRuntimeError("%s::insertRlcPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
+        // this may occur after a handover (when data structures are cleared),
+        // or when the observer receives signals from the other RLC stack in DC scenarios
         return;
     }
 
