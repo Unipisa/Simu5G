@@ -132,6 +132,8 @@ void HandoverController::finish()
 
 void HandoverController::handleMessage(cMessage *msg)
 {
+    ASSERT(msg->isSelfMessage());
+
     if (msg->isName("handoverStarter"))
         triggerHandover();
     else if (msg->isName("handoverTrigger")) {
