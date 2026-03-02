@@ -33,6 +33,11 @@
   look for a C++ class with the same name as the NED type (moduloo the
   namespace) -- if it does not exist, that will be an error.
 
+## Nits:
+
+- Avoid using "—" (m-dash?) or other fancy Unicode characters in code comments
+  or code. Prefer ASCII characters like plain hyphen (-) if they can also do the
+  job. E.g. write "->" instead of a fancy Unicode arrow.
 
 ## Compiling
 

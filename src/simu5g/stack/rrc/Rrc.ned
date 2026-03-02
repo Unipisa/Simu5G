@@ -12,23 +12,24 @@
 package simu5g.stack.rrc;
 
 //
-// RRC (Radio Resource Control) module for LTE/NR networks.
+// RRC (Radio Resource Control) layer for LTE/NR networks.
 //
-simple Rrc like IRrc
+// Contains functional submodules corresponding to RRC procedures:
+//   - bearerManagement: sets up and tears down data radio bearers
+//
+module Rrc like IRrc
 {
     parameters:
         @display("i=block/control");
-        @class(Rrc);
 
         string interfaceTableModule;
-        string interfaceName = default("cellular");
         string routingTableModule;
-        string binderModule = default("binder");
 
-        // Module references for accessing other stack layers
-        string pdcpModule = default("^.pdcp.entityManager");
-        string rlcUmModule = default("^.rlc.entityManager");
-        string nrRlcUmModule = default("^.nrRlc.entityManager");
-        string macModule = default("^.mac");
-        string nrMacModule = default("^.nrMac");
+        *.interfaceTableModule = default(absPath(this.interfaceTableModule));
+        *.routingTableModule = default(absPath(this.routingTableModule));
+
+    submodules:
+        bearerManagement: BearerManagement {
+            @display("p=100,80");
+        }
 }

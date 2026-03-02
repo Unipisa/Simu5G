@@ -21,7 +21,7 @@
 #include "simu5g/stack/mac/LteMacUe.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
-#include "simu5g/stack/rrc/Rrc.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 
 namespace simu5g {
 
@@ -962,7 +962,7 @@ cModule *Binder::getRrcByNodeId(MacNodeId nodeId)
     if (module == nullptr) {
         return nullptr;
     }
-    return module->getSubmodule("cellularNic")->getSubmodule("rrc");
+    return module->getSubmodule("cellularNic")->getSubmodule("rrc")->getSubmodule("bearerManagement");
 }
 
 bool Binder::isDualConnectivityRequired(FlowControlInfo *info)
@@ -985,8 +985,8 @@ bool Binder::isDualConnectivityRequired(FlowControlInfo *info)
 
     bool ueIsDualTech = false;  //TODO true? if a nodeB in DC setup sends multicast, can it use dual connectivity?
     if (ue != NODEID_NONE) {
-        Rrc *rrc = check_and_cast<Rrc*>(getRrcByNodeId(ue));
-        ueIsDualTech = rrc->isDualTechnology();
+        BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(ue));
+        ueIsDualTech = bm->isDualTechnology();
     }
 
     return nodeBInDC && ueIsDualTech;
@@ -1003,9 +1003,9 @@ void Binder::establishUnidirectionalDataConnection(FlowControlInfo *info)
         MacNodeId destId = info->getDestId();
         bool isMulticast = info->getMulticastGroupId() != NODEID_NONE;
 
-        // Get UE RRC if any endpoint is UE
-        Rrc *ueRrc = (getNodeTypeById(sourceId) == UE) ? check_and_cast<Rrc*>(getRrcByNodeId(sourceId)) :
-                     (!isMulticast && getNodeTypeById(destId) == UE) ? check_and_cast<Rrc*>(getRrcByNodeId(destId)) :
+        // Get UE bearer management if any endpoint is UE
+        BearerManagement *ueRrc = (getNodeTypeById(sourceId) == UE) ? check_and_cast<BearerManagement*>(getRrcByNodeId(sourceId)) :
+                     (!isMulticast && getNodeTypeById(destId) == UE) ? check_and_cast<BearerManagement*>(getRrcByNodeId(destId)) :
                      nullptr;
 
         //TODO assert that master is LTE, and secondary is NT;   alternatively, choose the UE nodeId that matches the technology of the NODEB
@@ -1064,14 +1064,14 @@ void Binder::createConnection(FlowControlInfo *lteInfo, bool withPdcp)
 
 void Binder::createIncomingConnectionOnNode(MacNodeId nodeId, FlowControlInfo *lteInfo, bool withPdcp)
 {
-    Rrc *rrc = check_and_cast<Rrc*>(getRrcByNodeId(nodeId));
-    rrc->createIncomingConnection(lteInfo, withPdcp);
+    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId));
+    bm->createIncomingConnection(lteInfo, withPdcp);
 }
 
 void Binder::createOutgoingConnectionOnNode(MacNodeId nodeId, FlowControlInfo *lteInfo, bool withPdcp)
 {
-    Rrc *rrc = check_and_cast<Rrc*>(getRrcByNodeId(nodeId));
-    rrc->createOutgoingConnection(lteInfo, withPdcp);
+    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId));
+    bm->createOutgoingConnection(lteInfo, withPdcp);
 }
 
 } //namespace

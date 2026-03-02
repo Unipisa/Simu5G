@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _RRC_H_
-#define _RRC_H_
+#ifndef _BEARER_MANAGEMENT_H_
+#define _BEARER_MANAGEMENT_H_
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -26,9 +26,10 @@ class PdcpEntityManager;
 class RlcEntityManager;
 
 /**
- * @brief RRC (Radio Resource Control) module for LTE/NR networks.
+ * @brief RRC Bearer Management — creates and tears down PDCP, RLC and MAC
+ *        entities for data radio bearers.
  */
-class Rrc : public cSimpleModule
+class BearerManagement : public cSimpleModule
 {
   private:
     MacNodeId lteNodeId = NODEID_NONE;
