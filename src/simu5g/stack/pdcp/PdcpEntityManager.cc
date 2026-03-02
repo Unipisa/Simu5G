@@ -12,6 +12,7 @@
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/LowerMux.h"
+#include "simu5g/stack/pdcp/DcMux.h"
 
 namespace simu5g {
 
@@ -28,6 +29,7 @@ void PdcpEntityManager::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("upperMux"));
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
     }
 }
 
@@ -35,14 +37,15 @@ PdcpTxEntityBase *PdcpEntityManager::lookupTxEntity(DrbKey id) { return upperMux
 PdcpTxEntityBase *PdcpEntityManager::createTxEntity(DrbKey id) { return upperMux_->createTxEntity(id); }
 PdcpRxEntityBase *PdcpEntityManager::lookupRxEntity(DrbKey id) { return lowerMux_->lookupRxEntity(id); }
 PdcpRxEntityBase *PdcpEntityManager::createRxEntity(DrbKey id) { return lowerMux_->createRxEntity(id); }
-PdcpTxEntityBase *PdcpEntityManager::createBypassTxEntity(DrbKey id) { return lowerMux_->createBypassTxEntity(id); }
+PdcpTxEntityBase *PdcpEntityManager::createBypassTxEntity(DrbKey id) { return dcMux_->createBypassTxEntity(id); }
 PdcpRxEntityBase *PdcpEntityManager::createBypassRxEntity(DrbKey id) { return lowerMux_->createBypassRxEntity(id); }
 
 void PdcpEntityManager::deleteEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent();
     upperMux_->deleteTxEntities(nodeId);
-    lowerMux_->deleteRxAndBypassEntities(nodeId);
+    lowerMux_->deleteRxEntities(nodeId);
+    dcMux_->deleteBypassTxEntities(nodeId);
 }
 
 void PdcpEntityManager::activeUeUL(std::set<MacNodeId> *ueSet)

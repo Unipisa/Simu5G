@@ -24,6 +24,7 @@ class PdcpTxEntityBase;
 class PdcpRxEntityBase;
 class UpperMux;
 class LowerMux;
+class DcMux;
 
 /**
  * @class PdcpEntityManager
@@ -38,6 +39,7 @@ class PdcpEntityManager : public cSimpleModule
   protected:
     UpperMux *upperMux_ = nullptr;
     LowerMux *lowerMux_ = nullptr;
+    DcMux *dcMux_ = nullptr;
 
   public:
     ~PdcpEntityManager() override;

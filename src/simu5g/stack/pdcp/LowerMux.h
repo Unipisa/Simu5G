@@ -41,24 +41,19 @@ class LowerMux : public cSimpleModule
 
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *bypassRxEntityModuleType_ = nullptr;
-    cModuleType *bypassTxEntityModuleType_ = nullptr;
 
     cGate *rlcInGate_ = nullptr;
     cGate *rlcOutGate_ = nullptr;
     cGate *nrRlcOutGate_ = nullptr;
 
     typedef std::map<DrbKey, PdcpRxEntityBase *> PdcpRxEntities;
-    typedef std::map<DrbKey, PdcpTxEntityBase *> PdcpBypassTxEntities;
     PdcpRxEntities rxEntities_;              // normal + bypass RX entities
-    PdcpBypassTxEntities bypassTxEntities_;  // bypass TX entities only
 
   public:
     PdcpRxEntityBase *lookupRxEntity(DrbKey id);
     PdcpRxEntityBase *createRxEntity(DrbKey id);
-    PdcpTxEntityBase *createBypassTxEntity(DrbKey id);
     PdcpRxEntityBase *createBypassRxEntity(DrbKey id);
-    PdcpTxEntityBase *lookupBypassTxEntity(DrbKey id);
-    void deleteRxAndBypassEntities(MacNodeId nodeId);
+    void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
     bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
@@ -69,7 +64,6 @@ class LowerMux : public cSimpleModule
     void handleMessage(cMessage *msg) override;
 
     virtual void fromLowerLayer(cPacket *pkt);
-    void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode);
     virtual void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };
 
