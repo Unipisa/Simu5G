@@ -34,11 +34,7 @@ void PdcpEntityManager::initialize(int stage)
 }
 
 PdcpTxEntityBase *PdcpEntityManager::lookupTxEntity(DrbKey id) { return upperMux_->lookupTxEntity(id); }
-PdcpTxEntityBase *PdcpEntityManager::createTxEntity(DrbKey id) { return upperMux_->createTxEntity(id); }
 PdcpRxEntityBase *PdcpEntityManager::lookupRxEntity(DrbKey id) { return lowerMux_->lookupRxEntity(id); }
-PdcpRxEntityBase *PdcpEntityManager::createRxEntity(DrbKey id) { return lowerMux_->createRxEntity(id); }
-PdcpTxEntityBase *PdcpEntityManager::createBypassTxEntity(DrbKey id) { return dcMux_->createBypassTxEntity(id); }
-PdcpRxEntityBase *PdcpEntityManager::createBypassRxEntity(DrbKey id) { return lowerMux_->createBypassRxEntity(id); }
 
 void PdcpEntityManager::deleteEntities(MacNodeId nodeId)
 {

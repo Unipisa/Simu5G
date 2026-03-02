@@ -34,8 +34,6 @@ class DcMux : public cSimpleModule
 
     LowerMux *lowerMux_ = nullptr;
 
-    cModuleType *bypassTxEntityModuleType_ = nullptr;
-
     cGate *dcManagerInGate_ = nullptr;
 
     typedef std::map<DrbKey, PdcpTxEntityBase *> PdcpBypassTxEntities;
@@ -43,7 +41,7 @@ class DcMux : public cSimpleModule
 
   public:
     PdcpTxEntityBase *lookupBypassTxEntity(DrbKey id);
-    PdcpTxEntityBase *createBypassTxEntity(DrbKey id);
+    void registerBypassTxEntity(DrbKey id, PdcpTxEntityBase *txEnt);
     void deleteBypassTxEntities(MacNodeId nodeId);
 
   protected:

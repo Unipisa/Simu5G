@@ -29,12 +29,6 @@ void LowerMux::initialize(int stage)
         isNR_ = par("isNR").boolValue();
         hasD2DSupport_ = par("hasD2DSupport").boolValue();
 
-        const char *rxEntityModuleTypeName = getParentModule()->par("rxEntityModuleType").stringValue();
-        rxEntityModuleType_ = cModuleType::get(rxEntityModuleTypeName);
-
-        const char *bypassRxEntityModuleTypeName = getParentModule()->par("bypassRxEntityModuleType").stringValue();
-        bypassRxEntityModuleType_ = cModuleType::get(bypassRxEntityModuleTypeName);
-
         if (isNR_) {
             inet::NetworkInterface *nic = inet::getContainingNicModule(this);
             dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
@@ -134,68 +128,12 @@ PdcpRxEntityBase *LowerMux::lookupRxEntity(DrbKey id)
     return it != rxEntities_.end() ? it->second : nullptr;
 }
 
-PdcpRxEntityBase *LowerMux::createRxEntity(DrbKey id)
+void LowerMux::registerRxEntity(DrbKey id, PdcpRxEntityBase *rxEnt)
 {
-    std::stringstream buf;
-    buf << "rx-" << id.getNodeId() << "-" << id.getDrbId();
-    auto *module = rxEntityModuleType_->create(buf.str().c_str(), getParentModule());
-    module->par("headerCompressedSize") = getParentModule()->par("headerCompressedSize");
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire LowerMux output gate to entity input gate
-    int idx = gateSize("toRxEntity");
-    setGateSize("toRxEntity", idx + 1);
-    gate("toRxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity output gate to UpperMux input gate
-    int fromIdx = upperMux_->gateSize("fromRxEntity");
-    upperMux_->setGateSize("fromRxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(upperMux_->gate("fromRxEntity", fromIdx));
-
-    // Wire DcMux output gate to entity dcIn gate (for UL X2 dispatch)
-    if (module->hasGate("dcIn")) {
-        int dcIdx = dcMux_->gateSize("toRxEntity");
-        dcMux_->setGateSize("toRxEntity", dcIdx + 1);
-        dcMux_->gate("toRxEntity", dcIdx)->connectTo(module->gate("dcIn"));
-    }
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-    PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
+    if (rxEntities_.find(id) != rxEntities_.end())
+        throw cRuntimeError("PDCP RX entity for %s already exists", id.str().c_str());
     rxEntities_[id] = rxEnt;
-
-    EV << "LowerMux::createRxEntity - Added new RxPdcpEntity for " << id << "\n";
-
-    return rxEnt;
-}
-
-PdcpRxEntityBase *LowerMux::createBypassRxEntity(DrbKey id)
-{
-    std::stringstream buf;
-    buf << "bypass-rx-" << id.getNodeId() << "-" << id.getDrbId();
-    auto *module = bypassRxEntityModuleType_->create(buf.str().c_str(), getParentModule());
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire LowerMux output gate to entity input gate (same dispatch as normal RX)
-    int idx = gateSize("toRxEntity");
-    setGateSize("toRxEntity", idx + 1);
-    gate("toRxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity output gate to DcMux (bypass RX sends to X2 via DcMux)
-    int fromIdx = dcMux_->gateSize("fromEntity");
-    dcMux_->setGateSize("fromEntity", fromIdx + 1);
-    module->gate("out")->connectTo(dcMux_->gate("fromEntity", fromIdx));
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-    PdcpRxEntityBase *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
-    rxEntities_[id] = rxEnt;
-
-    EV << "LowerMux::createBypassRxEntity - Added new BypassRxPdcpEntity for " << id << "\n";
-
-    return rxEnt;
+    EV << "LowerMux::registerRxEntity - Registered RxPdcpEntity for " << id << "\n";
 }
 
 void LowerMux::deleteRxEntities(MacNodeId nodeId)

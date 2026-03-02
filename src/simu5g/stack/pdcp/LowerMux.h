@@ -39,9 +39,6 @@ class LowerMux : public cSimpleModule
     UpperMux *upperMux_ = nullptr;
     DcMux *dcMux_ = nullptr;
 
-    cModuleType *rxEntityModuleType_ = nullptr;
-    cModuleType *bypassRxEntityModuleType_ = nullptr;
-
     cGate *rlcInGate_ = nullptr;
     cGate *rlcOutGate_ = nullptr;
     cGate *nrRlcOutGate_ = nullptr;
@@ -51,8 +48,7 @@ class LowerMux : public cSimpleModule
 
   public:
     PdcpRxEntityBase *lookupRxEntity(DrbKey id);
-    PdcpRxEntityBase *createRxEntity(DrbKey id);
-    PdcpRxEntityBase *createBypassRxEntity(DrbKey id);
+    void registerRxEntity(DrbKey id, PdcpRxEntityBase *rxEnt);
     void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 

@@ -20,11 +20,7 @@ void RlcUpperMux::initialize(int stage)
 
         hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
 
-        // get TX entity module type and nodeType from the entity manager
         cModule *um = getParentModule()->getSubmodule("entityManager");
-        txEntityModuleType_ = cModuleType::get(um->par("umTxEntityModuleType").stringValue());
-        tmTxEntityModuleType_ = cModuleType::get(um->par("tmTxEntityModuleType").stringValue());
-        amTxEntityModuleType_ = cModuleType::get(um->par("amTxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 
         WATCH_MAP(txEntities_);
@@ -73,67 +69,22 @@ RlcTxEntityBase *RlcUpperMux::lookupTxBuffer(DrbKey id)
     return (it != txEntities_.end()) ? it->second : nullptr;
 }
 
-RlcTxEntityBase *RlcUpperMux::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+void RlcUpperMux::registerTxBuffer(DrbKey id, RlcTxEntityBase *txEnt)
 {
     if (txEntities_.find(id) != txEntities_.end())
         throw cRuntimeError("RLC TX entity for %s already exists", id.str().c_str());
-
-    // Pick entity type based on RLC mode
-    LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
-    cModuleType *moduleType;
-    const char *prefix;
-    switch (rlcType) {
-        case TM: moduleType = tmTxEntityModuleType_; prefix = "TmTxEntity"; break;
-        case AM: moduleType = amTxEntityModuleType_; prefix = "AmTxQueue"; break;
-        default: moduleType = txEntityModuleType_;   prefix = "UmTxEntity"; break;
-    }
-
-    std::stringstream buf;
-    buf << prefix << " Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
-    auto *module = moduleType->create(buf.str().c_str(), getParentModule());
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire UpperMux → entity in gate
-    int idx = gateSize("toTxEntity");
-    setGateSize("toTxEntity", idx + 1);
-    gate("toTxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity out gate → LowerMux fromTxEntity
-    int fromIdx = lowerMux_->gateSize("fromTxEntity");
-    lowerMux_->setGateSize("fromTxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(lowerMux_->gate("fromTxEntity", fromIdx));
-
-    // Wire LowerMux macToTxEntity → entity macIn gate
-    int macIdx = lowerMux_->gateSize("macToTxEntity");
-    lowerMux_->setGateSize("macToTxEntity", macIdx + 1);
-    lowerMux_->gate("macToTxEntity", macIdx)->connectTo(module->gate("macIn"));
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-
-    RlcTxEntityBase *txEnt = check_and_cast<RlcTxEntityBase *>(module);
     txEntities_[id] = txEnt;
+    EV << "RlcUpperMux::registerTxBuffer - Registered TX entity: " << txEnt->getId() << " for " << id << "\n";
+}
 
-    txEnt->setFlowControlInfo(lteInfo);
+void RlcUpperMux::registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt)
+{
+    if (peerId != NODEID_NONE)
+        perPeerTxEntities_[peerId].insert(umTxEnt);
 
-    // D2D: store per-peer map (UM entities only)
-    if (hasD2DSupport_) {
-        UmTxEntity *umTxEnt = dynamic_cast<UmTxEntity *>(txEnt);
-        if (umTxEnt != nullptr) {
-            MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
-            if (d2dPeer != NODEID_NONE)
-                perPeerTxEntities_[d2dPeer].insert(umTxEnt);
-
-            // if other Tx buffers for this peer are already holding, the new one should hold too
-            if (isEmptyingTxBuffer(d2dPeer))
-                umTxEnt->startHoldingDownstreamInPackets();
-        }
-    }
-
-    EV << "RlcUpperMux::createTxBuffer - Added new TX entity: " << txEnt->getId() << " for " << id << "\n";
-
-    return txEnt;
+    // if other Tx buffers for this peer are already holding, the new one should hold too
+    if (isEmptyingTxBuffer(peerId))
+        umTxEnt->startHoldingDownstreamInPackets();
 }
 
 void RlcUpperMux::deleteTxEntities(MacNodeId nodeId)

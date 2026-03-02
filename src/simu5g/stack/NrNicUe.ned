@@ -37,8 +37,8 @@ module NrNicUe extends LteNicUeD2D
         pdcp.typename = default("PdcpLayer");
         pdcp.isNR = default(true);
         pdcp.hasD2DSupport = default(true);
-        pdcp.rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
-        pdcp.txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
+        rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
+        rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         phy.typename = default("NrPhyUe");	        // TODO fix this
         											// LtePhy is of type NrPhyUe so that it is
         											// be aware of the existing of the second
@@ -53,7 +53,6 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.rrc.nrHandoverController";
         rrc.nrHandoverController.macModule = "^.^.nrMac";
-        rrc.nrHandoverController.rlcUmModule = "^.^.nrRlc.entityManager";
         rrc.nrHandoverController.feedbackGeneratorModule = "^.^.nrDlFbGen";
         rrc.handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 

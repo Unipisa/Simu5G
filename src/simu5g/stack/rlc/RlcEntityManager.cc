@@ -24,20 +24,9 @@ RlcTxEntityBase *RlcEntityManager::lookupTxBuffer(DrbKey id)
     return upperMux_->lookupTxBuffer(id);
 }
 
-RlcTxEntityBase *RlcEntityManager::createTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
-{
-    return upperMux_->createTxBuffer(id, lteInfo);
-}
-
-
 RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
 {
     return lowerMux_->lookupRxBuffer(id);
-}
-
-RlcRxEntityBase *RlcEntityManager::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
-{
-    return lowerMux_->createRxBuffer(id, lteInfo);
 }
 
 

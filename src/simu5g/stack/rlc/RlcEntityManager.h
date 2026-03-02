@@ -99,16 +99,9 @@ class RlcEntityManager : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    RlcTxEntityBase *lookupTxBuffer(DrbKey id);
+    cModule *getRlcCompoundModule() { return getParentModule(); }
 
-    /**
-     * createTxBuffer() creates a new TXBuffer for the given DrbKey and flow info.
-     *
-     * @param id DrbKey for the new buffer
-     * @param lteInfo flow-related info
-     * @return pointer to the newly created TXBuffer
-     */
-    RlcTxEntityBase *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    RlcTxEntityBase *lookupTxBuffer(DrbKey id);
 
 
     /**
@@ -118,15 +111,6 @@ class RlcEntityManager : public cSimpleModule
      * @return pointer to the RXBuffer if found, nullptr otherwise
      */
     RlcRxEntityBase *lookupRxBuffer(DrbKey id);
-
-    /**
-     * createRxBuffer() creates a new RXBuffer for the given DrbKey and flow info.
-     *
-     * @param id DrbKey for the new buffer
-     * @param lteInfo flow-related info
-     * @return pointer to the newly created RXBuffer
-     */
-    RlcRxEntityBase *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
 
 };
 

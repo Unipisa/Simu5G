@@ -26,10 +26,6 @@ module PdcpLayer like ILtePdcp
         @display("i=block/fork");
         int headerCompressedSize @unit(B) = default(-1B);
         string binderModule = default("binder");
-        string rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
-        string txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
-        string bypassRxEntityModuleType = default("simu5g.stack.pdcp.BypassRxPdcpEntity");
-        string bypassTxEntityModuleType = default("simu5g.stack.pdcp.BypassTxPdcpEntity");
         bool isNR = default(false);
         bool hasD2DSupport = default(false);
 

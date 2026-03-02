@@ -45,11 +45,9 @@ class PdcpEntityManager : public cSimpleModule
     ~PdcpEntityManager() override;
 
     PdcpTxEntityBase *lookupTxEntity(DrbKey id);
-    PdcpTxEntityBase *createTxEntity(DrbKey id);
     PdcpRxEntityBase *lookupRxEntity(DrbKey id);
-    PdcpRxEntityBase *createRxEntity(DrbKey id);
-    PdcpTxEntityBase *createBypassTxEntity(DrbKey id);
-    PdcpRxEntityBase *createBypassRxEntity(DrbKey id);
+
+    cModule *getPdcpCompoundModule() { return getParentModule(); }
 
     void deleteEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);

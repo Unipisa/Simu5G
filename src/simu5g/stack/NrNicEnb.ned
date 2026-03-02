@@ -25,8 +25,8 @@ module NrNicEnb extends LteNicEnbD2D
         pdcp.typename = default("PdcpLayer");
         pdcp.isNR = default(true);
         pdcp.hasD2DSupport = default(true);
-        pdcp.rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
-        pdcp.txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
+        rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
+        rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         mac.typename = default("NrMacGnb");
         lteChannelModelType = default("NrChannelModel_3GPP38_901");
         @display("bgb=694,443");
