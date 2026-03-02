@@ -49,7 +49,7 @@ class BearerManagement : public cSimpleModule
     cModuleType *pdcpTxEntityModuleType_ = nullptr;
     cModuleType *pdcpBypassRxEntityModuleType_ = nullptr;
     cModuleType *pdcpBypassTxEntityModuleType_ = nullptr;
-    cModule *pdcpCompound_ = nullptr;  // PdcpLayer compound module (parent of entities)
+    cModule *pdcpCompound_ = nullptr;  // NIC module (parent of PDCP submodules and entities)
 
     // RLC entity types (resolved from NED params)
     cModuleType *rlcUmTxEntityModuleType_ = nullptr;

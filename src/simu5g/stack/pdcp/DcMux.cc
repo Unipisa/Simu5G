@@ -25,7 +25,7 @@ void DcMux::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macNodeId").intValue());
 
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
+        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
 
         dcManagerInGate_ = gate("dcManagerIn");
     }

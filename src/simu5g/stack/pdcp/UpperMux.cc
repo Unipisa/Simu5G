@@ -18,8 +18,8 @@ void UpperMux::initialize(int stage)
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
 
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
-        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
+        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
         isNR_ = par("isNR").boolValue();
     }
 }

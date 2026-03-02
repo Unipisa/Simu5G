@@ -23,8 +23,8 @@ void LowerMux::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
 
-        upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("upperMux"));
-        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
+        upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("pdcpUpperMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
 
         isNR_ = par("isNR").boolValue();
         hasD2DSupport_ = par("hasD2DSupport").boolValue();

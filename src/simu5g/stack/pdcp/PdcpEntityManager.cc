@@ -27,9 +27,9 @@ PdcpEntityManager::~PdcpEntityManager()
 void PdcpEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("upperMux"));
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
-        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
+        upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("pdcpUpperMux"));
+        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
+        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
     }
 }
 
