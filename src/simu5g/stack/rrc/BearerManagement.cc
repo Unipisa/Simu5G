@@ -12,7 +12,7 @@
 #include <inet/networklayer/ipv4/IIpv4RoutingTable.h>
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
 #include <inet/networklayer/ipv4/Ipv4Route.h>
-#include "simu5g/stack/rrc/Rrc.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
 
@@ -23,9 +23,9 @@ namespace simu5g {
 
 using namespace inet;
 
-Define_Module(Rrc);
+Define_Module(BearerManagement);
 
-void Rrc::initialize(int stage)
+void BearerManagement::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         binder.reference(this, "binderModule", true);
@@ -122,7 +122,7 @@ void Rrc::initialize(int stage)
     }
 }
 
-void Rrc::finish()
+void BearerManagement::finish()
 {
     if (getSimulation()->getSimulationStage() != CTX_FINISH) {
         if (lteNodeId != NODEID_NONE)
@@ -132,7 +132,7 @@ void Rrc::finish()
     }
 }
 
-void Rrc::registerInterface()
+void BearerManagement::registerInterface()
 {
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
     if (!ift)
@@ -156,7 +156,7 @@ void Rrc::registerInterface()
     networkIf->setPointToPoint(true);
 }
 
-void Rrc::registerMulticastGroups()
+void BearerManagement::registerMulticastGroups()
 {
     // get all the multicast addresses where the node is enrolled
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
@@ -174,16 +174,16 @@ void Rrc::registerMulticastGroups()
 }
 
 
-void Rrc::handleMessage(cMessage *msg)
+void BearerManagement::handleMessage(cMessage *msg)
 {
     throw cRuntimeError("This module does not process messages");
 }
 
-void Rrc::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
+void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
 {
     Enter_Method_Silent("createIncomingConnection()");
 
-    EV << "Rrc::createIncomingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
+    EV << "BearerManagement::createIncomingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
         << " groupId=" << lteInfo->getMulticastGroupId() << " drbId=" << lteInfo->getDrbId()
         << " direction=" << dirToA(lteInfo->getDirection())
         << " withPdcp=" << (withPdcp ? "yes" : "no") << endl;
@@ -214,11 +214,11 @@ void Rrc::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     }
 }
 
-void Rrc::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
+void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
 {
     Enter_Method_Silent("createOutgoingConnection()");
 
-    EV << "Rrc::createOutgoingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
+    EV << "BearerManagement::createOutgoingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
         << " groupId=" << lteInfo->getMulticastGroupId() << " drbId=" << lteInfo->getDrbId()
         << " direction=" << dirToA(lteInfo->getDirection())
         << " withPdcp=" << (withPdcp ? "yes" : "no") << endl;
