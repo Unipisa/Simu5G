@@ -19,9 +19,11 @@ simple DcMux
 {
     parameters:
         @display("i=block/dispatch");
+        string binderModule = default("binder");
     gates:
         input dcManagerIn @loose;
         output dcManagerOut @loose;
         output toLowerMux @loose;
         input fromEntity[];
+        output toBypassTxEntity[];
 }

@@ -12,18 +12,43 @@
 #ifndef _PDCP_DC_MUX_H_
 #define _PDCP_DC_MUX_H_
 
+#include <map>
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
+class Binder;
+class LowerMux;
+
 class DcMux : public cSimpleModule
 {
   protected:
+    inet::ModuleRefByPar<Binder> binder_;
+    MacNodeId nodeId_;
+
+    LowerMux *lowerMux_ = nullptr;
+
+    cModuleType *bypassTxEntityModuleType_ = nullptr;
+
     cGate *dcManagerInGate_ = nullptr;
 
-    void initialize() override;
+    typedef std::map<DrbKey, PdcpTxEntityBase *> PdcpBypassTxEntities;
+    PdcpBypassTxEntities bypassTxEntities_;
+
+  public:
+    PdcpTxEntityBase *lookupBypassTxEntity(DrbKey id);
+    PdcpTxEntityBase *createBypassTxEntity(DrbKey id);
+    void deleteBypassTxEntities(MacNodeId nodeId);
+
+  protected:
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 };
 
