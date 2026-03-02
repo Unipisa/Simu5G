@@ -97,7 +97,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
         std::string name = "rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
-        module->par("headerCompressedSize") = pdcpCompound_->par("headerCompressedSize");
+        module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
         module->buildInside();
 
@@ -181,7 +181,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
         std::string name = "tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
-        module->par("headerCompressedSize") = pdcpCompound_->par("headerCompressedSize");
+        module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
         module->buildInside();
 

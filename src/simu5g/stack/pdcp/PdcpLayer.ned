@@ -46,6 +46,7 @@ module PdcpLayer like ILtePdcp
             @display("p=180,150");
         }
         upperMux: UpperMux {
+            isNR = parent.isNR;
             @display("p=80,80");
         }
         lowerMux: LowerMux {

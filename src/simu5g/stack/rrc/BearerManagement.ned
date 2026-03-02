@@ -21,6 +21,9 @@ simple BearerManagement
         @display("i=block/control");
         @class(BearerManagement);
 
+        // PDCP entity parameters
+        int headerCompressedSize @unit(B) = default(-1B);
+
         // PDCP entity types
         string pdcpRxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
         string pdcpTxEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");

@@ -20,6 +20,7 @@ void UpperMux::initialize(int stage)
 
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
         dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
+        isNR_ = par("isNR").boolValue();
     }
 }
 
@@ -82,9 +83,7 @@ void UpperMux::deleteTxEntities(MacNodeId nodeId)
 {
     MacNodeId nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
     bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
-    bool isNR = getParentModule()->par("isNR").boolValue();
-
-    if (isEnb || isNR) {
+    if (isEnb || isNR_) {
         for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
             auto& [id, txEntity] = *tit;
             if (id.getNodeId() == nodeId) {
