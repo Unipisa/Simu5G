@@ -1,6 +1,7 @@
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
@@ -20,14 +21,11 @@ void RlcLowerMux::initialize(int stage)
         macOutGate_ = gate("macOut");
 
         upperMux_ = check_and_cast<RlcUpperMux *>(getParentModule()->getSubmodule("upperMux"));
+        bearerManagement_ = check_and_cast<BearerManagement *>(getParentModule()->getParentModule()->getSubmodule("rrc")->getSubmodule("bearerManagement"));
 
         hasD2DSupport_ = getParentModule()->par("d2dCapable").boolValue();
 
-        // get RX entity module type and nodeType from the entity manager
         cModule *um = getParentModule()->getSubmodule("entityManager");
-        rxEntityModuleType_ = cModuleType::get(um->par("umRxEntityModuleType").stringValue());
-        tmRxEntityModuleType_ = cModuleType::get(um->par("tmRxEntityModuleType").stringValue());
-        amRxEntityModuleType_ = cModuleType::get(um->par("amRxEntityModuleType").stringValue());
         nodeType_ = aToNodeType(um->par("nodeType").stdstringValue());
 
         WATCH_MAP(rxEntities_);
@@ -68,7 +66,7 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
             DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
             RlcTxEntityBase *txbuf = upperMux_->lookupTxBuffer(id);
             if (txbuf == nullptr)
-                txbuf = upperMux_->createTxBuffer(id, lteInfo.get());
+                txbuf = bearerManagement_->createRlcTxBuffer(id, lteInfo.get());
             UmTxEntity *umTxbuf = check_and_cast<UmTxEntity *>(txbuf);
             umTxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
@@ -80,7 +78,7 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
             DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
             RlcRxEntityBase *rxbuf = lookupRxBuffer(id);
             if (rxbuf == nullptr)
-                rxbuf = createRxBuffer(id, lteInfo.get());
+                rxbuf = bearerManagement_->createRlcRxBuffer(id, lteInfo.get());
             UmRxEntity *umRxbuf = check_and_cast<UmRxEntity *>(rxbuf);
             umRxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
 
@@ -116,49 +114,12 @@ RlcRxEntityBase *RlcLowerMux::lookupRxBuffer(DrbKey id)
     return (it != rxEntities_.end()) ? it->second : nullptr;
 }
 
-RlcRxEntityBase *RlcLowerMux::createRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
+void RlcLowerMux::registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt)
 {
     if (rxEntities_.find(id) != rxEntities_.end())
         throw cRuntimeError("RLC RX entity for %s already exists", id.str().c_str());
-
-    // Pick entity type based on RLC mode
-    LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
-    cModuleType *moduleType;
-    const char *prefix;
-    switch (rlcType) {
-        case TM: moduleType = tmRxEntityModuleType_; prefix = "TmRxEntity"; break;
-        case AM: moduleType = amRxEntityModuleType_; prefix = "AmRxQueue"; break;
-        default: moduleType = rxEntityModuleType_;   prefix = "UmRxEntity"; break;
-    }
-
-    std::stringstream buf;
-    buf << prefix << " Lcid: " << id.getDrbId() << " cid: " << id.asPackedInt();
-    auto *module = moduleType->create(buf.str().c_str(), getParentModule());
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire LowerMux → entity in gate
-    int idx = gateSize("toRxEntity");
-    setGateSize("toRxEntity", idx + 1);
-    gate("toRxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity out gate → UpperMux fromRxEntity
-    int fromIdx = upperMux_->gateSize("fromRxEntity");
-    upperMux_->setGateSize("fromRxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(upperMux_->gate("fromRxEntity", fromIdx));
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-
-    RlcRxEntityBase *rxEnt = check_and_cast<RlcRxEntityBase *>(module);
     rxEntities_[id] = rxEnt;
-
-    // configure entity
-    rxEnt->setFlowControlInfo(lteInfo);
-
-    EV << "RlcLowerMux::createRxBuffer - Added new RX entity: " << rxEnt->getId() << " for " << id << "\n";
-
-    return rxEnt;
+    EV << "RlcLowerMux::registerRxBuffer - Registered RX entity: " << rxEnt->getId() << " for " << id << "\n";
 }
 
 void RlcLowerMux::deleteRxEntities(MacNodeId nodeId)

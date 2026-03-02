@@ -20,9 +20,6 @@ void UpperMux::initialize(int stage)
 
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
         dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("dcMux"));
-
-        const char *txEntityModuleTypeName = getParentModule()->par("txEntityModuleType").stringValue();
-        txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
     }
 }
 
@@ -73,40 +70,12 @@ PdcpTxEntityBase *UpperMux::lookupTxEntity(DrbKey id)
     return it != txEntities_.end() ? it->second : nullptr;
 }
 
-PdcpTxEntityBase *UpperMux::createTxEntity(DrbKey id)
+void UpperMux::registerTxEntity(DrbKey id, PdcpTxEntityBase *txEnt)
 {
-    std::stringstream buf;
-    buf << "tx-" << id.getNodeId() << "-" << id.getDrbId();
-    auto *module = txEntityModuleType_->create(buf.str().c_str(), getParentModule());
-    module->par("headerCompressedSize") = getParentModule()->par("headerCompressedSize");
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire UpperMux output gate to entity input gate
-    int idx = gateSize("toTxEntity");
-    setGateSize("toTxEntity", idx + 1);
-    gate("toTxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity output gate to LowerMux input gate
-    int fromIdx = lowerMux_->gateSize("fromTxEntity");
-    lowerMux_->setGateSize("fromTxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(lowerMux_->gate("fromTxEntity", fromIdx));
-
-    // Wire dcOut gate to DcMux (if entity has one, e.g. NrTxPdcpEntity)
-    if (module->hasGate("dcOut")) {
-        int dcIdx = dcMux_->gateSize("fromEntity");
-        dcMux_->setGateSize("fromEntity", dcIdx + 1);
-        module->gate("dcOut")->connectTo(dcMux_->gate("fromEntity", dcIdx));
-    }
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-    PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
+    if (txEntities_.find(id) != txEntities_.end())
+        throw cRuntimeError("PDCP TX entity for %s already exists", id.str().c_str());
     txEntities_[id] = txEnt;
-
-    EV << "UpperMux::createTxEntity - Added new TxPdcpEntity for " << id << "\n";
-
-    return txEnt;
+    EV << "UpperMux::registerTxEntity - Registered TxPdcpEntity for " << id << "\n";
 }
 
 void UpperMux::deleteTxEntities(MacNodeId nodeId)

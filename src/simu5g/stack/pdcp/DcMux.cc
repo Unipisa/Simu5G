@@ -28,9 +28,6 @@ void DcMux::initialize(int stage)
         lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("lowerMux"));
 
         dcManagerInGate_ = gate("dcManagerIn");
-
-        const char *bypassTxEntityModuleTypeName = getParentModule()->par("bypassTxEntityModuleType").stringValue();
-        bypassTxEntityModuleType_ = cModuleType::get(bypassTxEntityModuleTypeName);
     }
 }
 
@@ -82,32 +79,12 @@ PdcpTxEntityBase *DcMux::lookupBypassTxEntity(DrbKey id)
     return it != bypassTxEntities_.end() ? it->second : nullptr;
 }
 
-PdcpTxEntityBase *DcMux::createBypassTxEntity(DrbKey id)
+void DcMux::registerBypassTxEntity(DrbKey id, PdcpTxEntityBase *txEnt)
 {
-    std::stringstream buf;
-    buf << "bypass-tx-" << id.getNodeId() << "-" << id.getDrbId();
-    auto *module = bypassTxEntityModuleType_->create(buf.str().c_str(), getParentModule());
-    module->finalizeParameters();
-    module->buildInside();
-
-    // Wire DcMux output gate to entity input gate (DcMux dispatches incoming DL X2)
-    int idx = gateSize("toBypassTxEntity");
-    setGateSize("toBypassTxEntity", idx + 1);
-    gate("toBypassTxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity output gate to LowerMux input gate (entity sends to RLC via LowerMux)
-    int fromIdx = lowerMux_->gateSize("fromTxEntity");
-    lowerMux_->setGateSize("fromTxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(lowerMux_->gate("fromTxEntity", fromIdx));
-
-    module->scheduleStart(simTime());
-    module->callInitialize();
-    PdcpTxEntityBase *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
+    if (bypassTxEntities_.find(id) != bypassTxEntities_.end())
+        throw cRuntimeError("PDCP bypass TX entity for %s already exists", id.str().c_str());
     bypassTxEntities_[id] = txEnt;
-
-    EV << "DcMux::createBypassTxEntity - Added new BypassTxPdcpEntity for " << id << "\n";
-
-    return txEnt;
+    EV << "DcMux::registerBypassTxEntity - Registered BypassTxPdcpEntity for " << id << "\n";
 }
 
 void DcMux::deleteBypassTxEntities(MacNodeId nodeId)

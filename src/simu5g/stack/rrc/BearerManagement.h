@@ -23,6 +23,16 @@ namespace simu5g {
 class LteMacBase;
 class PdcpEntityManager;
 class RlcEntityManager;
+class RlcUpperMux;
+class RlcLowerMux;
+class RlcTxEntityBase;
+class RlcRxEntityBase;
+class UmTxEntity;
+class UpperMux;
+class LowerMux;
+class DcMux;
+class PdcpTxEntityBase;
+class PdcpRxEntityBase;
 class Registration;
 
 /**
@@ -34,11 +44,29 @@ class BearerManagement : public cSimpleModule
   private:
     Registration *registration_ = nullptr;
 
+    // PDCP entity types (resolved from NED params)
+    cModuleType *pdcpRxEntityModuleType_ = nullptr;
+    cModuleType *pdcpTxEntityModuleType_ = nullptr;
+    cModuleType *pdcpBypassRxEntityModuleType_ = nullptr;
+    cModuleType *pdcpBypassTxEntityModuleType_ = nullptr;
+    cModule *pdcpCompound_ = nullptr;  // PdcpLayer compound module (parent of entities)
+
+    // RLC entity types (resolved from NED params)
+    cModuleType *rlcUmTxEntityModuleType_ = nullptr;
+    cModuleType *rlcUmRxEntityModuleType_ = nullptr;
+    cModuleType *rlcTmTxEntityModuleType_ = nullptr;
+    cModuleType *rlcTmRxEntityModuleType_ = nullptr;
+    cModuleType *rlcAmTxEntityModuleType_ = nullptr;
+    cModuleType *rlcAmRxEntityModuleType_ = nullptr;
+
     inet::ModuleRefByPar<PdcpEntityManager> pdcpModule;
     inet::ModuleRefByPar<RlcEntityManager> rlcUmModule;  // Compound module with TM/UM/AM submodules
     inet::ModuleRefByPar<RlcEntityManager> nrRlcUmModule;  // same
     inet::ModuleRefByPar<LteMacBase> macModule;
     inet::ModuleRefByPar<LteMacBase> nrMacModule;
+
+    RlcTxEntityBase *createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
+    RlcRxEntityBase *createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
 
   protected:
     void initialize(int stage) override;
@@ -48,6 +76,10 @@ class BearerManagement : public cSimpleModule
   public:
     virtual void createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
     virtual void createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
+    virtual RlcTxEntityBase *createRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    virtual RlcRxEntityBase *createRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    virtual void deleteLocalPdcpEntities(MacNodeId nodeId);
+    virtual void deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack=false);
 };
 
 } // namespace simu5g

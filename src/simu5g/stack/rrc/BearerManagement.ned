@@ -21,6 +21,20 @@ simple BearerManagement
         @display("i=block/control");
         @class(BearerManagement);
 
+        // PDCP entity types
+        string pdcpRxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
+        string pdcpTxEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
+        string pdcpBypassRxEntityModuleType = default("simu5g.stack.pdcp.BypassRxPdcpEntity");
+        string pdcpBypassTxEntityModuleType = default("simu5g.stack.pdcp.BypassTxPdcpEntity");
+
+        // RLC entity types
+        string rlcUmTxEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
+        string rlcUmRxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
+        string rlcTmTxEntityModuleType = default("simu5g.stack.rlc.tm.TmTxEntity");
+        string rlcTmRxEntityModuleType = default("simu5g.stack.rlc.tm.TmRxEntity");
+        string rlcAmTxEntityModuleType = default("simu5g.stack.rlc.am.AmTxQueue");
+        string rlcAmRxEntityModuleType = default("simu5g.stack.rlc.am.AmRxQueue");
+
         // Module references for accessing other stack layers
         string pdcpModule = default("^.^.pdcp.entityManager");
         string rlcUmModule = default("^.^.rlc.entityManager");

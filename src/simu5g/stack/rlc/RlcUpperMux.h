@@ -37,9 +37,6 @@ class RlcUpperMux : public cSimpleModule
 
     bool hasD2DSupport_ = false;
     RanNodeType nodeType_;
-    cModuleType *txEntityModuleType_ = nullptr;
-    cModuleType *tmTxEntityModuleType_ = nullptr;
-    cModuleType *amTxEntityModuleType_ = nullptr;
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
@@ -52,7 +49,8 @@ class RlcUpperMux : public cSimpleModule
 
   public:
     RlcTxEntityBase *lookupTxBuffer(DrbKey id);
-    RlcTxEntityBase *createTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    void registerTxBuffer(DrbKey id, RlcTxEntityBase *txEnt);
+    void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
     void deleteTxEntities(MacNodeId nodeId);
 
     void resumeDownstreamInPackets(MacNodeId peerId);

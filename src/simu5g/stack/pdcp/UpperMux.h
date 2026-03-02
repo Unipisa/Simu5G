@@ -29,8 +29,6 @@ class UpperMux : public cSimpleModule
     LowerMux *lowerMux_ = nullptr;
     DcMux *dcMux_ = nullptr;
 
-    cModuleType *txEntityModuleType_ = nullptr;
-
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
 
@@ -39,7 +37,7 @@ class UpperMux : public cSimpleModule
 
   public:
     PdcpTxEntityBase *lookupTxEntity(DrbKey id);
-    PdcpTxEntityBase *createTxEntity(DrbKey id);
+    void registerTxEntity(DrbKey id, PdcpTxEntityBase *txEnt);
     void deleteTxEntities(MacNodeId nodeId);
 
   protected:

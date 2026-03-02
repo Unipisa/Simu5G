@@ -15,6 +15,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class RlcUpperMux;
+class BearerManagement;
 
 /**
  * @class RlcLowerMux
@@ -30,12 +31,10 @@ class RlcLowerMux : public cSimpleModule
     static simsignal_t sentPacketToLowerLayerSignal_;
 
     RlcUpperMux *upperMux_ = nullptr;
+    BearerManagement *bearerManagement_ = nullptr;
 
     bool hasD2DSupport_ = false;
     RanNodeType nodeType_;
-    cModuleType *rxEntityModuleType_ = nullptr;
-    cModuleType *tmRxEntityModuleType_ = nullptr;
-    cModuleType *amRxEntityModuleType_ = nullptr;
 
     cGate *macInGate_ = nullptr;
     cGate *macOutGate_ = nullptr;
@@ -45,7 +44,7 @@ class RlcLowerMux : public cSimpleModule
 
   public:
     RlcRxEntityBase *lookupRxBuffer(DrbKey id);
-    RlcRxEntityBase *createRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    void registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt);
     void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 

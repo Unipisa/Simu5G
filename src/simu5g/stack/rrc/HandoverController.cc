@@ -17,6 +17,7 @@
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -43,8 +44,7 @@ void HandoverController::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         mac_.reference(this, "macModule", true);
-        rlcUm_.reference(this, "rlcUmModule", true);
-        pdcp_.reference(this, "pdcpModule", true);
+        bearerManagement_ = check_and_cast<BearerManagement *>(getParentModule()->getSubmodule("bearerManagement"));
         handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
         otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
@@ -491,7 +491,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for serving node at this UE
-    rlcUm_->deleteQueues(nodeId_);
+    bearerManagement_->deleteLocalRlcQueues(nodeId_, isNr_);
 
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old serving node
@@ -501,7 +501,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for serving node at this UE
-    pdcp_->deleteEntities(servingNodeId_);
+    bearerManagement_->deleteLocalPdcpEntities(servingNodeId_);
 }
 
 LteAmc *HandoverController::getAmcModule(MacNodeId nodeId)
