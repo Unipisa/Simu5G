@@ -34,9 +34,11 @@ module NrNicUe extends LteNicUeD2D
 
         int numNrCarriers = default(1);
 
-        pdcp.typename = default("PdcpLayer");
-        pdcp.isNR = default(true);
-        pdcp.hasD2DSupport = default(true);
+        pdcpUpperMux.isNR = default(true);
+        pdcpLowerMux.isNR = default(true);
+        pdcpLowerMux.hasD2DSupport = default(true);
+        pdcpEntityManager.isNR = default(true);
+        pdcpEntityManager.hasD2DSupport = default(true);
         rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         phy.typename = default("NrPhyUe");	        // TODO fix this
@@ -97,8 +99,8 @@ module NrNicUe extends LteNicUeD2D
     connections:
 
         //# PDCP <-> NR RLC
-        pdcp.nrRlcOut --> nrRlc.upperLayerIn;
-        pdcp.nrRlcIn <-- nrRlc.upperLayerOut;
+        pdcpLowerMux.nrRlcOut --> nrRlc.upperLayerIn;
+        pdcpLowerMux.nrRlcIn <-- nrRlc.upperLayerOut;
 
         //# RLC <-> MAC
         nrRlc.macOut --> nrMac.upperLayerIn;

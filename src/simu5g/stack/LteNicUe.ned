@@ -23,7 +23,6 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 module LteNicUe extends LteNicBase
 {
     parameters:
-        pdcp.typename = default("PdcpLayer");
         mac.typename = default("LteMacUe");
         phy.typename = default("LtePhyUe");
         handoverPacketHolder.typename = default("HandoverPacketHolderUe");

@@ -922,10 +922,7 @@ cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)
     if (module == nullptr) {
         return nullptr;
     }
-    cModule *pdcp = module->getSubmodule("cellularNic")->getSubmodule("pdcp");
-    // If pdcp is a compound module (PdcpLayer), return its entityManager submodule
-    cModule *mgr = pdcp->getSubmodule("entityManager");
-    return mgr ? mgr : pdcp;
+    return module->getSubmodule("cellularNic")->getSubmodule("pdcpEntityManager");
 }
 
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)

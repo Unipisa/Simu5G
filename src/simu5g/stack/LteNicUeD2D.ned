@@ -21,8 +21,8 @@ package simu5g.stack;
 module LteNicUeD2D extends LteNicUe
 {
     parameters:
-        pdcp.typename = default("PdcpLayer");
-        pdcp.hasD2DSupport = default(true);
+        pdcpLowerMux.hasD2DSupport = default(true);
+        pdcpEntityManager.hasD2DSupport = default(true);
         mac.typename = default("LteMacUeD2D");
         phy.typename = default("LtePhyUeD2D");
         packetFlowObserver.typename = default("PacketFlowObserverUe");

@@ -87,7 +87,7 @@ module LteMacEnb extends LteMacBase
 
         string cellInfoModule;
         string rlcUmModule = default("^.rlc.entityManager");
-        string pdcpModule = default("^.pdcp.entityManager");
+        string pdcpModule = default("^.pdcpEntityManager");
 
         //#
         //# Statistics related to resource blocks occupancy

@@ -51,9 +51,9 @@ void Ip2Nic::initialize(int stage)
         }
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-        // Initialize flags from PDCP module's NED parameters
-        cModule *pdcpModule = networkIf->getSubmodule("pdcp");
-        isNR_ = pdcpModule->par("isNR").boolValue();
+        // Initialize flags from PDCP submodule's NED parameters
+        cModule *pdcpLowerMux = networkIf->getSubmodule("pdcpLowerMux");
+        isNR_ = pdcpLowerMux->par("isNR").boolValue();
         hasD2DSupport_ = networkIf->par("d2dCapable").boolValue() || isNR_;
 
         conversationalRlc_ = aToRlcType(par("conversationalRlc"));

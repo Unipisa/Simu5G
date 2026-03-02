@@ -89,9 +89,9 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcRxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("upperMux"));
-    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("lowerMux"));
-    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("dcMux"));
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
+    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
@@ -173,9 +173,9 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcTxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("upperMux"));
-    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("lowerMux"));
-    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("dcMux"));
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
+    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());

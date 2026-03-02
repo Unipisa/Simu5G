@@ -22,7 +22,7 @@ module BaseStationStatsCollector like IStatsCollector
         string collectorType = default("eNBStatsCollector");
 
         string macModule = default("^.cellularNic.mac");
-        string pdcpModule = default("^.cellularNic.pdcp.entityManager");
+        string pdcpModule = default("^.cellularNic.pdcpEntityManager");
         string cellInfoModule = default("^.cellinfo");
         string rlcUmModule = default("^.cellularNic.rlc.entityManager");
         string packetFlowObserverModule = default("^.cellularNic.packetFlowObserver");

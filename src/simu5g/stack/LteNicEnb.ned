@@ -29,7 +29,6 @@ import simu5g.x2.LteX2Manager;
 module LteNicEnb extends LteNicBase
 {
     parameters:
-        pdcp.typename = default("PdcpLayer");
         mac.typename = default("LteMacEnb");
         phy.typename = default("LtePhyEnb");
         handoverPacketHolder.typename = default("HandoverPacketHolderEnb");
@@ -72,8 +71,8 @@ module LteNicEnb extends LteNicBase
         handoverPacketHolder.hoManagerOut --> handoverManager.dataIn;
         dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPortOut++ if dualConnectivityEnabled;
         dualConnectivityManager.x2ManagerOut --> x2Manager.dataPortIn++ if dualConnectivityEnabled;
-        pdcp.dcManagerOut --> dualConnectivityManager.dataIn if dualConnectivityEnabled;
-        dualConnectivityManager.tunnelOut --> pdcp.dcManagerIn if dualConnectivityEnabled;
+        pdcpDcMux.dcManagerOut --> dualConnectivityManager.dataIn if dualConnectivityEnabled;
+        dualConnectivityManager.tunnelOut --> pdcpDcMux.dcManagerIn if dualConnectivityEnabled;
 
         if ( sizeof(x2) > 0 ) {
             //# connections between X2 Manager and GTP (for handover)
