@@ -30,6 +30,8 @@ simple MecResponseApp extends MecAppBase
 
         int responsePacketSize @unit(B) = default(50B);
 
+        int localUePort;
+
         int minInstructions = default(9000000);
         int maxInstructions = default(11000000);
 }
