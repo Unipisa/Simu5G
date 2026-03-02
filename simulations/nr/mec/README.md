@@ -19,7 +19,7 @@ The "numMecServices" parameter selects the number of MEC services running on the
 
 ```
 *.mecHost.mecPlatform.numMecServices = 1
-*.mecHost.mecPlatform.mecService[0].typename = "RNIService"
+*.mecHost.mecPlatform.mecService[0].typename = "RniService"
 *.mecHost.mecPlatform.mecService[0].localAddress = "mecHost.mecPlatform"
 *.mecHost.mecPlatform.mecService[0].localPort = 10020
 ```
