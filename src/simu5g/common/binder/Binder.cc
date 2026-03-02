@@ -22,6 +22,7 @@
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/Registration.h"
 
 namespace simu5g {
 
@@ -962,7 +963,7 @@ cModule *Binder::getRrcByNodeId(MacNodeId nodeId)
     if (module == nullptr) {
         return nullptr;
     }
-    return module->getSubmodule("cellularNic")->getSubmodule("rrc")->getSubmodule("bearerManagement");
+    return module->getSubmodule("cellularNic")->getSubmodule("rrc");
 }
 
 bool Binder::isDualConnectivityRequired(FlowControlInfo *info)
@@ -985,8 +986,8 @@ bool Binder::isDualConnectivityRequired(FlowControlInfo *info)
 
     bool ueIsDualTech = false;  //TODO true? if a nodeB in DC setup sends multicast, can it use dual connectivity?
     if (ue != NODEID_NONE) {
-        BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(ue));
-        ueIsDualTech = bm->isDualTechnology();
+        Registration *reg = check_and_cast<Registration*>(getRrcByNodeId(ue)->getSubmodule("registration"));
+        ueIsDualTech = reg->isDualTechnology();
     }
 
     return nodeBInDC && ueIsDualTech;
@@ -1003,9 +1004,9 @@ void Binder::establishUnidirectionalDataConnection(FlowControlInfo *info)
         MacNodeId destId = info->getDestId();
         bool isMulticast = info->getMulticastGroupId() != NODEID_NONE;
 
-        // Get UE bearer management if any endpoint is UE
-        BearerManagement *ueRrc = (getNodeTypeById(sourceId) == UE) ? check_and_cast<BearerManagement*>(getRrcByNodeId(sourceId)) :
-                     (!isMulticast && getNodeTypeById(destId) == UE) ? check_and_cast<BearerManagement*>(getRrcByNodeId(destId)) :
+        // Get UE registration if any endpoint is UE
+        Registration *ueReg = (getNodeTypeById(sourceId) == UE) ? check_and_cast<Registration*>(getRrcByNodeId(sourceId)->getSubmodule("registration")) :
+                     (!isMulticast && getNodeTypeById(destId) == UE) ? check_and_cast<Registration*>(getRrcByNodeId(destId)->getSubmodule("registration")) :
                      nullptr;
 
         //TODO assert that master is LTE, and secondary is NT;   alternatively, choose the UE nodeId that matches the technology of the NODEB
@@ -1013,11 +1014,11 @@ void Binder::establishUnidirectionalDataConnection(FlowControlInfo *info)
         // LTE Connection (Master)
         FlowControlInfo lteInfo = *info;
         lteInfo.setSourceId(getNodeTypeById(sourceId) == UE ?
-                            ueRrc->getLteNodeId() :
+                            ueReg->getLteNodeId() :
                             getMasterNodeOrSelf(sourceId));
         if (!isMulticast) {  // Only set destId for unicast
             lteInfo.setDestId(getNodeTypeById(destId) == UE ?
-                              ueRrc->getLteNodeId() :
+                              ueReg->getLteNodeId() :
                               getMasterNodeOrSelf(destId));
         }
         createConnection(&lteInfo, true);
@@ -1025,11 +1026,11 @@ void Binder::establishUnidirectionalDataConnection(FlowControlInfo *info)
         // NR Connection (Secondary)
         FlowControlInfo nrInfo = *info;
         nrInfo.setSourceId(getNodeTypeById(sourceId) == UE ?
-                           ueRrc->getNrNodeId() :
+                           ueReg->getNrNodeId() :
                            getSecondaryNode(getMasterNodeOrSelf(sourceId)));
         if (!isMulticast) {  // Only set destId for unicast
             nrInfo.setDestId(getNodeTypeById(destId) == UE ?
-                             ueRrc->getNrNodeId() :
+                             ueReg->getNrNodeId() :
                              getSecondaryNode(getMasterNodeOrSelf(destId)));
         }
         createConnection(&nrInfo, false);
@@ -1064,13 +1065,13 @@ void Binder::createConnection(FlowControlInfo *lteInfo, bool withPdcp)
 
 void Binder::createIncomingConnectionOnNode(MacNodeId nodeId, FlowControlInfo *lteInfo, bool withPdcp)
 {
-    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId));
+    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId)->getSubmodule("bearerManagement"));
     bm->createIncomingConnection(lteInfo, withPdcp);
 }
 
 void Binder::createOutgoingConnectionOnNode(MacNodeId nodeId, FlowControlInfo *lteInfo, bool withPdcp)
 {
-    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId));
+    BearerManagement *bm = check_and_cast<BearerManagement*>(getRrcByNodeId(nodeId)->getSubmodule("bearerManagement"));
     bm->createOutgoingConnection(lteInfo, withPdcp);
 }
 

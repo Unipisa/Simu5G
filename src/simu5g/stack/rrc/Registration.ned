@@ -20,4 +20,9 @@ simple Registration
     parameters:
         @display("i=block/control");
         @class(Registration);
+
+        string interfaceTableModule;
+        string interfaceName = default("cellular");
+        string routingTableModule;
+        string binderModule = default("binder");
 }

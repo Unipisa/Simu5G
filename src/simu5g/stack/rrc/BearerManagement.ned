@@ -21,11 +21,6 @@ simple BearerManagement
         @display("i=block/control");
         @class(BearerManagement);
 
-        string interfaceTableModule;
-        string interfaceName = default("cellular");
-        string routingTableModule;
-        string binderModule = default("binder");
-
         // Module references for accessing other stack layers
         string pdcpModule = default("^.^.pdcp.entityManager");
         string rlcUmModule = default("^.^.rlc.entityManager");

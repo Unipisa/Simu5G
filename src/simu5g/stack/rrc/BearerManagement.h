@@ -15,7 +15,6 @@
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteControlInfo.h"
 #include <inet/common/ModuleRefByPar.h>
-#include <inet/networklayer/common/NetworkInterface.h>
 
 using namespace omnetpp;
 
@@ -24,6 +23,7 @@ namespace simu5g {
 class LteMacBase;
 class PdcpEntityManager;
 class RlcEntityManager;
+class Registration;
 
 /**
  * @brief RRC Bearer Management — creates and tears down PDCP, RLC and MAC
@@ -32,14 +32,8 @@ class RlcEntityManager;
 class BearerManagement : public cSimpleModule
 {
   private:
-    MacNodeId lteNodeId = NODEID_NONE;
-    MacNodeId nrNodeId = NODEID_NONE;
-    RanNodeType nodeType = UNKNOWN_NODE_TYPE;
+    Registration *registration_ = nullptr;
 
-    // corresponding entry for our interface
-    opp_component_ptr<inet::NetworkInterface> networkIf;
-
-    inet::ModuleRefByPar<Binder> binder;
     inet::ModuleRefByPar<PdcpEntityManager> pdcpModule;
     inet::ModuleRefByPar<RlcEntityManager> rlcUmModule;  // Compound module with TM/UM/AM submodules
     inet::ModuleRefByPar<RlcEntityManager> nrRlcUmModule;  // same
@@ -50,17 +44,8 @@ class BearerManagement : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
-    void finish() override;
-
-    virtual void registerInterface();
-    virtual void registerMulticastGroups();
 
   public:
-    RanNodeType getNodeType() const { return nodeType; }
-    MacNodeId getLteNodeId() const { return lteNodeId; }
-    MacNodeId getNrNodeId() const { return nrNodeId; }
-    bool isDualTechnology() const { return lteNodeId != NODEID_NONE && nrNodeId != NODEID_NONE; }
-
     virtual void createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
     virtual void createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
 };
