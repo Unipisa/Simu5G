@@ -89,7 +89,7 @@ module LteMacEnb extends LteMacBase
         int numPreambles = default(64);        // number of RACH preambles available for contention-based random access
 
         string cellInfoModule;
-        string rlcUmModule = default("^.rlc.entityManager");
+        string rlcUmModule = default("^.rlcEntityManager");
         string pdcpModule = default("^.pdcpEntityManager");
 
         //#

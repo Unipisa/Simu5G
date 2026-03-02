@@ -232,6 +232,20 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     }
 }
 
+void BearerManagement::setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManager *rlcMgr)
+{
+    // Entities are NIC-level siblings of the RLC submodules, so their
+    // defaults (which assumed being inside the LteRlc compound) are stale.
+    // Propagate correct paths from the rlcMgr's own parameters.
+    std::string mgrPath = std::string("^.") + rlcMgr->getName();
+    if (entity->hasPar("macModule"))
+        entity->par("macModule").setStringValue(rlcMgr->par("macModule").stringValue());
+    if (entity->hasPar("umModule"))
+        entity->par("umModule").setStringValue(mgrPath);
+    if (entity->hasPar("upperMuxModule"))
+        entity->par("upperMuxModule").setStringValue(rlcMgr->par("upperMuxModule").stringValue());
+}
+
 RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr)
 {
     LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
@@ -245,6 +259,7 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     std::string name = std::string(prefix) + " Lcid: " + std::to_string(num(id.getDrbId())) + " cid: " + std::to_string(id.asPackedInt());
     cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
     auto *module = moduleType->create(name.c_str(), rlcCompound);
+    setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
 
@@ -300,6 +315,7 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     std::string name = std::string(prefix) + " Lcid: " + std::to_string(num(id.getDrbId())) + " cid: " + std::to_string(id.asPackedInt());
     cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
     auto *module = moduleType->create(name.c_str(), rlcCompound);
+    setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
 
