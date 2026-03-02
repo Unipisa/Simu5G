@@ -56,10 +56,15 @@ void DcMux::handleMessage(cMessage *msg)
             send(pkt, entity->gate("in")->getPreviousGate());
         }
         else {
-            // UL: secondary forwarded UL data — route to normal RX entity via LowerMux
+            // UL: secondary forwarded UL data — dispatch directly to RX entity
+            auto lteInfo = pkt->getTag<FlowControlInfo>();
+            DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
+            PdcpRxEntityBase *entity = lowerMux_->lookupRxEntity(id);
+            ASSERT(entity != nullptr);
+
             EV << NOW << " DcMux::handleMessage - Received UL PDCP PDU from secondary node " << sourceNode
-               << " - forwarding to LowerMux" << endl;
-            send(pkt, "toLowerMux");
+               << " for " << id << " - dispatching to RX entity" << endl;
+            sendDirect(pkt, entity->gate("dcIn"));
         }
     }
     else if (incoming->isName("fromEntity")) {
