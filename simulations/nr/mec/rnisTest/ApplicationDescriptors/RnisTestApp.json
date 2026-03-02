@@ -12,7 +12,7 @@
 "appServiceRequired": [
     {
         "ServiceDependency" :{
-            "serName" : "RNIService",
+            "serName" : "RniService",
             "version" : "v2",
             "serCategory": "RNI"
         }
