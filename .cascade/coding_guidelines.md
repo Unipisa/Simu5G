@@ -35,9 +35,10 @@
 
 ## Nits:
 
-- Avoid using "—" (m-dash?) or other fancy Unicode characters in code comments
-  or code. Prefer ASCII characters like plain hyphen (-) if they can also do the
-  job. E.g. write "->" instead of a fancy Unicode arrow.
+- Do not use "—" (m-dash?) in code comments or code, use plain hyphen (-)
+  instead. Similarly, avoid using fancy Unicode characters if plain ASCII can
+  also do the job. For example, write "->" and ":)" instead of Unicode arrow and
+  smiley chars.
 
 ## Compiling
 

@@ -80,15 +80,21 @@ These are implemented in the inet::FingerprintCalculator class.
 ## Typical fingerprint ingredient combinations:
 
   - "tplx": Simulation time, module path, and packet length. Includes module
-    path, so it is sensitive to module renames, but NOT to the addition or
-    deletion of event-less modules and module relocations, submodule order
-    changes. To validate module renames, use "tilx".
+    path, so it is sensitive to module renames. But, since it does NOT include
+    module IDs, it is NOT sensitive to the addition or deletion of modules that
+    have no events in them, and to module relocations, submodule order changes.
+    To validate module renames, use "tilx".
 
   - "tilx": Simulation time, module ID, and packet length. Uses module ID
     instead of module path, so it is insensitive to module renames, but it is
     sensitive to changes in model structure: adding/deleting or relocating
     modules, and also to adding/deleting connections with channel objects
-    (channel objects also occupy IDs).
+    (channel objects also occupy IDs). Note: module IDs are actually
+    *component* IDs (modules and channels). Adding or removing parameters,
+    gates, and connections without channel objects do NOT affect component IDs.
+    (One subtleity: connection display strings are stored in channel objects,
+    so adding `@display` to an otherwise plain connection DOES shift
+    module IDs.). Note that tplx and tilx are somewhat complementary.
 
   - "sz": Scalar and histogram/statistical summary results (ignores vector
     results). The hash itself does not explicitly include the module path or
@@ -116,4 +122,15 @@ These are implemented in the inet::FingerprintCalculator class.
     serialization. It does not work if some packet chunk does not have a
     serializer.
 
+General advice:
 
+  - When refactoring, it is advisable to break down the changes to steps that
+    are independently testable, and break only one type of fingerprints. For
+    example, if possible at all, one change should change either "tplx" or
+    "tilx", but not both at the same time.
+
+  - After accepting the new fingerprint results by overwriting the
+    simulations.csv file with the new ones, it is not necessary to run the full
+    fingerprint tests again, just to be safe (it takes too much time.) You can
+    run it for a few selected simulations to be sure (use the `-m` switch to
+    filter).

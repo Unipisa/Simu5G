@@ -57,6 +57,11 @@
 
 ## Git Commits
 
+- Prefix comments with a very short name for the refactoring and the step
+  number. For example: "RRC structuring step 1: ...". This makes it a lot
+  easier to identify functionally related commit groups when viewing the history
+  later.
+
 - **NEVER use `git add -A` or `git commit -a`.** The repo may contain unrelated
   untracked files that must not be included in commits.
 - To commit, use: `git add -u` (stages only already-tracked changed files),
