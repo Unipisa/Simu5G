@@ -25,7 +25,7 @@ simple LtePhyUe extends LtePhyBase
     parameters:
         @class("LtePhyUe");
 
-        string handoverControllerModule = default("^.handoverController");
+        string handoverControllerModule = default("^.rrc.handoverController");
 
         @signal[distance];
         @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);

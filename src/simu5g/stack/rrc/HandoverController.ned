@@ -44,11 +44,11 @@ simple HandoverController
         double hysteresisFactor = default(10);
 
         string binderModule = default("binder");
-        string macModule = default("^.mac");
-        string rlcUmModule = default("^.rlc.entityManager"); // or "^.nrRlc.entityManager"
-        string pdcpModule = default("^.pdcp.entityManager");
-        string handoverPacketHolderModule = default("^.handoverPacketHolder");
-        string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
+        string macModule = default("^.^.mac");
+        string rlcUmModule = default("^.^.rlc.entityManager"); // or "^.^.nrRlc.entityManager"
+        string pdcpModule = default("^.^.pdcp.entityManager");
+        string handoverPacketHolderModule = default("^.^.handoverPacketHolder");
+        string feedbackGeneratorModule = default("^.^.dlFbGen"); // TODO or "^.^.nrDlFbGen"
         string otherHandoverControllerModule = default("");
 
         bool hasCollector = default(false); // true when node has a collector module (ueCollector/nrUeCollector) for this PHY module

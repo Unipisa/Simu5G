@@ -13,7 +13,6 @@
 package simu5g.stack;
 
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
-import simu5g.stack.rrc.HandoverController;
 
 //
 // The LteNicUe module is a network interface that provides LTE connectivity
@@ -31,14 +30,13 @@ module LteNicUe extends LteNicBase
         packetFlowObserver.typename = default("PacketFlowObserverUe");
         d2dCapable = default(false);          // DO NOT CHANGE
 
+        rrc.hasHandoverController = true;
+        rrc.handoverController.isNr = false;
+
     submodules:
         // Feedback generator submodule
         dlFbGen: LteDlFeedbackGenerator {
             @display("p=50,50;is=s");
-        }
-        handoverController: HandoverController {
-            isNr = false;
-            @display("p=50,100;is=s");
         }
 }
 
