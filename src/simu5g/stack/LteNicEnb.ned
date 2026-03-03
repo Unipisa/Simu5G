@@ -15,6 +15,7 @@ package simu5g.stack;
 import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
+import simu5g.stack.pdcp.DcMux;
 import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.x2.LteX2Manager;
 
@@ -38,6 +39,10 @@ module LteNicEnb extends LteNicBase
         *.handoverManagerModule = "^.handoverManager";
 
     submodules:
+        pdcpDcMux: DcMux {
+            @display("p=432,141");
+        }
+
         //#
         //# X2 manager
         //#

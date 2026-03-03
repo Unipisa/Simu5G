@@ -86,7 +86,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
 
     // PDCP entity creation
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
@@ -106,8 +106,8 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         pdcpUpperMux->setGateSize("fromRxEntity", fromIdx + 1);
         module->gate("out")->connectTo(pdcpUpperMux->gate("fromRxEntity", fromIdx));
 
-        // Wire DcMux → entity dcIn gate (for UL X2 dispatch)
-        if (module->hasGate("dcIn")) {
+        // Wire DcMux → entity dcIn gate (for UL X2 dispatch, eNB only)
+        if (pdcpDcMux && module->hasGate("dcIn")) {
             int dcIdx = pdcpDcMux->gateSize("toRxEntity");
             pdcpDcMux->setGateSize("toRxEntity", dcIdx + 1);
             pdcpDcMux->gate("toRxEntity", dcIdx)->connectTo(module->gate("dcIn"));
@@ -120,6 +120,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
     }
     else {
         // DC secondary node: create bypass RX entity (forwards UL to master via X2)
+        ASSERT(pdcpDcMux != nullptr); // bypass entities are eNB-only
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
         std::string name = "pdcp-bypass-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
@@ -169,7 +170,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
 
     // PDCP entity creation
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
@@ -209,8 +210,8 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
             ASSERT(rlcIt != (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).end());
             module->gate("out")->connectTo(rlcIt->second->gate("in"));
 
-            // Wire dcOut gate → DcMux (if entity has one, e.g. NrTxPdcpEntity)
-            if (module->hasGate("dcOut")) {
+            // Wire dcOut gate → DcMux (if entity has one, e.g. NrTxPdcpEntity; eNB only)
+            if (pdcpDcMux && module->hasGate("dcOut")) {
                 int dcIdx = pdcpDcMux->gateSize("fromEntity");
                 pdcpDcMux->setGateSize("fromEntity", dcIdx + 1);
                 module->gate("dcOut")->connectTo(pdcpDcMux->gate("fromEntity", dcIdx));
@@ -225,6 +226,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     }
     else {
         // DC secondary node: create bypass TX entity (forwards DL from master to RLC)
+        ASSERT(pdcpDcMux != nullptr); // bypass entities are eNB-only
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
         std::string name = "pdcp-bypass-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
@@ -370,7 +372,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     Enter_Method_Silent("deleteLocalPdcpEntities()");
 
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     bool isEnb = (registration_->getNodeType() == NODEB);
 
@@ -391,7 +393,8 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
         } else ++it;
     }
 
-    // Delete bypass TX entities
+    // Delete bypass TX entities (eNB-only)
+    ASSERT(pdcpBypassTxEntities_.empty() || pdcpDcMux != nullptr);
     for (auto it = pdcpBypassTxEntities_.begin(); it != pdcpBypassTxEntities_.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
             pdcpDcMux->unregisterBypassTxEntity(it->first);

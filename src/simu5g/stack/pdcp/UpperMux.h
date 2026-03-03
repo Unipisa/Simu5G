@@ -13,7 +13,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class DcMux;
 
 /**
  * @class UpperMux
@@ -25,7 +24,6 @@ class DcMux;
 class UpperMux : public cSimpleModule
 {
   protected:
-    DcMux *dcMux_ = nullptr;
     bool isNR_ = false;
 
     cGate *upperLayerInGate_ = nullptr;

@@ -1,5 +1,4 @@
 #include "simu5g/stack/pdcp/UpperMux.h"
-#include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -16,7 +15,6 @@ void UpperMux::initialize(int stage)
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
 
-        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
         isNR_ = par("isNR").boolValue();
     }
 }
