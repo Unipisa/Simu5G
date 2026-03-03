@@ -18,7 +18,6 @@
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
-#include "simu5g/stack/pdcp/LowerMux.h"
 #include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
 #include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
@@ -368,7 +367,6 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     Enter_Method_Silent("deleteLocalPdcpEntities()");
 
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
     auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
 
     bool isEnb = (registration_->getNodeType() == NODEB);
@@ -385,7 +383,6 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     // Delete PDCP RX entities
     for (auto it = pdcpRxEntities_.begin(); it != pdcpRxEntities_.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
-            pdcpLowerMux->unregisterRxEntity(it->first);
             it->second->deleteModule();
             it = pdcpRxEntities_.erase(it);
         } else ++it;
@@ -403,7 +400,6 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     // Delete bypass RX entities
     for (auto it = pdcpBypassRxEntities_.begin(); it != pdcpBypassRxEntities_.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
-            pdcpLowerMux->unregisterRxEntity(it->first);
             it->second->deleteModule();
             it = pdcpBypassRxEntities_.erase(it);
         } else ++it;
@@ -465,15 +461,6 @@ PdcpTxEntityBase *BearerManagement::lookupPdcpTxEntity(DrbKey id)
 {
     auto it = pdcpTxEntities_.find(id);
     return it != pdcpTxEntities_.end() ? it->second : nullptr;
-}
-
-PdcpRxEntityBase *BearerManagement::lookupPdcpRxEntity(DrbKey id)
-{
-    auto it = pdcpRxEntities_.find(id);
-    if (it != pdcpRxEntities_.end())
-        return it->second;
-    auto it2 = pdcpBypassRxEntities_.find(id);
-    return it2 != pdcpBypassRxEntities_.end() ? it2->second : nullptr;
 }
 
 void BearerManagement::pdcpActiveUeUL(std::set<MacNodeId> *ueSet)

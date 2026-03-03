@@ -20,7 +20,6 @@ import simu5g.stack.ip2nic.ITechnologyDecision;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.pdcp.DcMux;
-import simu5g.stack.pdcp.LowerMux;
 import simu5g.stack.pdcp.PdcpEntityManager;
 import simu5g.stack.pdcp.UpperMux;
 import simu5g.stack.phy.ILtePhy;
@@ -98,9 +97,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         pdcpUpperMux: UpperMux {
             @display("p=362,111");
         }
-        pdcpLowerMux: LowerMux {
-            @display("p=362,171");
-        }
         pdcpDcMux: DcMux {
             @display("p=432,141");
         }
@@ -155,13 +151,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //#
         //# Internal LTE Stack Connections
         //#
-
-        //# PDCP <-> RLC
-        pdcpLowerMux.rlcOut --> rlcUpperMux.upperLayerIn;
-        pdcpLowerMux.rlcIn <-- rlcUpperMux.upperLayerOut;
-
-        //# RLC internal
-        rlcLowerMux.toUpperMux --> rlcUpperMux.fromLowerMux;
 
         //# RLC <-> MAC
         rlcLowerMux.macOut --> mac.upperLayerIn;

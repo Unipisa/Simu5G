@@ -1,5 +1,4 @@
 #include "simu5g/stack/pdcp/UpperMux.h"
-#include "simu5g/stack/pdcp/LowerMux.h"
 #include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -18,7 +17,6 @@ void UpperMux::initialize(int stage)
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
 
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
         dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
         isNR_ = par("isNR").boolValue();
     }
