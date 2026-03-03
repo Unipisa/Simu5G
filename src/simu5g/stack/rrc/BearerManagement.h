@@ -23,13 +23,11 @@ namespace simu5g {
 class LteMacBase;
 class PdcpEntityManager;
 class RlcEntityManager;
-class RlcUpperMux;
 class RlcLowerMux;
 class RlcTxEntityBase;
 class RlcRxEntityBase;
 class UmTxEntity;
 class UpperMux;
-class LowerMux;
 class DcMux;
 class PdcpTxEntityBase;
 class PdcpRxEntityBase;
@@ -89,7 +87,7 @@ class BearerManagement : public cSimpleModule
     virtual void createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
     virtual RlcTxEntityBase *createRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     virtual RlcRxEntityBase *createRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
-    virtual RlcTxEntityBase *lookupRlcTxBuffer(DrbKey id);
+    RlcTxEntityBase *lookupRlcTxBuffer(DrbKey id);
     PdcpTxEntityBase *lookupPdcpTxEntity(DrbKey id);
     PdcpRxEntityBase *lookupPdcpRxEntity(DrbKey id);
     virtual void deleteLocalPdcpEntities(MacNodeId nodeId);

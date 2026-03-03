@@ -1,5 +1,4 @@
 #include "simu5g/stack/rlc/RlcLowerMux.h"
-#include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -21,7 +20,6 @@ void RlcLowerMux::initialize(int stage)
         macInGate_ = gate("macIn");
         macOutGate_ = gate("macOut");
 
-        upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
         bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
 
         hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();

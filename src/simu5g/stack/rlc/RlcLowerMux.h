@@ -14,7 +14,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class RlcUpperMux;
 class BearerManagement;
 
 /**
@@ -30,7 +29,6 @@ class RlcLowerMux : public cSimpleModule
     static simsignal_t receivedPacketFromLowerLayerSignal_;
     static simsignal_t sentPacketToLowerLayerSignal_;
 
-    RlcUpperMux *upperMux_ = nullptr;
     BearerManagement *bearerManagement_ = nullptr;
 
     bool hasD2DSupport_ = false;
