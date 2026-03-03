@@ -136,6 +136,11 @@ void LowerMux::registerRxEntity(DrbKey id, PdcpRxEntityBase *rxEnt)
     EV << "LowerMux::registerRxEntity - Registered RxPdcpEntity for " << id << "\n";
 }
 
+void LowerMux::unregisterRxEntity(DrbKey id)
+{
+    rxEntities_.erase(id);
+}
+
 void LowerMux::deleteRxEntities(MacNodeId nodeId)
 {
     bool isEnb = (getNodeTypeById(nodeId_) == NODEB);

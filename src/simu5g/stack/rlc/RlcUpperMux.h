@@ -50,6 +50,7 @@ class RlcUpperMux : public cSimpleModule
   public:
     RlcTxEntityBase *lookupTxBuffer(DrbKey id);
     void registerTxBuffer(DrbKey id, RlcTxEntityBase *txEnt);
+    void unregisterTxBuffer(DrbKey id);
     void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
     void deleteTxEntities(MacNodeId nodeId);
 

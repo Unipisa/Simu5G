@@ -78,6 +78,11 @@ void RlcUpperMux::registerTxBuffer(DrbKey id, RlcTxEntityBase *txEnt)
     EV << "RlcUpperMux::registerTxBuffer - Registered TX entity: " << txEnt->getId() << " for " << id << "\n";
 }
 
+void RlcUpperMux::unregisterTxBuffer(DrbKey id)
+{
+    txEntities_.erase(id);
+}
+
 void RlcUpperMux::registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt)
 {
     if (peerId != NODEID_NONE)

@@ -79,6 +79,11 @@ void UpperMux::registerTxEntity(DrbKey id, PdcpTxEntityBase *txEnt)
     EV << "UpperMux::registerTxEntity - Registered TxPdcpEntity for " << id << "\n";
 }
 
+void UpperMux::unregisterTxEntity(DrbKey id)
+{
+    txEntities_.erase(id);
+}
+
 void UpperMux::deleteTxEntities(MacNodeId nodeId)
 {
     MacNodeId nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());

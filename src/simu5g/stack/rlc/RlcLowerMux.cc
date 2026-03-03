@@ -123,6 +123,11 @@ void RlcLowerMux::registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt)
     EV << "RlcLowerMux::registerRxBuffer - Registered RX entity: " << rxEnt->getId() << " for " << id << "\n";
 }
 
+void RlcLowerMux::unregisterRxBuffer(DrbKey id)
+{
+    rxEntities_.erase(id);
+}
+
 void RlcLowerMux::deleteRxEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent();
