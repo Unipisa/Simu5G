@@ -38,7 +38,7 @@ moduleinterface ILteMac
     gates:
         input upperLayerIn;   // from RLC
         output upperLayerOut;  // to RLC
-        input PHY_to_MAC;    // PHY to MAC
-        output MAC_to_PHY;    // MAC to PHY
+        input phyIn;    // from PHY
+        output phyOut;    // to PHY
 }
 
