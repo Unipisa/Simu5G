@@ -46,7 +46,7 @@ void BearerManagement::initialize(int stage)
         rlcAmTxEntityModuleType_ = cModuleType::get(par("rlcAmTxEntityModuleType").stringValue());
         rlcAmRxEntityModuleType_ = cModuleType::get(par("rlcAmRxEntityModuleType").stringValue());
 
-        pdcpCompound_ = inet::getContainingNicModule(this);
+        nicModule_ = inet::getContainingNicModule(this);
 
         rlcUmModule.reference(this, "rlcUmModule", true);
         nrRlcUmModule.reference(this, "nrRlcUmModule", false);
@@ -85,13 +85,13 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcRxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
         std::string name = "pdcp-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-        auto *module = pdcpRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
+        auto *module = pdcpRxEntityModuleType_->create(name.c_str(), nicModule_);
         module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
         module->buildInside();
@@ -123,7 +123,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         ASSERT(pdcpDcMux != nullptr); // bypass entities are eNB-only
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
         std::string name = "pdcp-bypass-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-        auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
+        auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
 
@@ -169,8 +169,8 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcTxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
@@ -195,7 +195,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         if (!wiredToMaster) {
             // Normal case: create PDCP TX entity
             std::string name = "pdcp-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-            auto *module = pdcpTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
+            auto *module = pdcpTxEntityModuleType_->create(name.c_str(), nicModule_);
             module->par("headerCompressedSize") = par("headerCompressedSize");
             module->finalizeParameters();
             module->buildInside();
@@ -229,7 +229,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         ASSERT(pdcpDcMux != nullptr); // bypass entities are eNB-only
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
         std::string name = "pdcp-bypass-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-        auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
+        auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
 
@@ -279,8 +279,7 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     }
     bool isNr = rlcMgr->par("isNR").boolValue();
     std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-    cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
-    auto *module = moduleType->create(name.c_str(), rlcCompound);
+    auto *module = moduleType->create(name.c_str(), nicModule_);
     setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
@@ -328,8 +327,7 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     }
     bool isNr = rlcMgr->par("isNR").boolValue();
     std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-    cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
-    auto *module = moduleType->create(name.c_str(), rlcCompound);
+    auto *module = moduleType->create(name.c_str(), nicModule_);
     setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
@@ -371,8 +369,8 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent("deleteLocalPdcpEntities()");
 
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpDcMux = dynamic_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     bool isEnb = (registration_->getNodeType() == NODEB);
 
