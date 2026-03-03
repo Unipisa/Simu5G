@@ -1,6 +1,5 @@
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/DcMux.h"
-#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -31,11 +30,7 @@ void UpperMux::handleMessage(cMessage *msg)
         fromDataPort(pkt);
     }
     else if (incoming->isName("fromRxEntity")) {
-        // Packet from an RX entity — route to upper layer
-        auto inetPkt = check_and_cast<Packet *>(pkt);
-        auto routeTag = inetPkt->removeTag<PdcpOutputRoutingTag>();
-        if (routeTag->getRoute() != PDCP_OUT_UPPER)
-            throw cRuntimeError("UpperMux: unexpected route %d from RX entity", (int)routeTag->getRoute());
+        // Packet from an RX entity — forward to upper layer
         send(pkt, upperLayerOutGate_);
     }
     else {

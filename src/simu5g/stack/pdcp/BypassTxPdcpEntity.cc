@@ -11,7 +11,6 @@
 
 #include "simu5g/stack/pdcp/BypassTxPdcpEntity.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 
 namespace simu5g {
 
@@ -37,7 +36,6 @@ void BypassTxPdcpEntity::handlePacketFromUpperLayer(inet::Packet *pkt)
     }
     emit(sentPacketToLowerLayerSignal_, pkt);
 
-    pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
     send(pkt, "out");
 }
 
