@@ -21,6 +21,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class BearerManagement;
 class RlcUpperMux;
 class RlcLowerMux;
 class RlcTxEntityBase;
@@ -38,6 +39,7 @@ class RlcRxEntityBase;
 class RlcEntityManager : public cSimpleModule
 {
   protected:
+    BearerManagement *bearerManagement_ = nullptr;
     RlcUpperMux *upperMux_ = nullptr;
     RlcLowerMux *lowerMux_ = nullptr;
 

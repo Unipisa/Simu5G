@@ -89,6 +89,8 @@ class BearerManagement : public cSimpleModule
     virtual void createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp=true);
     virtual RlcTxEntityBase *createRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     virtual RlcRxEntityBase *createRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
+    virtual RlcTxEntityBase *lookupRlcTxBuffer(DrbKey id);
+    virtual PdcpRxEntityBase *lookupPdcpRxEntity(DrbKey id);
     virtual void deleteLocalPdcpEntities(MacNodeId nodeId);
     virtual void deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack=false);
 };

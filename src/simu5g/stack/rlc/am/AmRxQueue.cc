@@ -11,6 +11,7 @@
 //
 
 #include <inet/common/ProtocolTag_m.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 
 #include "simu5g/stack/rlc/am/AmRxQueue.h"
 #include "simu5g/stack/rlc/am/AmTxQueue.h"
@@ -19,6 +20,7 @@
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 
@@ -59,7 +61,7 @@ void AmRxQueue::initialize(int stage)
         discarded_.resize(rxWindowDesc_.windowSize_);
         received_.resize(rxWindowDesc_.windowSize_);
         binder_.reference(this, "binderModule", true);
-        upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
+        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
 
         // Statistics
         LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
@@ -720,7 +722,7 @@ void AmRxQueue::routeControlToTxEntity(Packet *pkt)
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
 
-    auto *txEntity = upperMux_->lookupTxBuffer(id);
+    auto *txEntity = bearerManagement_->lookupRlcTxBuffer(id);
     if (txEntity == nullptr)
         throw cRuntimeError("AmRxQueue::routeControlToTxEntity: TX entity for %s not found", id.str().c_str());
 
@@ -733,7 +735,7 @@ void AmRxQueue::bufferControlViaTxEntity(Packet *pkt)
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
 
-    auto *txEntity = upperMux_->lookupTxBuffer(id);
+    auto *txEntity = bearerManagement_->lookupRlcTxBuffer(id);
     if (txEntity == nullptr)
         throw cRuntimeError("AmRxQueue::bufferControlViaTxEntity: TX entity for %s not found", id.str().c_str());
 

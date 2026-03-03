@@ -26,5 +26,6 @@ simple NrTxPdcpEntity extends LteTxPdcpEntity
         @signal[pdcpSduSentNr];
     gates:
         output dcOut @loose;
+        output nrOut @loose;
 }
 

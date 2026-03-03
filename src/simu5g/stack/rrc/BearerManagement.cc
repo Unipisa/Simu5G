@@ -177,34 +177,55 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
-        std::string name = "pdcp-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
-        auto *module = pdcpTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
-        module->par("headerCompressedSize") = par("headerCompressedSize");
-        module->finalizeParameters();
-        module->buildInside();
 
-        // Wire UpperMux → entity in gate
-        int idx = pdcpUpperMux->gateSize("toTxEntity");
-        pdcpUpperMux->setGateSize("toTxEntity", idx + 1);
-        pdcpUpperMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
-
-        // Wire PDCP TX out → RLC TX in (direct per-DRB connection)
-        auto rlcIt = (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).find(rlcId);
-        ASSERT(rlcIt != (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).end());
-        module->gate("out")->connectTo(rlcIt->second->gate("in"));
-
-        // Wire dcOut gate → DcMux (if entity has one, e.g. NrTxPdcpEntity)
-        if (module->hasGate("dcOut")) {
-            int dcIdx = pdcpDcMux->gateSize("fromEntity");
-            pdcpDcMux->setGateSize("fromEntity", dcIdx + 1);
-            module->gate("dcOut")->connectTo(pdcpDcMux->gate("fromEntity", dcIdx));
+        // DC UE NR leg: check if a master (LTE-leg) PDCP TX entity exists for the same DRB.
+        // If so, wire its nrOut gate to the NR RLC TX entity instead of creating a new PDCP entity.
+        bool wiredToMaster = false;
+        if (registration_->getNodeType()==UE && isNrUe(lteInfo->getSourceId())) {
+            for (auto& [key, masterEntity] : pdcpTxEntities_) {
+                if (key.getDrbId() == id.getDrbId()) {
+                    auto *masterModule = check_and_cast<cModule *>(masterEntity);
+                    if (masterModule->hasGate("nrOut")) {
+                        auto nrRlcIt = nrRlcTxEntities_.find(rlcId);
+                        ASSERT(nrRlcIt != nrRlcTxEntities_.end());
+                        masterModule->gate("nrOut")->connectTo(nrRlcIt->second->gate("in"));
+                        wiredToMaster = true;
+                    }
+                    break;
+                }
+            }
         }
+        if (!wiredToMaster) {
+            // Normal case: create PDCP TX entity
+            std::string name = "pdcp-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
+            auto *module = pdcpTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
+            module->par("headerCompressedSize") = par("headerCompressedSize");
+            module->finalizeParameters();
+            module->buildInside();
 
-        module->scheduleStart(simTime());
-        module->callInitialize();
-        auto *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
-        pdcpUpperMux->registerTxEntity(id, txEnt);
-        pdcpTxEntities_[id] = txEnt;
+            // Wire UpperMux → entity in gate
+            int idx = pdcpUpperMux->gateSize("toTxEntity");
+            pdcpUpperMux->setGateSize("toTxEntity", idx + 1);
+            pdcpUpperMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
+
+            // Wire PDCP TX out → RLC TX in (direct per-DRB connection)
+            auto rlcIt = (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).find(rlcId);
+            ASSERT(rlcIt != (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).end());
+            module->gate("out")->connectTo(rlcIt->second->gate("in"));
+
+            // Wire dcOut gate → DcMux (if entity has one, e.g. NrTxPdcpEntity)
+            if (module->hasGate("dcOut")) {
+                int dcIdx = pdcpDcMux->gateSize("fromEntity");
+                pdcpDcMux->setGateSize("fromEntity", dcIdx + 1);
+                module->gate("dcOut")->connectTo(pdcpDcMux->gate("fromEntity", dcIdx));
+            }
+
+            module->scheduleStart(simTime());
+            module->callInitialize();
+            auto *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
+            pdcpUpperMux->registerTxEntity(id, txEnt);
+            pdcpTxEntities_[id] = txEnt;
+        }
     }
     else {
         // DC secondary node: create bypass TX entity (forwards DL from master to RLC)
@@ -420,6 +441,24 @@ void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
             it = rxMap.erase(it);
         } else ++it;
     }
+}
+
+PdcpRxEntityBase *BearerManagement::lookupPdcpRxEntity(DrbKey id)
+{
+    auto it = pdcpRxEntities_.find(id);
+    if (it != pdcpRxEntities_.end())
+        return it->second;
+    auto it2 = pdcpBypassRxEntities_.find(id);
+    return it2 != pdcpBypassRxEntities_.end() ? it2->second : nullptr;
+}
+
+RlcTxEntityBase *BearerManagement::lookupRlcTxBuffer(DrbKey id)
+{
+    auto it = rlcTxEntities_.find(id);
+    if (it != rlcTxEntities_.end())
+        return it->second;
+    auto it2 = nrRlcTxEntities_.find(id);
+    return it2 != nrRlcTxEntities_.end() ? it2->second : nullptr;
 }
 
 } // namespace simu5g
