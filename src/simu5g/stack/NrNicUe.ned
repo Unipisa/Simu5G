@@ -108,8 +108,8 @@ module NrNicUe extends LteNicUeD2D
         //#
         //# Connections from LTE Stack to radio interface
         //#
-        nrMac.MAC_to_PHY --> nrPhy.upperGateIn;
-        nrMac.PHY_to_MAC <-- nrPhy.upperGateOut;
+        nrMac.phyOut --> nrPhy.upperGateIn;
+        nrMac.phyIn <-- nrPhy.upperGateOut;
 
         //# external: lower connection
         nrRadioIn --> nrPhy.radioIn;

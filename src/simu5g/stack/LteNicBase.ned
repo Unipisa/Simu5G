@@ -142,8 +142,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //#
         //# Connections from LTE Stack to radio interface
         //#
-        mac.MAC_to_PHY --> phy.upperGateIn;
-        mac.PHY_to_MAC <-- phy.upperGateOut;
+        mac.phyOut --> phy.upperGateIn;
+        mac.phyIn <-- phy.upperGateOut;
 
         //# external: lower connection
         radioIn --> phy.radioIn;

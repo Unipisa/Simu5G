@@ -400,7 +400,7 @@ void LteMacUeD2D::handleMessage(cMessage *msg)
             EV << "LteMacUeD2D::handleMessage - Received packet " << pkt->getName() <<
                 " from port " << pkt->getArrivalGate()->getName() << endl;
 
-            // message from PHY_to_MAC gate (from the lower layer)
+            // message from phyIn gate (from the lower layer)
             emit(receivedPacketFromLowerLayerSignal_, pkt);
 
             // call handler
