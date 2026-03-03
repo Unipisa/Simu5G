@@ -20,7 +20,7 @@ simple BypassTxPdcpEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         @signal[sentPacketToLowerLayer];
         @signal[pdcpSduSent];
         string binderModule = default("binder");

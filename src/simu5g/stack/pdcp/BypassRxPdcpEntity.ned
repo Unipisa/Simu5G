@@ -20,7 +20,7 @@ simple BypassRxPdcpEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         string binderModule = default("binder");
 
     gates:

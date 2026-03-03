@@ -10,7 +10,7 @@ simple TmTxEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         bool isNR = default(false);
         int queueSize = default(0);    // max queue length in packets (0: unlimited)
 
