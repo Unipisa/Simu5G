@@ -18,7 +18,6 @@
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
-#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 
 namespace simu5g {
 
@@ -78,7 +77,6 @@ void LteRxPdcpEntity::handlePdcpSdu(Packet *pkt, unsigned int sequenceNumber)
 void LteRxPdcpEntity::deliverSduToUpperLayer(Packet *pkt)
 {
     emit(sentPacketToUpperLayerSignal_, pkt);
-    pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_UPPER);
     send(pkt, "out");
 }
 

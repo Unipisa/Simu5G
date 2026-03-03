@@ -21,7 +21,6 @@
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include <inet/common/ProtocolTag_m.h>
 #include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 
 // We require a minimum length of 1 Byte for each header even in compressed state
 // (transport, network and ROHC header, i.e. minimum is 3 Bytes)
@@ -136,7 +135,6 @@ void LteTxPdcpEntity::deliverPdcpPdu(Packet *pdcpPkt)
         emit(pdcpSduSentSignal_, pdcpPkt);
     }
     emit(sentPacketToLowerLayerSignal_, pdcpPkt);
-    pdcpPkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
     send(pdcpPkt, "out");
 }
 

@@ -12,7 +12,6 @@
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
-#include "simu5g/stack/pdcp/PdcpOutputRoutingTag_m.h"
 #include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
@@ -51,7 +50,6 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentNrSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_NR_RLC);
             // In DC, the master PDCP entity's 'out' is wired to LTE RLC;
             // use 'nrOut' gate (wired to NR RLC) for NR-leg traffic
             send(pkt, dualConnectivityEnabled_ ? "nrOut" : "out");
@@ -62,7 +60,6 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
             send(pkt, "out");
         }
     }
@@ -77,7 +74,6 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                 emit(pdcpSduSentSignal_, pkt);
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
-            pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
             send(pkt, "out");
         }
         else {
@@ -89,7 +85,6 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
                     emit(pdcpSduSentSignal_, pkt);
                 }
                 emit(sentPacketToLowerLayerSignal_, pkt);
-                pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_RLC);
                 send(pkt, "out");
             }
             else { // useNR
