@@ -1,5 +1,5 @@
-#ifndef _RLC_LOWER_MUX_H_
-#define _RLC_LOWER_MUX_H_
+#ifndef _RLC_MUX_H_
+#define _RLC_MUX_H_
 
 #include <map>
 #include <set>
@@ -17,13 +17,13 @@ using namespace omnetpp;
 class BearerManagement;
 
 /**
- * @class RlcLowerMux
+ * @class RlcMux
  * @brief Lower-layer RLC packet dispatcher.
  *
  * Owns the RX entity map. Creates RX entities with gate wiring
  * to itself (in gate) and to the UpperMux (out gate).
  */
-class RlcLowerMux : public cSimpleModule
+class RlcMux : public cSimpleModule
 {
   protected:
     static simsignal_t receivedPacketFromLowerLayerSignal_;

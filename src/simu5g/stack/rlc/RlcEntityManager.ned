@@ -14,7 +14,7 @@ package simu5g.stack.rlc;
 
 //
 // RLC entity lifecycle manager.
-// Delegates entity lookup to ~BearerManagement (TX) and ~RlcLowerMux (RX).
+// Delegates entity lookup to ~BearerManagement (TX) and ~RlcMux (RX).
 // Manages per-UE throughput statistics and D2D peer tracking.
 //
 simple RlcEntityManager

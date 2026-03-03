@@ -22,7 +22,7 @@ package simu5g.stack;
 module NrNicEnb extends LteNicEnbD2D
 {
     parameters:
-        pdcpUpperMux.isNR = default(true);
+        pdcpMux.isNR = default(true);
         rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         mac.typename = default("NrMacGnb");

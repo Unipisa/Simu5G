@@ -22,7 +22,7 @@ namespace simu5g {
 
 class LteMacBase;
 class RlcEntityManager;
-class RlcLowerMux;
+class RlcMux;
 class RlcTxEntityBase;
 class RlcRxEntityBase;
 class UmTxEntity;

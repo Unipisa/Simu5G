@@ -18,7 +18,7 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.RlcEntityManager;
-import simu5g.stack.rlc.RlcLowerMux;
+import simu5g.stack.rlc.RlcMux;
 
 //
 // Defines a User Equipment (UE) network interface card that
@@ -35,7 +35,7 @@ module NrNicUe extends LteNicUeD2D
 
         int numNrCarriers = default(1);
 
-        pdcpUpperMux.isNR = default(true);
+        pdcpMux.isNR = default(true);
         rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         phy.typename = default("NrPhyUe");	        // TODO fix this
@@ -56,12 +56,12 @@ module NrNicUe extends LteNicUeD2D
 
     submodules:
         // NR RLC submodules (flattened from former LteRlc compound)
-        nrRlcLowerMux: RlcLowerMux {
+        nrRlcMux: RlcMux {
             entityManagerModule = "^.nrRlcEntityManager";
             @display("p=570,430;is=s");
         }
         nrRlcEntityManager: RlcEntityManager {
-            lowerMuxModule = "^.nrRlcLowerMux";
+            lowerMuxModule = "^.nrRlcMux";
             macModule = "^.nrMac";
             isNR = true;
             hasD2DSupport = parent.d2dCapable;
@@ -101,8 +101,8 @@ module NrNicUe extends LteNicUeD2D
     connections:
 
         //# NR RLC <-> MAC
-        nrRlcLowerMux.macOut --> nrMac.upperLayerIn;
-        nrRlcLowerMux.macIn <-- nrMac.upperLayerOut;
+        nrRlcMux.macOut --> nrMac.upperLayerIn;
+        nrRlcMux.macIn <-- nrMac.upperLayerOut;
 
         //#
         //# Connections from LTE Stack to radio interface

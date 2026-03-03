@@ -12,7 +12,7 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 
 #include "simu5g/stack/rlc/RlcEntityManager.h"
-#include "simu5g/stack/rlc/RlcLowerMux.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 
@@ -41,7 +41,7 @@ void RlcEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
-        lowerMux_ = check_and_cast<RlcLowerMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
+        lowerMux_ = check_and_cast<RlcMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
         hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();
     }
 }

@@ -977,7 +977,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
          */
 
         cModule *nic = inet::getContainingNicModule(this);
-        if (nic->getSubmodule("pdcpUpperMux")->par("isNR").boolValue()) {
+        if (nic->getSubmodule("pdcpMux")->par("isNR").boolValue()) {
             auto *bm = check_and_cast<BearerManagement *>(nic->getSubmodule("rrc")->getSubmodule("bearerManagement"));
             std::set<MacNodeId> activePdcpUe;
             bm->pdcpActiveUeUL(&activePdcpUe);

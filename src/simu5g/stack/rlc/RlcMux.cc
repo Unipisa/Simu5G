@@ -1,4 +1,4 @@
-#include "simu5g/stack/rlc/RlcLowerMux.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -9,12 +9,12 @@
 
 namespace simu5g {
 
-Define_Module(RlcLowerMux);
+Define_Module(RlcMux);
 
-simsignal_t RlcLowerMux::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t RlcLowerMux::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t RlcMux::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t RlcMux::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
-void RlcLowerMux::initialize(int stage)
+void RlcMux::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         macInGate_ = gate("macIn");
@@ -31,7 +31,7 @@ void RlcLowerMux::initialize(int stage)
     }
 }
 
-void RlcLowerMux::handleMessage(cMessage *msg)
+void RlcMux::handleMessage(cMessage *msg)
 {
     cGate *incoming = msg->getArrivalGate();
     if (incoming == macInGate_) {
@@ -43,14 +43,14 @@ void RlcLowerMux::handleMessage(cMessage *msg)
         send(msg, macOutGate_);
     }
     else {
-        throw cRuntimeError("RlcLowerMux: unexpected message from gate %s", incoming->getFullName());
+        throw cRuntimeError("RlcMux: unexpected message from gate %s", incoming->getFullName());
     }
 }
 
-void RlcLowerMux::fromMacLayer(cPacket *pktAux)
+void RlcMux::fromMacLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
-    EV << "RlcLowerMux::fromMacLayer - Received packet " << pkt->getName() << " from lower layer\n";
+    EV << "RlcMux::fromMacLayer - Received packet " << pkt->getName() << " from lower layer\n";
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     auto chunk = pkt->peekAtFront<inet::Chunk>();
 
@@ -100,31 +100,31 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
         RlcRxEntityBase *rxbuf = lookupRxBuffer(id);
         ASSERT(rxbuf != nullptr);
 
-        EV << "RlcLowerMux::fromMacLayer - Enqueue packet " << pkt->getName() << " into RX entity\n";
+        EV << "RlcMux::fromMacLayer - Enqueue packet " << pkt->getName() << " into RX entity\n";
         send(pkt, rxbuf->gate("in")->getPreviousGate());
     }
 }
 
-RlcRxEntityBase *RlcLowerMux::lookupRxBuffer(DrbKey id)
+RlcRxEntityBase *RlcMux::lookupRxBuffer(DrbKey id)
 {
     auto it = rxEntities_.find(id);
     return (it != rxEntities_.end()) ? it->second : nullptr;
 }
 
-void RlcLowerMux::registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt)
+void RlcMux::registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt)
 {
     if (rxEntities_.find(id) != rxEntities_.end())
         throw cRuntimeError("RLC RX entity for %s already exists", id.str().c_str());
     rxEntities_[id] = rxEnt;
-    EV << "RlcLowerMux::registerRxBuffer - Registered RX entity: " << rxEnt->getId() << " for " << id << "\n";
+    EV << "RlcMux::registerRxBuffer - Registered RX entity: " << rxEnt->getId() << " for " << id << "\n";
 }
 
-void RlcLowerMux::unregisterRxBuffer(DrbKey id)
+void RlcMux::unregisterRxBuffer(DrbKey id)
 {
     rxEntities_.erase(id);
 }
 
-void RlcLowerMux::activeUeUL(std::set<MacNodeId> *ueSet)
+void RlcMux::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     for (const auto& [id, entity] : rxEntities_) {
         MacNodeId nodeId = id.getNodeId();

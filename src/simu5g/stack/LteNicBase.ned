@@ -21,7 +21,7 @@ import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.pdcp.UpperMux;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.RlcEntityManager;
-import simu5g.stack.rlc.RlcLowerMux;
+import simu5g.stack.rlc.RlcMux;
 import simu5g.stack.rrc.IRrc;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 
@@ -90,16 +90,16 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=80,60");
         }
         // PDCP submodules (flattened from former PdcpLayer compound)
-        pdcpUpperMux: UpperMux {
+        pdcpMux: UpperMux {
             @display("p=310,190;is=s");
         }
         // RLC submodules (flattened from former LteRlc compound)
-        rlcLowerMux: RlcLowerMux {
+        rlcMux: RlcMux {
             entityManagerModule = "^.rlcEntityManager";
             @display("p=310,430;is=s");
         }
         rlcEntityManager: RlcEntityManager {
-            lowerMuxModule = "^.rlcLowerMux";
+            lowerMuxModule = "^.rlcMux";
             macModule = "^.mac";
             hasD2DSupport = parent.d2dCapable;
             nodeType = parent.nodeType;
@@ -128,16 +128,16 @@ module LteNicBase extends NetworkInterface like ICellularNic
     connections allowunconnected:
         handoverPacketHolder.stackOut --> technologyDecision.upperLayerIn;
         technologyDecision.lowerLayerOut --> ip2nic.upperLayerIn;
-        ip2nic.stackOut --> pdcpUpperMux.upperLayerIn;
-        ip2nic.stackIn <-- pdcpUpperMux.upperLayerOut;
+        ip2nic.stackOut --> pdcpMux.upperLayerIn;
+        ip2nic.stackIn <-- pdcpMux.upperLayerOut;
 
         //#
         //# Internal LTE Stack Connections
         //#
 
         //# RLC <-> MAC
-        rlcLowerMux.macOut --> mac.upperLayerIn;
-        rlcLowerMux.macIn <-- mac.upperLayerOut;
+        rlcMux.macOut --> mac.upperLayerIn;
+        rlcMux.macIn <-- mac.upperLayerOut;
 
         //#
         //# Connections from LTE Stack to radio interface
