@@ -24,7 +24,6 @@ import simu5g.stack.pdcp.UpperMux;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.RlcEntityManager;
 import simu5g.stack.rlc.RlcLowerMux;
-import simu5g.stack.rlc.RlcUpperMux;
 import simu5g.stack.rrc.IRrc;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 
@@ -103,18 +102,11 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=292,141");
         }
         // RLC submodules (flattened from former LteRlc compound)
-        rlcUpperMux: RlcUpperMux {
-            lowerMuxModule = "^.rlcLowerMux";
-            entityManagerModule = "^.rlcEntityManager";
-            @display("p=362,196");
-        }
         rlcLowerMux: RlcLowerMux {
-            upperMuxModule = "^.rlcUpperMux";
             entityManagerModule = "^.rlcEntityManager";
             @display("p=362,256");
         }
         rlcEntityManager: RlcEntityManager {
-            upperMuxModule = "^.rlcUpperMux";
             lowerMuxModule = "^.rlcLowerMux";
             macModule = "^.mac";
             hasD2DSupport = parent.d2dCapable;

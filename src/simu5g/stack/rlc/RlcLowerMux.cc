@@ -69,9 +69,8 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
             UmTxEntity *umTxbuf = check_and_cast<UmTxEntity *>(txbuf);
             umTxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
-            // forward packet to PDCP via UpperMux
-            EV << "RlcLowerMux::fromMacLayer - Forwarding D2D switch to PDCP via toUpperMux\n";
-            send(pkt, "toUpperMux");
+            // TODO step 12: forward D2D switch notification to PDCP entities directly
+            delete pkt;
         }
         else { // rx side
             DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());

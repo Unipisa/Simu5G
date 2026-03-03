@@ -19,7 +19,6 @@ import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.RlcEntityManager;
 import simu5g.stack.rlc.RlcLowerMux;
-import simu5g.stack.rlc.RlcUpperMux;
 
 //
 // Defines a User Equipment (UE) network interface card that
@@ -60,18 +59,11 @@ module NrNicUe extends LteNicUeD2D
 
     submodules:
         // NR RLC submodules (flattened from former LteRlc compound)
-        nrRlcUpperMux: RlcUpperMux {
-            lowerMuxModule = "^.nrRlcLowerMux";
-            entityManagerModule = "^.nrRlcEntityManager";
-            @display("p=466,196");
-        }
         nrRlcLowerMux: RlcLowerMux {
-            upperMuxModule = "^.nrRlcUpperMux";
             entityManagerModule = "^.nrRlcEntityManager";
             @display("p=466,256");
         }
         nrRlcEntityManager: RlcEntityManager {
-            upperMuxModule = "^.nrRlcUpperMux";
             lowerMuxModule = "^.nrRlcLowerMux";
             macModule = "^.nrMac";
             isNR = true;

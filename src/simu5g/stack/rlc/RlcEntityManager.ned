@@ -14,8 +14,8 @@ package simu5g.stack.rlc;
 
 //
 // RLC entity lifecycle manager.
-// Delegates entity creation/lookup to ~RlcUpperMux (TX) and ~RlcLowerMux (RX).
-// Manages per-UE throughput statistics and provides deleteQueues() for handover.
+// Delegates entity lookup to ~BearerManagement (TX) and ~RlcLowerMux (RX).
+// Manages per-UE throughput statistics and D2D peer tracking.
 //
 simple RlcEntityManager
 {
@@ -24,7 +24,6 @@ simple RlcEntityManager
 
         @display("i=block/wheelbarrow");
 
-        string upperMuxModule;
         string lowerMuxModule;
         string macModule;
         bool isNR = default(false);
