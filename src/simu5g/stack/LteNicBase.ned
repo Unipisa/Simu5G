@@ -37,7 +37,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:
         @class(NonlayoutingNetworkInterface);
-        @display("i=block/ifcard;bgb=704,443;bgl=3");
+        @display("i=block/ifcard;bgb=800,650;bgl=3");
         bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
@@ -87,7 +87,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // RRC Layer
         rrc: <default("Rrc")> like IRrc {
-            @display("p=200,141");
+            @display("p=80,60");
         }
         // PDCP submodules (flattened from former PdcpLayer compound)
         pdcpUpperMux: UpperMux {
@@ -103,7 +103,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             macModule = "^.mac";
             hasD2DSupport = parent.d2dCapable;
             nodeType = parent.nodeType;
-            @display("p=292,226");
+            @display("p=80,140");
         }
         // MAC Layer
         mac: <> like ILteMac {
@@ -115,14 +115,14 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
         channelModel[numCarriers]: <lteChannelModelType> like ILteChannelModel {
-            @display("p=100,389");
+            @display("p=80,220");
         }
 
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
         packetFlowObserver: <default("")> like IPacketFlowObserver if hasRniSupport {
-            @display("p=70,300");
+            @display("p=80,300");
         }
 
     connections allowunconnected:

@@ -43,7 +43,6 @@ module NrNicUe extends LteNicUeD2D
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
 
-        @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlcEntityManager";
         rrc.hasNrHandoverController = true;
         rrc.nrHandoverController.isNr = true;
@@ -67,7 +66,7 @@ module NrNicUe extends LteNicUeD2D
             isNR = true;
             hasD2DSupport = parent.d2dCapable;
             nodeType = parent.nodeType;
-            @display("p=536,226");
+            @display("p=80,460");
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {
@@ -79,12 +78,12 @@ module NrNicUe extends LteNicUeD2D
         }
         // NR Channel Model
         nrChannelModel[numNrCarriers]: <nrChannelModelType> like ILteChannelModel {
-            @display("p=232,389");
+            @display("p=80,540");
         }
 
         // Feedback generator submodule
         nrDlFbGen: LteDlFeedbackGenerator {
-            @display("p=144,50;is=s");
+            @display("p=80,620;is=s");
             phyModule = "^.nrPhy";
         }
 
@@ -93,7 +92,7 @@ module NrNicUe extends LteNicUeD2D
         //# Modules used to take trace of PDCP pkt flow
         //#
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {
-            @display("p=200,300");
+            @display("p=80,700");
             macModule = "^.nrMac";
             rlcModule = "^";
             isNrObserver = true;

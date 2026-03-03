@@ -27,7 +27,6 @@ module NrNicEnb extends LteNicEnbD2D
         rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         mac.typename = default("NrMacGnb");
         lteChannelModelType = default("NrChannelModel_3GPP38_901");
-        @display("bgb=694,443");
         packetFlowObserver.typename = default("NrPacketFlowObserverGnb");
 }
 

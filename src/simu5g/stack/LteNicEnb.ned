@@ -47,23 +47,23 @@ module LteNicEnb extends LteNicBase
         //# X2 manager
         //#
         x2Manager: LteX2Manager {
-            @display("p=623,226,row");
+            @display("p=623,226");
         }
 
         //#
         //# Modules exploiting X2 interface
         //#
         compManager: <default("LteCompManagerProportional")> like ILteCompManager if compEnabled {
-            @display("p=493,314,row");
+            @display("p=493,314");
         }
         handoverManager: LteHandoverManager {
-            @display("p=493,226,row");
+            @display("p=493,226");
         }
         dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
-            @display("p=493,141,row");
+            @display("p=493,141");
         }
         bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
-            @display("p=100,307,row");
+            @display("p=80,380,row");
         }
 
     connections:

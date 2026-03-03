@@ -27,6 +27,5 @@ module LteNicUeD2D extends LteNicUe
 
         d2dCapable = default(true);             // DO NOT CHANGE
         bool d2dInitialMode = default(false);
-        @display("bgb=704,443");
 }
 
