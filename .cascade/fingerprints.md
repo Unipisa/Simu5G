@@ -19,6 +19,72 @@
 
 - Errors and fingerprint failures are NOT ACCEPTABLE (except when expected).
 
+## Checking fingerprint test results
+
+Run the fingerprint tests and redirect output to a log file:
+```
+(cd tests/fingerprint/ && ./fingerprints -d) 2>&1 | tee fp_stdout.log
+```
+
+The log file `fp_stdout.log` is the ONLY output you need to look at.
+
+### 1. Check the summary line at the end
+
+```
+tail -10 fp_stdout.log
+```
+
+It prints one of:
+```
+Ran 127 tests in 167.938s
+
+OK
+```
+or:
+```
+Ran 127 tests in 167.938s
+
+FAILED (errors=7)
+```
+or:
+```
+Ran 127 tests in 167.938s
+
+FAILED (failures=3, errors=2)
+```
+
+- **errors** = simulations that crashed or produced runtime errors. NEVER acceptable.
+- **failures** = fingerprint mismatches. Only acceptable if the mismatch is
+  an expected consequence of the change (e.g. `sz` changing after removing
+  a module).
+- The result must be `OK` or `FAILED (failures=N)` with zero errors.
+  Any errors mean there is a bug to fix before proceeding.
+
+### 2. If there are errors
+
+Search the log for the error lines:
+```
+grep 'ERROR (should be PASS)' fp_stdout.log
+```
+
+Each matching line contains the simulation directory, command-line args,
+and the full error message. No need to look at surrounding context.
+If you need a stack trace (e.g. for crashes), re-run the simulation manually.
+Fix all errors before proceeding.
+
+### 3. If there are only failures (fingerprint mismatches)
+
+The log shows which fingerprint ingredients differ for each failing
+simulation. Verify the mismatches are expected consequences of the change.
+Then update fingerprints:
+```
+cp tests/fingerprint/simulations.csv.UPDATED tests/fingerprint/simulations.csv
+```
+
+### 4. DO NOT update fingerprints if there are any errors. Fix the errors first.
+
+### 5. DO NOT look at .ERROR or .FAILED files. Use fp_stdout.log solely.
+
 ## What are fingerprints?
 
 - FINGERPRINTS: 32-bit integer, computed by taking the specified "ingredients"

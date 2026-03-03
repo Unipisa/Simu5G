@@ -472,13 +472,4 @@ void BearerManagement::pdcpActiveUeUL(std::set<MacNodeId> *ueSet)
     }
 }
 
-RlcTxEntityBase *BearerManagement::lookupRlcTxBuffer(DrbKey id)
-{
-    auto it = rlcTxEntities_.find(id);
-    if (it != rlcTxEntities_.end())
-        return it->second;
-    auto it2 = nrRlcTxEntities_.find(id);
-    return it2 != nrRlcTxEntities_.end() ? it2->second : nullptr;
-}
-
 } // namespace simu5g
