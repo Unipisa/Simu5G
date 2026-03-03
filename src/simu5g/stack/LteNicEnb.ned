@@ -40,27 +40,27 @@ module LteNicEnb extends LteNicBase
 
     submodules:
         pdcpDcMux: DcMux {
-            @display("p=432,141");
+            @display("p=609,331;is=s");
         }
 
         //#
         //# X2 manager
         //#
         x2Manager: LteX2Manager {
-            @display("p=623,226");
+            @display("p=717,190;is=s");
         }
 
         //#
         //# Modules exploiting X2 interface
         //#
         compManager: <default("LteCompManagerProportional")> like ILteCompManager if compEnabled {
-            @display("p=493,314");
+            @display("p=717,286;is=s");
         }
         handoverManager: LteHandoverManager {
-            @display("p=493,226");
+            @display("p=717,50;is=s");
         }
         dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
-            @display("p=493,141");
+            @display("p=609,190;is=s");
         }
         bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
             @display("p=80,380,row");

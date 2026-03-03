@@ -58,7 +58,7 @@ module NrNicUe extends LteNicUeD2D
         // NR RLC submodules (flattened from former LteRlc compound)
         nrRlcLowerMux: RlcLowerMux {
             entityManagerModule = "^.nrRlcEntityManager";
-            @display("p=466,256");
+            @display("p=570,430;is=s");
         }
         nrRlcEntityManager: RlcEntityManager {
             lowerMuxModule = "^.nrRlcLowerMux";
@@ -70,11 +70,11 @@ module NrNicUe extends LteNicUeD2D
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {
-            @display("p=466,314");
+            @display("p=570,510");
         }
         // PHY Layer
         nrPhy: <default("NrPhyUe")> like ILtePhy {
-            @display("p=466,389");
+            @display("p=570,600");
         }
         // NR Channel Model
         nrChannelModel[numNrCarriers]: <nrChannelModelType> like ILteChannelModel {

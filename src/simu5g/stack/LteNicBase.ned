@@ -73,17 +73,17 @@ module LteNicBase extends NetworkInterface like ICellularNic
     submodules:
         // handover helper, performs packet holding / forwarding
         handoverPacketHolder: <> like IHandoverPacketHolder {
-            @display("p=412,67");
+            @display("p=440,50;is=s");
         }
         // technology selection for outgoing packets
         technologyDecision: <default("TechnologyDecision")> like ITechnologyDecision {
             nodeType = parent.nodeType;
-            @display("p=475,67");
+            @display("p=440,120;is=s");
         }
         // bridge between radio nic and network layer
         ip2nic: <default("Ip2Nic")> like INetworkLayer2CellularNic {
             nodeType = parent.nodeType;
-            @display("p=412,97");
+            @display("p=310,120");
         }
         // RRC Layer
         rrc: <default("Rrc")> like IRrc {
@@ -91,12 +91,12 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // PDCP submodules (flattened from former PdcpLayer compound)
         pdcpUpperMux: UpperMux {
-            @display("p=362,111");
+            @display("p=310,190;is=s");
         }
         // RLC submodules (flattened from former LteRlc compound)
         rlcLowerMux: RlcLowerMux {
             entityManagerModule = "^.rlcEntityManager";
-            @display("p=362,256");
+            @display("p=310,430;is=s");
         }
         rlcEntityManager: RlcEntityManager {
             lowerMuxModule = "^.rlcLowerMux";
@@ -107,11 +107,11 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // MAC Layer
         mac: <> like ILteMac {
-            @display("p=363,314");
+            @display("p=310,510");
         }
         // LtePhy submodule
         phy: <> like ILtePhy {
-            @display("p=363,389");
+            @display("p=310,600");
         }
 
         channelModel[numCarriers]: <lteChannelModelType> like ILteChannelModel {
