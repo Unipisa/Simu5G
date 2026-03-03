@@ -16,6 +16,7 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
 #include <inet/common/ModuleAccess.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
@@ -27,9 +28,7 @@ void DcMux::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macNodeId").intValue());
 
-        auto *rrc = getParentModule()->getSubmodule("rrc");
-        ASSERT(rrc != nullptr);
-        bearerManagement_ = check_and_cast<BearerManagement *>(rrc->getSubmodule("bearerManagement"));
+        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
 
         dcManagerInGate_ = gate("dcManagerIn");
     }

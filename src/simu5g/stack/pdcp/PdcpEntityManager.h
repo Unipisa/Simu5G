@@ -23,8 +23,7 @@ using namespace omnetpp;
 class PdcpTxEntityBase;
 class PdcpRxEntityBase;
 class UpperMux;
-class LowerMux;
-class DcMux;
+class BearerManagement;
 
 /**
  * @class PdcpEntityManager
@@ -38,8 +37,7 @@ class PdcpEntityManager : public cSimpleModule
 {
   protected:
     UpperMux *upperMux_ = nullptr;
-    LowerMux *lowerMux_ = nullptr;
-    DcMux *dcMux_ = nullptr;
+    BearerManagement *bearerManagement_ = nullptr;
 
   public:
     ~PdcpEntityManager() override;

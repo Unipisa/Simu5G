@@ -461,4 +461,27 @@ RlcTxEntityBase *BearerManagement::lookupRlcTxBuffer(DrbKey id)
     return it2 != nrRlcTxEntities_.end() ? it2->second : nullptr;
 }
 
+PdcpTxEntityBase *BearerManagement::lookupPdcpTxEntity(DrbKey id)
+{
+    auto it = pdcpTxEntities_.find(id);
+    return it != pdcpTxEntities_.end() ? it->second : nullptr;
+}
+
+PdcpRxEntityBase *BearerManagement::lookupPdcpRxEntity(DrbKey id)
+{
+    auto it = pdcpRxEntities_.find(id);
+    if (it != pdcpRxEntities_.end())
+        return it->second;
+    auto it2 = pdcpBypassRxEntities_.find(id);
+    return it2 != pdcpBypassRxEntities_.end() ? it2->second : nullptr;
+}
+
+void BearerManagement::pdcpActiveUeUL(std::set<MacNodeId> *ueSet)
+{
+    for (const auto& [id, rxEntity] : pdcpRxEntities_) {
+        if (!rxEntity->isEmpty())
+            ueSet->insert(id.getNodeId());
+    }
+}
+
 } // namespace simu5g
