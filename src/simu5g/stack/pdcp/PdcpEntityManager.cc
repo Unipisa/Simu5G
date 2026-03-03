@@ -36,13 +36,6 @@ void PdcpEntityManager::initialize(int stage)
 PdcpTxEntityBase *PdcpEntityManager::lookupTxEntity(DrbKey id) { return upperMux_->lookupTxEntity(id); }
 PdcpRxEntityBase *PdcpEntityManager::lookupRxEntity(DrbKey id) { return lowerMux_->lookupRxEntity(id); }
 
-void PdcpEntityManager::deleteEntities(MacNodeId nodeId)
-{
-    Enter_Method_Silent();
-    upperMux_->deleteTxEntities(nodeId);
-    lowerMux_->deleteRxEntities(nodeId);
-    dcMux_->deleteBypassTxEntities(nodeId);
-}
 
 void PdcpEntityManager::activeUeUL(std::set<MacNodeId> *ueSet)
 {

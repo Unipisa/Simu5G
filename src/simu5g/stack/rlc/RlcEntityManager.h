@@ -54,14 +54,6 @@ class RlcEntityManager : public cSimpleModule
 
   public:
 
-    /**
-     * deleteQueues() must be called on handover
-     * to delete queues for a given user
-     *
-     * @param nodeId Id of the node whose queues are deleted
-     */
-    void deleteQueues(MacNodeId nodeId);
-
     void resumeDownstreamInPackets(MacNodeId peerId);
 
     bool isEmptyingTxBuffer(MacNodeId peerId);

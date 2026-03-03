@@ -40,7 +40,6 @@ class UpperMux : public cSimpleModule
     PdcpTxEntityBase *lookupTxEntity(DrbKey id);
     void registerTxEntity(DrbKey id, PdcpTxEntityBase *txEnt);
     void unregisterTxEntity(DrbKey id);
-    void deleteTxEntities(MacNodeId nodeId);
 
   protected:
     void initialize(int stage) override;

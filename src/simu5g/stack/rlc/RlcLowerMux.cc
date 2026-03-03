@@ -128,30 +128,6 @@ void RlcLowerMux::unregisterRxBuffer(DrbKey id)
     rxEntities_.erase(id);
 }
 
-void RlcLowerMux::deleteRxEntities(MacNodeId nodeId)
-{
-    Enter_Method_Silent();
-
-    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end();) {
-        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
-        if (hasD2DSupport_) {
-            UmRxEntity *umEnt = dynamic_cast<UmRxEntity *>(rit->second);
-            if (umEnt != nullptr && umEnt->isD2DMultiConnection()) {
-                ++rit;
-                continue;
-            }
-        }
-
-        if (nodeType_ == UE || (nodeType_ == NODEB && rit->first.getNodeId() == nodeId)) {
-            rit->second->deleteModule();
-            rit = rxEntities_.erase(rit);
-        }
-        else {
-            ++rit;
-        }
-    }
-}
-
 void RlcLowerMux::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     for (const auto& [id, entity] : rxEntities_) {

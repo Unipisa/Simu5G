@@ -46,7 +46,6 @@ class RlcLowerMux : public cSimpleModule
     RlcRxEntityBase *lookupRxBuffer(DrbKey id);
     void registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt);
     void unregisterRxBuffer(DrbKey id);
-    void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
   protected:
