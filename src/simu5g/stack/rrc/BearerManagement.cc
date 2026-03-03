@@ -13,7 +13,6 @@
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
-#include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
@@ -308,6 +307,12 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     // Register in CP entity map
     (isNr ? nrRlcTxEntities_ : rlcTxEntities_)[id] = txEnt;
 
+    // D2D peer tracking (only for UM TX entities)
+    if (rlcType == UM) {
+        auto *umTxEnt = check_and_cast<UmTxEntity *>(txEnt);
+        rlcMgr->registerD2DPeerTxEntity(MacNodeId(lteInfo->getD2dRxPeerId()), umTxEnt);
+    }
+
     return txEnt;
 }
 
@@ -416,14 +421,12 @@ void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
     if (!rlcMgr)
         return;
 
-    auto *upperMux = rlcMgr->getUpperMux();
     auto *lowerMux = rlcMgr->getLowerMux();
     bool isEnb = (registration_->getNodeType() == NODEB);
 
     // Delete RLC TX entities
     for (auto it = txMap.begin(); it != txMap.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
-            upperMux->unregisterTxBuffer(it->first);
             it->second->deleteModule();
             it = txMap.erase(it);
         } else ++it;
@@ -469,6 +472,15 @@ void BearerManagement::pdcpActiveUeUL(std::set<MacNodeId> *ueSet)
         if (!rxEntity->isEmpty())
             ueSet->insert(id.getNodeId());
     }
+}
+
+RlcTxEntityBase *BearerManagement::lookupRlcTxBuffer(DrbKey id)
+{
+    auto it = rlcTxEntities_.find(id);
+    if (it != rlcTxEntities_.end())
+        return it->second;
+    auto it2 = nrRlcTxEntities_.find(id);
+    return it2 != nrRlcTxEntities_.end() ? it2->second : nullptr;
 }
 
 } // namespace simu5g

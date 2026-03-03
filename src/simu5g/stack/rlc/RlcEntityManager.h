@@ -21,10 +21,11 @@ namespace simu5g {
 using namespace omnetpp;
 
 class BearerManagement;
-class RlcUpperMux;
+class BearerManagement;
 class RlcLowerMux;
 class RlcTxEntityBase;
 class RlcRxEntityBase;
+class UmTxEntity;
 
 /**
  * @class RlcEntityManager
@@ -39,10 +40,11 @@ class RlcEntityManager : public cSimpleModule
 {
   protected:
     BearerManagement *bearerManagement_ = nullptr;
-    RlcUpperMux *upperMux_ = nullptr;
     RlcLowerMux *lowerMux_ = nullptr;
 
-    // (TX entities are managed by RlcUpperMux, RX entities by RlcLowerMux)
+    bool hasD2DSupport_ = false;
+    typedef std::map<MacNodeId, std::set<UmTxEntity *>> PerPeerTxEntities;
+    PerPeerTxEntities perPeerTxEntities_;
 
     /**
     * @author Alessandro Noferi
@@ -94,8 +96,8 @@ class RlcEntityManager : public cSimpleModule
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
     cModule *getRlcCompoundModule() { return getParentModule(); }
-    RlcUpperMux *getUpperMux() { return upperMux_; }
     RlcLowerMux *getLowerMux() { return lowerMux_; }
+    void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
 
     RlcTxEntityBase *lookupTxBuffer(DrbKey id);
 

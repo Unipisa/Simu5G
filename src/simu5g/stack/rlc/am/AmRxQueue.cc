@@ -20,8 +20,9 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
-#include "simu5g/stack/rlc/RlcUpperMux.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
