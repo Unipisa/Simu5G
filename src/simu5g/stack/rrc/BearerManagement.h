@@ -72,6 +72,7 @@ class BearerManagement : public cSimpleModule
     std::map<DrbKey, RlcRxEntityBase *> nrRlcRxEntities_;
 
     void setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManager *rlcMgr);
+    void setEntityDisplayPosition(cModule *entity, bool isPdcpEntity, cModule *rlcMux, int bearerIndex);
     RlcTxEntityBase *createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
     RlcRxEntityBase *createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
 
