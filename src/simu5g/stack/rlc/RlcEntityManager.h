@@ -96,7 +96,6 @@ class RlcEntityManager : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    cModule *getRlcCompoundModule() { return getParentModule(); }
     RlcLowerMux *getLowerMux() { return lowerMux_; }
     void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
 
