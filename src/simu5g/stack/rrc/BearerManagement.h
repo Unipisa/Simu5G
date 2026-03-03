@@ -21,7 +21,6 @@ using namespace omnetpp;
 namespace simu5g {
 
 class LteMacBase;
-class PdcpEntityManager;
 class RlcEntityManager;
 class RlcLowerMux;
 class RlcTxEntityBase;
@@ -57,7 +56,6 @@ class BearerManagement : public cSimpleModule
     cModuleType *rlcAmTxEntityModuleType_ = nullptr;
     cModuleType *rlcAmRxEntityModuleType_ = nullptr;
 
-    inet::ModuleRefByPar<PdcpEntityManager> pdcpModule;
     inet::ModuleRefByPar<RlcEntityManager> rlcUmModule;  // Compound module with TM/UM/AM submodules
     inet::ModuleRefByPar<RlcEntityManager> nrRlcUmModule;  // same
     inet::ModuleRefByPar<LteMacBase> macModule;

@@ -15,7 +15,6 @@
 #include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
-#include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/pdcp/PdcpTxEntityBase.h"
@@ -47,8 +46,7 @@ void BearerManagement::initialize(int stage)
         rlcAmTxEntityModuleType_ = cModuleType::get(par("rlcAmTxEntityModuleType").stringValue());
         rlcAmRxEntityModuleType_ = cModuleType::get(par("rlcAmRxEntityModuleType").stringValue());
 
-        pdcpModule.reference(this, "pdcpModule", true);
-        pdcpCompound_ = pdcpModule->getPdcpCompoundModule();
+        pdcpCompound_ = inet::getContainingNicModule(this);
 
         rlcUmModule.reference(this, "rlcUmModule", true);
         nrRlcUmModule.reference(this, "nrRlcUmModule", false);

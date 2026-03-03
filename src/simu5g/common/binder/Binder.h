@@ -608,7 +608,6 @@ class Binder : public cSimpleModule
     virtual cModule *getPhyByNodeId(MacNodeId nodeId);
     virtual cModule *getMacByNodeId(MacNodeId nodeId);
     virtual cModule *getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType);
-    virtual cModule *getPdcpByNodeId(MacNodeId nodeId);
     virtual cModule *getRrcByNodeId(MacNodeId nodeId);
 
     // SMF-like Session Management Functions
