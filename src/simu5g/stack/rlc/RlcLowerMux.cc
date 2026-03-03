@@ -69,7 +69,6 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
             UmTxEntity *umTxbuf = check_and_cast<UmTxEntity *>(txbuf);
             umTxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
-            // TODO step 12: forward D2D switch notification to PDCP entities directly
             delete pkt;
         }
         else { // rx side
