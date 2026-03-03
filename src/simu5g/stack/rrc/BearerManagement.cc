@@ -95,7 +95,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
-        std::string name = "rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
+        std::string name = "pdcp-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
         module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
@@ -126,7 +126,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
     else {
         // DC secondary node: create bypass RX entity (forwards UL to master via X2)
         DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
-        std::string name = "bypass-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
+        std::string name = "pdcp-bypass-rx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), pdcpCompound_);
         module->finalizeParameters();
         module->buildInside();
@@ -179,7 +179,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
 
     if (withPdcp) {
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
-        std::string name = "tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
+        std::string name = "pdcp-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
         module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
@@ -210,7 +210,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     else {
         // DC secondary node: create bypass TX entity (forwards DL from master to RLC)
         DrbKey id = DrbKey(lteInfo->getDestId(), lteInfo->getDrbId());
-        std::string name = "bypass-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
+        std::string name = "pdcp-bypass-tx-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
         auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), pdcpCompound_);
         module->finalizeParameters();
         module->buildInside();
@@ -244,6 +244,8 @@ void BearerManagement::setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManag
         entity->par("umModule").setStringValue(mgrPath);
     if (entity->hasPar("upperMuxModule"))
         entity->par("upperMuxModule").setStringValue(rlcMgr->par("upperMuxModule").stringValue());
+    if (entity->hasPar("isNR"))
+        entity->par("isNR").setBoolValue(rlcMgr->par("isNR").boolValue());
 }
 
 RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr)
@@ -252,11 +254,12 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     cModuleType *moduleType;
     const char *prefix;
     switch (rlcType) {
-        case TM: moduleType = rlcTmTxEntityModuleType_; prefix = "TmTxEntity"; break;
-        case AM: moduleType = rlcAmTxEntityModuleType_; prefix = "AmTxQueue"; break;
-        default: moduleType = rlcUmTxEntityModuleType_; prefix = "UmTxEntity"; break;
+        case TM: moduleType = rlcTmTxEntityModuleType_; prefix = "tm-tx"; break;
+        case AM: moduleType = rlcAmTxEntityModuleType_; prefix = "am-tx"; break;
+        default: moduleType = rlcUmTxEntityModuleType_; prefix = "um-tx"; break;
     }
-    std::string name = std::string(prefix) + " Lcid: " + std::to_string(num(id.getDrbId())) + " cid: " + std::to_string(id.asPackedInt());
+    bool isNr = rlcMgr->par("isNR").boolValue();
+    std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
     cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
     auto *module = moduleType->create(name.c_str(), rlcCompound);
     setEntityParamsFromRlcMgr(module, rlcMgr);
@@ -308,11 +311,12 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     cModuleType *moduleType;
     const char *prefix;
     switch (rlcType) {
-        case TM: moduleType = rlcTmRxEntityModuleType_; prefix = "TmRxEntity"; break;
-        case AM: moduleType = rlcAmRxEntityModuleType_; prefix = "AmRxQueue"; break;
-        default: moduleType = rlcUmRxEntityModuleType_; prefix = "UmRxEntity"; break;
+        case TM: moduleType = rlcTmRxEntityModuleType_; prefix = "tm-rx"; break;
+        case AM: moduleType = rlcAmRxEntityModuleType_; prefix = "am-rx"; break;
+        default: moduleType = rlcUmRxEntityModuleType_; prefix = "um-rx"; break;
     }
-    std::string name = std::string(prefix) + " Lcid: " + std::to_string(num(id.getDrbId())) + " cid: " + std::to_string(id.asPackedInt());
+    bool isNr = rlcMgr->par("isNR").boolValue();
+    std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
     cModule *rlcCompound = rlcMgr->getRlcCompoundModule();
     auto *module = moduleType->create(name.c_str(), rlcCompound);
     setEntityParamsFromRlcMgr(module, rlcMgr);

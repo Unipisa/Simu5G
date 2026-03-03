@@ -20,6 +20,7 @@ simple AmTxQueue
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        bool isNR = default(false);
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
         int maxRtx = default(3);
         double pduRtxTimeout @unit(s) = default(2.0s);

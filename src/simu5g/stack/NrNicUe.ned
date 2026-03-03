@@ -76,6 +76,7 @@ module NrNicUe extends LteNicUeD2D
             upperMuxModule = "^.nrRlcUpperMux";
             lowerMuxModule = "^.nrRlcLowerMux";
             macModule = "^.nrMac";
+            isNR = true;
             hasD2DSupport = parent.d2dCapable;
             nodeType = parent.nodeType;
             @display("p=536,226");

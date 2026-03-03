@@ -27,6 +27,7 @@ simple RlcEntityManager
         string upperMuxModule;
         string lowerMuxModule;
         string macModule;
+        bool isNR = default(false);
         bool hasD2DSupport = default(false);
 
         //# Rlc Queue
