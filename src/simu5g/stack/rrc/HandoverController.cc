@@ -486,21 +486,21 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
 
     // Delete RLC UM Buffers
 
-    // delete UmTxQueue[nodeId_] at old serving node
-    RlcEntityManager *masterRlcUm = check_and_cast<RlcEntityManager *>(binder_->getRlcByNodeId(servingNodeId, UM));
-    masterRlcUm->deleteQueues(nodeId_);
+    // delete RLC entities for nodeId_ at old serving node
+    BearerManagement *servingBm = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(servingNodeId)->getSubmodule("bearerManagement"));
+    servingBm->deleteLocalRlcQueues(nodeId_, isNr_);
 
-    // delete queues for serving node at this UE
+    // delete RLC entities for serving node at this UE
     bearerManagement_->deleteLocalRlcQueues(nodeId_, isNr_);
 
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old serving node
     // In case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
     MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(servingNodeId);
-    PdcpEntityManager *masterPdcp = check_and_cast<PdcpEntityManager *>(binder_->getPdcpByNodeId(pdcpNodeId));
-    masterPdcp->deleteEntities(nodeId_);
+    BearerManagement *masterBm = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(pdcpNodeId)->getSubmodule("bearerManagement"));
+    masterBm->deleteLocalPdcpEntities(nodeId_);
 
-    // delete queues for serving node at this UE
+    // delete PDCP entities for serving node at this UE
     bearerManagement_->deleteLocalPdcpEntities(servingNodeId_);
 }
 
