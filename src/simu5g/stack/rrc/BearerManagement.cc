@@ -90,7 +90,6 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
 
     // PDCP entity creation
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
     auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
 
     if (withPdcp) {
@@ -101,10 +100,10 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->finalizeParameters();
         module->buildInside();
 
-        // Wire LowerMux → entity in gate
-        int idx = pdcpLowerMux->gateSize("toRxEntity");
-        pdcpLowerMux->setGateSize("toRxEntity", idx + 1);
-        pdcpLowerMux->gate("toRxEntity", idx)->connectTo(module->gate("in"));
+        // Wire RLC RX out → PDCP RX in (direct per-DRB connection)
+        auto rlcIt = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
+        ASSERT(rlcIt != (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).end());
+        rlcIt->second->gate("out")->connectTo(module->gate("in"));
 
         // Wire entity out gate → UpperMux fromRxEntity
         int fromIdx = pdcpUpperMux->gateSize("fromRxEntity");
@@ -121,7 +120,6 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->scheduleStart(simTime());
         module->callInitialize();
         auto *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
-        pdcpLowerMux->registerRxEntity(id, rxEnt);
         pdcpRxEntities_[id] = rxEnt;
     }
     else {
@@ -132,10 +130,10 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->finalizeParameters();
         module->buildInside();
 
-        // Wire LowerMux → entity in gate (same dispatch as normal RX)
-        int idx = pdcpLowerMux->gateSize("toRxEntity");
-        pdcpLowerMux->setGateSize("toRxEntity", idx + 1);
-        pdcpLowerMux->gate("toRxEntity", idx)->connectTo(module->gate("in"));
+        // Wire RLC RX out → bypass PDCP RX in (direct per-DRB connection)
+        auto rlcIt2 = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
+        ASSERT(rlcIt2 != (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).end());
+        rlcIt2->second->gate("out")->connectTo(module->gate("in"));
 
         // Wire entity out gate → DcMux (bypass RX sends to X2 via DcMux)
         int fromIdx = pdcpDcMux->gateSize("fromEntity");
@@ -145,7 +143,6 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->scheduleStart(simTime());
         module->callInitialize();
         auto *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
-        pdcpLowerMux->registerRxEntity(id, rxEnt);
         pdcpBypassRxEntities_[id] = rxEnt;
     }
 }
@@ -176,7 +173,6 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
 
     // PDCP entity creation
     auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
-    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
     auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
 
     if (withPdcp) {
@@ -192,10 +188,10 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         pdcpUpperMux->setGateSize("toTxEntity", idx + 1);
         pdcpUpperMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
 
-        // Wire entity out gate → LowerMux fromTxEntity
-        int fromIdx = pdcpLowerMux->gateSize("fromTxEntity");
-        pdcpLowerMux->setGateSize("fromTxEntity", fromIdx + 1);
-        module->gate("out")->connectTo(pdcpLowerMux->gate("fromTxEntity", fromIdx));
+        // Wire PDCP TX out → RLC TX in (direct per-DRB connection)
+        auto rlcIt = (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).find(rlcId);
+        ASSERT(rlcIt != (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).end());
+        module->gate("out")->connectTo(rlcIt->second->gate("in"));
 
         // Wire dcOut gate → DcMux (if entity has one, e.g. NrTxPdcpEntity)
         if (module->hasGate("dcOut")) {
@@ -223,10 +219,10 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         pdcpDcMux->setGateSize("toBypassTxEntity", idx + 1);
         pdcpDcMux->gate("toBypassTxEntity", idx)->connectTo(module->gate("in"));
 
-        // Wire entity out gate → LowerMux fromTxEntity (entity sends to RLC via LowerMux)
-        int fromIdx = pdcpLowerMux->gateSize("fromTxEntity");
-        pdcpLowerMux->setGateSize("fromTxEntity", fromIdx + 1);
-        module->gate("out")->connectTo(pdcpLowerMux->gate("fromTxEntity", fromIdx));
+        // Wire bypass TX out → RLC TX in (direct per-DRB connection)
+        auto rlcIt2 = (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).find(rlcId);
+        ASSERT(rlcIt2 != (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).end());
+        module->gate("out")->connectTo(rlcIt2->second->gate("in"));
 
         module->scheduleStart(simTime());
         module->callInitialize();
@@ -270,14 +266,8 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     module->finalizeParameters();
     module->buildInside();
 
-    // Wire gates: UpperMux → entity → LowerMux
-    auto *upperMux = rlcMgr->getUpperMux();
+    // Wire gates: entity → LowerMux (RLC TX 'in' gate is wired from PDCP TX in createOutgoingConnection)
     auto *lowerMux = rlcMgr->getLowerMux();
-
-    // Wire UpperMux → entity in gate
-    int idx = upperMux->gateSize("toTxEntity");
-    upperMux->setGateSize("toTxEntity", idx + 1);
-    upperMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
 
     // Wire entity out gate → LowerMux fromTxEntity
     int fromIdx = lowerMux->gateSize("fromTxEntity");
@@ -295,17 +285,8 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     RlcTxEntityBase *txEnt = check_and_cast<RlcTxEntityBase *>(module);
     txEnt->setFlowControlInfo(lteInfo);
 
-    // Register in mux routing table and CP entity map
-    upperMux->registerTxBuffer(id, txEnt);
+    // Register in CP entity map
     (isNr ? nrRlcTxEntities_ : rlcTxEntities_)[id] = txEnt;
-
-    // D2D: register per-peer tracking (UM entities only)
-    bool hasD2DSupport = rlcMgr->par("hasD2DSupport").boolValue();
-    if (hasD2DSupport) {
-        UmTxEntity *umTxEnt = dynamic_cast<UmTxEntity *>(txEnt);
-        if (umTxEnt != nullptr)
-            upperMux->registerD2DPeerTxEntity(lteInfo->getD2dRxPeerId(), umTxEnt);
-    }
 
     return txEnt;
 }
@@ -328,19 +309,13 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     module->finalizeParameters();
     module->buildInside();
 
-    // Wire gates: LowerMux → entity → UpperMux
-    auto *upperMux = rlcMgr->getUpperMux();
+    // Wire gates: LowerMux → entity (RLC RX 'out' gate is wired to PDCP RX in createIncomingConnection)
     auto *lowerMux = rlcMgr->getLowerMux();
 
     // Wire LowerMux → entity in gate
     int idx = lowerMux->gateSize("toRxEntity");
     lowerMux->setGateSize("toRxEntity", idx + 1);
     lowerMux->gate("toRxEntity", idx)->connectTo(module->gate("in"));
-
-    // Wire entity out gate → UpperMux fromRxEntity
-    int fromIdx = upperMux->gateSize("fromRxEntity");
-    upperMux->setGateSize("fromRxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(upperMux->gate("fromRxEntity", fromIdx));
 
     module->scheduleStart(simTime());
     module->callInitialize();
