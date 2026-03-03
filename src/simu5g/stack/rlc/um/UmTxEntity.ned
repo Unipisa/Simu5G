@@ -26,6 +26,7 @@ simple UmTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        bool isNR = default(false);
         string macModule = default("^.^.mac");
         string umModule = default("^.entityManager");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments

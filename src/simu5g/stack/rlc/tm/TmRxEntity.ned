@@ -11,6 +11,7 @@ simple TmRxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        bool isNR = default(false);
 
     gates:
         input in;       // PDUs from lower mux (MAC)

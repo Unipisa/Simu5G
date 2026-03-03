@@ -22,6 +22,7 @@ simple AmRxQueue
         @dynamic(true);
         @display("i=block/segm");
         string binderModule = default("binder");
+        bool isNR = default(false);
         string upperMuxModule = default("^.upperMux");
         string macModule = default("^.^.mac");
         int rxWindowSize = default(200);

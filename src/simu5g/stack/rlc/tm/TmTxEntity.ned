@@ -11,6 +11,7 @@ simple TmTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        bool isNR = default(false);
         int queueSize = default(0);    // max queue length in packets (0: unlimited)
 
         @signal[rlcPacketLossDl];
