@@ -914,17 +914,6 @@ cModule *Binder::getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType)
     return module->getSubmodule("cellularNic")->getSubmodule("rlcEntityManager");
 }
 
-cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)
-{
-    // UE might have left the simulation, return NULL in this case
-    // since we do not have a MAC-Module anymore
-    cModule *module = getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    return module->getSubmodule("cellularNic")->getSubmodule("pdcpEntityManager");
-}
-
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)
 {
     if (inet::containsKey(multicastAddrToDestId_, multicastAddr))

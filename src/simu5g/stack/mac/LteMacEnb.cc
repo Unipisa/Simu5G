@@ -36,7 +36,8 @@
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
-#include "simu5g/stack/pdcp/PdcpEntityManager.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
@@ -977,9 +978,9 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
         if (pdcp->par("isNR").boolValue()) {
-            auto *nrPdpc = check_and_cast<PdcpEntityManager *>(pdcp);
+            auto *bm = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
             std::set<MacNodeId> activePdcpUe;
-            nrPdpc->activeUeUL(&activePdcpUe);
+            bm->pdcpActiveUeUL(&activePdcpUe);
             for (auto ue: activePdcpUe) {
                 activeUeSet.insert(ue); // active users in RLC
             }
