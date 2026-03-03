@@ -11,7 +11,6 @@ simple RlcLowerMux
     parameters:
         @class("RlcLowerMux");
         @display("p=100,200;i=block/dispatch");
-        string upperMuxModule;
         string entityManagerModule;
 
         @signal[receivedPacketFromLowerLayer];
@@ -24,5 +23,4 @@ simple RlcLowerMux
         output toRxEntity[];          // dynamic: dispatches to RX entity in gates
         input fromTxEntity[];         // dynamic: receives from TX entity out gates
         output macToTxEntity[];       // dynamic: dispatches MAC SDU requests to TX entity macIn gates
-        output toUpperMux;             // for forwarding D2D switch notifications to PDCP
 }
