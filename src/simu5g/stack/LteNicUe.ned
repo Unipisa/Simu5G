@@ -36,7 +36,7 @@ module LteNicUe extends LteNicBase
     submodules:
         // Feedback generator submodule
         dlFbGen: LteDlFeedbackGenerator {
-            @display("p=50,50;is=s");
+            @display("p=80,380;is=s");
         }
 }
 
