@@ -37,8 +37,6 @@ module NrNicUe extends LteNicUeD2D
         int numNrCarriers = default(1);
 
         pdcpUpperMux.isNR = default(true);
-        pdcpLowerMux.isNR = default(true);
-        pdcpLowerMux.hasD2DSupport = default(true);
         pdcpEntityManager.isNR = default(true);
         pdcpEntityManager.hasD2DSupport = default(true);
         rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
@@ -112,13 +110,6 @@ module NrNicUe extends LteNicUeD2D
         }
 
     connections:
-
-        //# PDCP <-> NR RLC
-        pdcpLowerMux.nrRlcOut --> nrRlcUpperMux.upperLayerIn;
-        pdcpLowerMux.nrRlcIn <-- nrRlcUpperMux.upperLayerOut;
-
-        //# NR RLC internal
-        nrRlcLowerMux.toUpperMux --> nrRlcUpperMux.fromLowerMux;
 
         //# NR RLC <-> MAC
         nrRlcLowerMux.macOut --> nrMac.upperLayerIn;
