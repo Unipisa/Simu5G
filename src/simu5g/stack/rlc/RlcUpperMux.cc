@@ -93,34 +93,6 @@ void RlcUpperMux::registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt)
         umTxEnt->startHoldingDownstreamInPackets();
 }
 
-void RlcUpperMux::deleteTxEntities(MacNodeId nodeId)
-{
-    Enter_Method_Silent();
-
-    for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
-        // D2D: if the entity refers to a D2D_MULTI connection, do not erase it
-        if (hasD2DSupport_) {
-            UmTxEntity *umEnt = dynamic_cast<UmTxEntity *>(tit->second);
-            if (umEnt != nullptr && umEnt->isD2DMultiConnection()) {
-                ++tit;
-                continue;
-            }
-        }
-
-        if (nodeType_ == UE || (nodeType_ == NODEB && tit->first.getNodeId() == nodeId)) {
-            tit->second->deleteModule();
-            tit = txEntities_.erase(tit);
-        }
-        else {
-            ++tit;
-        }
-    }
-
-    // D2D: clear per-peer tracking
-    if (hasD2DSupport_)
-        perPeerTxEntities_.clear();
-}
-
 void RlcUpperMux::resumeDownstreamInPackets(MacNodeId peerId)
 {
     if (!hasD2DSupport_)

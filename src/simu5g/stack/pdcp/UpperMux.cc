@@ -84,27 +84,4 @@ void UpperMux::unregisterTxEntity(DrbKey id)
     txEntities_.erase(id);
 }
 
-void UpperMux::deleteTxEntities(MacNodeId nodeId)
-{
-    MacNodeId nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
-    bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
-    if (isEnb || isNR_) {
-        for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-            auto& [id, txEntity] = *tit;
-            if (id.getNodeId() == nodeId) {
-                txEntity->deleteModule();
-                tit = txEntities_.erase(tit);
-            }
-            else {
-                ++tit;
-            }
-        }
-    }
-    else {
-        for (auto& [txId, txEntity] : txEntities_)
-            txEntity->deleteModule();
-        txEntities_.clear();
-    }
-}
-
 } // namespace simu5g

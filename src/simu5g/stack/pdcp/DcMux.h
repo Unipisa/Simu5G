@@ -43,7 +43,6 @@ class DcMux : public cSimpleModule
     PdcpTxEntityBase *lookupBypassTxEntity(DrbKey id);
     void registerBypassTxEntity(DrbKey id, PdcpTxEntityBase *txEnt);
     void unregisterBypassTxEntity(DrbKey id);
-    void deleteBypassTxEntities(MacNodeId nodeId);
 
   protected:
     void initialize(int stage) override;

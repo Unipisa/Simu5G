@@ -50,7 +50,6 @@ class PdcpEntityManager : public cSimpleModule
 
     cModule *getPdcpCompoundModule() { return getParentModule(); }
 
-    void deleteEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
   protected:

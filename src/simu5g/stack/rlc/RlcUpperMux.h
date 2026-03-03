@@ -52,7 +52,6 @@ class RlcUpperMux : public cSimpleModule
     void registerTxBuffer(DrbKey id, RlcTxEntityBase *txEnt);
     void unregisterTxBuffer(DrbKey id);
     void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
-    void deleteTxEntities(MacNodeId nodeId);
 
     void resumeDownstreamInPackets(MacNodeId peerId);
     bool isEmptyingTxBuffer(MacNodeId peerId);

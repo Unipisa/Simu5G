@@ -92,27 +92,4 @@ void DcMux::unregisterBypassTxEntity(DrbKey id)
     bypassTxEntities_.erase(id);
 }
 
-void DcMux::deleteBypassTxEntities(MacNodeId nodeId)
-{
-    bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
-
-    if (isEnb) {
-        for (auto it = bypassTxEntities_.begin(); it != bypassTxEntities_.end(); ) {
-            auto& [id, txEntity] = *it;
-            if (id.getNodeId() == nodeId) {
-                txEntity->deleteModule();
-                it = bypassTxEntities_.erase(it);
-            }
-            else {
-                ++it;
-            }
-        }
-    }
-    else {
-        for (auto& [id, txEntity] : bypassTxEntities_)
-            txEntity->deleteModule();
-        bypassTxEntities_.clear();
-    }
-}
-
 } // namespace simu5g

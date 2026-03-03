@@ -141,28 +141,6 @@ void LowerMux::unregisterRxEntity(DrbKey id)
     rxEntities_.erase(id);
 }
 
-void LowerMux::deleteRxEntities(MacNodeId nodeId)
-{
-    bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
-
-    if (isEnb || isNR_) {
-        for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-            auto& [id, rxEntity] = *rit;
-            if (id.getNodeId() == nodeId) {
-                rxEntity->deleteModule();
-                rit = rxEntities_.erase(rit);
-            }
-            else {
-                ++rit;
-            }
-        }
-    }
-    else {
-        for (auto& [rxId, rxEntity] : rxEntities_)
-            rxEntity->deleteModule();
-        rxEntities_.clear();
-    }
-}
 
 void LowerMux::activeUeUL(std::set<MacNodeId> *ueSet)
 {

@@ -50,7 +50,6 @@ class LowerMux : public cSimpleModule
     PdcpRxEntityBase *lookupRxEntity(DrbKey id);
     void registerRxEntity(DrbKey id, PdcpRxEntityBase *rxEnt);
     void unregisterRxEntity(DrbKey id);
-    void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
     bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }

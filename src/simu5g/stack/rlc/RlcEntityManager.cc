@@ -31,14 +31,6 @@ RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
 }
 
 
-void RlcEntityManager::deleteQueues(MacNodeId nodeId)
-{
-    Enter_Method_Silent();
-
-    upperMux_->deleteTxEntities(nodeId);
-    lowerMux_->deleteRxEntities(nodeId);
-}
-
 /*
  * Main functions
  */
