@@ -23,7 +23,7 @@ simple UmRxEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         string binderModule = default("binder");
         bool isNR = default(false);
         string umModule = default("^.entityManager");

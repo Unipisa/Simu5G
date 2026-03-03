@@ -21,7 +21,7 @@ simple NrTxPdcpEntity extends LteTxPdcpEntity
     parameters:
         @dynamic(true);
         @class("NrTxPdcpEntity");
-        @display("i=block/segm");
+        @display("i=block/layer");
         @signal[pdcpSduSentNr];
     gates:
         output dcOut @loose;

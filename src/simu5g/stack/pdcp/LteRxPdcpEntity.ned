@@ -20,7 +20,7 @@ simple LteRxPdcpEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         @signal[receivedPacketFromLowerLayer];
         @signal[pdcpSduReceived];
         @signal[sentPacketToUpperLayer];

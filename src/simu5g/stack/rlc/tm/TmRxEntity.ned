@@ -10,7 +10,7 @@ simple TmRxEntity
 {
     parameters:
         @dynamic(true);
-        @display("i=block/segm");
+        @display("i=block/layer");
         bool isNR = default(false);
 
     gates:
