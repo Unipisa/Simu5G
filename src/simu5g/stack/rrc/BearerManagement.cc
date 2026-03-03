@@ -122,6 +122,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->callInitialize();
         auto *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
         pdcpLowerMux->registerRxEntity(id, rxEnt);
+        pdcpRxEntities_[id] = rxEnt;
     }
     else {
         // DC secondary node: create bypass RX entity (forwards UL to master via X2)
@@ -145,6 +146,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->callInitialize();
         auto *rxEnt = check_and_cast<PdcpRxEntityBase *>(module);
         pdcpLowerMux->registerRxEntity(id, rxEnt);
+        pdcpBypassRxEntities_[id] = rxEnt;
     }
 }
 
@@ -206,6 +208,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         module->callInitialize();
         auto *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
         pdcpUpperMux->registerTxEntity(id, txEnt);
+        pdcpTxEntities_[id] = txEnt;
     }
     else {
         // DC secondary node: create bypass TX entity (forwards DL from master to RLC)
@@ -229,6 +232,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         module->callInitialize();
         auto *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
         pdcpDcMux->registerBypassTxEntity(id, txEnt);
+        pdcpBypassTxEntities_[id] = txEnt;
     }
 }
 
@@ -291,8 +295,9 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     RlcTxEntityBase *txEnt = check_and_cast<RlcTxEntityBase *>(module);
     txEnt->setFlowControlInfo(lteInfo);
 
-    // Register in mux map
+    // Register in mux routing table and CP entity map
     upperMux->registerTxBuffer(id, txEnt);
+    (isNr ? nrRlcTxEntities_ : rlcTxEntities_)[id] = txEnt;
 
     // D2D: register per-peer tracking (UM entities only)
     bool hasD2DSupport = rlcMgr->par("hasD2DSupport").boolValue();
@@ -343,8 +348,9 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     RlcRxEntityBase *rxEnt = check_and_cast<RlcRxEntityBase *>(module);
     rxEnt->setFlowControlInfo(lteInfo);
 
-    // Register in mux map
+    // Register in mux routing table and CP entity map
     lowerMux->registerRxBuffer(id, rxEnt);
+    (isNr ? nrRlcRxEntities_ : rlcRxEntities_)[id] = rxEnt;
 
     return rxEnt;
 }
@@ -364,18 +370,80 @@ RlcRxEntityBase *BearerManagement::createRlcRxBuffer(DrbKey id, FlowControlInfo 
 void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent("deleteLocalPdcpEntities()");
-    pdcpModule->deleteEntities(nodeId);
+
+    auto *pdcpUpperMux = check_and_cast<UpperMux *>(pdcpCompound_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpLowerMux = check_and_cast<LowerMux *>(pdcpCompound_->getSubmodule("pdcpLowerMux"));
+    auto *pdcpDcMux = check_and_cast<DcMux *>(pdcpCompound_->getSubmodule("pdcpDcMux"));
+
+    bool isEnb = (registration_->getNodeType() == NODEB);
+
+    // Delete PDCP TX entities
+    for (auto it = pdcpTxEntities_.begin(); it != pdcpTxEntities_.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            pdcpUpperMux->unregisterTxEntity(it->first);
+            it->second->deleteModule();
+            it = pdcpTxEntities_.erase(it);
+        } else ++it;
+    }
+
+    // Delete PDCP RX entities
+    for (auto it = pdcpRxEntities_.begin(); it != pdcpRxEntities_.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            pdcpLowerMux->unregisterRxEntity(it->first);
+            it->second->deleteModule();
+            it = pdcpRxEntities_.erase(it);
+        } else ++it;
+    }
+
+    // Delete bypass TX entities
+    for (auto it = pdcpBypassTxEntities_.begin(); it != pdcpBypassTxEntities_.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            pdcpDcMux->unregisterBypassTxEntity(it->first);
+            it->second->deleteModule();
+            it = pdcpBypassTxEntities_.erase(it);
+        } else ++it;
+    }
+
+    // Delete bypass RX entities
+    for (auto it = pdcpBypassRxEntities_.begin(); it != pdcpBypassRxEntities_.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            pdcpLowerMux->unregisterRxEntity(it->first);
+            it->second->deleteModule();
+            it = pdcpBypassRxEntities_.erase(it);
+        } else ++it;
+    }
 }
 
 void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
 {
     Enter_Method_Silent("deleteLocalRlcQueues()");
-    if (nrStack) {
-        if (nrRlcUmModule)
-            nrRlcUmModule->deleteQueues(nodeId);
+
+    auto &txMap = nrStack ? nrRlcTxEntities_ : rlcTxEntities_;
+    auto &rxMap = nrStack ? nrRlcRxEntities_ : rlcRxEntities_;
+    RlcEntityManager *rlcMgr = nrStack ? (nrRlcUmModule ? nrRlcUmModule.get() : nullptr) : rlcUmModule.get();
+    if (!rlcMgr)
+        return;
+
+    auto *upperMux = rlcMgr->getUpperMux();
+    auto *lowerMux = rlcMgr->getLowerMux();
+    bool isEnb = (registration_->getNodeType() == NODEB);
+
+    // Delete RLC TX entities
+    for (auto it = txMap.begin(); it != txMap.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            upperMux->unregisterTxBuffer(it->first);
+            it->second->deleteModule();
+            it = txMap.erase(it);
+        } else ++it;
     }
-    else {
-        rlcUmModule->deleteQueues(nodeId);
+
+    // Delete RLC RX entities
+    for (auto it = rxMap.begin(); it != rxMap.end(); ) {
+        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+            lowerMux->unregisterRxBuffer(it->first);
+            it->second->deleteModule();
+            it = rxMap.erase(it);
+        } else ++it;
     }
 }
 

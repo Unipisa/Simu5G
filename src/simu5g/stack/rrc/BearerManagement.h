@@ -65,6 +65,16 @@ class BearerManagement : public cSimpleModule
     inet::ModuleRefByPar<LteMacBase> macModule;
     inet::ModuleRefByPar<LteMacBase> nrMacModule;
 
+    // Entity registries (CP owns the lifecycle of all entities)
+    std::map<DrbKey, PdcpTxEntityBase *> pdcpTxEntities_;
+    std::map<DrbKey, PdcpRxEntityBase *> pdcpRxEntities_;
+    std::map<DrbKey, PdcpTxEntityBase *> pdcpBypassTxEntities_;
+    std::map<DrbKey, PdcpRxEntityBase *> pdcpBypassRxEntities_;
+    std::map<DrbKey, RlcTxEntityBase *> rlcTxEntities_;
+    std::map<DrbKey, RlcRxEntityBase *> rlcRxEntities_;
+    std::map<DrbKey, RlcTxEntityBase *> nrRlcTxEntities_;
+    std::map<DrbKey, RlcRxEntityBase *> nrRlcRxEntities_;
+
     void setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManager *rlcMgr);
     RlcTxEntityBase *createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
     RlcRxEntityBase *createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
