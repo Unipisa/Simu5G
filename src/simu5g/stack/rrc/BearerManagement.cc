@@ -95,6 +95,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
         module->buildInside();
+        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
 
         // Wire RLC RX out → PDCP RX in (direct per-DRB connection)
         auto rlcIt = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
@@ -126,6 +127,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
+        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
 
         // Wire RLC RX out → bypass PDCP RX in (direct per-DRB connection)
         auto rlcIt2 = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
@@ -199,6 +201,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
             module->par("headerCompressedSize") = par("headerCompressedSize");
             module->finalizeParameters();
             module->buildInside();
+            setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
 
             // Wire UpperMux → entity in gate
             int idx = pdcpMux->gateSize("toTxEntity");
@@ -232,6 +235,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
+        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
 
         // Wire DcMux → entity in gate (DcMux dispatches incoming DL X2)
         int idx = pdcpDcMux->gateSize("toBypassTxEntity");
@@ -267,6 +271,23 @@ void BearerManagement::setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManag
         entity->par("isNR").setBoolValue(rlcMgr->par("isNR").boolValue());
 }
 
+void BearerManagement::setEntityDisplayPosition(cModule *entity, bool isPdcpEntity, cModule *rlcMux, int bearerIndex)
+{
+    auto *pdcpMux = nicModule_->getSubmodule("pdcpMux");
+    if (!pdcpMux || !rlcMux)
+        return;
+
+    int uy = atoi(pdcpMux->getDisplayString().getTagArg("p", 1));
+    int lx = atoi(rlcMux->getDisplayString().getTagArg("p", 0));
+    int ly = atoi(rlcMux->getDisplayString().getTagArg("p", 1));
+
+    int x = lx + 10 * bearerIndex;
+    int y = isPdcpEntity ? uy + (ly - uy) / 3 : uy + 2 * (ly - uy) / 3;
+
+    entity->getDisplayString().setTagArg("p", 0, x);
+    entity->getDisplayString().setTagArg("p", 1, y);
+}
+
 RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr)
 {
     LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
@@ -283,6 +304,7 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
+    setEntityDisplayPosition(module, false, rlcMgr->getLowerMux(), num(id.getDrbId()));
 
     // Wire gates: entity → LowerMux (RLC TX 'in' gate is wired from PDCP TX in createOutgoingConnection)
     auto *lowerMux = rlcMgr->getLowerMux();
@@ -331,6 +353,7 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     setEntityParamsFromRlcMgr(module, rlcMgr);
     module->finalizeParameters();
     module->buildInside();
+    setEntityDisplayPosition(module, false, rlcMgr->getLowerMux(), num(id.getDrbId()));
 
     // Wire gates: LowerMux → entity (RLC RX 'out' gate is wired to PDCP RX in createIncomingConnection)
     auto *lowerMux = rlcMgr->getLowerMux();
