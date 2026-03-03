@@ -90,9 +90,11 @@ class BearerManagement : public cSimpleModule
     virtual RlcTxEntityBase *createRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     virtual RlcRxEntityBase *createRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo);
     virtual RlcTxEntityBase *lookupRlcTxBuffer(DrbKey id);
-    virtual PdcpRxEntityBase *lookupPdcpRxEntity(DrbKey id);
+    PdcpTxEntityBase *lookupPdcpTxEntity(DrbKey id);
+    PdcpRxEntityBase *lookupPdcpRxEntity(DrbKey id);
     virtual void deleteLocalPdcpEntities(MacNodeId nodeId);
     virtual void deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack=false);
+    void pdcpActiveUeUL(std::set<MacNodeId> *ueSet);
 };
 
 } // namespace simu5g

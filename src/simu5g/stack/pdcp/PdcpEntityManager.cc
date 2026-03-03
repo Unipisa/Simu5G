@@ -11,8 +11,8 @@
 
 #include "simu5g/stack/pdcp/PdcpEntityManager.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
-#include "simu5g/stack/pdcp/LowerMux.h"
-#include "simu5g/stack/pdcp/DcMux.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
+#include <inet/networklayer/common/NetworkInterface.h>
 
 namespace simu5g {
 
@@ -28,18 +28,16 @@ void PdcpEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         upperMux_ = check_and_cast<UpperMux *>(getParentModule()->getSubmodule("pdcpUpperMux"));
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
-        dcMux_ = check_and_cast<DcMux *>(getParentModule()->getSubmodule("pdcpDcMux"));
+        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
     }
 }
 
 PdcpTxEntityBase *PdcpEntityManager::lookupTxEntity(DrbKey id) { return upperMux_->lookupTxEntity(id); }
-PdcpRxEntityBase *PdcpEntityManager::lookupRxEntity(DrbKey id) { return lowerMux_->lookupRxEntity(id); }
-
+PdcpRxEntityBase *PdcpEntityManager::lookupRxEntity(DrbKey id) { return bearerManagement_->lookupPdcpRxEntity(id); }
 
 void PdcpEntityManager::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    lowerMux_->activeUeUL(ueSet);
+    bearerManagement_->pdcpActiveUeUL(ueSet);
 }
 
 } //namespace
