@@ -87,6 +87,11 @@ void DcMux::registerBypassTxEntity(DrbKey id, PdcpTxEntityBase *txEnt)
     EV << "DcMux::registerBypassTxEntity - Registered BypassTxPdcpEntity for " << id << "\n";
 }
 
+void DcMux::unregisterBypassTxEntity(DrbKey id)
+{
+    bypassTxEntities_.erase(id);
+}
+
 void DcMux::deleteBypassTxEntities(MacNodeId nodeId)
 {
     bool isEnb = (getNodeTypeById(nodeId_) == NODEB);

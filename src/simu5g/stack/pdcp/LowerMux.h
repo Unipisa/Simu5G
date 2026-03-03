@@ -49,6 +49,7 @@ class LowerMux : public cSimpleModule
   public:
     PdcpRxEntityBase *lookupRxEntity(DrbKey id);
     void registerRxEntity(DrbKey id, PdcpRxEntityBase *rxEnt);
+    void unregisterRxEntity(DrbKey id);
     void deleteRxEntities(MacNodeId nodeId);
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
