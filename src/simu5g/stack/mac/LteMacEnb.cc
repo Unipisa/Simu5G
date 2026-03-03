@@ -976,9 +976,9 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
          * the PDCP layer can also have SDUs buffered.
          */
 
-        cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
-        if (pdcp->par("isNR").boolValue()) {
-            auto *bm = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
+        cModule *nic = inet::getContainingNicModule(this);
+        if (nic->getSubmodule("pdcpUpperMux")->par("isNR").boolValue()) {
+            auto *bm = check_and_cast<BearerManagement *>(nic->getSubmodule("rrc")->getSubmodule("bearerManagement"));
             std::set<MacNodeId> activePdcpUe;
             bm->pdcpActiveUeUL(&activePdcpUe);
             for (auto ue: activePdcpUe) {

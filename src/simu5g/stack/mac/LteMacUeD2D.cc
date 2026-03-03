@@ -33,11 +33,6 @@ LteMacUeD2D::~LteMacUeD2D()
 void LteMacUeD2D::initialize(int stage)
 {
     LteMacUe::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL) {
-        cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
-        if (!pdcp->par("hasD2DSupport").boolValue())
-            throw cRuntimeError("LteMacUeD2D::initialize - PDCP module '%s' does not have D2D support", pdcp->getComponentType()->getName());
-    }
     if (stage == INITSTAGE_SIMU5G_AMC_ATTACHUSER) {
         // get parameters
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
