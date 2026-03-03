@@ -10,7 +10,9 @@
 //
 
 #include "simu5g/stack/pdcp/DcMux.h"
-#include "simu5g/stack/pdcp/LowerMux.h"
+#include "simu5g/stack/pdcp/PdcpRxEntityBase.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
 #include <inet/common/ModuleAccess.h>
@@ -25,7 +27,9 @@ void DcMux::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macNodeId").intValue());
 
-        lowerMux_ = check_and_cast<LowerMux *>(getParentModule()->getSubmodule("pdcpLowerMux"));
+        auto *rrc = getParentModule()->getSubmodule("rrc");
+        ASSERT(rrc != nullptr);
+        bearerManagement_ = check_and_cast<BearerManagement *>(rrc->getSubmodule("bearerManagement"));
 
         dcManagerInGate_ = gate("dcManagerIn");
     }
@@ -55,8 +59,12 @@ void DcMux::handleMessage(cMessage *msg)
         else {
             // UL: secondary forwarded UL data — dispatch directly to RX entity
             auto lteInfo = pkt->getTag<FlowControlInfo>();
-            DrbKey id = DrbKey(lteInfo->getSourceId(), lteInfo->getDrbId());
-            PdcpRxEntityBase *entity = lowerMux_->lookupRxEntity(id);
+            // The sourceId may be the NR UE ID; translate to LTE UE ID for RX entity lookup
+            MacNodeId sourceId = lteInfo->getSourceId();
+            if (isNrUe(sourceId))
+                sourceId = binder_->getUeNodeId(sourceId, false);
+            DrbKey id = DrbKey(sourceId, lteInfo->getDrbId());
+            PdcpRxEntityBase *entity = bearerManagement_->lookupPdcpRxEntity(id);
             ASSERT(entity != nullptr);
 
             EV << NOW << " DcMux::handleMessage - Received UL PDCP PDU from secondary node " << sourceNode

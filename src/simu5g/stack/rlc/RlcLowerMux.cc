@@ -65,7 +65,7 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
         if (switchPkt->getTxSide()) {
             // get the corresponding Tx buffer & call handler
             DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-            RlcTxEntityBase *txbuf = upperMux_->lookupTxBuffer(id);
+            RlcTxEntityBase *txbuf = bearerManagement_->lookupRlcTxBuffer(id);
             if (txbuf == nullptr)
                 txbuf = bearerManagement_->createRlcTxBuffer(id, lteInfo.get());
             UmTxEntity *umTxbuf = check_and_cast<UmTxEntity *>(txbuf);
@@ -91,7 +91,7 @@ void RlcLowerMux::fromMacLayer(cPacket *pktAux)
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // MAC SDU request — dispatch to TX entity via macToTxEntity gate
         DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
-        RlcTxEntityBase *txbuf = upperMux_->lookupTxBuffer(id);
+        RlcTxEntityBase *txbuf = bearerManagement_->lookupRlcTxBuffer(id);
         ASSERT(txbuf != nullptr);
 
         send(pkt, txbuf->gate("macIn")->getPreviousGate());

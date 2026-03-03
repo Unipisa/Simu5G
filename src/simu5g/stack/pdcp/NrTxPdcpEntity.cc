@@ -52,7 +52,9 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
             }
             emit(sentPacketToLowerLayerSignal_, pkt);
             pkt->addTagIfAbsent<PdcpOutputRoutingTag>()->setRoute(PDCP_OUT_NR_RLC);
-            send(pkt, "out");
+            // In DC, the master PDCP entity's 'out' is wired to LTE RLC;
+            // use 'nrOut' gate (wired to NR RLC) for NR-leg traffic
+            send(pkt, dualConnectivityEnabled_ ? "nrOut" : "out");
         }
         else {
             EV << NOW << " NrTxPdcpEntity::deliverPdcpPdu - DRB ID[" << lteInfo->getDrbId() << "] - sending packet to LTE RLC" << endl;

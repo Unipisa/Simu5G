@@ -9,9 +9,12 @@
 // and cannot be removed from it.
 //
 
+#include <inet/networklayer/common/NetworkInterface.h>
+
 #include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcUpperMux.h"
 #include "simu5g/stack/rlc/RlcLowerMux.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
 
 namespace simu5g {
 
@@ -21,7 +24,7 @@ using namespace omnetpp;
 
 RlcTxEntityBase *RlcEntityManager::lookupTxBuffer(DrbKey id)
 {
-    return upperMux_->lookupTxBuffer(id);
+    return bearerManagement_->lookupRlcTxBuffer(id);
 }
 
 RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
@@ -37,6 +40,7 @@ RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
 void RlcEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
+        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
         upperMux_ = check_and_cast<RlcUpperMux *>(getModuleByPath(par("upperMuxModule").stringValue()));
         lowerMux_ = check_and_cast<RlcLowerMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
     }

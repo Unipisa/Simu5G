@@ -24,7 +24,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class Binder;
-class LowerMux;
+class BearerManagement;
 
 class DcMux : public cSimpleModule
 {
@@ -32,7 +32,7 @@ class DcMux : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
     MacNodeId nodeId_;
 
-    LowerMux *lowerMux_ = nullptr;
+    BearerManagement *bearerManagement_ = nullptr;
 
     cGate *dcManagerInGate_ = nullptr;
 

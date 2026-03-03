@@ -25,13 +25,13 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class RlcUpperMux;
+class BearerManagement;
 
 class AmRxQueue : public RlcRxEntityBase
 {
   protected:
 
-    RlcUpperMux *upperMux_ = nullptr;
+    BearerManagement *bearerManagement_ = nullptr;
 
     // Binder module
     inet::ModuleRefByPar<Binder> binder_;
