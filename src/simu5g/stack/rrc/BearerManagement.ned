@@ -39,7 +39,6 @@ simple BearerManagement
         string rlcAmRxEntityModuleType = default("simu5g.stack.rlc.am.AmRxQueue");
 
         // Module references for accessing other stack layers
-        string pdcpModule = default("^.^.pdcpEntityManager");
         string rlcUmModule = default("^.^.rlcEntityManager");
         string nrRlcUmModule = default("^.^.nrRlcEntityManager");
         string macModule = default("^.^.mac");

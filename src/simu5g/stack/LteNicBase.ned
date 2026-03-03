@@ -19,7 +19,6 @@ import simu5g.stack.ip2nic.ITechnologyDecision;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.pdcp.DcMux;
-import simu5g.stack.pdcp.PdcpEntityManager;
 import simu5g.stack.pdcp.UpperMux;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.RlcEntityManager;
@@ -97,9 +96,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         pdcpDcMux: DcMux {
             @display("p=432,141");
-        }
-        pdcpEntityManager: PdcpEntityManager {
-            @display("p=292,141");
         }
         // RLC submodules (flattened from former LteRlc compound)
         rlcLowerMux: RlcLowerMux {
