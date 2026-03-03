@@ -13,7 +13,7 @@
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
-#include "simu5g/stack/rlc/RlcLowerMux.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
 #include "simu5g/stack/pdcp/DcMux.h"
@@ -85,7 +85,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcRxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpMux"));
     auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
@@ -102,9 +102,9 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         rlcIt->second->gate("out")->connectTo(module->gate("in"));
 
         // Wire entity out gate → UpperMux fromRxEntity
-        int fromIdx = pdcpUpperMux->gateSize("fromRxEntity");
-        pdcpUpperMux->setGateSize("fromRxEntity", fromIdx + 1);
-        module->gate("out")->connectTo(pdcpUpperMux->gate("fromRxEntity", fromIdx));
+        int fromIdx = pdcpMux->gateSize("fromRxEntity");
+        pdcpMux->setGateSize("fromRxEntity", fromIdx + 1);
+        module->gate("out")->connectTo(pdcpMux->gate("fromRxEntity", fromIdx));
 
         // Wire DcMux → entity dcIn gate (for UL X2 dispatch, eNB only)
         if (pdcpDcMux && module->hasGate("dcIn")) {
@@ -169,7 +169,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     createAndInstallRlcTxBuffer(rlcId, lteInfo, rlcUm);
 
     // PDCP entity creation
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpMux"));
     auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     if (withPdcp) {
@@ -201,9 +201,9 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
             module->buildInside();
 
             // Wire UpperMux → entity in gate
-            int idx = pdcpUpperMux->gateSize("toTxEntity");
-            pdcpUpperMux->setGateSize("toTxEntity", idx + 1);
-            pdcpUpperMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
+            int idx = pdcpMux->gateSize("toTxEntity");
+            pdcpMux->setGateSize("toTxEntity", idx + 1);
+            pdcpMux->gate("toTxEntity", idx)->connectTo(module->gate("in"));
 
             // Wire PDCP TX out → RLC TX in (direct per-DRB connection)
             auto rlcIt = (isNrUe(lteInfo->getSourceId()) ? nrRlcTxEntities_ : rlcTxEntities_).find(rlcId);
@@ -220,7 +220,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
             module->scheduleStart(simTime());
             module->callInitialize();
             auto *txEnt = check_and_cast<PdcpTxEntityBase *>(module);
-            pdcpUpperMux->registerTxEntity(id, txEnt);
+            pdcpMux->registerTxEntity(id, txEnt);
             pdcpTxEntities_[id] = txEnt;
         }
     }
@@ -369,7 +369,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent("deleteLocalPdcpEntities()");
 
-    auto *pdcpUpperMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpUpperMux"));
+    auto *pdcpMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpMux"));
     auto *pdcpDcMux = dynamic_cast<DcMux *>(nicModule_->getSubmodule("pdcpDcMux")); // nullptr on UEs (no X2)
 
     bool isEnb = (registration_->getNodeType() == NODEB);
@@ -377,7 +377,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     // Delete PDCP TX entities
     for (auto it = pdcpTxEntities_.begin(); it != pdcpTxEntities_.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
-            pdcpUpperMux->unregisterTxEntity(it->first);
+            pdcpMux->unregisterTxEntity(it->first);
             it->second->deleteModule();
             it = pdcpTxEntities_.erase(it);
         } else ++it;

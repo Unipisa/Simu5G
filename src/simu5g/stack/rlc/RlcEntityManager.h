@@ -23,7 +23,7 @@ using namespace omnetpp;
 
 class BearerManagement;
 class BearerManagement;
-class RlcLowerMux;
+class RlcMux;
 class RlcTxEntityBase;
 class RlcRxEntityBase;
 class UmTxEntity;
@@ -33,7 +33,7 @@ class UmTxEntity;
  * @brief RLC entity lifecycle manager.
  *
  * Thin facade that delegates entity creation and lookup
- * to RlcUpperMux (TX entities) and RlcLowerMux (RX entities).
+ * to RlcUpperMux (TX entities) and RlcMux (RX entities).
  * Also manages per-UE throughput statistics and provides
  * deleteQueues() for handover cleanup.
  */
@@ -41,7 +41,7 @@ class RlcEntityManager : public cSimpleModule
 {
   protected:
     BearerManagement *bearerManagement_ = nullptr;
-    RlcLowerMux *lowerMux_ = nullptr;
+    RlcMux *lowerMux_ = nullptr;
 
     bool hasD2DSupport_ = false;
     typedef std::map<MacNodeId, std::set<UmTxEntity *>> PerPeerTxEntities;
@@ -96,7 +96,7 @@ class RlcEntityManager : public cSimpleModule
      * @param id DrbKey to lookup
      * @return pointer to the TXBuffer if found, nullptr otherwise
      */
-    RlcLowerMux *getLowerMux() { return lowerMux_; }
+    RlcMux *getLowerMux() { return lowerMux_; }
     void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
 
     RlcTxEntityBase *lookupTxBuffer(DrbKey id);
