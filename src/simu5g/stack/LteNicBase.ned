@@ -36,7 +36,7 @@ import simu5g.stack.phy.channelmodel.ILteChannelModel;
 module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:
-        @class(::inet::NetworkInterface);
+        @class(NonlayoutingNetworkInterface);
         @display("i=block/ifcard;bgb=704,443;bgl=3");
         bool isWireless = true;
         string interfaceTableModule;
