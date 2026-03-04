@@ -36,7 +36,7 @@
 #include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include <inet/networklayer/common/NetworkInterface.h>
 
@@ -1009,11 +1009,11 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             }
         }
 
-        // check the presence of UM
-        RlcEntityManager *rlcUm = inet::findModuleFromPar<RlcEntityManager>(par("rlcUmModule"), this);
-        if (rlcUm != nullptr) {
+        // check for active UEs in RLC
+        auto *rlcMux = dynamic_cast<RlcMux *>(inet::getContainingNicModule(this)->getSubmodule("rlcMux"));
+        if (rlcMux != nullptr) {
             std::set<MacNodeId> activeRlcUe;
-            rlcUm->activeUeUL(&activeRlcUe);
+            rlcMux->activeUeUL(&activeRlcUe);
             for (auto ue : activeRlcUe) {
                 activeUeSet.insert(ue); // active users in RLC
             }
