@@ -131,11 +131,9 @@ void QoSAwareScheduler::prepareSchedule()
 
 void QoSAwareScheduler::commitSchedule()
 {
-    unsigned int total = eNbScheduler_->resourceBlocks_;
     for (const auto& [cid, granted] : grantedBytes_) {
-        double shortTermRate = (total > 0) ? static_cast<double>(granted) / total : 0.0;
         double& longTermRate = pfRate_[cid];
-        longTermRate = (1.0 - pfAlpha_) * longTermRate + pfAlpha_ * shortTermRate;
+        longTermRate = (1.0 - pfAlpha_) * longTermRate + pfAlpha_ * static_cast<double>(granted);
     }
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
