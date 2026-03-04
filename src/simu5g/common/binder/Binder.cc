@@ -910,8 +910,8 @@ cModule *Binder::getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType)
         return nullptr;
     }
     if (isNrUe(nodeId))
-        return module->getSubmodule("cellularNic")->getSubmodule("nrRlcEntityManager");
-    return module->getSubmodule("cellularNic")->getSubmodule("rlcEntityManager");
+        return module->getSubmodule("cellularNic")->getSubmodule("nrRlcMux");
+    return module->getSubmodule("cellularNic")->getSubmodule("rlcMux");
 }
 
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)
