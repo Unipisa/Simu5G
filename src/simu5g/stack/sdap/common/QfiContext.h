@@ -23,6 +23,7 @@ struct DrbContext {
     MacNodeId ueNodeId = NODEID_NONE; // NODEID_NONE = "self" (UE side); numeric MacNodeId on gNB
     int lcid = -1;                  // LCID = local DRB index within that UE's DRB set (auto-derived)
     std::vector<int> qfiList;       // QFIs mapped to this DRB
+    LteRlcType rlcType = UM;        // RLC mode for this DRB (AM, UM, TM)
 };
 
 inline std::ostream& operator<<(std::ostream& os, const DrbContext& ctx) {
@@ -31,7 +32,7 @@ inline std::ostream& operator<<(std::ostream& os, const DrbContext& ctx) {
         if (i) os << ",";
         os << ctx.qfiList[i];
     }
-    os << "]";
+    os << "] rlc=" << rlcTypeToA(ctx.rlcType);
     return os;
 }
 

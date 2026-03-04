@@ -14,7 +14,7 @@
 
 #include "simu5g/stack/sdap/packet/NrSdapHeader_m.h"
 #include "simu5g/common/QfiTag_m.h"
-#include "simu5g/common/RadioBearerTag_m.h"
+#include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include <inet/common/packet/Packet.h>
@@ -168,9 +168,16 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         EV_INFO << "SDAP TX: No SDAP header required for DRB " << drbIndex << "\n";
     }
 
-    // Add DRB routing tag for lower layers
-    auto drbReqTag = pkt->addTagIfAbsent<RadioBearerReq>();
-    drbReqTag->setDrbIndex(drbIndex);
+    // Set DRB ID and RLC type on FlowControlInfo for PDCP/RLC entity creation and routing
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    lteInfo->setDrbId(DrbId(drbIndex));
+    const DrbContext *ctx = qfiContextManager_.getDrbContext(drbIndex);
+    if (ctx)
+        lteInfo->setRlcType(ctx->rlcType);
+
+    // Establish connection if not yet done for this (drbId, destId) pair
+    if (establishedConnections_.insert({DrbId(drbIndex), lteInfo->getDestId()}).second)
+        binder_->establishUnidirectionalDataConnection(lteInfo.get());
 
     // Set protocol tag for outgoing frame to PDCP layer
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::sdap);
@@ -181,8 +188,8 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
 
 void NrSdap::handleLowerPacket(inet::Packet *pkt)
 {
-    auto drbIndTag = pkt->findTag<RadioBearerInd>();
-    int drbIndex = drbIndTag ? drbIndTag->getDrbIndex() : -1;
+    auto lteInfo = pkt->findTag<FlowControlInfo>();
+    int drbIndex = lteInfo ? num(lteInfo->getDrbId()) : -1;
 
     EV_INFO << "SDAP RX: Received packet from DRB " << drbIndex << ": " << pkt->peekAtFront() << "\n";
 
