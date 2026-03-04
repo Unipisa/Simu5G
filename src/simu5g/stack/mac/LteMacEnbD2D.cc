@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -31,7 +32,38 @@ using namespace inet;
 void LteMacEnbD2D::initialize(int stage)
 {
     LteMacEnb::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL) {
+    if (stage == INITSTAGE_LOCAL) {
+        // Parse DRB QoS configuration (optional, for QoS-aware scheduling)
+        const cValueArray *qosArr = check_and_cast_nullable<const cValueArray *>(par("drbQosConfig").objectValue());
+        if (qosArr && qosArr->size() > 0) {
+            std::map<MacNodeId, int> ueLocalDrbCount;
+            for (int i = 0; i < (int)qosArr->size(); i++) {
+                const cValueMap *obj = check_and_cast<const cValueMap *>(qosArr->get(i).objectValue());
+                DrbQosEntry e;
+                e.drbIndex = obj->get("drb").intValue();
+                if (obj->containsKey("ue"))
+                    e.ueNodeId = MacNodeId(obj->get("ue").intValue());
+                e.lcid = ueLocalDrbCount[e.ueNodeId]++;
+                e.gbr = obj->containsKey("gbr") ? obj->get("gbr").boolValue() : false;
+                e.delayBudgetMs = obj->containsKey("delayBudget") ? obj->get("delayBudget").doubleValue() : 0;
+                e.packetErrorRate = obj->containsKey("per") ? obj->get("per").doubleValue() : 0;
+                e.priorityLevel = obj->containsKey("priority") ? obj->get("priority").intValue() : 0;
+                drbQosMap_[e.drbIndex] = e;
+                EV << "MAC drbQosConfig: " << e << endl;
+            }
+        }
+
+    }
+    else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT) {
+        bool usePreconfiguredTxParams = par("usePreconfiguredTxParams");
+        Cqi d2dCqi = par("d2dCqi");
+        if (usePreconfiguredTxParams)
+            check_and_cast<AmcPilotD2D *>(amc_->getPilot())->setPreconfiguredTxParams(d2dCqi);
+
+        msHarqInterrupt_ = par("msHarqInterrupt").boolValue();
+        msClearRlcBuffer_ = par("msClearRlcBuffer").boolValue();
+    }
+    else if (stage == INITSTAGE_LAST) { // be sure that all UEs have been initialized
         reuseD2D_ = par("reuseD2D");
         reuseD2DMulti_ = par("reuseD2DMulti");
 
@@ -141,6 +173,8 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
         MacCid cid = MacCid(senderId, lcid);
         ASSERT(connDescIn_.find(cid) != connDescIn_.end());
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
+
+        EV << "LteMacEnbD2D: Lcid --->"<< (int)lcid << " Cid: " << cid <<endl;
 
         sendUpperPackets(upPkt);
     }

@@ -23,6 +23,7 @@ module LteMacEnbD2D extends LteMacEnb
     parameters:
         @class("LteMacEnbD2D");
 
+        object drbQosConfig = default([]);  // DRB QoS config: array of {drb, ue, gbr, delayBudget, per, priority}
         bool usePreconfiguredTxParams = default(false);
         int d2dCqi = default(7);
 

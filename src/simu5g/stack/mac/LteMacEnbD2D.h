@@ -17,6 +17,7 @@
 #include "simu5g/stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
+#include <inet/common/ModuleRefByPar.h>
 
 namespace simu5g {
 
@@ -29,6 +30,8 @@ class ConflictGraph;
 class LteMacEnbD2D : public LteMacEnb
 {
   protected:
+    // DRB QoS map (drb index -> QoS entry), parsed from drbQosConfig parameter
+    std::map<int, DrbQosEntry> drbQosMap_;
 
     /*
      * Stores the mirrored status of H-ARQ buffers for D2D transmissions.
@@ -138,6 +141,11 @@ class LteMacEnbD2D : public LteMacEnb
 
     bool isMsHarqInterrupt() { return msHarqInterrupt_; }
 
+
+    // Get DRB QoS map (drb index -> QoS entry)
+    const std::map<int, DrbQosEntry> *getDrbQosMap() override {
+        return drbQosMap_.empty() ? nullptr : &drbQosMap_;
+    }
 
 };
 
