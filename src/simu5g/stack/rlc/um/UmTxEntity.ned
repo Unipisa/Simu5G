@@ -28,6 +28,7 @@ simple UmTxEntity
         bool isNR = default(false);
         string macModule = default("^.^.mac");
         string umModule = default("^.entityManager");
+        int queueSize @unit(B) = default(2MiB);          // RLC TX entity SDU queue size (0: unlimited)
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
         @signal[rlcPduCreated];
 

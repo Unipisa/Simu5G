@@ -43,9 +43,7 @@ void UmTxEntity::initialize(int stage)
         // store the node id of the owner module
         ownerNodeId_ = mac->getMacNodeId();
 
-        // get the reference to the RLC module
-        lteRlc_.reference(this, "umModule", true);
-        queueSize_ = lteRlc_->par("queueSize");
+        queueSize_ = par("queueSize");
 
         auto *rrc = getParentModule()->getSubmodule("rrc");
         d2dModeController_ = dynamic_cast<D2DModeController *>(rrc ? rrc->getSubmodule("d2dModeController") : nullptr);

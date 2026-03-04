@@ -12,10 +12,7 @@
 #ifndef _LTE_UMTXENTITY_H_
 #define _LTE_UMTXENTITY_H_
 
-#include <inet/common/ModuleRefByPar.h>
-
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcTxEntityBase.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
@@ -25,8 +22,6 @@ namespace simu5g {
 class D2DModeController;
 
 using namespace omnetpp;
-
-class RlcEntityManager;
 
 /**
  * @class UmTxEntity
@@ -131,9 +126,6 @@ class UmTxEntity : public RlcTxEntityBase
     void rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer = true);
 
   protected:
-
-    // reference to the parent's RLC layer
-    inet::ModuleRefByPar<RlcEntityManager> lteRlc_;
 
     // D2D mode switch controller (nullptr when D2D is not enabled)
     D2DModeController *d2dModeController_ = nullptr;
