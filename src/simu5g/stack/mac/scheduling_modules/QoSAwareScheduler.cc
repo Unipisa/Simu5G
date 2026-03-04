@@ -104,7 +104,7 @@ void QoSAwareScheduler::prepareSchedule()
         if (pfRate_[cid] < scoreEpsilon_)
             s = qosWeight / scoreEpsilon_;
         else if (availableBlocks > 0)
-            s = qosWeight * ((availableBytes / availableBlocks) / pfRate_[cid])
+            s = qosWeight * (static_cast<double>(availableBytes) / availableBlocks / pfRate_[cid])
                 + uniform(getEnvir()->getRNG(0), -scoreEpsilon_ / 2.0, scoreEpsilon_ / 2.0);
         else
             s = 0.0;
