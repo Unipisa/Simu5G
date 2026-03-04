@@ -17,7 +17,6 @@ import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
-import simu5g.stack.rlc.RlcEntityManager;
 import simu5g.stack.rlc.RlcMux;
 
 //
@@ -43,7 +42,6 @@ module NrNicUe extends LteNicUeD2D
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
 
-        nrPhy.rlcUmModule = "^.nrRlcEntityManager";
         rrc.hasNrHandoverController = true;
         rrc.nrHandoverController.isNr = true;
         rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
@@ -57,16 +55,7 @@ module NrNicUe extends LteNicUeD2D
     submodules:
         // NR RLC submodules (flattened from former LteRlc compound)
         nrRlcMux: RlcMux {
-            entityManagerModule = "^.nrRlcEntityManager";
             @display("p=570,430;is=s");
-        }
-        nrRlcEntityManager: RlcEntityManager {
-            lowerMuxModule = "^.nrRlcMux";
-            macModule = "^.nrMac";
-            isNR = true;
-            hasD2DSupport = parent.d2dCapable;
-            nodeType = parent.nodeType;
-            @display("p=80,60,col;g=left");
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {

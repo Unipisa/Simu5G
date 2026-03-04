@@ -26,7 +26,6 @@ simple UmRxEntity
         @display("i=block/layer");
         string binderModule = default("binder");
         bool isNR = default(false);
-        string umModule = default("^.entityManager");
         string macModule = default("^.^.mac");
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
         int rxWindowSize = default(16);

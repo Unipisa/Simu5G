@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 #include "simu5g/stack/mac/LteMacBase.h"

@@ -11,7 +11,6 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
-#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
