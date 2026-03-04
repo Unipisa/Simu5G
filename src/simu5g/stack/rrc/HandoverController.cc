@@ -18,7 +18,6 @@
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/InitStages.h"

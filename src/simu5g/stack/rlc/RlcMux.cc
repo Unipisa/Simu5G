@@ -24,9 +24,6 @@ void RlcMux::initialize(int stage)
 
         hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();
 
-        cModule *em = getModuleByPath(par("entityManagerModule").stringValue());
-        nodeType_ = aToNodeType(em->par("nodeType").stdstringValue());
-
         WATCH_MAP(rxEntities_);
     }
 }
