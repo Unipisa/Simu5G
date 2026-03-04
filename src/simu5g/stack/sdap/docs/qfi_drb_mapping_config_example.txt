@@ -1,0 +1,10 @@
+QFI | DRB Index | 5QI | GBR | Delay Budget (ms) | Packet Error Rate | Priority Level | Description
+----|-----------|-----|-----|-------------------|-------------------|----------------|-------------------------------
+1   | 0         | 1   | Yes | 100               | 1e-2              | 2              | Conversational Voice
+2   | 1         | 2   | Yes | 150               | 1e-3              | 4              | Conversational Video (Live)
+3   | 2         | 3   | Yes | 50                | 1e-3              | 3              | Real-Time Gaming
+4   | 3         | 5   | Yes | 5                 | 1e-6              | 1              | URLLC Ultra-Reliable
+5   | 4         | 6   | No  | 100               | 1e-3              | 5              | Buffered Video Streaming
+6   | 5         | 7   | No  | 100               | 1e-3              | 6              | Web Browsing / Interactive
+7   | 6         | 8   | No  | 300               | 1e-6              | 7              | TCP Content Delivery
+8   | 7         | 9   | No  | 300               | 1e-6              | 8              | Email / Background Traffic
