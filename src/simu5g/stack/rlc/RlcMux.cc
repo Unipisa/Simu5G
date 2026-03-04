@@ -3,7 +3,7 @@
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include <inet/networklayer/common/NetworkInterface.h>
-#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "simu5g/stack/rrc/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 

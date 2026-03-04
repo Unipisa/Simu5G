@@ -14,7 +14,7 @@
 #include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
-#include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
+#include "simu5g/stack/rrc/D2dModeSelectionBase.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 

@@ -12,7 +12,7 @@
 
 package simu5g.stack;
 
-import simu5g.stack.d2dModeSelection.ID2DModeSelection;
+import simu5g.stack.rrc.ID2DModeSelection;
 
 //
 // The LteNicEnbD2D module represents an LTE eNodeB network interface with
