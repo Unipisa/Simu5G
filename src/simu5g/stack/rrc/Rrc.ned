@@ -27,6 +27,7 @@ module Rrc like IRrc
         string interfaceTableModule;
         string routingTableModule;
 
+        bool hasD2DModeController = default(false);
         bool hasHandoverController = default(false);
         bool hasNrHandoverController = default(false);
 
@@ -40,10 +41,13 @@ module Rrc like IRrc
         bearerManagement: BearerManagement {
             @display("p=250,80");
         }
-        handoverController: HandoverController if hasHandoverController {
+        d2dModeController: D2DModeController if hasD2DModeController {
             @display("p=400,80");
         }
-        nrHandoverController: HandoverController if hasNrHandoverController {
+        handoverController: HandoverController if hasHandoverController {
             @display("p=550,80");
+        }
+        nrHandoverController: HandoverController if hasNrHandoverController {
+            @display("p=700,80");
         }
 }

@@ -21,6 +21,7 @@
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 #include "simu5g/stack/packetFlowObserver/PacketFlowSignals.h"
+#include "simu5g/stack/rrc/D2DModeController.h"
 
 namespace simu5g {
 
@@ -45,6 +46,9 @@ void UmTxEntity::initialize(int stage)
         // get the reference to the RLC module
         lteRlc_.reference(this, "umModule", true);
         queueSize_ = lteRlc_->par("queueSize");
+
+        auto *rrc = getParentModule()->getSubmodule("rrc");
+        d2dModeController_ = dynamic_cast<D2DModeController *>(rrc ? rrc->getSubmodule("d2dModeController") : nullptr);
 
         burstStatus_ = INACTIVE;
     }
@@ -316,8 +320,9 @@ void UmTxEntity::rlcPduMake(int pduLength)
     if (notifyEmptyBuffer_ && sduQueue_.isEmpty()) {
         notifyEmptyBuffer_ = false;
 
-        // tell the RLC UM to resume packets for the new mode
-        lteRlc_->resumeDownstreamInPackets(flowControlInfo_->getD2dRxPeerId());
+        // tell the D2D mode controller to resume packets for the new mode
+        if (d2dModeController_)
+            d2dModeController_->resumeDownstreamInPackets(flowControlInfo_->getD2dRxPeerId());
     }
 }
 
@@ -426,7 +431,7 @@ void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
         sno_ = 0;
 
         if (!clearBuffer) {
-            if (lteRlc_->isEmptyingTxBuffer(flowControlInfo_->getD2dRxPeerId())) {
+            if (d2dModeController_ && d2dModeController_->isEmptyingTxBuffer(flowControlInfo_->getD2dRxPeerId())) {
                 // stop incoming connections, until
                 EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - halt incoming downstream connections of the RLC entity associated with the new mode" << endl;
                 startHoldingDownstreamInPackets();

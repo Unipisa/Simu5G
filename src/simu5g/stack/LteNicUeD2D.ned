@@ -26,6 +26,7 @@ module LteNicUeD2D extends LteNicUe
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
         d2dCapable = default(true);             // DO NOT CHANGE
+        rrc.hasD2DModeController = true;
         bool d2dInitialMode = default(false);
 }
 

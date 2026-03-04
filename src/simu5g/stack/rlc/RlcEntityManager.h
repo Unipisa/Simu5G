@@ -21,7 +21,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 class RlcMux;
-class UmTxEntity;
 
 /**
  * @class RlcEntityManager
@@ -37,10 +36,6 @@ class RlcEntityManager : public cSimpleModule
   protected:
     RlcMux *lowerMux_ = nullptr;
 
-    bool hasD2DSupport_ = false;
-    typedef std::map<MacNodeId, std::set<UmTxEntity *>> PerPeerTxEntities;
-    PerPeerTxEntities perPeerTxEntities_;
-
     /**
     * @author Alessandro Noferi
     * Holds the throughput stats for each UE
@@ -52,17 +47,6 @@ class RlcEntityManager : public cSimpleModule
     ULThroughputPerUE ulThroughput_;
 
   public:
-
-    void resumeDownstreamInPackets(MacNodeId peerId);
-
-    bool isEmptyingTxBuffer(MacNodeId peerId);
-
-    /**
-     * @author Alessandro Noferi
-     * It fills the ueSet argument with the MacNodeIds that have
-     * RLC data in the entities
-     *
-     */
     void activeUeUL(std::set<MacNodeId> *ueSet);
 
     /**
@@ -85,7 +69,6 @@ class RlcEntityManager : public cSimpleModule
 
   public:
     RlcMux *getLowerMux() { return lowerMux_; }
-    void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
 
 };
 

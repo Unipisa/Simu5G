@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+class D2DModeController;
+
 using namespace omnetpp;
 
 class RlcEntityManager;
@@ -132,6 +134,9 @@ class UmTxEntity : public RlcTxEntityBase
 
     // reference to the parent's RLC layer
     inet::ModuleRefByPar<RlcEntityManager> lteRlc_;
+
+    // D2D mode switch controller (nullptr when D2D is not enabled)
+    D2DModeController *d2dModeController_ = nullptr;
 
     /*
      * @author Alessandro Noferi
