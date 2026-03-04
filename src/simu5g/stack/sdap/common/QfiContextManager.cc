@@ -39,6 +39,10 @@ void QfiContextManager::loadFromJson(const cValueArray *arr)
         for (int j = 0; j < (int)qfiArr->size(); j++)
             ctx.qfiList.push_back(qfiArr->get(j).intValue());
 
+        // rlcType (optional, default UM)
+        if (entry->containsKey("rlcType"))
+            ctx.rlcType = aToRlcType(entry->get("rlcType").stdstringValue());
+
         // Derive LCID = local DRB index within this UE's DRB set
         ctx.lcid = ueLocalDrbCount[ctx.ueNodeId]++;
 

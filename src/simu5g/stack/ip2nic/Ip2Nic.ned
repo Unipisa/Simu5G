@@ -26,6 +26,7 @@ simple Ip2Nic like INetworkLayer2CellularNic
         string streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         string interactiveRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         string backgroundRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        bool hasSdap = default(false);  // when true, SDAP handles DRB/RLC assignment; Ip2Nic skips traffic classification
         @display("i=block/layer");
     gates:
         // connection to network layer

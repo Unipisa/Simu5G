@@ -13,6 +13,7 @@
 #define __SIMU5G_NRRXSDAPENTITY_H_
 
 #include <omnetpp.h>
+#include <set>
 #include "simu5g/stack/sdap/common/QfiContextManager.h"
 #include "simu5g/stack/sdap/common/ReflectiveQosTable.h"
 #include "simu5g/common/binder/Binder.h"
@@ -50,6 +51,9 @@ class NrSdap : public cSimpleModule
     inet::ModuleRefByPar<ReflectiveQosTable> reflectiveQosTable;
     inet::ModuleRefByPar<Binder> binder_;
     bool isUe = true;  // Node role: true for UE, false for gNB
+
+    // Tracks (drbId, destId) pairs for which connections have been established
+    std::set<std::pair<DrbId, MacNodeId>> establishedConnections_;
 
   protected:
     bool requiresSdapHeader(int drbIndex);

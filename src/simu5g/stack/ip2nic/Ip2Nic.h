@@ -53,6 +53,7 @@ class Ip2Nic : public cSimpleModule
     LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
+    bool hasSdap_ = false;
 
     // Key for identifying connections (for DRB ID assignment)
     struct ConnectionKey {

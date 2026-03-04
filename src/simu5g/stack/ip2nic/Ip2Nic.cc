@@ -56,6 +56,8 @@ void Ip2Nic::initialize(int stage)
         isNR_ = pdcpMux->par("isNR").boolValue();
         hasD2DSupport_ = networkIf->par("d2dCapable").boolValue() || isNR_;
 
+        hasSdap_ = par("hasSdap").boolValue();
+
         conversationalRlc_ = aToRlcType(par("conversationalRlc"));
         interactiveRlc_ = aToRlcType(par("interactiveRlc"));
         streamingRlc_ = aToRlcType(par("streamingRlc"));
@@ -249,11 +251,13 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
     // --- Common preamble ---
     auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
 
-    // Traffic category, RLC type
-    LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-    LteRlcType rlcType = getRlcType(trafficCategory);
-    lteInfo->setTraffic(trafficCategory);
-    lteInfo->setRlcType(rlcType);
+    // Traffic category, RLC type (skipped when SDAP handles DRB/RLC assignment)
+    if (!hasSdap_) {
+        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
+        LteRlcType rlcType = getRlcType(trafficCategory);
+        lteInfo->setTraffic(trafficCategory);
+        lteInfo->setRlcType(rlcType);
+    }
 
     // direction of transmitted packets depends on node type
     Direction dir = (nodeType_ == UE) ? UL : DL;
@@ -266,25 +270,21 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
     if (!hasD2DSupport_) {
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
-        MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
-
-        // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
-        ConnectionKey key{srcAddr, destAddr, typeOfService, Direction(0xFFFF)};
-        DrbId drbId = lookupOrAssignDrbId(key);
-
-        // assign DRB ID and node IDs
-        lteInfo->setDrbId(drbId);
-        lteInfo->setSourceId(nodeId_);
-        lteInfo->setDestId(destId);
-
         lteInfo->setSourceId(nodeId_);   // TODO CHANGE HERE!!! Must be the NR node ID if this is an NR connection
         if (lteInfo->getMulticastGroupId() != NODEID_NONE)  // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
             lteInfo->setDestId(nodeId_);
         else
             lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
 
-        if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
-            binder_->establishUnidirectionalDataConnection(lteInfo.get());
+        if (!hasSdap_) {
+            // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
+            ConnectionKey key{srcAddr, destAddr, typeOfService, Direction(0xFFFF)};
+            DrbId drbId = lookupOrAssignDrbId(key);
+            lteInfo->setDrbId(drbId);
+
+            if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+                binder_->establishUnidirectionalDataConnection(lteInfo.get());
+        }
         return;
     }
 
@@ -377,23 +377,25 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
             lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
     }
 
-    // --- DRB ID assignment (all D2D subclasses use direction in key) ---
-    ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
-    DrbId drbId = lookupOrAssignDrbId(key);
-    lteInfo->setDrbId(drbId);
+    // --- DRB ID assignment (skipped when SDAP handles it) ---
+    if (!hasSdap_) {
+        ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
+        DrbId drbId = lookupOrAssignDrbId(key);
+        lteInfo->setDrbId(drbId);
 
-    if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
-        binder_->establishUnidirectionalDataConnection(lteInfo.get());
+        if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+            binder_->establishUnidirectionalDataConnection(lteInfo.get());
 
-    // Debug logging (UE subclasses only)
-    if (!isEnb) {
-        if (isNR_) {
-            EV << "NrPdcpUe : Assigned DRB ID: " << drbId << "\n";
-            EV << "NrPdcpUe : Assigned Node ID: " << localNodeId << "\n";
-        }
-        else {
-            EV << "LtePdcpUeD2D : Assigned DRB ID: " << drbId << "\n";
-            EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
+        // Debug logging (UE subclasses only)
+        if (!isEnb) {
+            if (isNR_) {
+                EV << "NrPdcpUe : Assigned DRB ID: " << drbId << "\n";
+                EV << "NrPdcpUe : Assigned Node ID: " << localNodeId << "\n";
+            }
+            else {
+                EV << "LtePdcpUeD2D : Assigned DRB ID: " << drbId << "\n";
+                EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
+            }
         }
     }
 }
