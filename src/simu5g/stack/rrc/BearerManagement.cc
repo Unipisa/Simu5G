@@ -275,7 +275,7 @@ void BearerManagement::setEntityDisplayPosition(cModule *entity, bool isPdcpEnti
     int lx = atoi(rlcMux->getDisplayString().getTagArg("p", 0));
     int ly = atoi(rlcMux->getDisplayString().getTagArg("p", 1));
 
-    int x = lx + 10 * bearerIndex;
+    int x = lx + 60 * bearerIndex;
     int y = isPdcpEntity ? uy + (ly - uy) / 3 : uy + 2 * (ly - uy) / 3;
 
     entity->getDisplayString().setTagArg("p", 0, x);
