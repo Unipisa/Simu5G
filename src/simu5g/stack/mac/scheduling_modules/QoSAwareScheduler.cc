@@ -23,11 +23,11 @@ QoSAwareScheduler::QoSAwareScheduler(Binder* binder, double pfAlpha)
 double QoSAwareScheduler::computeQosWeight(const DrbQosEntry& e)
 {
     double weight = 1.0;
-    if (e.gbr) weight *= 2.0;
-    weight *= 10.0 / (e.priorityLevel + 1);  // Lower priority level = higher weight
-    if (e.delayBudgetMs <= 10) weight *= 5.0;
-    else if (e.delayBudgetMs <= 50) weight *= 3.0;
-    else if (e.delayBudgetMs <= 100) weight *= 1.5;
+    if (e.gbr) weight *= gbrMultiplier_;
+    weight *= priorityBase_ / (e.priorityLevel + 1);  // Lower priority level = higher weight
+    if (e.delayBudgetMs <= delayUrgentMs_) weight *= delayUrgentMultiplier_;
+    else if (e.delayBudgetMs <= delayTightMs_) weight *= delayTightMultiplier_;
+    else if (e.delayBudgetMs <= delayLooseMs_) weight *= delayLooseMultiplier_;
     EV << NOW << " DRB " << e.drbIndex << " ue=" << e.ueNodeId << " Weight: " << weight << endl;
     return weight;
 }
