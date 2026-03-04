@@ -13,7 +13,6 @@
 #include "simu5g/stack/rrc/D2DModeController.h"
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/pdcp/UpperMux.h"
@@ -49,8 +48,8 @@ void BearerManagement::initialize(int stage)
 
         nicModule_ = inet::getContainingNicModule(this);
 
-        rlcUmModule.reference(this, "rlcUmModule", true);
-        nrRlcUmModule.reference(this, "nrRlcUmModule", false);
+        rlcMuxModule.reference(this, "rlcMuxModule", true);
+        nrRlcMuxModule.reference(this, "nrRlcMuxModule", false);
         macModule.reference(this, "macModule", true);
         nrMacModule.reference(this, "nrMacModule", false);
     }
@@ -82,8 +81,9 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
 
     // RLC entity creation
     DrbKey rlcId = ctrlInfoToRxDrbKey(lteInfo);
-    auto rlcUm = (registration_->getNodeType()==UE && isNrUe(lteInfo->getDestId())) ? nrRlcUmModule.get() : rlcUmModule.get(); //TODO FIXME! DOES NOT WORK FOR MULTICAST!!!!!
-    createAndInstallRlcRxBuffer(rlcId, lteInfo, rlcUm);
+    bool isNr = (registration_->getNodeType()==UE && isNrUe(lteInfo->getDestId())); //TODO FIXME! DOES NOT WORK FOR MULTICAST!!!!!
+    auto *rlcMux = isNr ? nrRlcMuxModule.get() : rlcMuxModule.get();
+    createAndInstallRlcRxBuffer(rlcId, lteInfo, rlcMux, isNr);
 
     // PDCP entity creation
     auto *pdcpMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpMux"));
@@ -96,7 +96,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         module->par("headerCompressedSize") = par("headerCompressedSize");
         module->finalizeParameters();
         module->buildInside();
-        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
+        setEntityDisplayPosition(module, true, rlcMux, num(id.getDrbId()));
 
         // Wire RLC RX out → PDCP RX in (direct per-DRB connection)
         auto rlcIt = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
@@ -128,7 +128,7 @@ void BearerManagement::createIncomingConnection(FlowControlInfo *lteInfo, bool w
         auto *module = pdcpBypassRxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
-        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
+        setEntityDisplayPosition(module, true, rlcMux, num(id.getDrbId()));
 
         // Wire RLC RX out → bypass PDCP RX in (direct per-DRB connection)
         auto rlcIt2 = (isNrUe(lteInfo->getDestId()) ? nrRlcRxEntities_ : rlcRxEntities_).find(rlcId);
@@ -168,8 +168,9 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
 
     // RLC entity creation
     DrbKey rlcId = ctrlInfoToTxDrbKey(lteInfo);
-    auto rlcUm = (registration_->getNodeType()==UE && isNrUe(lteInfo->getSourceId())) ? nrRlcUmModule.get() : rlcUmModule.get();
-    createAndInstallRlcTxBuffer(rlcId, lteInfo, rlcUm);
+    bool isNr = (registration_->getNodeType()==UE && isNrUe(lteInfo->getSourceId()));
+    auto *rlcMux = isNr ? nrRlcMuxModule.get() : rlcMuxModule.get();
+    createAndInstallRlcTxBuffer(rlcId, lteInfo, rlcMux, isNr);
 
     // PDCP entity creation
     auto *pdcpMux = check_and_cast<UpperMux *>(nicModule_->getSubmodule("pdcpMux"));
@@ -202,7 +203,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
             module->par("headerCompressedSize") = par("headerCompressedSize");
             module->finalizeParameters();
             module->buildInside();
-            setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
+            setEntityDisplayPosition(module, true, rlcMux, num(id.getDrbId()));
 
             // Wire UpperMux → entity in gate
             int idx = pdcpMux->gateSize("toTxEntity");
@@ -236,7 +237,7 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
         auto *module = pdcpBypassTxEntityModuleType_->create(name.c_str(), nicModule_);
         module->finalizeParameters();
         module->buildInside();
-        setEntityDisplayPosition(module, true, rlcUm->getLowerMux(), num(id.getDrbId()));
+        setEntityDisplayPosition(module, true, rlcMux, num(id.getDrbId()));
 
         // Wire DcMux → entity in gate (DcMux dispatches incoming DL X2)
         int idx = pdcpDcMux->gateSize("toBypassTxEntity");
@@ -256,20 +257,12 @@ void BearerManagement::createOutgoingConnection(FlowControlInfo *lteInfo, bool w
     }
 }
 
-void BearerManagement::setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManager *rlcMgr)
+void BearerManagement::setRlcEntityParams(cModule *entity, bool isNr)
 {
-    // Entities are NIC-level siblings of the RLC submodules, so their
-    // defaults (which assumed being inside the LteRlc compound) are stale.
-    // Propagate correct paths from the rlcMgr's own parameters.
-    std::string mgrPath = std::string("^.") + rlcMgr->getName();
     if (entity->hasPar("macModule"))
-        entity->par("macModule").setStringValue(rlcMgr->par("macModule").stringValue());
-    if (entity->hasPar("umModule"))
-        entity->par("umModule").setStringValue(mgrPath);
-    if (entity->hasPar("upperMuxModule"))
-        entity->par("upperMuxModule").setStringValue(rlcMgr->par("upperMuxModule").stringValue());
+        entity->par("macModule").setStringValue(isNr ? "^.nrMac" : "^.mac");
     if (entity->hasPar("isNR"))
-        entity->par("isNR").setBoolValue(rlcMgr->par("isNR").boolValue());
+        entity->par("isNR").setBoolValue(isNr);
 }
 
 void BearerManagement::setEntityDisplayPosition(cModule *entity, bool isPdcpEntity, cModule *rlcMux, int bearerIndex)
@@ -289,7 +282,7 @@ void BearerManagement::setEntityDisplayPosition(cModule *entity, bool isPdcpEnti
     entity->getDisplayString().setTagArg("p", 1, y);
 }
 
-RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr)
+RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcMux *rlcMux, bool isNr)
 {
     LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
     cModuleType *moduleType;
@@ -299,26 +292,24 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
         case AM: moduleType = rlcAmTxEntityModuleType_; prefix = "am-tx"; break;
         default: moduleType = rlcUmTxEntityModuleType_; prefix = "um-tx"; break;
     }
-    bool isNr = rlcMgr->par("isNR").boolValue();
     std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
     auto *module = moduleType->create(name.c_str(), nicModule_);
-    setEntityParamsFromRlcMgr(module, rlcMgr);
+    setRlcEntityParams(module, isNr);
     module->finalizeParameters();
     module->buildInside();
-    setEntityDisplayPosition(module, false, rlcMgr->getLowerMux(), num(id.getDrbId()));
+    setEntityDisplayPosition(module, false, rlcMux, num(id.getDrbId()));
 
     // Wire gates: entity → LowerMux (RLC TX 'in' gate is wired from PDCP TX in createOutgoingConnection)
-    auto *lowerMux = rlcMgr->getLowerMux();
 
     // Wire entity out gate → LowerMux fromTxEntity
-    int fromIdx = lowerMux->gateSize("fromTxEntity");
-    lowerMux->setGateSize("fromTxEntity", fromIdx + 1);
-    module->gate("out")->connectTo(lowerMux->gate("fromTxEntity", fromIdx));
+    int fromIdx = rlcMux->gateSize("fromTxEntity");
+    rlcMux->setGateSize("fromTxEntity", fromIdx + 1);
+    module->gate("out")->connectTo(rlcMux->gate("fromTxEntity", fromIdx));
 
     // Wire LowerMux macToTxEntity → entity macIn gate
-    int macIdx = lowerMux->gateSize("macToTxEntity");
-    lowerMux->setGateSize("macToTxEntity", macIdx + 1);
-    lowerMux->gate("macToTxEntity", macIdx)->connectTo(module->gate("macIn"));
+    int macIdx = rlcMux->gateSize("macToTxEntity");
+    rlcMux->setGateSize("macToTxEntity", macIdx + 1);
+    rlcMux->gate("macToTxEntity", macIdx)->connectTo(module->gate("macIn"));
 
     module->scheduleStart(simTime());
     module->callInitialize();
@@ -341,7 +332,7 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
     return txEnt;
 }
 
-RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr)
+RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcMux *rlcMux, bool isNr)
 {
     LteRlcType rlcType = static_cast<LteRlcType>(lteInfo->getRlcType());
     cModuleType *moduleType;
@@ -351,21 +342,19 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
         case AM: moduleType = rlcAmRxEntityModuleType_; prefix = "am-rx"; break;
         default: moduleType = rlcUmRxEntityModuleType_; prefix = "um-rx"; break;
     }
-    bool isNr = rlcMgr->par("isNR").boolValue();
     std::string name = std::string(isNr ? "nrRlc-" : "rlc-") + prefix + "-" + std::to_string(num(id.getNodeId())) + "-" + std::to_string(num(id.getDrbId()));
     auto *module = moduleType->create(name.c_str(), nicModule_);
-    setEntityParamsFromRlcMgr(module, rlcMgr);
+    setRlcEntityParams(module, isNr);
     module->finalizeParameters();
     module->buildInside();
-    setEntityDisplayPosition(module, false, rlcMgr->getLowerMux(), num(id.getDrbId()));
+    setEntityDisplayPosition(module, false, rlcMux, num(id.getDrbId()));
 
     // Wire gates: LowerMux → entity (RLC RX 'out' gate is wired to PDCP RX in createIncomingConnection)
-    auto *lowerMux = rlcMgr->getLowerMux();
 
     // Wire LowerMux → entity in gate
-    int idx = lowerMux->gateSize("toRxEntity");
-    lowerMux->setGateSize("toRxEntity", idx + 1);
-    lowerMux->gate("toRxEntity", idx)->connectTo(module->gate("in"));
+    int idx = rlcMux->gateSize("toRxEntity");
+    rlcMux->setGateSize("toRxEntity", idx + 1);
+    rlcMux->gate("toRxEntity", idx)->connectTo(module->gate("in"));
 
     module->scheduleStart(simTime());
     module->callInitialize();
@@ -374,7 +363,7 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
     rxEnt->setFlowControlInfo(lteInfo);
 
     // Register in mux routing table and CP entity map
-    lowerMux->registerRxBuffer(id, rxEnt);
+    rlcMux->registerRxBuffer(id, rxEnt);
     (isNr ? nrRlcRxEntities_ : rlcRxEntities_)[id] = rxEnt;
 
     return rxEnt;
@@ -383,13 +372,13 @@ RlcRxEntityBase *BearerManagement::createAndInstallRlcRxBuffer(DrbKey id, FlowCo
 RlcTxEntityBase *BearerManagement::createRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     Enter_Method_Silent("createRlcTxBuffer()");
-    return createAndInstallRlcTxBuffer(id, lteInfo, rlcUmModule.get());
+    return createAndInstallRlcTxBuffer(id, lteInfo, rlcMuxModule.get(), false);
 }
 
 RlcRxEntityBase *BearerManagement::createRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo)
 {
     Enter_Method_Silent("createRlcRxBuffer()");
-    return createAndInstallRlcRxBuffer(id, lteInfo, rlcUmModule.get());
+    return createAndInstallRlcRxBuffer(id, lteInfo, rlcMuxModule.get(), false);
 }
 
 void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
@@ -443,11 +432,10 @@ void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
 
     auto &txMap = nrStack ? nrRlcTxEntities_ : rlcTxEntities_;
     auto &rxMap = nrStack ? nrRlcRxEntities_ : rlcRxEntities_;
-    RlcEntityManager *rlcMgr = nrStack ? (nrRlcUmModule ? nrRlcUmModule.get() : nullptr) : rlcUmModule.get();
-    if (!rlcMgr)
+    RlcMux *rlcMux = nrStack ? (nrRlcMuxModule ? nrRlcMuxModule.get() : nullptr) : rlcMuxModule.get();
+    if (!rlcMux)
         return;
 
-    auto *lowerMux = rlcMgr->getLowerMux();
     bool isEnb = (registration_->getNodeType() == NODEB);
 
     // Delete RLC TX entities
@@ -461,7 +449,7 @@ void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
     // Delete RLC RX entities
     for (auto it = rxMap.begin(); it != rxMap.end(); ) {
         if (isEnb ? it->first.getNodeId() == nodeId : true) {
-            lowerMux->unregisterRxBuffer(it->first);
+            rlcMux->unregisterRxBuffer(it->first);
             it->second->deleteModule();
             it = rxMap.erase(it);
         } else ++it;
