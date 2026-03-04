@@ -16,7 +16,7 @@
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
-#include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
+#include "simu5g/stack/rrc/D2dModeSelectionBase.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/binder/Binder.h"

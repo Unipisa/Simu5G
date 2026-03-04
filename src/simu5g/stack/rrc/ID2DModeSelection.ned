@@ -10,7 +10,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.d2dModeSelection;
+package simu5g.stack.rrc;
 
 //
 // Interface for the D2D Mode Selection module
