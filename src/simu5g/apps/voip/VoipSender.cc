@@ -1,9 +1,8 @@
 //
 //                  Simu5G
 //
-// Copyright (C) 2012-2021 Giovanni Nardini, Giovanni Stea, Antonio Virdis et al. (University of Pisa)
-// Copyright (C) 2022-2026 Giovanni Nardini, Giovanni Stea et al. (University of Pisa)
-//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
@@ -108,6 +107,11 @@ void VoipSender::initTraffic()
         socket.setCallback(this);
 
         int tos = par("tos");
+        int dscp = par("dscp");
+        if (tos != -1 && dscp != -1)
+            throw cRuntimeError("VoipSender: cannot set both 'tos' and 'dscp' parameters");
+        if (dscp >= 0)
+            tos = dscp << 2;  // DSCP occupies top 6 bits of TOS byte
         if (tos != -1)
             socket.setTos(tos);
 
@@ -193,6 +197,13 @@ void VoipSender::sendVoIPPacket()
 
     if (nframesTmp_ > 0)
         scheduleAt(simTime() + sampling_time, selfSender_);
+}
+
+void VoipSender::refreshDisplay() const
+{
+    char buf[80];
+    sprintf(buf, "sent: %d | %s #%d", iDframe_, isTalk_ ? "TALK" : "SIL", iDtalk_);
+    getDisplayString().setTagArg("t", 0, buf);
 }
 
 } //namespace

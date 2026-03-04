@@ -104,6 +104,8 @@ void VoipReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
     double sample = SIMTIME_DBL(arrivalTime - voipHeader->getPayloadTimestamp());
     emit(voipFrameDelaySignal_, sample);
 
+    ++numPacketsRcvd_;
+
     auto packetToBeQueued = voipHeader->dup();
     packetToBeQueued->setArrivalTime(arrivalTime);
     mPacketsList_.push_back(packetToBeQueued);
@@ -296,6 +298,13 @@ void VoipReceiver::finish()
 {
     // last talkspurt playout
     playout(true);
+}
+
+void VoipReceiver::refreshDisplay() const
+{
+    char buf[80];
+    sprintf(buf, "rcvd: %d | talk #%d", numPacketsRcvd_, mCurrentTalkspurt_);
+    getDisplayString().setTagArg("t", 0, buf);
 }
 
 } //namespace

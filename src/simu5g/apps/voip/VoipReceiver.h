@@ -59,6 +59,8 @@ class VoipReceiver : public cSimpleModule, public inet::UdpSocket::ICallback
     static simsignal_t voipJitterSignal_;
     static simsignal_t voipReceivedThroughputSignal_;
 
+    unsigned int numPacketsRcvd_ = 0;
+
     void finish() override;
 
   protected:
@@ -66,6 +68,7 @@ class VoipReceiver : public cSimpleModule, public inet::UdpSocket::ICallback
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
+    void refreshDisplay() const override;
     double eModel(simtime_t delay, double loss);
     void playout(bool finish);
 

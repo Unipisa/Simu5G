@@ -76,6 +76,7 @@ class VoipSender : public cSimpleModule, public inet::UdpSocket::ICallback
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
+    void refreshDisplay() const override;
 
     // UdpSocket::ICallback methods
     void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
