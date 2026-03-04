@@ -1,0 +1,30 @@
+5QI | Resource Type | Priority Level | Packet Delay Budget (ms) | Packet Error Rate  | Example Service
+----|---------------|----------------|--------------------------|--------------------|-----------------
+1   | GBR           | 2              | 100                      | 1e-2               | Conversational Voice
+2   | GBR           | 4              | 150                      | 1e-3               | Conversational Video (Live Streaming)
+3   | GBR           | 3              | 50                       | 1e-3               | Real-Time Gaming
+4   | GBR           | 5              | 300                      | 1e-6               | Non-Conversational Video (Buffered Streaming)
+5   | GBR           | 1              | 5                        | 1e-6               | URLLC (Ultra-Reliable Low Latency)
+6   | Non-GBR       | 6              | 100                      | 1e-3               | Buffered Streaming Video
+7   | Non-GBR       | 7              | 100                      | 1e-3               | Voice, Live Gaming
+8   | Non-GBR       | 8              | 300                      | 1e-6               | TCP-Based Applications (e.g. Web Browsing)
+9   | Non-GBR       | 9              | 300                      | 1e-6               | Email, Background Traffic
+65  | GBR           | 2              | 100                      | 1e-2               | IMS Voice (VoLTE)
+66  | GBR           | 3              | 50                       | 1e-3               | Mission Critical Push To Talk
+67  | GBR           | 3              | 50                       | 1e-3               | Mission Critical Video
+69  | GBR           | 5              | 10                       | 1e-4               | V2X Messaging
+70  | GBR           | 5              | 10                       | 1e-4               | V2X Video
+71  | GBR           | 5              | 10                       | 1e-4               | Factory Automation
+72  | GBR           | 5              | 10                       | 1e-5               | Industrial Automation
+73  | GBR           | 5              | 10                       | 1e-5               | Industrial Automation
+74  | GBR           | 5              | 10                       | 1e-5               | Industrial Automation
+75  | GBR           | 4              | 20                       | 1e-6               | Remote Control
+76  | GBR           | 2              | 5                        | 1e-6               | URLLC (short TTI)
+79  | GBR           | 2              | 5                        | 1e-6               | FR-URLLC (Factory)
+80  | GBR           | 4              | 20                       | 1e-6               | Industrial Ethernet
+81  | GBR           | 5              | 50                       | 1e-5               | Smart Grid
+82  | GBR           | 6              | 100                      | 1e-4               | Smart Grid
+83  | GBR           | 7              | 200                      | 1e-4               | Smart Grid
+84  | GBR           | 8              | 300                      | 1e-4               | Smart Grid
+85  | GBR           | 9              | 500                      | 1e-4               | Smart Grid
+86  | GBR           | 9              | 1000                     | 1e-4               | Smart Grid
