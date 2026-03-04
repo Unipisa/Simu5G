@@ -143,6 +143,88 @@ This is primarily a bugfix release.
   and WHATSNEW.
 
 
+## v1.4.1-sdap-2 (2026-03-03)
+
+This release improves on the simu5g-1.4.1-sdap release that added SDAP (Service
+Data Adaptation Protocol) layer support to Simu5G. Contributed by Andras Varga
+(OMNeT++ Core Team).
+
+The most important changes:
+
+- New simulations that exercise the code more: Multi-UE, multi-app, multi-QFI
+  configurations were added into `omnetpp_drb.ini` under `nr/standalone`. Based
+  on the Simu5G#294 bug report by Jonathan "Toaaster" Ebert.
+
+- Fixed QFI propagation: QFI was originally added to packets by the application
+  (`VoipSender`) as a packet tag (`QfiTag`). However, this tag did not make it to
+  UPF, because it was already stripped by the local PPP interface on
+  transmission. This mechanism was replaced by the VoipSender app setting DSCP
+  on the packet, which UPF now interprets as QFI (simplified PDR matching). From
+  then on, QFI is now carried through the GTP-U tunnel in the GTP header
+  (mirroring the real 5G PDU Session Container extension header), instead of
+  relying on QoS tags that were being stripped by PPP. The gNB extracts QFI from
+  the GTP-U header to restore QoS tags for SDAP routing.
+
+- DRB configuration changes: The DRB configuration is now split between SDAP and
+  MAC layers, each only knowing as much as they need for their operation.
+  QFI-to-DRB routing configuration went into `sdap.drbConfig`, while QoS
+  parameters for the scheduler (GBR, delay budget, PER, priority) went into
+  `mac.drbQosConfig`. Moreover, DRB configuration is now specified in JSON,
+  replacing the previous text file-based configuration.
+
+- Fixed multi-UE DL starvation (fixes Simu5G#294): `MacDrbMultiplexer`
+  incorrectly used LCID as the `nrRlc[]` array index, assuming LCID equals the
+  DRB index. When multiple UEs shared the same DRB, only the first UE received
+  data. Fixed by learning the LCID-to-gate mapping from RLC-to-MAC traffic.
+
+- MEC fixes: There were several bug fixes in the MEC code, such as
+  `MecOrchestrator` (contextId counter was never incremented), `MecOrchestrator`
+  (missing return after failure path causing end-iterator dereference),
+  `MecAppBase` (eliminate undisposed objects), fix uninitialized variables in
+  various modules (fixing long-standing fingerprint failures of certain MEC
+  simulations in debug mode).
+
+
+## v1.4.1-sdap (2025-10-06)
+
+Compatible with OMNeT++ 6.2.0 and INET 4.5.4.
+
+This specialized branch release introduces SDAP protocol support, multiple DRBs
+and advanced QoS capabilities to Simu5G for enhanced 5G network simulations.
+Please note that future main releases may not include these features or may
+incorporate them in a different form, as the primary development focus remains
+on architectural refactoring and foundational improvements. The changes were
+contributed by Mohamed Seliem (University College Cork), with improvements by
+Andras Varga (OMNeT++ Core Team).
+
+Reference paper: "QoS-Aware Proportional Fairness Scheduling for Multi-Flow 5G
+UEs: A Smart Factory Perspective". Mohamed Seliem, Utz Roedig, Cormac Sreenan,
+Dirk Pesch. IEEE MSWiM, 2025.
+
+New Features:
+
+- Added an SDAP protocol implementation with reflexive QoS capabilities (NrSdap
+  and ReflectiveQosTable modules). Available using the NRUeSdap (UE) and
+  gNodeBSdap (gNodeB) node types that contain the NRNicUeSdap and NRNicEnbSdap
+  NIC types, respectively.
+
+- DRB (Data Radio Bearer) support with multi-QFI/QoS handling for realistic 5G
+  bearer management simulations. This feature is available using NRUeDrb (UE)
+  and gNodeBDrb (gNodeB) node types that contain the NRNicUeDrb and NRNicEnbDrb
+  NIC types, respectively. It can be configured using the numDrbs parameter.
+  QFI-to-DRB mappings can be defined in a context file (see SDAP's
+  qfiContextFile parameter) with 5QI parameters and QoS requirements.
+
+- QoSAwareScheduler with QFI-based Proportional Fair scheduling using QfiContextManager.
+  Enable QoS scheduling with LteMacEnb.schedulingDisciplineDl/Ul="QOS_PF".
+
+- Better representation of compressed headers in PDCP. (Note that header compression is
+  disabled by default; enable using PDCP's headerCompressedSize parameter.)
+
+- New example simulations: simulations/nr/standalone/omnetpp_sdap.ini and omnetpp_drb.ini,
+  each with Standalone, VoIP-DL, and VoIP-UL configurations demonstrating SDAP functionality
+  and multi-DRB support with QoS-aware scheduling.
+
 
 ## v1.4.1 (2025-10-06)
 
