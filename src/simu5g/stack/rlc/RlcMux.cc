@@ -134,4 +134,24 @@ void RlcMux::activeUeUL(std::set<MacNodeId> *ueSet)
     }
 }
 
+void RlcMux::addUeThroughput(MacNodeId nodeId, Throughput throughput)
+{
+    auto& nodeUlThroughput = ulThroughput_[nodeId];
+    nodeUlThroughput.pktSizeCount += throughput.pktSizeCount;
+    nodeUlThroughput.time += throughput.time;
+}
+
+double RlcMux::getUeThroughput(MacNodeId nodeId)
+{
+    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
+    return it == ulThroughput_.end() ? 0 : it->second.pktSizeCount / it->second.time.dbl();
+}
+
+void RlcMux::resetThroughputStats(MacNodeId nodeId)
+{
+    auto& nodeUlThroughput = ulThroughput_[nodeId];
+    nodeUlThroughput.pktSizeCount = 0;
+    nodeUlThroughput.time = 0;
+}
+
 } // namespace simu5g

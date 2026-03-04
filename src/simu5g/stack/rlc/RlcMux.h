@@ -7,6 +7,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/mec/utils/MecCommon.h"
 #include "simu5g/stack/rlc/RlcRxEntityBase.h"
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
 
@@ -40,11 +41,18 @@ class RlcMux : public cSimpleModule
     typedef std::map<DrbKey, RlcRxEntityBase *> RxEntities;
     RxEntities rxEntities_;
 
+    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
+    ULThroughputPerUE ulThroughput_;
+
   public:
     RlcRxEntityBase *lookupRxBuffer(DrbKey id);
     void registerRxBuffer(DrbKey id, RlcRxEntityBase *rxEnt);
     void unregisterRxBuffer(DrbKey id);
     void activeUeUL(std::set<MacNodeId> *ueSet);
+
+    void addUeThroughput(MacNodeId nodeId, Throughput throughput);
+    double getUeThroughput(MacNodeId nodeId);
+    void resetThroughputStats(MacNodeId nodeId);
 
   protected:
     void initialize(int stage) override;

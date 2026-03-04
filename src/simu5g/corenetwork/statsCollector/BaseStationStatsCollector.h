@@ -20,7 +20,7 @@
 #include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/packetFlowObserver/PacketFlowObserverEnb.h"
 
 namespace simu5g {
@@ -48,7 +48,7 @@ class BaseStationStatsCollector : public cSimpleModule
 
     // LTE NIC layers
     inet::ModuleRefByPar<LteMacEnb> mac_;
-    inet::ModuleRefByPar<RlcEntityManager> rlc_;
+    inet::ModuleRefByPar<RlcMux> rlc_;
     inet::ModuleRefByPar<PacketFlowObserverEnb> packetFlowObserver_;
 
     inet::ModuleRefByPar<CellInfo> cellInfo_;

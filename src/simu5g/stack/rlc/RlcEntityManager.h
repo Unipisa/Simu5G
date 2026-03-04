@@ -13,8 +13,6 @@
 #define _RLC_ENTITY_MANAGER_H_
 
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/common/LteControlInfo.h"
-#include "simu5g/mec/utils/MecCommon.h"
 
 namespace simu5g {
 
@@ -24,52 +22,23 @@ class RlcMux;
 
 /**
  * @class RlcEntityManager
- * @brief RLC entity lifecycle manager.
+ * @brief Thin facade remaining from the old RLC entity manager.
  *
- * Thin facade that delegates entity creation and lookup
- * to RlcUpperMux (TX entities) and RlcMux (RX entities).
- * Also manages per-UE throughput statistics and provides
- * deleteQueues() for handover cleanup.
+ * Most functionality has been moved to BearerManagement (entity lifecycle),
+ * D2DModeController (D2D peer tracking), and RlcMux (throughput stats).
+ * This module only provides getLowerMux() for BearerManagement and
+ * NED parameters used by dynamically created RLC entities.
  */
 class RlcEntityManager : public cSimpleModule
 {
   protected:
     RlcMux *lowerMux_ = nullptr;
 
-    /**
-    * @author Alessandro Noferi
-    * Holds the throughput stats for each UE
-    * identified by the srcId of the
-    * FlowControlInfo in each entity
-    *
-    */
-    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
-    ULThroughputPerUE ulThroughput_;
-
-  public:
-    void activeUeUL(std::set<MacNodeId> *ueSet);
-
-    /**
-     * @author Alessandro Noferi
-     * Methods used by RlcEntity and EnodeBCollector respectively
-     * in order to manage UL throughput stats.
-     */
-
-    void addUeThroughput(MacNodeId nodeId, Throughput throughput);
-    double getUeThroughput(MacNodeId nodeId);
-    void resetThroughputStats(MacNodeId nodeId);
-
-  protected:
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
-    void finish() override
-    {
-    }
-
   public:
     RlcMux *getLowerMux() { return lowerMux_; }
-
 };
 
 } //namespace

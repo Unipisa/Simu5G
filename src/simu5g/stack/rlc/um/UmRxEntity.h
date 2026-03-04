@@ -15,7 +15,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/rlc/RlcEntityManager.h"
+#include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/RlcRxEntityBase.h"
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -27,7 +27,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteMacBase;
-class RlcEntityManager;
+class RlcMux;
 class LteRlcUmDataPdu;
 
 /**
@@ -51,7 +51,7 @@ class UmRxEntity : public RlcRxEntityBase
     // Node id of the owner module
     MacNodeId ownerNodeId_;
 
-    inet::ModuleRefByPar<RlcEntityManager> rlc_;
+    RlcMux *rlcMux_ = nullptr;
 
     // The PDU enqueue buffer.
     cArray pduBuffer_;

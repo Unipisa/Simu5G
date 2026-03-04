@@ -634,7 +634,7 @@ void UmRxEntity::initialize(int stage)
         received_.resize(rxWindowDesc_.windowSize_);
 
 
-        rlc_.reference(this, "umModule", true);
+        rlcMux_ = check_and_cast<RlcMux *>(getParentModule()->getSubmodule("rlcMux"));
 
         //statistics
 
@@ -782,7 +782,7 @@ void UmRxEntity::handleBurst(BurstCheck event)
 
             if ((t1_ - t2_) > TTI) {
                 Throughput throughput = { totalBits_, (t1_ - t2_) };
-                rlc_->addUeThroughput(flowControlInfo_->getSourceId(), throughput);
+                rlcMux_->addUeThroughput(flowControlInfo_->getSourceId(), throughput);
 
                 EV_FATAL << "BURST ENDED - size : " << totalBits_ << endl;
                 EV_FATAL << "throughput: size " << totalBits_ << " time " << (t1_ - t2_) << endl;
