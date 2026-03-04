@@ -34,6 +34,7 @@ simple VoipSender like IApp
         double samplingTime @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
         bool silences = default(true);
+        int dscp = default(-1); // if not -1, set the DSCP field of sent IP packets (encoded into TOS as dscp << 2)
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         @signal[voipGeneratedThroughput];
