@@ -32,6 +32,6 @@ module LteNicEnbD2D extends LteNicEnb
 
     submodules:
         d2dModeSelection: <default("D2dModeSelectionBase")> like ID2DModeSelection {
-            @display("p=80,460");
+            @display("p=80,60,col;g=left");
         }
 }
