@@ -49,7 +49,7 @@ class QoSAwareScheduler : public LteScheduler
     double pfAlpha_;
     const double scoreEpsilon_ = 1e-6;
 
-    const std::map<int, DrbQosEntry> *drbQosMap_ = nullptr;
+    const std::map<DrbKey, DrbQosEntry> *drbQosMap_ = nullptr;
 
     // Helpers
     double computeQosWeight(const DrbQosEntry& e);
@@ -59,7 +59,7 @@ class QoSAwareScheduler : public LteScheduler
     double& pfAlpha() { return pfAlpha_; }
 
     QoSAwareScheduler(Binder* binder, double pfAlpha);
-    void setDrbQosMap(const std::map<int, DrbQosEntry> *m) { drbQosMap_ = m; }
+    void setDrbQosMap(const std::map<DrbKey, DrbQosEntry> *m) { drbQosMap_ = m; }
     void prepareSchedule() override;
     void commitSchedule() override;
 };

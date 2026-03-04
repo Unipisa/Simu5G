@@ -8,7 +8,6 @@ namespace simu5g {
 struct DrbQosEntry {
     int drbIndex = -1;
     MacNodeId ueNodeId = NODEID_NONE;
-    int lcid = -1;  // derived: per-UE DRB counter
     bool gbr = false;
     double delayBudgetMs = 0;
     double packetErrorRate = 0;
@@ -16,7 +15,7 @@ struct DrbQosEntry {
 };
 
 inline std::ostream& operator<<(std::ostream& os, const DrbQosEntry& e) {
-    os << "drb=" << e.drbIndex << " ue=" << e.ueNodeId << " lcid=" << e.lcid
+    os << "drb=" << e.drbIndex << " ue=" << e.ueNodeId
        << " gbr=" << e.gbr << " delay=" << e.delayBudgetMs
        << "ms per=" << e.packetErrorRate << " prio=" << e.priorityLevel;
     return os;
