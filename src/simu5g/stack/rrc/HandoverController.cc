@@ -307,7 +307,7 @@ void HandoverController::triggerHandover()
 
             // Trigger D2D mode switch
             cModule *enb = binder_->getNodeModule(servingNodeId_);
-            D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
+            D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("rrc")->getSubmodule("d2dModeSelection"));
             d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
         }
     }
