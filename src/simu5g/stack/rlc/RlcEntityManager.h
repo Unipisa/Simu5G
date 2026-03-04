@@ -20,11 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class BearerManagement;
-class BearerManagement;
 class RlcMux;
-class RlcTxEntityBase;
-class RlcRxEntityBase;
 class UmTxEntity;
 
 /**
@@ -39,7 +35,6 @@ class UmTxEntity;
 class RlcEntityManager : public cSimpleModule
 {
   protected:
-    BearerManagement *bearerManagement_ = nullptr;
     RlcMux *lowerMux_ = nullptr;
 
     bool hasD2DSupport_ = false;
@@ -89,25 +84,8 @@ class RlcEntityManager : public cSimpleModule
     }
 
   public:
-    /**
-     * lookupTxBuffer() searches for an existing TXBuffer for the given DrbKey.
-     *
-     * @param id DrbKey to lookup
-     * @return pointer to the TXBuffer if found, nullptr otherwise
-     */
     RlcMux *getLowerMux() { return lowerMux_; }
     void registerD2DPeerTxEntity(MacNodeId peerId, UmTxEntity *umTxEnt);
-
-    RlcTxEntityBase *lookupTxBuffer(DrbKey id);
-
-
-    /**
-     * lookupRxBuffer() searches for an existing RXBuffer for the given DrbKey.
-     *
-     * @param id DrbKey to lookup
-     * @return pointer to the RXBuffer if found, nullptr otherwise
-     */
-    RlcRxEntityBase *lookupRxBuffer(DrbKey id);
 
 };
 

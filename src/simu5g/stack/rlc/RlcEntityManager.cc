@@ -14,7 +14,6 @@
 #include "simu5g/stack/rlc/RlcEntityManager.h"
 #include "simu5g/stack/rlc/RlcMux.h"
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
-#include "simu5g/stack/rrc/BearerManagement.h"
 
 namespace simu5g {
 
@@ -22,25 +21,9 @@ Define_Module(RlcEntityManager);
 
 using namespace omnetpp;
 
-RlcTxEntityBase *RlcEntityManager::lookupTxBuffer(DrbKey id)
-{
-    return bearerManagement_->lookupRlcTxBuffer(id);
-}
-
-RlcRxEntityBase *RlcEntityManager::lookupRxBuffer(DrbKey id)
-{
-    return lowerMux_->lookupRxBuffer(id);
-}
-
-
-/*
- * Main functions
- */
-
 void RlcEntityManager::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        bearerManagement_ = check_and_cast<BearerManagement *>(inet::getContainingNicModule(this)->getSubmodule("rrc")->getSubmodule("bearerManagement"));
         lowerMux_ = check_and_cast<RlcMux *>(getModuleByPath(par("lowerMuxModule").stringValue()));
         hasD2DSupport_ = inet::getContainingNicModule(this)->par("d2dCapable").boolValue();
     }
