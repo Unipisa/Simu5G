@@ -12,6 +12,8 @@
 
 package simu5g.stack;
 
+import simu5g.stack.sdap.INrSdap;
+
 //
 // The NrNicEnb module serves as a network interface that provides 5G connectivity
 // within a gNodeB. It implements the data and signaling plane of the NR (New Radio) stack,
@@ -22,11 +24,25 @@ package simu5g.stack;
 module NrNicEnb extends LteNicEnbD2D
 {
     parameters:
+        bool hasSdap = default(false);
+        ip2nic.hasSdap = default(this.hasSdap);
+        sdap.nodeRole = default("gNB");
         pdcpMux.isNR = default(true);
         rrc.bearerManagement.pdcpRxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         rrc.bearerManagement.pdcpTxEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
         mac.typename = default("NrMacGnb");
         lteChannelModelType = default("NrChannelModel_3GPP38_901");
         packetFlowObserver.typename = default("NrPacketFlowObserverGnb");
+
+    submodules:
+        sdap: <default("NrSdap")> like INrSdap if hasSdap {
+            @display("p=230,155");
+        }
+
+    connections:
+        ip2nic.stackOut --> { @reconnect; } --> sdap.upperLayerIn if hasSdap;
+        sdap.pdcpOut --> pdcpMux.upperLayerIn if hasSdap;
+        pdcpMux.upperLayerOut --> { @reconnect; } --> sdap.pdcpIn if hasSdap;
+        sdap.upperLayerOut --> ip2nic.stackIn if hasSdap;
 }
 

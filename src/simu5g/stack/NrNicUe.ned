@@ -18,6 +18,8 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.RlcMux;
+import simu5g.stack.sdap.INrSdap;
+import simu5g.stack.sdap.common.IReflectiveQosTable;
 
 //
 // Defines a User Equipment (UE) network interface card that
@@ -28,6 +30,12 @@ import simu5g.stack.rlc.RlcMux;
 module NrNicUe extends LteNicUeD2D
 {
     parameters:
+        bool hasSdap = default(false);
+        bool useReflectiveQos = default(false);
+        ip2nic.hasSdap = default(this.hasSdap);
+        sdap.nodeRole = default("UE");
+        sdap.useReflectiveQos = default(this.useReflectiveQos);
+        sdap.reflectiveQosTableModule = default(this.useReflectiveQos ? "^.reflectiveQosTable" : "");
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
@@ -53,6 +61,12 @@ module NrNicUe extends LteNicUeD2D
         rrc.handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 
     submodules:
+        sdap: <default("NrSdap")> like INrSdap if hasSdap {
+            @display("p=230,155");
+        }
+        reflectiveQosTable: <default("ReflectiveQosTable")> like IReflectiveQosTable if useReflectiveQos && hasSdap {
+            @display("p=80,60,col;g=left");
+        }
         // NR RLC submodules (flattened from former LteRlc compound)
         nrRlcMux: RlcMux {
             @display("p=570,430;is=s");
@@ -76,10 +90,6 @@ module NrNicUe extends LteNicUeD2D
             phyModule = "^.nrPhy";
         }
 
-
-        //#
-        //# Modules used to take trace of PDCP pkt flow
-        //#
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {
             @display("p=80,60,col;g=left");
             macModule = "^.nrMac";
@@ -101,4 +111,10 @@ module NrNicUe extends LteNicUeD2D
 
         //# external: lower connection
         nrRadioIn --> nrPhy.radioIn;
+
+        //# SDAP layer (optional, spliced between ip2nic and pdcpMux)
+        ip2nic.stackOut --> { @reconnect; } --> sdap.upperLayerIn if hasSdap;
+        sdap.pdcpOut --> pdcpMux.upperLayerIn if hasSdap;
+        pdcpMux.upperLayerOut --> { @reconnect; } --> sdap.pdcpIn if hasSdap;
+        sdap.upperLayerOut --> ip2nic.stackIn if hasSdap;
 }
