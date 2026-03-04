@@ -67,9 +67,9 @@ void NrSdap::handleMessage(cMessage *msg)
     auto arrivalGate = msg->getArrivalGate();
     auto pkt = check_and_cast<inet::Packet *>(msg);
 
-    if (arrivalGate == gate("DataPort$i"))
+    if (arrivalGate == gate("upperLayerIn"))
         handleUpperPacket(pkt);
-    else if (arrivalGate == gate("stackSdap$i"))
+    else if (arrivalGate == gate("pdcpIn"))
        handleLowerPacket(pkt);
     else
         throw cRuntimeError("Message arrived on unknown gate: %s", arrivalGate->getFullName());
@@ -176,7 +176,7 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::sdap);
 
     EV_INFO << "SDAP TX: Forwarding to DRB " << drbIndex << "\n";
-    send(pkt, "stackSdap$o");
+    send(pkt, "pdcpOut");
 }
 
 void NrSdap::handleLowerPacket(inet::Packet *pkt)
@@ -240,7 +240,7 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
     EV_INFO << "SDAP RX: Forwarding packet with QFI " << qfi << " to upper layer\n";
-    send(pkt, "DataPort$o");
+    send(pkt, "upperLayerOut");
 }
 
 
