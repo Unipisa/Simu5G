@@ -54,8 +54,10 @@ void QoSAwareScheduler::prepareSchedule()
     grantedBytes_.clear();
     activeConnectionTempSet_ = *activeConnectionSet_;
 
-    auto compare = [](const ScoredCid& a, const ScoredCid& b) { return a.second < b.second; };
-    std::priority_queue<ScoredCid, std::vector<ScoredCid>, decltype(compare)> score(compare);
+    // --- Phase 1: Score all eligible CIDs ---
+
+    struct CidInfo { double score; unsigned int availableBytes; };
+    std::map<MacCid, CidInfo> cidInfo;
 
     for (const auto& cid : carrierActiveConnectionSet_) {
         EV << NOW << " QoSAwareScheduler::CID--->"<< cid << endl;
@@ -75,8 +77,7 @@ void QoSAwareScheduler::prepareSchedule()
                           : UL)
                         : DL;
 
-	// Filtering Invalid Directions in the QoS Scheduler
-	if (dir != UL && dir != DL) continue;
+        if (dir != UL && dir != DL) continue;
 
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         if (info.readCqiVector().empty() || info.readBands().empty()) continue;
@@ -97,31 +98,70 @@ void QoSAwareScheduler::prepareSchedule()
         const DrbQosEntry* qos = getDrbQosForCid(cid);
         double qosWeight = qos ? computeQosWeight(*qos) : 1.0;
 
-        EV << NOW << "QoSAwareScheduler::Cid: "<< cid << " QoS Weight: " << qosWeight<< endl;
+        EV << NOW << " QoSAwareScheduler::Cid: "<< cid << " QoS Weight: " << qosWeight << endl;
         if (!pfRate_.count(cid)) pfRate_[cid] = 0;
 
         double s = 0.0;
         if (pfRate_[cid] < scoreEpsilon_)
             s = qosWeight / scoreEpsilon_;
         else if (availableBlocks > 0)
-            s = qosWeight * (static_cast<double>(availableBytes) / availableBlocks / pfRate_[cid])
-                + uniform(getEnvir()->getRNG(0), -scoreEpsilon_ / 2.0, scoreEpsilon_ / 2.0);
+            s = qosWeight * (static_cast<double>(availableBytes) / availableBlocks / pfRate_[cid]);
         else
             s = 0.0;
 
-        score.push({cid, s});
+        cidInfo[cid] = {s, availableBytes};
     }
 
-    while (!score.empty()) {
-        ScoredCid current = score.top();
-        MacCid cid = current.first;
-        bool terminate = false, active = true, eligible = true;
+    // --- Phase 2: Select best CID per node, compute proportional quotas ---
+    // Only one CID per node can be granted per TTI (scheduleGrant constraint),
+    // so quotas are computed at the node level using the best CID's score.
 
-        unsigned int granted = requestGrant(cid, UINT32_MAX, terminate, active, eligible);
+    std::map<MacNodeId, MacCid> bestCidPerNode;
+    for (const auto& [cid, info] : cidInfo) {
+        MacNodeId node = cid.getNodeId();
+        auto it = bestCidPerNode.find(node);
+        if (it == bestCidPerNode.end() || info.score > cidInfo[it->second].score)
+            bestCidPerNode[node] = cid;
+    }
+
+    double totalScore = 0;
+    for (const auto& [node, cid] : bestCidPerNode)
+        totalScore += cidInfo[cid].score;
+
+    std::map<MacCid, unsigned int> grantQuota;
+    for (const auto& [node, cid] : bestCidPerNode) {
+        double share = (totalScore > scoreEpsilon_)
+            ? cidInfo[cid].score / totalScore
+            : 1.0 / bestCidPerNode.size();
+        grantQuota[cid] = std::max(1u, static_cast<unsigned int>(cidInfo[cid].availableBytes * share));
+        EV << NOW << " QoSAwareScheduler::Quota node=" << node << " cid=" << cid
+           << " score=" << cidInfo[cid].score << " share=" << share
+           << " quota=" << grantQuota[cid] << "B" << endl;
+    }
+
+    // --- Phase 3: Grant in score order, capped to proportional quota ---
+
+    auto compare = [](const ScoredCid& a, const ScoredCid& b) { return a.second < b.second; };
+    std::priority_queue<ScoredCid, std::vector<ScoredCid>, decltype(compare)> grantQueue(compare);
+    for (const auto& [cid, info] : cidInfo)
+        grantQueue.push({cid, info.score + uniform(getEnvir()->getRNG(0), -scoreEpsilon_ / 2.0, scoreEpsilon_ / 2.0)});
+
+    while (!grantQueue.empty()) {
+        ScoredCid current = grantQueue.top();
+        grantQueue.pop();
+        MacCid cid = current.first;
+
+        auto qIt = grantQuota.find(cid);
+        unsigned int limit = (qIt != grantQuota.end()) ? qIt->second : UINT32_MAX;
+
+        bool terminate = false, active = true, eligible = true;
+        unsigned int granted = requestGrant(cid, limit, terminate, active, eligible);
         grantedBytes_[cid] += granted;
 
+        EV << NOW << " QoSAwareScheduler::Grant cid=" << cid << " limit=" << limit
+           << " granted=" << granted << "B" << endl;
+
         if (terminate) break;
-        if (!active || !eligible) score.pop();
         if (!active) {
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
