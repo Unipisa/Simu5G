@@ -63,7 +63,7 @@ module LteNicEnb extends LteNicBase
             @display("p=609,190;is=s");
         }
         bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
-            @display("p=80,380,row");
+            @display("p=80,60,col;g=left");
         }
 
     connections:

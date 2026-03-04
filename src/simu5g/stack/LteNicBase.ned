@@ -87,7 +87,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // RRC Layer
         rrc: <default("Rrc")> like IRrc {
-            @display("p=80,60");
+            @display("p=80,60,col;g=left");
         }
         // PDCP submodules (flattened from former PdcpLayer compound)
         pdcpMux: UpperMux {
@@ -103,7 +103,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             macModule = "^.mac";
             hasD2DSupport = parent.d2dCapable;
             nodeType = parent.nodeType;
-            @display("p=80,140");
+            @display("p=80,60,col;g=left");
         }
         // MAC Layer
         mac: <> like ILteMac {
@@ -115,14 +115,14 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
         channelModel[numCarriers]: <lteChannelModelType> like ILteChannelModel {
-            @display("p=80,220");
+            @display("p=80,60,col;g=left");
         }
 
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
         packetFlowObserver: <default("")> like IPacketFlowObserver if hasRniSupport {
-            @display("p=80,300");
+            @display("p=80,60,col;g=left");
         }
 
     connections allowunconnected:
