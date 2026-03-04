@@ -267,8 +267,8 @@ class LteMacEnb : public LteMacBase
 
     virtual ConflictGraph *getConflictGraph();
 
-    // Get DRB QoS map (drb index -> QoS entry). Override in subclasses.
-    virtual const std::map<int, DrbQosEntry> *getDrbQosMap() { return nullptr; }
+    // Get DRB QoS map (DrbKey -> QoS entry). Override in subclasses.
+    virtual const std::map<DrbKey, DrbQosEntry> *getDrbQosMap() { return nullptr; }
 
     /*
      * @author Alessandro Noferi

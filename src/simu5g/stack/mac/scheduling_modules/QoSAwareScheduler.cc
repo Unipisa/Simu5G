@@ -28,20 +28,18 @@ double QoSAwareScheduler::computeQosWeight(const DrbQosEntry& e)
     if (e.delayBudgetMs <= 10) weight *= 5.0;
     else if (e.delayBudgetMs <= 50) weight *= 3.0;
     else if (e.delayBudgetMs <= 100) weight *= 1.5;
-    EV << NOW << " DRB " << e.drbIndex << " lcid=" << e.lcid << " Weight: " << weight << endl;
+    EV << NOW << " DRB " << e.drbIndex << " ue=" << e.ueNodeId << " Weight: " << weight << endl;
     return weight;
 }
 
 const DrbQosEntry* QoSAwareScheduler::getDrbQosForCid(MacCid cid)
 {
     if (!drbQosMap_) return nullptr;
-    int lcid = (int)cid.getLcid();
-    MacNodeId ueNodeId = cid.getNodeId();
-    for (const auto& [drb, e] : *drbQosMap_) {
-        if (e.lcid == lcid && (e.ueNodeId == ueNodeId || e.ueNodeId == NODEID_NONE))
-            return &e;
-    }
-    EV_WARN << "QoSAwareScheduler: No DRB QoS entry for CID " << cid << "\n";
+    DrbKey key(cid.getNodeId(), eNbScheduler_->mac_->lcidToDrbId(cid.getLcid()));
+    auto it = drbQosMap_->find(key);
+    if (it != drbQosMap_->end())
+        return &it->second;
+    EV_WARN << "QoSAwareScheduler: No DRB QoS entry for CID " << cid << " (" << key << ")\n";
     return nullptr;
 }
 

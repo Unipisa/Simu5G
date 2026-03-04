@@ -30,8 +30,8 @@ class ConflictGraph;
 class LteMacEnbD2D : public LteMacEnb
 {
   protected:
-    // DRB QoS map (drb index -> QoS entry), parsed from drbQosConfig parameter
-    std::map<int, DrbQosEntry> drbQosMap_;
+    // DRB QoS map (DrbKey -> QoS entry), parsed from drbQosConfig parameter
+    std::map<DrbKey, DrbQosEntry> drbQosMap_;
 
     /*
      * Stores the mirrored status of H-ARQ buffers for D2D transmissions.
@@ -142,8 +142,8 @@ class LteMacEnbD2D : public LteMacEnb
     bool isMsHarqInterrupt() { return msHarqInterrupt_; }
 
 
-    // Get DRB QoS map (drb index -> QoS entry)
-    const std::map<int, DrbQosEntry> *getDrbQosMap() override {
+    // Get DRB QoS map (DrbKey -> QoS entry)
+    const std::map<DrbKey, DrbQosEntry> *getDrbQosMap() override {
         return drbQosMap_.empty() ? nullptr : &drbQosMap_;
     }
 
