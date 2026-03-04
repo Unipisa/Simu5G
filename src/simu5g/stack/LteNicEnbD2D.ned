@@ -12,8 +12,6 @@
 
 package simu5g.stack;
 
-import simu5g.stack.rrc.ID2DModeSelection;
-
 //
 // The LteNicEnbD2D module represents an LTE eNodeB network interface with
 // support for D2D (Device-to-Device) communications. It extends the basic
@@ -29,9 +27,5 @@ module LteNicEnbD2D extends LteNicEnb
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         d2dCapable = default(true);   // DO NOT CHANGE
         rrc.hasD2DModeController = true;
-
-    submodules:
-        d2dModeSelection: <default("D2dModeSelectionBase")> like ID2DModeSelection {
-            @display("p=80,60,col;g=left");
-        }
+        rrc.hasD2DModeSelection = true;
 }

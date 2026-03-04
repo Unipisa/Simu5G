@@ -56,7 +56,7 @@ void LtePhyUeD2D::handleSelfMessage(cMessage *msg)
     else if (msg->isName("doModeSwitchAtHandover")) {
         // Call mode selection module to check if DM connections are possible.
         cModule *enb = binder_->getNodeModule(servingNodeId_);
-        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
+        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("rrc")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, true);
 
         delete msg;

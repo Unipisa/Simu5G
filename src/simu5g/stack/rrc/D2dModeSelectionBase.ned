@@ -24,6 +24,6 @@ simple D2dModeSelectionBase like ID2DModeSelection
     parameters:
         double modeSelectionPeriod @unit(s) = default(1s);
         string binderModule = default("binder");
-        string macModule = default("^.mac");
+        string macModule = default("^.^.mac");
 }
 
