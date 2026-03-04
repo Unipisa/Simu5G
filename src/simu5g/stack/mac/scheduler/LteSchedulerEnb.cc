@@ -1,8 +1,8 @@
 //
 //                  Simu5G
 //
-// Copyright (C) 2012-2021 Giovanni Nardini, Giovanni Stea, Antonio Virdis et al. (University of Pisa)
-// Copyright (C) 2022-2026 Giovanni Nardini, Giovanni Stea et al. (University of Pisa)
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -22,6 +22,7 @@
 #include "simu5g/stack/mac/scheduling_modules/LteMaxCiOptMB.h"
 #include "simu5g/stack/mac/scheduling_modules/LteMaxCiComp.h"
 #include "simu5g/stack/mac/scheduling_modules/LteAllocatorBestFit.h"
+#include "simu5g/stack/mac/scheduling_modules/QoSAwareScheduler.h"
 #include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 #include "simu5g/stack/mac/buffer/LteMacQueue.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
@@ -879,6 +880,11 @@ LteScheduler *LteSchedulerEnb::getScheduler(SchedDiscipline discipline)
             return new LteMaxCiComp(binder_);
         case ALLOCATOR_BESTFIT:
             return new LteAllocatorBestFit(binder_);
+        case QOS_PF: {
+            auto *scheduler = new QoSAwareScheduler(binder_, mac_->par("pfAlpha").doubleValue());
+            scheduler->setDrbQosMap(mac_->getDrbQosMap());
+            return scheduler;
+        }
 
         default:
             throw cRuntimeError("LteScheduler not recognized");
