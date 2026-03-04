@@ -51,6 +51,16 @@ class QoSAwareScheduler : public LteScheduler
 
     const std::map<DrbKey, DrbQosEntry> *drbQosMap_ = nullptr;
 
+    // QoS weight parameters  TODO initialize from NED parameters
+    double gbrMultiplier_ = 2.0;
+    double priorityBase_ = 10.0;       // weight contribution = priorityBase_ / (priorityLevel + 1)
+    double delayUrgentMs_ = 10.0;      // delay budget thresholds (ms)
+    double delayTightMs_ = 50.0;
+    double delayLooseMs_ = 100.0;
+    double delayUrgentMultiplier_ = 5.0;  // multipliers for each tier
+    double delayTightMultiplier_ = 3.0;
+    double delayLooseMultiplier_ = 1.5;
+
     // Helpers
     double computeQosWeight(const DrbQosEntry& e);
     const DrbQosEntry* getDrbQosForCid(MacCid cid);
