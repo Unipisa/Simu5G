@@ -21,7 +21,6 @@ using namespace omnetpp;
 namespace simu5g {
 
 class LteMacBase;
-class RlcEntityManager;
 class RlcMux;
 class RlcTxEntityBase;
 class RlcRxEntityBase;
@@ -56,8 +55,8 @@ class BearerManagement : public cSimpleModule
     cModuleType *rlcAmTxEntityModuleType_ = nullptr;
     cModuleType *rlcAmRxEntityModuleType_ = nullptr;
 
-    inet::ModuleRefByPar<RlcEntityManager> rlcUmModule;  // Compound module with TM/UM/AM submodules
-    inet::ModuleRefByPar<RlcEntityManager> nrRlcUmModule;  // same
+    inet::ModuleRefByPar<RlcMux> rlcMuxModule;
+    inet::ModuleRefByPar<RlcMux> nrRlcMuxModule;
     inet::ModuleRefByPar<LteMacBase> macModule;
     inet::ModuleRefByPar<LteMacBase> nrMacModule;
 
@@ -71,10 +70,10 @@ class BearerManagement : public cSimpleModule
     std::map<DrbKey, RlcTxEntityBase *> nrRlcTxEntities_;
     std::map<DrbKey, RlcRxEntityBase *> nrRlcRxEntities_;
 
-    void setEntityParamsFromRlcMgr(cModule *entity, RlcEntityManager *rlcMgr);
+    void setRlcEntityParams(cModule *entity, bool isNr);
     void setEntityDisplayPosition(cModule *entity, bool isPdcpEntity, cModule *rlcMux, int bearerIndex);
-    RlcTxEntityBase *createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
-    RlcRxEntityBase *createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcEntityManager *rlcMgr);
+    RlcTxEntityBase *createAndInstallRlcTxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcMux *rlcMux, bool isNr);
+    RlcRxEntityBase *createAndInstallRlcRxBuffer(DrbKey id, FlowControlInfo *lteInfo, RlcMux *rlcMux, bool isNr);
 
   protected:
     void initialize(int stage) override;
