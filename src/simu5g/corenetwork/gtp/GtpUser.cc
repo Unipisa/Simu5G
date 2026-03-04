@@ -10,6 +10,7 @@
 //
 #include "simu5g/corenetwork/gtp/GtpUser.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
+#include "simu5g/common/QfiTag_m.h"
 #include <iostream>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
@@ -145,8 +146,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     auto tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
+    uint8_t qfi = tftInfo->getQfi();
 
-    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "]" << endl;
+    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "] qfi[" << (int)qfi << "]" << endl;
 
     if (flowId == TFT_REMOVED_DESTINATION) {
         // the destination has been removed from the simulation. Delete datagram
@@ -168,6 +170,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
         auto header = makeShared<GtpUserMsg>();
         header->setTeid(0);
+        header->setQfi(qfi);
         header->setChunkLength(B(8));
         auto gtpPacket = new Packet(datagram->getName());
         gtpPacket->insertAtFront(header);
@@ -230,6 +233,10 @@ void GtpUser::handleFromUdp(Packet *pkt)
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
     originalPacket->insertAtBack(pkt->peekData());
     originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+
+    // Restore QFI from GTP-U header so SDAP can use it for QFI-to-DRB mapping
+    if (gtpUserMsg->getQfi() > 0)
+        originalPacket->addTagIfAbsent<QfiReq>()->setQfi(gtpUserMsg->getQfi());
     // remove any pending socket indications
     auto sockInd = pkt->removeTagIfPresent<SocketInd>();
 
@@ -271,6 +278,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
                 // * encapsulate the datagram within the GtpUserMsg
                 auto header = makeShared<GtpUserMsg>();
                 header->setTeid(0);
+                header->setQfi(gtpUserMsg->getQfi());  // preserve QFI from incoming GTP-U
                 header->setChunkLength(B(8));
                 auto gtpMsg = new Packet(originalPacket->getName());
                 gtpMsg->insertAtFront(header);
@@ -278,7 +286,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
                 gtpMsg->insertAtBack(data);
                 delete originalPacket;
 
-                // create a new GtpUserMessage
+                // forward the re-encapsulated GTP-U message
                 EV << "GtpUser::handleFromUdp - Tunneling datagram to " << tunnelPeerAddress.str() << ", final destination[" << destAddr.str() << "]" << endl;
                 socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
                 return;

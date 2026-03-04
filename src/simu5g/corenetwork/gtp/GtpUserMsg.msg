@@ -16,5 +16,6 @@ namespace simu5g;
 
 class GtpUserMsg extends inet::FieldsChunk {
     unsigned int teid;
+    uint8_t qfi = 0;  // QoS Flow Identifier (carried in PDU Session Container in real GTP-U)
     chunkLength = inet::B(1); // TODO: size 0
 }
