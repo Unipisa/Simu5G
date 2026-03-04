@@ -12,33 +12,19 @@
 package simu5g.stack.sdap;
 
 //
-// Implements the SDAP Protocol.
-//
-// For PDUs received from the PDCP layer, extracts SDAP headers (if present),
-// restores the associated QoS Flow based on QFI, and forwards the resulting SDUs
-// to the upper IP layer.
-//
-// For SDUs received from the IP layer, performs QFI-to-DRB mapping,
-// encapsulates the data with SDAP headers if needed, and forwards the packets
-// to the PDCP layer.
-//
-// Parameters:
-//  - qfiToDrbMapping: optional static mapping from QFI to DRB for simulation purposes.
-//
-// Gates:
-//  - DataPort: connects to the IP layer.
-//  - stackSdap: connects to the PDCP layer.
+// Interface for SDAP protocol implementations.
 //
 moduleinterface INrSdap
 {
     parameters:
-        int numDrbs; // number of DRBs
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         object drbConfig;  // JSON array of DRB configurations: [{drb, ue, qfiList}, ...]
         bool useReflectiveQos; // UE only
         string reflectiveQosTableModule;  // UE only: path to ReflectiveQosTable module (empty = disabled)
 
     gates:
-        inout DataPort;     // To/from IP
-        inout stackSdap;     // To/from PDCP
+        input upperLayerIn;     // from IP layer
+        output upperLayerOut;   // to IP layer
+        input pdcpIn;           // from PDCP layer
+        output pdcpOut;         // to PDCP layer
 }

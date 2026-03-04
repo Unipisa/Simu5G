@@ -26,21 +26,22 @@ package simu5g.stack.sdap;
 //  - qfiToDrbMapping: optional static mapping from QFI to DRB for simulation purposes.
 //
 // Gates:
-//  - DataPort: connects to the IP layer.
-//  - stackSdap: connects to the PDCP layer.
+//  - upperLayerIn/upperLayerOut: connects to the IP layer.
+//  - pdcpIn/pdcpOut: connects to the PDCP layer.
 //
 simple NrSdap like INrSdap
 {
     parameters:
-        int numDrbs = default(1); // number of DRBs
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         string binderModule = default("binder");
         object drbConfig = default([]);  // JSON array of DRB configurations: [{drb, ue, qfiList}, ...]
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool addSdapHeader = default(true);
         bool useReflectiveQos = default(false); // UE only
-        @display("i=block/rx");
+        @display("i=block/layer");
     gates:
-        inout DataPort;     // To/from IP
-        inout stackSdap;     // To/from PDCP
+        input upperLayerIn;     // from IP layer
+        output upperLayerOut;   // to IP layer
+        input pdcpIn;           // from PDCP layer
+        output pdcpOut;         // to PDCP layer
 }
