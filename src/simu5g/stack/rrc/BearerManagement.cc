@@ -10,6 +10,7 @@
 //
 
 #include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/D2DModeController.h"
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/rlc/RlcEntityManager.h"
@@ -330,8 +331,11 @@ RlcTxEntityBase *BearerManagement::createAndInstallRlcTxBuffer(DrbKey id, FlowCo
 
     // D2D peer tracking (only for UM TX entities)
     if (rlcType == UM) {
-        auto *umTxEnt = check_and_cast<UmTxEntity *>(txEnt);
-        rlcMgr->registerD2DPeerTxEntity(MacNodeId(lteInfo->getD2dRxPeerId()), umTxEnt);
+        auto *d2dCtrl = dynamic_cast<D2DModeController *>(nicModule_->getSubmodule("rrc")->getSubmodule("d2dModeController"));
+        if (d2dCtrl) {
+            auto *umTxEnt = check_and_cast<UmTxEntity *>(txEnt);
+            d2dCtrl->registerD2DPeerTxEntity(MacNodeId(lteInfo->getD2dRxPeerId()), umTxEnt);
+        }
     }
 
     return txEnt;
