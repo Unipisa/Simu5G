@@ -20,9 +20,6 @@
 #include <inet/common/packet/Packet.h>
 #include <inet/common/stlutils.h>
 #include <inet/common/ProtocolTag_m.h>
-#include <inet/networklayer/ipv4/Ipv4Header_m.h>
-#include <inet/transportlayer/tcp_common/TcpHeader.h>
-#include <inet/transportlayer/udp/UdpHeader_m.h>
 
 namespace simu5g {
 
@@ -123,11 +120,9 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
             EV_WARN << "SDAP TX: No DRB mapping for QFI=" << (int)qfi << " on UE, using DRB 0\n";
     } else {
         // gNB side: need dest UE nodeId + QFI -> drbIndex
-        MacNodeId destUeId = NODEID_NONE;
-        const auto& ipHdr = pkt->peekAtFront<inet::Ipv4Header>();
-        destUeId = binder_->getMacNodeId(ipHdr->getDestAddress());
+        MacNodeId destUeId = pkt->getTag<FlowControlInfo>()->getDestId();
         if (destUeId == NODEID_NONE)
-            EV_WARN << "SDAP TX: Cannot resolve dest UE nodeId for " << ipHdr->getDestAddress() << ", using DRB 0\n";
+            EV_WARN << "SDAP TX: destId not set in FlowControlInfo, using DRB 0\n";
         else {
             int idx = qfiContextManager_.getDrbIndex(destUeId, qfi);
             if (idx >= 0)
