@@ -22,9 +22,6 @@ package simu5g.stack.sdap;
 // encapsulates the data with SDAP headers if needed, and forwards the packets
 // to the PDCP layer.
 //
-// Parameters:
-//  - qfiToDrbMapping: optional static mapping from QFI to DRB for simulation purposes.
-//
 // Gates:
 //  - upperLayerIn/upperLayerOut: connects to the IP layer.
 //  - pdcpIn/pdcpOut: connects to the PDCP layer.
@@ -34,7 +31,7 @@ simple NrSdap like INrSdap
     parameters:
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         string binderModule = default("binder");
-        object drbConfig = default([]);  // JSON array of DRB configurations: [{drb, ue, qfiList}, ...]
+        object drbConfig = default([]);  // JSON array of DRB configurations: [{drb, ue, qfiLis, rlcType}, ...]; rlcType is optional and defaults to UM.
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool addSdapHeader = default(true);
         bool useReflectiveQos = default(false); // UE only
