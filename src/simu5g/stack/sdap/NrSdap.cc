@@ -154,7 +154,6 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         // Build SDAP header according to 3GPP TS 37.324
         auto sdapHeader = makeShared<NrSdapHeader>();
         sdapHeader->setQfi(qfi);
-        sdapHeader->setD_c(true);  // Data PDU
 
         // Enable reflective QoS flag if this QFI supports it and we're not already using reflective QoS
         bool enableReflectiveQos = shouldEnableReflectiveQos(qfi) && !qfiFromReflectiveQos;  //TODO on gNB only?
@@ -208,10 +207,6 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
             EV_WARN << "SDAP RX: Invalid QFI value " << qfi << " (should be 0-63)\n";
             qfi = 0; // Use default QFI
         }
-
-        // Validate D/C bit for data PDUs
-        if (!sdapHeader->getD_c())
-            EV_WARN << "SDAP RX: Received control PDU (D/C=0) - not fully supported\n";
 
         // Handle reflective QoS if UE and enabled
         if (sdapHeader->getReflectiveQoS()) {
