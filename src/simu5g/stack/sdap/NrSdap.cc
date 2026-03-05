@@ -59,6 +59,33 @@ bool NrSdap::shouldEnableReflectiveQos(int qfi)
     return par("useReflectiveQos").boolValue(); // for now -- should come from RRC config
 }
 
+const inet::Protocol *NrSdap::getUpperProtocol(const DrbContext *ctx)
+{
+    // If an explicit upperProtocol is configured on this DRB, use it
+    if (ctx && !ctx->upperProtocol.empty()) {
+        const inet::Protocol *proto = inet::Protocol::findProtocol(ctx->upperProtocol.c_str());
+        if (!proto)
+            throw cRuntimeError("Unknown protocol '%s' in drbConfig upperProtocol", ctx->upperProtocol.c_str());
+        return proto;
+    }
+
+    // Otherwise derive from pduSessionType
+    PduSessionType pduSessionType = ctx ? ctx->pduSessionType : IP_V4;
+    switch (pduSessionType) {
+        case IP_V4:
+        case IP_V4V6:
+            return &inet::Protocol::ipv4;
+        case IP_V6:
+            return &inet::Protocol::ipv6;
+        case ETHERNET:
+            return &inet::Protocol::ethernetMac;
+        case UNSTRUCTURED:
+            throw cRuntimeError("Unstructured PDU session requires explicit 'upperProtocol' in drbConfig");
+        default:
+            throw cRuntimeError("Unknown PDU session type: %d", (int)pduSessionType);
+    }
+}
+
 void NrSdap::handleMessage(cMessage *msg)
 {
     auto arrivalGate = msg->getArrivalGate();
@@ -85,9 +112,12 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
     else if (isUe) {
         // UE UL: derive QFI from DSCP field of the IP header (DSCP = TOS >> 2)
         // FlowControlInfo.typeOfService is the raw TOS byte set by Ip2Nic::toStackUe()
+        // Only applicable for IP PDU sessions; non-IP sessions use QfiReq or default QFI.
         if (pkt->hasTag<FlowControlInfo>()) {
-            uint8_t dscp = (uint8_t)(pkt->getTag<FlowControlInfo>()->getTypeOfService() >> 2);
-            if (dscp > 0) {
+            auto fci = pkt->getTag<FlowControlInfo>();
+            uint8_t tos = (uint8_t)fci->getTypeOfService();
+            if (tos > 0) {
+                uint8_t dscp = tos >> 2;
                 qfi = dscp;
                 EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from DSCP=" << (int)dscp << "\n";
             }
@@ -233,10 +263,12 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
     auto qosIndTag = pkt->addTagIfAbsent<QfiInd>();
     qosIndTag->setQfi(qfi);
 
-    // Set protocol tag for outgoing frame to IP layer
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+    // Set protocol tag for upper layer based on PDU session type
+    const DrbContext* ctxProto = qfiContextManager_.getDrbContext(drbIndex);
+    const inet::Protocol *upperProto = getUpperProtocol(ctxProto);
+    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(upperProto);
 
-    EV_INFO << "SDAP RX: Forwarding packet with QFI " << qfi << " to upper layer\n";
+    EV_INFO << "SDAP RX: Forwarding packet with QFI " << qfi << " to upper layer (protocol: " << upperProto->getName() << ")\n";
     send(pkt, "upperLayerOut");
 }
 
