@@ -24,6 +24,8 @@ struct DrbContext {
     int lcid = -1;                  // LCID = local DRB index within that UE's DRB set (auto-derived)
     std::vector<int> qfiList;       // QFIs mapped to this DRB
     LteRlcType rlcType = UM;        // RLC mode for this DRB (AM, UM, TM)
+    PduSessionType pduSessionType = IP_V4;  // PDU session type (3GPP TS 23.501)
+    std::string upperProtocol;  // INET protocol name for upper layer dispatch (empty = derive from pduSessionType)
 };
 
 inline std::ostream& operator<<(std::ostream& os, const DrbContext& ctx) {
@@ -32,7 +34,9 @@ inline std::ostream& operator<<(std::ostream& os, const DrbContext& ctx) {
         if (i) os << ",";
         os << ctx.qfiList[i];
     }
-    os << "] rlc=" << rlcTypeToA(ctx.rlcType);
+    os << "] rlc=" << rlcTypeToA(ctx.rlcType) << " pduSession=" << pduSessionTypeToA(ctx.pduSessionType);
+    if (!ctx.upperProtocol.empty())
+        os << " upperProto=" << ctx.upperProtocol;
     return os;
 }
 

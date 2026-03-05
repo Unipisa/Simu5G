@@ -61,6 +61,12 @@ enum LteRlcType
     TM = 0; UM = 1; AM = 2; UNKNOWN_RLC_TYPE = 3;
 };
 
+/// PDU Session Types (3GPP TS 23.501)
+enum PduSessionType
+{
+    IP_V4 = 0; IP_V6 = 1; IP_V4V6 = 2; ETHERNET = 3; UNSTRUCTURED = 4;
+};
+
 /// Index for UL transmission map
 enum UlTransmissionMapTTI
 {

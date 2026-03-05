@@ -101,6 +101,39 @@ LteRlcType aToRlcType(std::string s)
     return UNKNOWN_RLC_TYPE;
 }
 
+const std::string pduSessionTypeToA(PduSessionType type)
+{
+    switch (type) {
+        case IP_V4:
+            return "IPv4";
+        case IP_V6:
+            return "IPv6";
+        case IP_V4V6:
+            return "IPv4v6";
+        case ETHERNET:
+            return "Ethernet";
+        case UNSTRUCTURED:
+            return "Unstructured";
+        default:
+            return "UNKNOWN_PDU_SESSION_TYPE";
+    }
+}
+
+PduSessionType aToPduSessionType(std::string s)
+{
+    if (s == "IPv4")
+        return IP_V4;
+    if (s == "IPv6")
+        return IP_V6;
+    if (s == "IPv4v6")
+        return IP_V4V6;
+    if (s == "Ethernet")
+        return ETHERNET;
+    if (s == "Unstructured")
+        return UNSTRUCTURED;
+    throw cRuntimeError("Unknown PDU session type: '%s'", s.c_str());
+}
+
 const std::string dirToA(Direction dir)
 {
     switch (dir) {

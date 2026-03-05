@@ -32,17 +32,14 @@ namespace simu5g {
  *
  * For PDUs received from the PDCP layer, extracts SDAP headers (if present),
  * restores the associated QoS Flow based on QFI, and forwards the resulting SDUs
- * to the upper IP layer.
-
- * For SDUs received from the IP layer, performs QFI-to-DRB mapping,
+ * to the upper layer (IP, Ethernet, or application for unstructured sessions).
+ *
+ * For SDUs received from the upper layer, performs QFI-to-DRB mapping,
  * encapsulates the data with SDAP headers if needed, and forwards the packets
  * to the PDCP layer.
  *
- * Future extensions may include:
- * - Dynamic QoS Flow handling
- * - Header parsing and verification
- * - Error handling for invalid SDAP PDUs
- * - SDAP Control PDU support (if applicable)
+ * Supports all 3GPP PDU session types (IPv4, IPv6, Ethernet, Unstructured)
+ * via the pduSessionType field in drbConfig.
  */
 class NrSdap : public cSimpleModule
 {
@@ -58,6 +55,7 @@ class NrSdap : public cSimpleModule
   protected:
     bool requiresSdapHeader(int drbIndex);
     bool shouldEnableReflectiveQos(int qfi);
+    const inet::Protocol *getUpperProtocol(const DrbContext *ctx);
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void handleUpperPacket(inet::Packet *pkt);

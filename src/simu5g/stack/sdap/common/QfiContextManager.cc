@@ -43,6 +43,14 @@ void QfiContextManager::loadFromJson(const cValueArray *arr)
         if (entry->containsKey("rlcType"))
             ctx.rlcType = aToRlcType(entry->get("rlcType").stdstringValue());
 
+        // pduSessionType (optional, default IPv4)
+        if (entry->containsKey("pduSessionType"))
+            ctx.pduSessionType = aToPduSessionType(entry->get("pduSessionType").stdstringValue());
+
+        // upperProtocol (optional, empty = derive from pduSessionType)
+        if (entry->containsKey("upperProtocol"))
+            ctx.upperProtocol = entry->get("upperProtocol").stdstringValue();
+
         // Derive LCID = local DRB index within this UE's DRB set
         ctx.lcid = ueLocalDrbCount[ctx.ueNodeId]++;
 
