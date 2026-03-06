@@ -22,6 +22,11 @@ package simu5g.stack.sdap;
 // encapsulates the data with SDAP headers if needed, and forwards the packets
 // to the PDCP layer.
 //
+// An SDAP header is only added when the QFI cannot be unambiguously recovered
+// from the DRB alone on the RX side, i.e. when the DRB is the default DRB
+// (which may carry unmapped fallback traffic) or when it has multiple QFIs
+// mapped to it.
+//
 // Supports all 3GPP PDU session types (IPv4, IPv6, Ethernet, Unstructured)
 // via the pduSessionType field in drbConfig.
 //
@@ -50,7 +55,6 @@ simple NrSdap like INrSdap
         string binderModule = default("binder");
         object drbConfig = default([]);  // JSON array: [{drb, ue, qfiList, rlcType, pduSessionType, upperProtocol, isDefault}, ...]; see banner comment for details
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
-        bool addSdapHeader = default(true);
         bool useReflectiveQos = default(false); // UE only
         @display("i=block/layer");
     gates:

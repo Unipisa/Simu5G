@@ -51,7 +51,12 @@ void NrSdap::initialize()
 
 bool NrSdap::requiresSdapHeader(const DrbConfig *drb)
 {
-    return par("addSdapHeader").boolValue(); // for now -- should come from RRC config
+    // SDAP header is needed when the QFI cannot be unambiguously determined
+    // from the DRB alone on the RX side:
+    // - default DRB: may carry packets with unmapped QFIs (fallback traffic)
+    // - multiple QFIs mapped: reverse mapping is ambiguous
+    // Caller must ensure drb is not null.
+    return drb->isDefault || drb->qfiList.size() > 1;
 }
 
 bool NrSdap::shouldEnableReflectiveQos(int qfi)
@@ -198,6 +203,9 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
     DrbId drbId = lteInfo ? lteInfo->getDrbId() : DRBID_NONE;
     MacNodeId ueId = (!isUe && lteInfo) ? lteInfo->getSourceId() : NODEID_NONE;
     const DrbConfig *drb = (drbId != DRBID_NONE) ? drbTable_.getDrb(DrbKey(ueId, drbId)) : nullptr;
+    if (!drb)
+        throw cRuntimeError("SDAP RX: Unknown DRB %d (ueId=%d) -- missing drbConfig entry?",
+                            (int)num(drbId), (int)num(ueId));
 
     EV_INFO << "SDAP RX: Received packet from DRB " << drbId << ": " << pkt->peekAtFront() << "\n";
 
