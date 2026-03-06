@@ -9,4 +9,4 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/handoverManager/X2HandoverCommandIE_m.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE_m.h"

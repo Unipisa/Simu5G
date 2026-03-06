@@ -16,7 +16,7 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dcX2Forwarder.DcX2Forwarder;
 import simu5g.stack.pdcp.DcMux;
-import simu5g.stack.handoverManager.LteHandoverManager;
+import simu5g.stack.handoverX2Forwarder.HandoverX2Forwarder;
 import simu5g.x2.LteX2Manager;
 
 
@@ -36,7 +36,7 @@ module LteNicEnb extends LteNicBase
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
-        *.handoverManagerModule = "^.handoverManager";
+        *.handoverX2ForwarderModule = "^.handoverX2Forwarder";
 
     submodules:
         pdcpDcMux: DcMux {
@@ -56,7 +56,7 @@ module LteNicEnb extends LteNicBase
         compManager: <default("LteCompManagerProportional")> like ILteCompManager if compEnabled {
             @display("p=717,286;is=s");
         }
-        handoverManager: LteHandoverManager {
+        handoverX2Forwarder: HandoverX2Forwarder {
             @display("p=717,50;is=s");
         }
         dcX2Forwarder: DcX2Forwarder if dualConnectivityEnabled {
@@ -70,10 +70,10 @@ module LteNicEnb extends LteNicBase
         //# connections between X2 Manager and its users
         compManager.x2ManagerIn <-- x2Manager.dataPortOut++ if compEnabled;
         compManager.x2ManagerOut --> x2Manager.dataPortIn++ if compEnabled;
-        handoverManager.x2ManagerIn <-- x2Manager.dataPortOut++;
-        handoverManager.x2ManagerOut --> x2Manager.dataPortIn++;
-        handoverManager.tunnelOut --> handoverPacketHolder.x2In;
-        handoverPacketHolder.hoManagerOut --> handoverManager.dataIn;
+        handoverX2Forwarder.x2ManagerIn <-- x2Manager.dataPortOut++;
+        handoverX2Forwarder.x2ManagerOut --> x2Manager.dataPortIn++;
+        handoverX2Forwarder.tunnelOut --> handoverPacketHolder.x2In;
+        handoverPacketHolder.hoManagerOut --> handoverX2Forwarder.dataIn;
         dcX2Forwarder.x2ManagerIn <-- x2Manager.dataPortOut++ if dualConnectivityEnabled;
         dcX2Forwarder.x2ManagerOut --> x2Manager.dataPortIn++ if dualConnectivityEnabled;
         pdcpDcMux.dcManagerOut --> dcX2Forwarder.dataIn if dualConnectivityEnabled;

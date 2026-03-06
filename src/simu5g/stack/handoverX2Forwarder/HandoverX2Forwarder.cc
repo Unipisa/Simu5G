@@ -9,22 +9,22 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/handoverManager/LteHandoverManager.h"
+#include "simu5g/stack/handoverX2Forwarder/HandoverX2Forwarder.h"
 
 #include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE.h"
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
 namespace simu5g {
 
-Define_Module(LteHandoverManager);
+Define_Module(HandoverX2Forwarder);
 
 using namespace inet;
 using namespace omnetpp;
 
-void LteHandoverManager::initialize(int stage)
+void HandoverX2Forwarder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         // get the node id
@@ -51,18 +51,18 @@ void LteHandoverManager::initialize(int stage)
     }
 }
 
-void LteHandoverManager::handleMessage(cMessage *msg)
+void HandoverX2Forwarder::handleMessage(cMessage *msg)
 {
     cPacket *pkt = check_and_cast<cPacket *>(msg);
     cGate *incoming = pkt->getArrivalGate();
     if (incoming == x2ManagerInGate_) {
         // incoming data from X2 Manager
-        EV << "LteHandoverManager::handleMessage - Received message from X2 Manager" << endl;
+        EV << "HandoverX2Forwarder::handleMessage - Received message from X2 Manager" << endl;
         handleX2Message(pkt);
     }
     else if (incoming->isName("dataIn")) {
         // incoming data from HandoverPacketHolder to forward via X2
-        EV << "LteHandoverManager::handleMessage - Received data packet from HandoverPacketHolder for X2 forwarding" << endl;
+        EV << "HandoverX2Forwarder::handleMessage - Received data packet from HandoverPacketHolder for X2 forwarding" << endl;
         auto datagram = check_and_cast<Packet*>(pkt);
         auto tag = datagram->removeTag<X2TargetReq>();
         MacNodeId targetEnb = tag->getTargetNode();
@@ -72,7 +72,7 @@ void LteHandoverManager::handleMessage(cMessage *msg)
         delete msg;
 }
 
-void LteHandoverManager::handleX2Message(cPacket *pkt)
+void HandoverX2Forwarder::handleX2Message(cPacket *pkt)
 {
     inet::Packet *datagram = check_and_cast<inet::Packet *>(pkt);
 
@@ -93,11 +93,11 @@ void LteHandoverManager::handleX2Message(cPacket *pkt)
     }
 }
 
-void LteHandoverManager::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
+void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
 {
     Enter_Method("sendHandoverCommand");
 
-    EV << NOW << " LteHandoverManager::sendHandoverCommand - Send handover command over X2 to eNB " << enb << " for UE " << ueId << endl;
+    EV << NOW << " HandoverX2Forwarder::sendHandoverCommand - Send handover command over X2 to eNB " << enb << " for UE " << ueId << endl;
 
     auto pkt = new Packet("X2HandoverControlMsg");
 
@@ -123,9 +123,9 @@ void LteHandoverManager::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool
     send(pkt, x2ManagerOutGate_);
 }
 
-void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
+void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
 {
-    EV << NOW << " LteHandoverManager::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
+    EV << NOW << " HandoverX2Forwarder::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
     // send command to HandoverPacketHolder
     if (startHo)
@@ -134,7 +134,7 @@ void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, b
         handoverPacketHolder_->signalHandoverCompleteSource(ueId, enb);
 }
 
-void LteHandoverManager::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)
+void HandoverX2Forwarder::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)
 {
     Enter_Method("forwardDataToTargetEnb");
     take(datagram);
@@ -151,15 +151,15 @@ void LteHandoverManager::forwardDataToTargetEnb(Packet *datagram, MacNodeId targ
     datagram->insertAtFront(hoMsg);
     datagram->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
-    EV << NOW << " LteHandoverManager::forwardDataToTargetEnb - Send IP datagram to eNB " << targetEnb << endl;
+    EV << NOW << " HandoverX2Forwarder::forwardDataToTargetEnb - Send IP datagram to eNB " << targetEnb << endl;
 
     // send to X2 Manager
     send(datagram, x2ManagerOutGate_);
 }
 
-void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId sourceEnb)
+void HandoverX2Forwarder::receiveDataFromSourceEnb(Packet *datagram, MacNodeId sourceEnb)
 {
-    EV << NOW << " LteHandoverManager::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
+    EV << NOW << " HandoverX2Forwarder::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
 
     // send data to HandoverPacketHolder for transmission
     send(datagram, "tunnelOut");

@@ -18,7 +18,7 @@
 #include <inet/linklayer/common/InterfaceTag_m.h>
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/handoverManager/LteHandoverManager.h"
+#include "simu5g/stack/handoverX2Forwarder/HandoverX2Forwarder.h"
 
 namespace simu5g {
 
@@ -51,7 +51,7 @@ void HandoverPacketHolderEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
-        hoManager_.reference(this, "handoverManagerModule", false);
+        hoManager_.reference(this, "handoverX2ForwarderModule", false);
         binder_.reference(this, "binderModule", true);
 
         cModule *bs = getContainingNode(this);
@@ -120,7 +120,7 @@ void HandoverPacketHolderEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId ta
     hoForwarding_[ueId] = targetEnb;
 
     if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
+        hoManager_.reference(this, "handoverX2ForwarderModule", true);
 
     if (targetEnb != NODEID_NONE)
         hoManager_->sendHandoverCommand(ueId, targetEnb, true);
@@ -172,7 +172,7 @@ void HandoverPacketHolderEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNo
 
     // signal the event to the source eNB
     if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
+        hoManager_.reference(this, "handoverX2ForwarderModule", true);
     hoManager_->sendHandoverCommand(ueId, sourceEnb, false);
 
     // send down buffered packets in the following order:

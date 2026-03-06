@@ -16,8 +16,8 @@
 #include "simu5g/stack/compManager/X2CompMsg.h"
 #include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
 #include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
-#include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
-#include "simu5g/stack/handoverManager/X2HandoverControlMsg.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverControlMsg.h"
 #include "simu5g/x2/packet/LteX2Message.h"
 
 namespace simu5g {

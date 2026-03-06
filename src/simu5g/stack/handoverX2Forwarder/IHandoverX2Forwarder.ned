@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.handoverManager;
+package simu5g.stack.handoverX2Forwarder;
 
 import simu5g.x2.IX2User;
 
 //
-// Interface for the Handover Manager. This module extends the ~X2User module interface
-// to define the basic contract that any handover manager must adhere to.
+// Interface for the Handover X2 Forwarder. This module extends the ~X2User module interface
+// to define the basic contract that any Handover X2 Forwarder must adhere to.
 //
-moduleinterface ILteHandoverManager extends IX2User
+moduleinterface IHandoverX2Forwarder extends IX2User
 {
     parameters:
         @display("i=block/cogwheel");

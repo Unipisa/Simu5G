@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-#ifndef __LTEHANDOVERMANAGER_H_
-#define __LTEHANDOVERMANAGER_H_
+#ifndef __HANDOVERX2FORWARDER_H_
+#define __HANDOVERX2FORWARDER_H_
 
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
-#include "simu5g/stack/handoverManager/X2HandoverControlMsg.h"
-#include "simu5g/stack/handoverManager/X2HandoverDataMsg.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverControlMsg.h"
+#include "simu5g/stack/handoverX2Forwarder/X2HandoverDataMsg.h"
 
 namespace simu5g {
 
@@ -26,9 +26,9 @@ using namespace omnetpp;
 class HandoverPacketHolderEnb;
 
 //
-// LteHandoverManager
+// HandoverX2Forwarder
 //
-class LteHandoverManager : public cSimpleModule
+class HandoverX2Forwarder : public cSimpleModule
 {
 
   protected:
@@ -70,5 +70,5 @@ class LteHandoverManager : public cSimpleModule
 
 } //namespace
 
-#endif /* __LTEHANDOVERMANAGER_H_ */
+#endif /* __HANDOVERX2FORWARDER_H_ */
 
