@@ -54,7 +54,7 @@ class NrSdap : public cSimpleModule
 
   protected:
     bool requiresSdapHeader(const DrbConfig *drb);
-    bool shouldEnableReflectiveQos(int qfi);
+    bool shouldEnableReflectiveQos(Qfi qfi);
     const inet::Protocol *getUpperProtocol(const DrbConfig *ctx);
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;

@@ -74,6 +74,10 @@ SIMU5G_STRONG_TYPEDEF(LogicalCid, unsigned short)
 /// Data Radio Bearer Identifier (used in PDCP/RLC layers, maps 1:1 to LogicalCid)
 SIMU5G_STRONG_TYPEDEF(DrbId, unsigned short)
 
+/// QoS Flow Identifier (6-bit, 0-63 per 3GPP TS 24.501)
+SIMU5G_STRONG_TYPEDEF(Qfi, uint8_t)
+constexpr Qfi QFI_NONE = Qfi(0);
+
 /// Invalid/uninitialized LCID and DRB ID values
 constexpr LogicalCid LCID_NONE = LogicalCid(65535);
 constexpr DrbId DRBID_NONE = DrbId(65535);

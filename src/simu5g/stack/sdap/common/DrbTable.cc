@@ -39,7 +39,7 @@ void DrbTable::loadFromJson(const cValueArray *arr)
         // qfiList
         const cValueArray *qfiArr = check_and_cast<const cValueArray *>(entry->get("qfiList").objectValue());
         for (int j = 0; j < (int)qfiArr->size(); j++)
-            ctx.qfiList.push_back(qfiArr->get(j).intValue());
+            ctx.qfiList.push_back(Qfi(qfiArr->get(j).intValue()));
 
         // rlcType (optional, default UM)
         if (entry->containsKey("rlcType"))
@@ -76,7 +76,7 @@ void DrbTable::loadFromJson(const cValueArray *arr)
 
         // Build reverse lookup: (nodeId, qfi) -> DrbConfig*
         const DrbConfig *ptr = &ctx;
-        for (int qfi : ctx.qfiList)
+        for (Qfi qfi : ctx.qfiList)
             qfiToDrb_[{ctx.ueNodeId, qfi}] = ptr;
 
         // Build default DRB map
@@ -94,7 +94,7 @@ const DrbConfig* DrbTable::getDrb(DrbKey key) const
     return it != drbMap_.end() ? &it->second : nullptr;
 }
 
-const DrbConfig* DrbTable::getDrbForQfi(MacNodeId nodeId, int qfi) const
+const DrbConfig* DrbTable::getDrbForQfi(MacNodeId nodeId, Qfi qfi) const
 {
     auto it = qfiToDrb_.find({nodeId, qfi});
     return it != qfiToDrb_.end() ? it->second : nullptr;

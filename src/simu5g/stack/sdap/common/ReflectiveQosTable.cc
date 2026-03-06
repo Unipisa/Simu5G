@@ -60,7 +60,7 @@ void ReflectiveQosTable::finish()
 }
 
 
-void ReflectiveQosTable::handleDownlinkFlow(inet::Packet *pkt, uint8_t qfi)
+void ReflectiveQosTable::handleDownlinkFlow(inet::Packet *pkt, Qfi qfi)
 {
     // Extract flow key from the packet
     FlowKey downlinkFlowKey = extractFlowKey(pkt);
@@ -80,29 +80,29 @@ void ReflectiveQosTable::handleDownlinkFlow(inet::Packet *pkt, uint8_t qfi)
         it->second.lastSeen = simTime();
         it->second.isActive = true;
         EV_INFO << "ReflectiveQosTable: Updated reflective QoS flow: " << uplinkFlowKey.toString()
-                << " -> QFI " << (int)qfi << "\n";
+                << " -> QFI " << qfi << "\n";
     } else {
         // Create new reflective flow
         ReflectiveQosFlow newFlow(qfi, uplinkFlowKey);
         reflectiveFlows_[uplinkFlowKey] = newFlow;
         EV_INFO << "ReflectiveQosTable: Created new reflective QoS flow: " << uplinkFlowKey.toString()
-                << " -> QFI " << (int)qfi << "\n";
+                << " -> QFI " << qfi << "\n";
     }
 
     // Cleanup expired flows periodically
     cleanupExpiredFlows();
 }
 
-uint8_t ReflectiveQosTable::lookupUplinkQfi(inet::Packet *pkt)
+Qfi ReflectiveQosTable::lookupUplinkQfi(inet::Packet *pkt)
 {
     if (reflectiveFlows_.empty())
-        return 0;
+        return QFI_NONE;
 
     // Extract flow key from the packet
     FlowKey uplinkFlowKey = extractFlowKey(pkt);
 
     if (uplinkFlowKey.srcAddr.empty() || uplinkFlowKey.dstAddr.empty())
-        return 0;
+        return QFI_NONE;
 
     // Look up the flow in reflective flows
     auto it = reflectiveFlows_.find(uplinkFlowKey);
@@ -110,7 +110,7 @@ uint8_t ReflectiveQosTable::lookupUplinkQfi(inet::Packet *pkt)
         // Check if flow hasn't expired
         if (simTime() - it->second.lastSeen <= timeout_) {
             EV_INFO << "ReflectiveQosTable: Found reflective QoS match: " << uplinkFlowKey.toString()
-                    << " -> QFI " << (int)it->second.qfi << "\n";
+                    << " -> QFI " << it->second.qfi << "\n";
             return it->second.qfi;
         }
         else {
@@ -120,7 +120,7 @@ uint8_t ReflectiveQosTable::lookupUplinkQfi(inet::Packet *pkt)
         }
     }
 
-    return 0; // No match found
+    return QFI_NONE; // No match found
 }
 
 void ReflectiveQosTable::cleanupExpiredFlows()
@@ -163,7 +163,7 @@ void ReflectiveQosTable::printFlows() const
         std::cout << "Flow mappings:" << std::endl;
         for (const auto& pair : reflectiveFlows_) {
             const ReflectiveQosFlow& flow = pair.second;
-            EV_INFO << "  " << pair.first.toString() << " -> QFI " << (int)flow.qfi
+            EV_INFO << "  " << pair.first.toString() << " -> QFI " << flow.qfi
                      << " (last seen: " << flow.lastSeen << ", active: " << (flow.isActive ? "Yes" : "No") << ")" << std::endl;
         }
     }

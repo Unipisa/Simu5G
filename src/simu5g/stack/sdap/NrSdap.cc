@@ -59,7 +59,7 @@ bool NrSdap::requiresSdapHeader(const DrbConfig *drb)
     return drb->isDefault || drb->qfiList.size() > 1;
 }
 
-bool NrSdap::shouldEnableReflectiveQos(int qfi)
+bool NrSdap::shouldEnableReflectiveQos(Qfi qfi)
 {
     return par("useReflectiveQos").boolValue(); // for now -- should come from RRC config
 }
@@ -106,35 +106,35 @@ void NrSdap::handleMessage(cMessage *msg)
 
 void NrSdap::handleUpperPacket(inet::Packet *pkt)
 {
-    uint8_t qfi = 0;
+    Qfi qfi = QFI_NONE;
     bool qfiFromReflectiveQos = false;
 
     // Extract QFI from QfiReq tag if present (set by GtpUser from GTP-U header, or by app directly)
     if (pkt->hasTag<QfiReq>()) {
         qfi = pkt->getTag<QfiReq>()->getQfi();
-        EV_INFO << "SDAP TX: QFI = " << (int)qfi << " extracted from QfiReq\n";
+        EV_INFO << "SDAP TX: QFI = " << qfi << " extracted from QfiReq\n";
     }
     else if (isUe) {
         // UE UL: try reflective QoS first (3GPP-defined mechanism)
         if (reflectiveQosTable != nullptr) {
-            uint8_t reflectiveQfi = reflectiveQosTable->lookupUplinkQfi(pkt);
-            if (reflectiveQfi > 0) {
+            Qfi reflectiveQfi = reflectiveQosTable->lookupUplinkQfi(pkt);
+            if (reflectiveQfi != QFI_NONE) {
                 qfi = reflectiveQfi;
                 qfiFromReflectiveQos = true;
-                EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from reflective QoS\n";
+                EV_INFO << "SDAP TX: QFI = " << qfi << " derived from reflective QoS\n";
             }
         }
         // Optional non-standard fallback: derive QFI from DSCP field of the IP header
-        if (qfi == 0 && par("useDscpAsQfiFallback").boolValue()) {
+        if (qfi == QFI_NONE && par("useDscpAsQfiFallback").boolValue()) {
             if (pkt->hasTag<FlowControlInfo>()) {
                 uint8_t tos = (uint8_t)pkt->getTag<FlowControlInfo>()->getTypeOfService();
                 if (tos > 0) {
-                    qfi = tos >> 2;
-                    EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from DSCP (fallback)\n";
+                    qfi = Qfi(tos >> 2);
+                    EV_INFO << "SDAP TX: QFI = " << qfi << " derived from DSCP (fallback)\n";
                 }
             }
         }
-        if (qfi == 0)
+        if (qfi == QFI_NONE)
             EV_WARN << "SDAP TX: No QFI from reflective QoS or DSCP, using QFI=0 (default DRB)\n";
     }
     else {
@@ -153,13 +153,13 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
     if (!drb) {
         drb = drbTable_.getDefaultDrb(nodeId);
         if (drb)
-            EV_WARN << "SDAP TX: No DRB mapping for nodeId=" << nodeId << " QFI=" << (int)qfi
+            EV_WARN << "SDAP TX: No DRB mapping for nodeId=" << nodeId << " QFI=" << qfi
                     << ", falling back to default DRB " << drb->drbId << "\n";
     }
     if (!drb)
         throw cRuntimeError("SDAP TX: No DRB available for nodeId=%d", (int)num(nodeId));
 
-    EV_INFO << "SDAP TX: Selected DRB=" << drb->drbId << " for QFI=" << (int)qfi << "\n";
+    EV_INFO << "SDAP TX: Selected DRB=" << drb->drbId << " for QFI=" << qfi << "\n";
 
     // Check if SDAP header is required for this DRB
     if (requiresSdapHeader(drb)) {
@@ -172,7 +172,7 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         sdapHeader->setReflectiveQoS(enableReflectiveQos);
 
         pkt->insertAtFront(sdapHeader);
-        EV_INFO << "SDAP TX: Inserted SDAP header with QFI = " << (int)qfi
+        EV_INFO << "SDAP TX: Inserted SDAP header with QFI = " << qfi
                 << ", reflectiveQoS = " << (enableReflectiveQos ? "true" : "false") << "\n";
     }
     else {
@@ -207,7 +207,7 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
 
     EV_INFO << "SDAP RX: Received packet from DRB " << drbId << ": " << pkt->peekAtFront() << "\n";
 
-    int qfi = 0;
+    Qfi qfi = QFI_NONE;
 
     // Check if packet has SDAP header (should be at the front according to 3GPP TS 37.324)
     if (requiresSdapHeader(drb)) {
@@ -218,14 +218,14 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
         EV_INFO << "SDAP RX: Extracted SDAP header with QFI = " << qfi << "\n";
 
         // Validate QFI range (0-63 according to 3GPP)
-        if (qfi > 63) {
+        if (num(qfi) > 63) {
             EV_WARN << "SDAP RX: Invalid QFI value " << qfi << " (should be 0-63)\n";
-            qfi = 0; // Use default QFI
+            qfi = QFI_NONE;
         }
 
         // Handle reflective QoS if UE and enabled
         if (sdapHeader->getReflectiveQoS()) {
-            EV_INFO << "SDAP RX: Reflective QoS enabled for QFI " << (int)qfi << "\n";
+            EV_INFO << "SDAP RX: Reflective QoS enabled for QFI " << qfi << "\n";
             if (isUe && reflectiveQosTable != nullptr) {
                 reflectiveQosTable->handleDownlinkFlow(pkt, qfi);
             }
@@ -243,7 +243,7 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
 
     // Validate QFI ↔ DRB consistency
     if (drb) {
-        if (!contains(drb->qfiList, (int)qfi))
+        if (!contains(drb->qfiList, qfi))
             EV_WARN << "SDAP RX: DRB/QFI mismatch! Received on DRB=" << drbId << ", QFI=" << qfi << " not in qfiList\n";
     }
 
@@ -255,7 +255,7 @@ void NrSdap::handleLowerPacket(inet::Packet *pkt)
     const inet::Protocol *upperProto = getUpperProtocol(drb);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(upperProto);
 
-    EV_INFO << "SDAP RX: Forwarding packet with QFI " << qfi << " to upper layer (protocol: " << upperProto->getName() << ")\n";
+    EV_INFO << "SDAP RX: Forwarding packet with QFI=" << qfi << " to upper layer (protocol: " << upperProto->getName() << ")\n";
     send(pkt, "upperLayerOut");
 }
 

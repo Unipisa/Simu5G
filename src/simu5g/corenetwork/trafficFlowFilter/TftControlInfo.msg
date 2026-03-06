@@ -19,5 +19,5 @@ namespace simu5g;
 class TftControlInfo extends inet::TagBase
 {
     unsigned int tft;
-    uint8_t qfi = 0;  // QFI derived from IP DSCP (simplified PDR matching)
+    Qfi qfi;  // QFI derived from IP DSCP (simplified PDR matching)
 };

@@ -30,7 +30,7 @@ class DrbTable
     std::map<DrbKey, DrbConfig> drbMap_;
 
     // Reverse lookup: (nodeId, qfi) -> DrbConfig*  (UE uses NODEID_NONE as nodeId)
-    std::map<std::pair<MacNodeId,int>, const DrbConfig*> qfiToDrb_;
+    std::map<std::pair<MacNodeId,Qfi>, const DrbConfig*> qfiToDrb_;
 
     // Default DRB per nodeId (UE: NODEID_NONE key; gNB: per-UE keys)
     std::map<MacNodeId, const DrbConfig*> defaultDrb_;
@@ -45,7 +45,7 @@ class DrbTable
     const DrbConfig* getDrb(DrbKey key) const;
 
     // Reverse lookup: (nodeId, qfi) -> DrbConfig  (UE passes NODEID_NONE)
-    const DrbConfig* getDrbForQfi(MacNodeId nodeId, int qfi) const;
+    const DrbConfig* getDrbForQfi(MacNodeId nodeId, Qfi qfi) const;
 
     // Default DRB for a given nodeId (gNB: per-UE; UE: NODEID_NONE)
     const DrbConfig* getDefaultDrb(MacNodeId nodeId) const;
