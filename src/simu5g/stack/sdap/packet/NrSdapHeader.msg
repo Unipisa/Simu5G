@@ -9,6 +9,7 @@
 // and cannot be removed from it.
 //
 import inet.common.packet.chunk.Chunk;
+import simu5g.common.LteCommon;
 
 namespace simu5g;
 
@@ -21,6 +22,6 @@ namespace simu5g;
 //
 class NrSdapHeader extends inet::FieldsChunk {
     chunkLength = inet::B(1);
-    uint8_t qfi;                // QoS Flow Identifier (6-bit field in SDAP spec)
+    Qfi qfi;                    // QoS Flow Identifier (6-bit field in SDAP spec)
     bool reflectiveQoS = false; // Reflective QoS enabled
 }

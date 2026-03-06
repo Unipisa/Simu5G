@@ -17,6 +17,7 @@
 #include <set>
 #include <string>
 #include <inet/common/packet/Packet.h>
+#include "simu5g/common/LteTypes.h"
 
 using namespace omnetpp;
 
@@ -64,14 +65,14 @@ struct FlowKey {
 
 // Structure to store reflective QoS flow information
 struct ReflectiveQosFlow {
-    uint8_t qfi = 0;
+    Qfi qfi = QFI_NONE;
     FlowKey flowKey;
     simtime_t lastSeen;
     bool isActive = true;
 
     // Constructor
     ReflectiveQosFlow() = default;
-    ReflectiveQosFlow(uint8_t q, const FlowKey& key)
+    ReflectiveQosFlow(Qfi q, const FlowKey& key)
         : qfi(q), flowKey(key), lastSeen(simTime()), isActive(true) {}
 };
 
@@ -108,8 +109,8 @@ class ReflectiveQosTable : public cSimpleModule
     virtual ~ReflectiveQosTable();
 
     // Core reflective QoS functionality
-    void handleDownlinkFlow(inet::Packet *pkt, uint8_t qfi);
-    uint8_t lookupUplinkQfi(inet::Packet *pkt);
+    void handleDownlinkFlow(inet::Packet *pkt, Qfi qfi);
+    Qfi lookupUplinkQfi(inet::Packet *pkt);
 
     // Flow management
     void cleanupExpiredFlows();

@@ -135,9 +135,10 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
 
     // Simplified QFI derivation: use IP DSCP as QFI directly.
     // In a real 5G UPF, this would be done via PDR/QER rules.
-    tftInfo->setQfi(ipv4Header->getDscp());
+    Qfi qfi = Qfi(ipv4Header->getDscp());
+    tftInfo->setQfi(qfi);
 
-    EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << " qfi=" << (int)ipv4Header->getDscp() << endl;
+    EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << " qfi=" << qfi << endl;
 
     // send the datagram to the GTP-U module
     send(pkt, "gtpUserGateOut");

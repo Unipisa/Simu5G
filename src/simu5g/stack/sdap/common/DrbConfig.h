@@ -22,7 +22,7 @@ struct DrbConfig {
     DrbId drbId = DRBID_NONE;         // DRB identifier (= nrPdcp[]/nrRlc[] array index)
     MacNodeId ueNodeId = NODEID_NONE; // NODEID_NONE = "self" (UE side); numeric MacNodeId on gNB
     bool isDefault = false;           // true if this is the default DRB for this UE
-    std::vector<int> qfiList;       // QFIs mapped to this DRB
+    std::vector<Qfi> qfiList;       // QFIs mapped to this DRB
     LteRlcType rlcType = UM;        // RLC mode for this DRB (AM, UM, TM)
     PduSessionType pduSessionType = IP_V4;  // PDU session type (3GPP TS 23.501)
     std::string upperProtocol;  // INET protocol name for upper layer dispatch (empty = derive from pduSessionType)
@@ -42,7 +42,7 @@ inline std::ostream& operator<<(std::ostream& os, const DrbConfig& ctx) {
     return os;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const std::pair<MacNodeId,int>& p) {
+inline std::ostream& operator<<(std::ostream& os, const std::pair<MacNodeId,Qfi>& p) {
     os << "(" << p.first << "," << p.second << ")";
     return os;
 }

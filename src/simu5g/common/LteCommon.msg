@@ -80,6 +80,19 @@ class DrbId {
     @fromValue(DrbId($.intValue()));
 };
 
+/// QoS Flow Identifier (6-bit, 0-63 per 3GPP TS 24.501)
+class Qfi {
+    @existingClass; // enum class Qfi : uint8_t;
+    @descriptor(false);
+    @primitive;
+    @castFunction(false);
+    @fromString(Qfi(string2int64($)));
+    @toString(int642string(num($)));
+    @defaultValue(QFI_NONE);
+    @toValue((omnetpp::intval_t)(num($)));
+    @fromValue(Qfi($.intValue()));
+};
+
 /// Connection Identifier: <MacNodeId,LogicalCid>
 class MacCid {
     @existingClass; // class MacCid with separate nodeId and lcid fields

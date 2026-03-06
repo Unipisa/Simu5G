@@ -146,9 +146,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     auto tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
-    uint8_t qfi = tftInfo->getQfi();
+    Qfi qfi = tftInfo->getQfi();
 
-    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "] qfi[" << (int)qfi << "]" << endl;
+    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "] qfi[" << qfi << "]" << endl;
 
     if (flowId == TFT_REMOVED_DESTINATION) {
         // the destination has been removed from the simulation. Delete datagram
@@ -235,7 +235,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
     originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
     // Restore QFI from GTP-U header so SDAP can use it for QFI-to-DRB mapping
-    if (gtpUserMsg->getQfi() > 0)
+    if (gtpUserMsg->getQfi() != QFI_NONE)
         originalPacket->addTagIfAbsent<QfiReq>()->setQfi(gtpUserMsg->getQfi());
     // remove any pending socket indications
     auto sockInd = pkt->removeTagIfPresent<SocketInd>();

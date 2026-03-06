@@ -9,6 +9,7 @@
 //
 import inet.common.INETDefs;
 import inet.common.TagBase;
+import simu5g.common.LteCommon;
 
 cplusplus {{
    using namespace inet;
@@ -27,7 +28,7 @@ namespace simu5g;
 // QfiInd is typically used when receiving packets upwards.
 //
 class QfiTagBase extends inet::TagBase {
-	    uint8_t qfi = 0;  // QFI value (range: 0–63), defaults to 0 if not set
+	    Qfi qfi;  // QFI value (range: 0–63)
 }
 
 class QfiReq extends QfiTagBase
