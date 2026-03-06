@@ -22,7 +22,7 @@ namespace simu5g {
 
 /**
  * Extends the LTE/NR MAC layer scheduler to support QoS-aware scheduling
- * decisions based on QFI (QoS Flow Identifier) contexts. QfiContextManager
+ * decisions based on QFI (QoS Flow Identifier) contexts. DrbTable
  * maintains mappings between QFIs, CIDs, and their associated QoS parameters.
  *
  * Key Features:
@@ -30,7 +30,7 @@ namespace simu5g {
  *   QoS weights derived from QFI context (e.g., 5QI, GBR, delay budget, PER,
  *   priority).
  * - Supports per-CID registration of QFIs
- * - QfiContextManager can load QFI-DRB configurations from file
+ * - DrbTable can load QFI-DRB configurations from file
  * - Provides flexible QoS weight computation based on service criticality.
  * - Enables more realistic traffic differentiation for scenarios involving
  *   conversational voice, URLLC, video streaming, etc.
