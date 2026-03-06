@@ -14,7 +14,7 @@
 
 #include <omnetpp.h>
 #include <set>
-#include "simu5g/stack/sdap/common/QfiContextManager.h"
+#include "simu5g/stack/sdap/common/DrbTable.h"
 #include "simu5g/stack/sdap/common/ReflectiveQosTable.h"
 #include "simu5g/common/binder/Binder.h"
 #include <inet/common/ModuleRefByPar.h>
@@ -44,7 +44,7 @@ namespace simu5g {
 class NrSdap : public cSimpleModule
 {
   protected:
-    QfiContextManager qfiContextManager_;
+    DrbTable drbTable_;
     inet::ModuleRefByPar<ReflectiveQosTable> reflectiveQosTable;
     inet::ModuleRefByPar<Binder> binder_;
     bool isUe = true;  // Node role: true for UE, false for gNB
@@ -53,17 +53,14 @@ class NrSdap : public cSimpleModule
     std::set<std::pair<DrbId, MacNodeId>> establishedConnections_;
 
   protected:
-    bool requiresSdapHeader(int drbIndex);
+    bool requiresSdapHeader(const DrbConfig *drb);
     bool shouldEnableReflectiveQos(int qfi);
-    const inet::Protocol *getUpperProtocol(const DrbContext *ctx);
+    const inet::Protocol *getUpperProtocol(const DrbConfig *ctx);
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void handleUpperPacket(inet::Packet *pkt);
     virtual void handleLowerPacket(inet::Packet *pkt);
 
-  public:
-    int getLcid(int drbIndex) { return qfiContextManager_.getLcid(drbIndex); }
-    int getDrbIndexForMacCid(MacNodeId ueNodeId, LogicalCid lcid) { return qfiContextManager_.getDrbIndexForMacCid(ueNodeId, lcid); }
 };
 
 } //namespace

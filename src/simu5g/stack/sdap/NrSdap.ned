@@ -25,6 +25,20 @@ package simu5g.stack.sdap;
 // Supports all 3GPP PDU session types (IPv4, IPv6, Ethernet, Unstructured)
 // via the pduSessionType field in drbConfig.
 //
+// drbConfig fields:
+//  - drb (int): DRB identifier (= nrPdcp[]/nrRlc[] array index)
+//  - ue (int, optional): UE MacNodeId (gNB only; omit on UE side)
+//  - qfiList (int[]): QFI values mapped to this DRB
+//  - rlcType (string, optional): RLC mode ("AM", "UM", "TM"); default: "UM"
+//  - pduSessionType (string, optional): "IPv4", "IPv6", "Ethernet", "Unstructured";
+//    default: "IPv4"
+//  - upperProtocol (string, optional): INET protocol name for upper layer dispatch
+//    (this is normally only needed for "Unstructured" PDU sessions); default:
+//    derived from pduSessionType
+//  - isDefault (bool, optional): marks this as the default DRB for the UE;
+//    if omitted, the first DRB entry per UE (per nodeId) is automatically used
+//    as default. The default DRB is the fallback when no QFI-to-DRB mapping matches.
+//
 // Gates:
 //  - upperLayerIn/upperLayerOut: connects to the upper layer (Ip2Nic or app).
 //  - pdcpIn/pdcpOut: connects to the PDCP layer.
@@ -34,7 +48,7 @@ simple NrSdap like INrSdap
     parameters:
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         string binderModule = default("binder");
-        object drbConfig = default([]);  // JSON array of DRB configurations: [{drb, ue, qfiList, rlcType, pduSessionType, upperProtocol}, ...]; rlcType defaults to UM, pduSessionType defaults to IPv4, upperProtocol defaults based on pduSessionType.
+        object drbConfig = default([]);  // JSON array: [{drb, ue, qfiList, rlcType, pduSessionType, upperProtocol, isDefault}, ...]; see banner comment for details
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool addSdapHeader = default(true);
         bool useReflectiveQos = default(false); // UE only
