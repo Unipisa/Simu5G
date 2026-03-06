@@ -20,7 +20,12 @@ package simu5g.stack.sdap;
 //
 // For SDUs received from the upper layer, performs QFI-to-DRB mapping,
 // encapsulates the data with SDAP headers if needed, and forwards the packets
-// to the PDCP layer.
+// to the PDCP layer. On the gNB DL path, the QFI is always taken from the
+// QfiReq tag (set by GtpUser). On the UE UL path, the QFI resolution chain is:
+//   1. QfiReq tag (if set by the application)
+//   2. Reflective QoS table (if enabled)
+//   3. DSCP field of the IP header (if useDscpAsQfiFallback is enabled)
+//   4. QFI=0 (falls back to default DRB)
 //
 // An SDAP header is only added when the QFI cannot be unambiguously recovered
 // from the DRB alone on the RX side, i.e. when the DRB is the default DRB
@@ -56,6 +61,7 @@ simple NrSdap like INrSdap
         object drbConfig = default([]);  // JSON array: [{drb, ue, qfiList, rlcType, pduSessionType, upperProtocol, isDefault}, ...]; see banner comment for details
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool useReflectiveQos = default(false); // UE only
+        bool useDscpAsQfiFallback = default(false);  // UE only: use IP DSCP value as QFI when no QfiReq or reflective QoS match
         @display("i=block/layer");
     gates:
         input upperLayerIn;     // from upper layer (Ip2Nic or app)

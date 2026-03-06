@@ -115,20 +115,8 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         EV_INFO << "SDAP TX: QFI = " << (int)qfi << " extracted from QfiReq\n";
     }
     else if (isUe) {
-        // UE UL: derive QFI from DSCP field of the IP header (DSCP = TOS >> 2)
-        // FlowControlInfo.typeOfService is the raw TOS byte set by Ip2Nic::toStackUe()
-        // Only applicable for IP PDU sessions; non-IP sessions use QfiReq or default QFI.
-        if (pkt->hasTag<FlowControlInfo>()) {
-            auto fci = pkt->getTag<FlowControlInfo>();
-            uint8_t tos = (uint8_t)fci->getTypeOfService();
-            if (tos > 0) {
-                uint8_t dscp = tos >> 2;
-                qfi = dscp;
-                EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from DSCP=" << (int)dscp << "\n";
-            }
-        }
-        // If DSCP gave no QFI, try reflective QoS
-        if (qfi == 0 && reflectiveQosTable != nullptr) {
+        // UE UL: try reflective QoS first (3GPP-defined mechanism)
+        if (reflectiveQosTable != nullptr) {
             uint8_t reflectiveQfi = reflectiveQosTable->lookupUplinkQfi(pkt);
             if (reflectiveQfi > 0) {
                 qfi = reflectiveQfi;
@@ -136,11 +124,21 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
                 EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from reflective QoS\n";
             }
         }
+        // Optional non-standard fallback: derive QFI from DSCP field of the IP header
+        if (qfi == 0 && par("useDscpAsQfiFallback").boolValue()) {
+            if (pkt->hasTag<FlowControlInfo>()) {
+                uint8_t tos = (uint8_t)pkt->getTag<FlowControlInfo>()->getTypeOfService();
+                if (tos > 0) {
+                    qfi = tos >> 2;
+                    EV_INFO << "SDAP TX: QFI = " << (int)qfi << " derived from DSCP (fallback)\n";
+                }
+            }
+        }
         if (qfi == 0)
-            EV_WARN << "SDAP TX: No QFI from DSCP or reflective QoS, defaulting QFI to 0\n";
+            EV_WARN << "SDAP TX: No QFI from reflective QoS or DSCP, using QFI=0 (default DRB)\n";
     }
     else {
-        EV_WARN << "SDAP TX: QfiReq not found on gNB path, defaulting QFI to 0\n";
+        throw cRuntimeError("SDAP TX: QfiReq tag missing on gNB DL path -- GtpUser should always set it");
     }
 
     // Lookup DRB context: nodeId is NODEID_NONE on UE, destUeId on gNB
