@@ -13,7 +13,7 @@ package simu5g.stack.pdcp;
 
 //
 // Dual Connectivity Mux: handles X2/DC routing between PDCP entities
-// and the DualConnectivityManager.
+// and the DcX2Forwarder.
 //
 simple DcMux
 {
