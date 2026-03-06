@@ -13,7 +13,7 @@
 #define _NRRXPDCPENTITY_H_
 
 #include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
-#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/stack/dcX2Forwarder/DcX2Forwarder.h"
 #include "simu5g/common/timer/TTimer.h"
 
 namespace simu5g {

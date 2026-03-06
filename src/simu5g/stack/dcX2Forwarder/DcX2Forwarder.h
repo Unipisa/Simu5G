@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#ifndef DUALCONNECTIVITYMANAGER_H_
-#define DUALCONNECTIVITYMANAGER_H_
+#ifndef DCX2FORWARDER_H_
+#define DCX2FORWARDER_H_
 
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
-#include "simu5g/stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
+#include "simu5g/stack/dcX2Forwarder/X2DualConnectivityDataMsg.h"
 
 namespace simu5g {
 
@@ -24,9 +24,9 @@ using namespace omnetpp;
 using namespace inet;
 
 //
-// DualConnectivityManager
+// DcX2Forwarder
 //
-class DualConnectivityManager : public cSimpleModule
+class DcX2Forwarder : public cSimpleModule
 {
   protected:
 
@@ -54,5 +54,5 @@ class DualConnectivityManager : public cSimpleModule
 
 } //namespace
 
-#endif /* DUALCONNECTIVITYMANAGER_H_ */
+#endif /* DCX2FORWARDER_H_ */
 

@@ -9,18 +9,18 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.dualConnectivityManager;
+package simu5g.stack.dcX2Forwarder;
 
 //
 // Performs bridging of data-plane packets between PDCP entities of two eNodeBs
 // or gNodeBs when Dual Connectivity is employed. The module directly interfaces
 // with the ~LteX2Manager to transfer such packets over the X2 interface.
 //
-simple DualConnectivityManager like IDualConnectivityManager
+simple DcX2Forwarder like IDcX2Forwarder
 {
     parameters:
         @display("i=block/cogwheel");
-        @class("DualConnectivityManager");
+        @class("DcX2Forwarder");
     gates:
         //# connections to the X2 Manager
         input x2ManagerIn;

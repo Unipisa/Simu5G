@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.dualConnectivityManager;
+package simu5g.stack.dcX2Forwarder;
 
 import simu5g.x2.IX2User;
 
 //
-// Interface for the Dual Connectivity Manager. This module extends the ~X2User module interface
-// to define the basic contract that any Dual Connectivity Manager must adhere to.
+// Interface for the DC X2 Forwarder. This module extends the ~X2User module interface
+// to define the basic contract that any DC X2 Forwarder must adhere to.
 //
-moduleinterface IDualConnectivityManager extends IX2User
+moduleinterface IDcX2Forwarder extends IX2User
 {
     parameters:
         @display("i=block/cogwheel");

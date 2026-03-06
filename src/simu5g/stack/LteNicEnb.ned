@@ -14,7 +14,7 @@ package simu5g.stack;
 
 import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
-import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
+import simu5g.stack.dcX2Forwarder.DcX2Forwarder;
 import simu5g.stack.pdcp.DcMux;
 import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.x2.LteX2Manager;
@@ -59,7 +59,7 @@ module LteNicEnb extends LteNicBase
         handoverManager: LteHandoverManager {
             @display("p=717,50;is=s");
         }
-        dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
+        dcX2Forwarder: DcX2Forwarder if dualConnectivityEnabled {
             @display("p=609,190;is=s");
         }
         bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
@@ -74,10 +74,10 @@ module LteNicEnb extends LteNicBase
         handoverManager.x2ManagerOut --> x2Manager.dataPortIn++;
         handoverManager.tunnelOut --> handoverPacketHolder.x2In;
         handoverPacketHolder.hoManagerOut --> handoverManager.dataIn;
-        dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPortOut++ if dualConnectivityEnabled;
-        dualConnectivityManager.x2ManagerOut --> x2Manager.dataPortIn++ if dualConnectivityEnabled;
-        pdcpDcMux.dcManagerOut --> dualConnectivityManager.dataIn if dualConnectivityEnabled;
-        dualConnectivityManager.tunnelOut --> pdcpDcMux.dcManagerIn if dualConnectivityEnabled;
+        dcX2Forwarder.x2ManagerIn <-- x2Manager.dataPortOut++ if dualConnectivityEnabled;
+        dcX2Forwarder.x2ManagerOut --> x2Manager.dataPortIn++ if dualConnectivityEnabled;
+        pdcpDcMux.dcManagerOut --> dcX2Forwarder.dataIn if dualConnectivityEnabled;
+        dcX2Forwarder.tunnelOut --> pdcpDcMux.dcManagerIn if dualConnectivityEnabled;
 
         if ( sizeof(x2) > 0 ) {
             //# connections between X2 Manager and GTP (for handover)

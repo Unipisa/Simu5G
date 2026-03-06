@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/stack/dcX2Forwarder/DcX2Forwarder.h"
 
 #include <inet/common/ProtocolTag_m.h>
 
@@ -19,9 +19,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-Define_Module(DualConnectivityManager);
+Define_Module(DcX2Forwarder);
 
-void DualConnectivityManager::initialize(int stage)
+void DcX2Forwarder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         // get the node id
@@ -43,17 +43,17 @@ void DualConnectivityManager::initialize(int stage)
     }
 }
 
-void DualConnectivityManager::handleMessage(cMessage *msg)
+void DcX2Forwarder::handleMessage(cMessage *msg)
 {
     cGate *incoming = msg->getArrivalGate();
     if (incoming == x2ManagerInGate_) {
         // incoming data from X2 Manager
-        EV << "DualConnectivityManager::handleMessage - Received message from X2 manager" << endl;
+        EV << "DcX2Forwarder::handleMessage - Received message from X2 manager" << endl;
         handleX2Message(msg);
     }
     else if (incoming->isName("dataIn")) {
         // incoming data from PDCP to forward via X2
-        EV << "DualConnectivityManager::handleMessage - Received data packet from PDCP for X2 forwarding" << endl;
+        EV << "DcX2Forwarder::handleMessage - Received data packet from PDCP for X2 forwarding" << endl;
         auto pkt = check_and_cast<inet::Packet*>(msg);
         auto tag = pkt->removeTag<X2TargetReq>();
         MacNodeId targetNode = tag->getTargetNode();
@@ -63,7 +63,7 @@ void DualConnectivityManager::handleMessage(cMessage *msg)
         delete msg;
 }
 
-void DualConnectivityManager::handleX2Message(cMessage *msg)
+void DcX2Forwarder::handleX2Message(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
 
@@ -84,12 +84,12 @@ void DualConnectivityManager::handleX2Message(cMessage *msg)
         return;
     }
     else
-        throw cRuntimeError("DualConnectivityManager::handleX2Message - Message type not valid");
+        throw cRuntimeError("DcX2Forwarder::handleX2Message - Message type not valid");
 
     delete packet;
 }
 
-void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
+void DcX2Forwarder::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
 {
     Enter_Method("forwardDataToTargetNode");
     take(pkt);
@@ -111,15 +111,15 @@ void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNode
 
     pkt->insertAtFront(dcMsg);
 
-    EV << NOW << " DualConnectivityManager::forwardDataToTargetNode - Send packet to node " << targetNode << endl;
+    EV << NOW << " DcX2Forwarder::forwardDataToTargetNode - Send packet to node " << targetNode << endl;
 
     // send to X2 Manager
     send(pkt, x2ManagerOutGate_);
 }
 
-void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
+void DcX2Forwarder::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
 {
-    EV << NOW << " DualConnectivityManager::receiveDataFromSourceNode - Received packet from node " << sourceNode << endl;
+    EV << NOW << " DcX2Forwarder::receiveDataFromSourceNode - Received packet from node " << sourceNode << endl;
 
     // Add tag with source node information
     auto tag = pkt->addTagIfAbsent<X2SourceNodeInd>();
