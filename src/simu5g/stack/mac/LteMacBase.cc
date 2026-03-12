@@ -163,9 +163,9 @@ void LteMacBase::fromPhy(cPacket *pktAux)
             // FIXME: possible memory leak
             LteHarqBufferRx *hrb;
             if (userInfo->getDirection() == DL || userInfo->getDirection() == UL)
-                hrb = new LteHarqBufferRx(ENB_RX_HARQ_PROCESSES, this, binder_, src);
+                hrb = new LteHarqBufferRx(harqProcesses_, this, binder_, src);
             else // D2D
-                hrb = new LteHarqBufferRxD2D(ENB_RX_HARQ_PROCESSES, this, binder_, src, (userInfo->getDirection() == D2D_MULTI));
+                hrb = new LteHarqBufferRxD2D(harqProcesses_, this, binder_, src, (userInfo->getDirection() == D2D_MULTI));
 
             harqRxBuffers_[carrierFreq][src] = hrb;
             hrb->insertPdu(cw, pdu);

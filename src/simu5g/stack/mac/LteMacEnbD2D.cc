@@ -448,7 +448,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     for (auto& mit : harqRxBuffers_) {
                         HarqRxBuffers::iterator hit = mit.second.find(nodeId);
                         if (hit != mit.second.end()) {
-                            for (unsigned int proc = 0; proc < (unsigned int)ENB_RX_HARQ_PROCESSES; proc++) {
+                            for (unsigned int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
                                 unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
                                 for (unsigned int i = 0; i < numUnits; i++) {
                                     hit->second->getProcess(proc)->purgeCorruptedPdu(i); // delete contained PDU
@@ -532,7 +532,7 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
                 return;
 
             // create buffer
-            LteHarqBufferMirrorD2D *hb = new LteHarqBufferMirrorD2D((unsigned int)UE_TX_HARQ_PROCESSES, (unsigned char)par("maxHarqRtx"), this);
+            LteHarqBufferMirrorD2D *hb = new LteHarqBufferMirrorD2D((unsigned int)harqProcesses_, (unsigned char)par("maxHarqRtx"), this);
             harqBuffersMirrorD2D_[carrierFrequency][pair] = hb;
             hb->receiveHarqFeedback(pkt);
         }

@@ -278,10 +278,10 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 auto info = macPkt->getTag<UserControlInfo>();
 
                 if (info->getDirection() == UL) {
-                    hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
+                    hb = new LteHarqBufferTx(binder_, (unsigned int)harqProcesses_, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
                 }
                 else { // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
+                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)harqProcesses_, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
                 }
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
@@ -657,7 +657,8 @@ void LteMacUeD2D::handleSelfMessage()
             EV << "\t currentHarq_ counter initialized " << endl;
             firstTx = true;
             // the eNB will receive the first PDU in 2 TTI, thus initializing acid to 0
-            currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
+               currentHarq_ = harqProcesses_ - 2;
+
         }
 
         EV << NOW << " LteMacUeD2D::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
@@ -861,7 +862,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     for (auto& mtit : harqTxBuffers_) {
                         HarqTxBuffers::iterator hit = mtit.second.find(id);
                         if (hit != mtit.second.end()) {
-                            for (int proc = 0; proc < (unsigned int)UE_TX_HARQ_PROCESSES; proc++) {
+                            for (int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
                                 hit->second->forceDropProcess(proc);
                             }
                         }
@@ -870,7 +871,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                         id = getMacCellId();
                         hit = mtit.second.find(id);
                         if (hit != mtit.second.end()) {
-                            for (int proc = 0; proc < (unsigned int)UE_TX_HARQ_PROCESSES; proc++) {
+                            for (int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
                                 hit->second->forceDropProcess(proc);
                             }
                         }
@@ -948,7 +949,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     for (auto& mrit : harqRxBuffers_) {
                         HarqRxBuffers::iterator hit = mrit.second.find(id);
                         if (hit != mrit.second.end()) {
-                            for (unsigned int proc = 0; proc < (unsigned int)UE_RX_HARQ_PROCESSES; proc++) {
+                            for (unsigned int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
                                 unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
                                 for (unsigned int i = 0; i < numUnits; i++) {
                                     hit->second->getProcess(proc)->purgeCorruptedPdu(i); // delete contained PDU
