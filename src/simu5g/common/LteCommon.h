@@ -299,12 +299,6 @@ typedef std::set<MacNodeId> UeSet;
 /// Unknown acid code
 #define HARQ_NONE                255
 
-/// Number of harq tx processes
-#define ENB_TX_HARQ_PROCESSES    8
-#define UE_TX_HARQ_PROCESSES     8
-#define ENB_RX_HARQ_PROCESSES    8
-#define UE_RX_HARQ_PROCESSES     8
-
 /// time interval between two transmissions of the same pdu
 #define HARQ_TX_INTERVAL         7 * TTI
 
