@@ -81,6 +81,8 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
+void LteRlcAm::handleRadioLinkFailure(FlowControlInfo* lteInfo) {
+}
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
