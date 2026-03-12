@@ -59,6 +59,12 @@ void LteMacUe::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         bool isNr = strcmp(getFullName(), "nrMac") == 0;
         nodeId_ = MacNodeId(networkNode_->par(isNr ? "nrMacNodeId" : "macNodeId").intValue());
+
+        maxRacTryouts_ = par("maxRacAttempts");
+        minRacBackoff_ = par("racBackoffMin");
+        maxRacBackoff_ = par("racBackoffMax");
+        raRespWinStart_ = par("raResponseWindow");
+        bsrRtxTimerStart_ = par("retxBsrTimer");
     }
     else if (stage == INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION) {
         cellId_ = binder_->getServingNode(nodeId_);
