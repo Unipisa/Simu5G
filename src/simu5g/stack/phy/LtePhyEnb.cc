@@ -339,7 +339,7 @@ void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,
         requestFeedback(lteinfo, frame, pktAux);
 
         // DEBUG
-        bool debug = false;
+        bool debug = true;
         if (debug) {
             LteFeedbackDoubleVector vec = header->getLteFeedbackDoubleVectorDl();
             for (const auto& feedbackDouble : vec) {

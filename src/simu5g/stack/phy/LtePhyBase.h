@@ -71,7 +71,7 @@ class LtePhyBase : public ChannelAccess
      */
     static short airFramePriority_;
     /** channel models to use.*/
-    std::map<GHz, opp_component_ptr<LteChannelModel>> channelModel_;
+    std::map<GHz, LteChannelModel*> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
@@ -153,7 +153,13 @@ class LtePhyBase : public ChannelAccess
         return primaryChannelModel_;
     }
 
-    const std::map<GHz, opp_component_ptr<LteChannelModel>>& getChannelModels()
+    /*
+    const std::map<double, opp_component_ptr<LteChannelModel>> *getChannelModels()
+    {
+        return &channelModel_;
+    }
+    */
+    const std::map<GHz, LteChannelModel*> &getChannelModels()
     {
         return channelModel_;
     }
