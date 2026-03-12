@@ -61,6 +61,11 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcCellPacketLossUl];
         @statistic[rlcCellPacketLossUl](title="rlc Cell Packet Loss"; unit=""; source="rlcCellPacketLossUl"; record=mean);
 
+        @signal[rlcThroughputSampleDl];
+        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM  layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
+        @signal[rlcThroughputSampleUl];
+        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM  layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
+
         //# PDU-level statistics
         @signal[rlcPduDelayDl];
         @statistic[rlcPduDelayDl](title="Delay at the rlc layer UL"; unit="s"; source="rlcPduDelayDl"; record=mean,vector);
@@ -75,11 +80,6 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcPduPacketLossDl];
         @statistic[rlcPduPacketLossDl](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossDl"; record=mean,vector);
 
-        @signal[rlcThroughputSampleDl];
-        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
-        @signal[rlcThroughputSampleUl];
-        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
-
         @signal[receivedPacketFromUpperLayer];
         @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[receivedPacketFromLowerLayer];
@@ -88,6 +88,7 @@ simple LteRlcUm like ILteRlcUm
         @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @statistic[transmissionRate](source="throughput(sentPacketToLowerLayer)"; record=vector; interpolationmode=linear);
 
     gates:
         //#

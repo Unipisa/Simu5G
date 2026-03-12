@@ -45,10 +45,11 @@ simple LteRlcUmD2D extends LteRlcUm
         @statistic[rlcPduThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcPduThroughputD2D"; record=mean,vector);
         @signal[rlcPduPacketLossD2D];
         @statistic[rlcPduPacketLossD2D](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossD2D"; record=mean,vector);
-
+        
         @signal[rlcThroughputSampleDl];
-        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
+        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM D2D layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
         @signal[rlcThroughputSampleUl];
-        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
+        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM D2D layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
+        
 }
 
