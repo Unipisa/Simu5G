@@ -25,5 +25,11 @@ simple LteMacUe extends LteMacBase
     parameters:
         @class("LteMacUe");
         string collectorModule = default("");
+
+        int maxRacAttempts = default(0);       // preambleTransMax; max RAC attempts (0 = give up after first failure)
+        int racBackoffMin = default(0);        // min random backoff (TTIs) after failed RAC
+        int racBackoffMax = default(0);        // max random backoff (TTIs) after failed RAC (0 = no backoff, instant retry)
+        int raResponseWindow = default(3);     // ra-ResponseWindow: TTIs to wait before retrying RAC
+        int retxBsrTimer = default(40);        // retxBSR-Timer: BSR retransmission timer (TTIs; 0 = disabled)
 }
 

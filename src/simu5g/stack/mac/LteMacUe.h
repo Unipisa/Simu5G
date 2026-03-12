@@ -53,22 +53,22 @@ class LteMacUe : public LteMacBase
 
     bool debugHarq_ = false;
 
-    // RAC Handling variables
-
-    bool racRequested_ = false;
-    unsigned int racBackoffTimer_ = 0;
+    // RAC and BSR configuration
+    // TODO adjust C++ names to match NED parameter names
     unsigned int maxRacTryouts_ = 0;
-    unsigned int currentRacTry_ = 0;
     unsigned int minRacBackoff_ = 0;
     unsigned int maxRacBackoff_ = 0;
+    unsigned int raRespWinStart_ = 0;
+    unsigned int bsrRtxTimerStart_ = 0;
 
+    // RAC handling state
+    bool racRequested_ = false;
+    unsigned int racBackoffTimer_ = 0;
+    unsigned int currentRacTry_ = 0;
     unsigned int raRespTimer_ = 0;
-    unsigned int raRespWinStart_ = 3;
-
-    unsigned int bsrRtxTimer_ = 0;
-    unsigned int bsrRtxTimerStart_ = 40;
 
     // BSR handling
+    unsigned int bsrRtxTimer_ = 0;
     bool bsrTriggered_ = false;
 
     /**

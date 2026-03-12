@@ -54,6 +54,11 @@ void LteMacUe::initialize(int stage)
 {
     LteMacBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
+        maxRacTryouts_ = par("maxRacAttempts");
+        minRacBackoff_ = par("racBackoffMin");
+        maxRacBackoff_ = par("racBackoffMax");
+        raRespWinStart_ = par("raResponseWindow");
+        bsrRtxTimerStart_ = par("retxBsrTimer");
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
         if (strcmp(getFullName(), "nrMac") == 0)
