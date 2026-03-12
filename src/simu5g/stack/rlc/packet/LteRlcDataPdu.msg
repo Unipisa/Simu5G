@@ -92,8 +92,8 @@ class LteRlcUmDataPdu extends LteRlcDataPdu
 //
 class LteRlcAmDataPdu extends LteRlcDataPdu
 {
-    rlcPduLength = RLC_HEADER_UM;
-    chunkLength = inet::B(RLC_HEADER_UM);
+    rlcPduLength = RLC_HEADER_AM;
+    chunkLength = inet::B(RLC_HEADER_AM);
 
     // if true, a status PDU is required
     bool pollStatus;
