@@ -66,6 +66,7 @@ void GtpUserX2::handleFromStack(Packet *pkt)
     EV << "GtpUserX2::handleFromStack - Received a LteX2Message with destId[" << destId << "]" << endl;
 
     auto gtpMsg = makeShared<GtpUserMsg>();
+    gtpMsg->setChunkLength(B(8));
     pkt->insertAtFront(gtpMsg);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::gtp);
 
