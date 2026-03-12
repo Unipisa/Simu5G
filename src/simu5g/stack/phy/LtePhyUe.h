@@ -19,6 +19,7 @@
 #include "simu5g/stack/phy/das/DasFilter.h"
 #include "simu5g/stack/mac/LteMacUe.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/am/LteRlcAm.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 
@@ -109,6 +110,7 @@ class LtePhyUe : public LtePhyBase
 
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlcUm_;
+    inet::ModuleRefByPar<LteRlcAm> rlcAm_;
     inet::ModuleRefByPar<LtePdcpBase> pdcp_;
     inet::ModuleRefByPar<Ip2Nic> ip2nic_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;

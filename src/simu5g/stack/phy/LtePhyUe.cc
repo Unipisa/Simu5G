@@ -22,6 +22,7 @@ namespace simu5g {
 Define_Module(LtePhyUe);
 
 using namespace inet;
+using namespace omnetpp;
 
 simsignal_t LtePhyUe::distanceSignal_ = registerSignal("distance");
 simsignal_t LtePhyUe::servingCellSignal_ = registerSignal("servingCell");
@@ -85,6 +86,7 @@ void LtePhyUe::initialize(int stage)
         mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
 
         rlcUm_.reference(this, "rlcUmModule", true);
+        rlcAm_.reference(this, "rlcAmModule", true);
         pdcp_.reference(this, "pdcpModule", true);
         ip2nic_.reference(this, "ip2nicModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
@@ -653,6 +655,11 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
 
     // delete queues for master at this ue
     rlcUm_->deleteQueues(nodeId_);
+
+    LteRlcAm *masterRlcAm = check_and_cast<LteRlcAm*>(getRlcByMacNodeId(binder_,masterId, AM));
+    masterRlcAm->deleteQueues(nodeId_);
+    // delete queues for master at this ue
+    rlcAm_->deleteQueues(nodeId_);
 
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master

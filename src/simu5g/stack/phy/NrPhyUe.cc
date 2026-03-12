@@ -443,6 +443,12 @@ void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this UE
     rlcUm_->deleteQueues(nodeId_);
 
+
+    LteRlcAm *masterRlcAm = check_and_cast<LteRlcAm*>(getRlcByMacNodeId(binder_,masterId, AM));
+    masterRlcAm->deleteQueues(nodeId_);
+    // delete queues for master at this ue
+    rlcAm_->deleteQueues(nodeId_);
+
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master
     // in case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master

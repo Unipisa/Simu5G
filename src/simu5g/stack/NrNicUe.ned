@@ -43,6 +43,7 @@ module NrNicUe extends LteNicUeD2D
 
         @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlc.um";
+        nrPhy.rlcAmModule = "^.nrRlc.am";
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
