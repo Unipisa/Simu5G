@@ -112,5 +112,41 @@ simple LteRealisticChannelModel extends LteChannelModel
         @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
         @signal[measuredSinrUl];
         @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
+
+    @signal[measuredRSRPDl];
+    @statistic[measuredRSRPDl](title="RSRP measured at feedback computation, DL"; unit="dBm"; source="measuredRSRPDl"; record=mean,vector);
+    @signal[measuredRSRPUl];
+    @statistic[measuredRSRPUl](title="RSRP measured at feedback computation, UL"; unit="dBm"; source="measuredRSRPUl"; record=mean,vector);
+
+
+    @signal[usedRbs](type= int);
+    @statistic[usedRbs](title="RBs used per TTI and frame"; unit=""; source="usedRbs"; record=count,sum,vector);
+
+    @signal[recvPowerUl](type=double);
+    @statistic[recvPowerUl](title="received power UL"; unit="dBm"; source="recvPowerUl"; record=mean,vector);
+
+    @signal[recvPowerDl](type=double);
+    @statistic[recvPowerDl](title="received power DL"; unit="dBm"; source="recvPowerDl"; record=mean,vector);
+
+    @signal[avFadingUl](type=double);
+    @statistic[avFadingUl](title="average fading power UL"; unit="dBm"; source="avFadingUl"; record=mean,vector);
+
+    @signal[avFadingDl](type=double);
+    @statistic[avFadingDl](title="average fading power DL"; unit="dBm"; source="avFadingDl"; record=mean,vector);
+
+     @signal[bgCellInterferenceDl](type=double);
+    @statistic[bgCellInterferenceDl](title="BG cell interference"; unit="dBm"; source="bgCellInterferenceDl"; record=mean,vector);
+    @signal[extCellInterferenceDl](type=double);
+    @statistic[extCellInterferenceDl](title="External cell interference"; unit="dBm"; source="extCellInterferenceDl"; record=mean,vector);
+    @signal[multiCellInterferenceDl](type=double);
+    @statistic[multiCellInterferenceDl](title="Multiple cells interference"; unit="dBm"; source="multiCellInterferenceDl"; record=mean,vector);
+      @signal[bgCellInterferenceUl](type=double);
+    @statistic[bgCellInterferenceUl](title="BG cell interference"; unit="dBm"; source="bgCellInterferenceUl"; record=mean,vector);
+    @signal[extCellInterferenceUl](type=double);
+    @statistic[extCellInterferenceUl](title="External cell interference"; unit="dBm"; source="extCellInterferenceUl"; record=mean,vector);
+    @signal[multiCellInterferenceUl](type=double);
+    @statistic[multiCellInterferenceUl](title="Multiple cells interference"; unit="dBm"; source="multiCellInterferenceUl"; record=mean,vector);
+
+
 }
 

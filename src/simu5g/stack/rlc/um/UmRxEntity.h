@@ -138,6 +138,10 @@ class UmRxEntity : public cSimpleModule
     static simsignal_t rlcThroughputD2DSignal_;
     static simsignal_t rlcPduThroughputD2DSignal_;
 
+    static omnetpp::simsignal_t rlcThroughputSampleSignal_[2];
+    omnetpp::simtime_t lastTputSample;
+    unsigned int tpsample;
+
   public:
     UmRxEntity();
     ~UmRxEntity() override;

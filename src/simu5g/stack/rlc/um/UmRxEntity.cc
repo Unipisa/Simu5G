@@ -33,6 +33,8 @@ simsignal_t UmRxEntity::rlcThroughputSignal_[2] = { cComponent::registerSignal("
 simsignal_t UmRxEntity::rlcPduDelaySignal_[2] = { cComponent::registerSignal("rlcPduDelayDl"), cComponent::registerSignal("rlcPduDelayUl") };
 simsignal_t UmRxEntity::rlcPduThroughputSignal_[2] = { cComponent::registerSignal("rlcPduThroughputDl"), cComponent::registerSignal("rlcPduThroughputUl") };
 simsignal_t UmRxEntity::rlcCellThroughputSignal_[2] = { cComponent::registerSignal("rlcCellThroughputDl"), cComponent::registerSignal("rlcCellThroughputUl") };
+simsignal_t UmRxEntity::rlcThroughputSampleSignal_[2] ={cComponent::registerSignal("rlcThroughputSampleDl"), cComponent::registerSignal("rlcThroughputSampleUl")};
+
 
 simsignal_t UmRxEntity::rlcPacketLossD2DSignal_ = registerSignal("rlcPacketLossD2D");
 simsignal_t UmRxEntity::rlcPduPacketLossD2DSignal_ = registerSignal("rlcPduPacketLossD2D");
@@ -298,12 +300,22 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     totalRcvdBytes_ += length;
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
+    double interval=(NOW-lastTputSample).dbl();
+    tpsample  +=length;
+
     if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcThroughputSignal_[dir_], tputSample);
             ue->emit(rlcPacketLossSignal_[dir_], 0.0);
             ue->emit(rlcPacketLossTotalSignal_, 0.0);
             ue->emit(rlcDelaySignal_[dir_], (NOW - ts).dbl());
+            if (interval>=1) {
+                double tput = (double) tpsample/(interval);
+                ue->emit(rlcThroughputSampleSignal_[dir_],tput);
+                tpsample=0;
+                lastTputSample=NOW;
+            }
+
         }
         else {
             ue->emit(rlcThroughputD2DSignal_, tputSample);
@@ -699,6 +711,8 @@ void UmRxEntity::initialize()
     // store the node id of the owner module (useful for statistics)
     ownerNodeId_ = mac->getMacNodeId();
 
+    tpsample=0;
+    lastTputSample=NOW;
     WATCH(timeout_);
 }
 

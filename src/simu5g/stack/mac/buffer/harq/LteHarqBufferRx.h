@@ -56,6 +56,9 @@ class LteHarqBufferRx
     // Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_ = 0;
+    unsigned int tSample=0;
+    simtime_t lastTputSample=simTime();
+    static simsignal_t macThroughputSampleSignal_[2];
     Direction dir = UNKNOWN_DIRECTION;
 
     static simsignal_t macCellThroughputSignal_[2];

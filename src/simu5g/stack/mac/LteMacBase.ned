@@ -44,6 +44,10 @@ simple LteMacBase like ILteMac
         //#
         //# Statistics recording
         //#
+        @signal[macThroughputSampleDl];
+        @statistic[macThroughputSampleDl](title="Throughput at the MAC layer DL"; unit="Bps"; source="macThroughputSampleDl"; record=mean,vector);
+        @signal[macThroughputSampleUl];
+        @statistic[macThroughputSampleUl](title="Throughput at the MAC layer UL"; unit="Bps"; source="macThroughputSampleUl"; record=mean, vector);
         @signal[macDelayDl];
         @statistic[macDelayDl](title="Delay at the MAC layer UL"; unit="s"; source="macDelayDl"; record=mean,vector);
         @signal[macThroughputDl];

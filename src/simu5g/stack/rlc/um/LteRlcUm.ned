@@ -75,6 +75,11 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcPduPacketLossDl];
         @statistic[rlcPduPacketLossDl](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossDl"; record=mean,vector);
 
+        @signal[rlcThroughputSampleDl];
+        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
+        @signal[rlcThroughputSampleUl];
+        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
+
         @signal[receivedPacketFromUpperLayer];
         @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[receivedPacketFromLowerLayer];

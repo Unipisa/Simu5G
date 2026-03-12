@@ -34,6 +34,9 @@ class LteHarqProcessRx;
 class LteMacEnb : public LteMacBase
 {
   protected:
+
+    static simsignal_t grantedBlocksSignal;
+    static simsignal_t bsrSizeSignal;
     /// Local CellInfo
     inet::ModuleRefByPar<CellInfo> cellInfo_;
 

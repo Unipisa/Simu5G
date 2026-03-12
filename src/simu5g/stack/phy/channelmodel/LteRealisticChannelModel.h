@@ -185,6 +185,20 @@ class LteRealisticChannelModel : public LteChannelModel
     static simsignal_t measuredSinrDlSignal_;
     static simsignal_t measuredSinrUlSignal_;
 
+    static omnetpp::simsignal_t measuredRSRPDl_;
+    static omnetpp::simsignal_t measuredRSRPUl_;
+    static omnetpp::simsignal_t usedRbsSignal;
+    static omnetpp::simsignal_t bgCellInterferenceDlSignal;
+    static omnetpp::simsignal_t  extCellInterferenceDlSignal;
+    static omnetpp::simsignal_t  multiCellInterferenceDlSignal;
+    static omnetpp::simsignal_t bgCellInterferenceUlSignal;
+    static omnetpp::simsignal_t  extCellInterferenceUlSignal;
+    static omnetpp::simsignal_t  multiCellInterferenceUlSignal;
+    static omnetpp::simsignal_t recvPowerUlSignal;
+    static omnetpp::simsignal_t recvPowerDlSignal;
+    static omnetpp::simsignal_t avFadingUlSignal;
+    static omnetpp::simsignal_t avFadingDlSignal;
+
   public:
     void initialize(int stage) override;
 

@@ -39,6 +39,21 @@ simsignal_t LteRealisticChannelModel::rcvdSinrD2DSignal_ = registerSignal("rcvdS
 simsignal_t LteRealisticChannelModel::measuredSinrDlSignal_ = registerSignal("measuredSinrDl");
 simsignal_t LteRealisticChannelModel::measuredSinrUlSignal_ = registerSignal("measuredSinrUl");
 
+simsignal_t LteRealisticChannelModel::measuredRSRPDl_ = registerSignal("measuredRSRPDl");
+simsignal_t LteRealisticChannelModel::measuredRSRPUl_ = registerSignal("measuredRSRPUl");
+simsignal_t LteRealisticChannelModel::usedRbsSignal=registerSignal("usedRbs");
+simsignal_t LteRealisticChannelModel::bgCellInterferenceDlSignal=registerSignal("bgCellInterferenceDl");
+simsignal_t LteRealisticChannelModel::multiCellInterferenceDlSignal=registerSignal("multiCellInterferenceDl");
+simsignal_t LteRealisticChannelModel::extCellInterferenceDlSignal=registerSignal("extCellInterferenceDl");
+simsignal_t LteRealisticChannelModel::bgCellInterferenceUlSignal=registerSignal("bgCellInterferenceUl");
+simsignal_t LteRealisticChannelModel::multiCellInterferenceUlSignal=registerSignal("multiCellInterferenceUl");
+simsignal_t LteRealisticChannelModel::extCellInterferenceUlSignal=registerSignal("extCellInterferenceUl");
+simsignal_t LteRealisticChannelModel::recvPowerUlSignal=registerSignal("recvPowerUl");
+simsignal_t LteRealisticChannelModel::recvPowerDlSignal=registerSignal("recvPowerDl");
+simsignal_t LteRealisticChannelModel::avFadingUlSignal=registerSignal("avFadingUl");
+simsignal_t LteRealisticChannelModel::avFadingDlSignal=registerSignal("avFadingDl");
+
+
 void LteRealisticChannelModel::initialize(int stage)
 {
     LteChannelModel::initialize(stage);
@@ -564,6 +579,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     // if the phy layer is distributed the number of logical bands should be set to 1
     double fadingAttenuation = 0;
 
+
+    double avFading=0;
+
     // for each logical band
     // FIXME compute fading only for used RBs
     for (unsigned int i = 0; i < numBands_; i++) {
@@ -577,6 +595,8 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
             else if (fadingType_ == JAKES)
                 fadingAttenuation = jakesFading(ueId, speed, i, cqiDl);
         }
+        avFading+=fadingAttenuation;
+
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
 
@@ -600,6 +620,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
         snrVector[i] = finalRecvPower;
     }
+
+    avFading=avFading/numBands_;
+
     //============ END PATH LOSS + SHADOWING + FADING ===============
 
     /*
@@ -654,6 +677,12 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
     double sumSnr = 0.0;
     int usedRBs = 0;
+
+    double sumRSRP=0.0;
+    double bgint=0.0;
+    double extint=0.0;
+    double multint=0.0;
+
     // add interference for each band
     for (unsigned int i = 0; i < numBands_; i++) {
         // if we are decoding a data transmission and this RB has not been used, skip it
@@ -666,9 +695,19 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
         EV << "\t bgCell[" << bgCellInterference[i] << "] - ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
            << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i] - den << "]\n";
-
+        // we are interested in RSRP
+        sumRSRP += snrVector[i];
         // compute final SINR
         snrVector[i] -= den;
+        if (bgCellInterference[i]>0) {
+            bgint +=linearToDBm(bgCellInterference[i]);
+        }
+        if (extCellInterference[i]>0) {
+            extint +=linearToDBm(extCellInterference[i]);
+        }
+        if (multiCellInterference[i]>0) {
+            multint +=linearToDBm(multiCellInterference[i]);
+        }
 
         sumSnr += snrVector[i];
         ++usedRBs;
@@ -680,10 +719,36 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
         // XXX I know, there might be a faster way...
         LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(getPhyByMacNodeId(binder_, ueId))->getChannelModel(lteInfo->getCarrierFrequency());
 
-        if (dir == DL) // we are on the UE
+        if (dir == DL) {// we are on the UE
             ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
-        else
+            ueChannelModel->emit(measuredRSRPDl_, sumRSRP / usedRBs);
+            ueChannelModel->emit(recvPowerDlSignal, recvPower);
+            ueChannelModel->emit(avFadingDlSignal, avFading);
+            if (bgint>0) {
+                ueChannelModel->emit(bgCellInterferenceDlSignal, bgint / usedRBs);
+            }
+            if (extint>0) {
+                ueChannelModel->emit(extCellInterferenceDlSignal, extint / usedRBs);
+            }
+            if (multint) {
+                ueChannelModel->emit(multiCellInterferenceDlSignal, multint / usedRBs);
+            }
+        } else {
             ueChannelModel->emit(measuredSinrUlSignal_, sumSnr / usedRBs);
+            ueChannelModel->emit(measuredRSRPUl_, sumRSRP / usedRBs);
+            ueChannelModel->emit(recvPowerUlSignal, recvPower);
+            ueChannelModel->emit(avFadingUlSignal, avFading);
+            if (bgint>0) {
+                ueChannelModel->emit(bgCellInterferenceUlSignal, bgint / usedRBs);
+            }
+            if (extint>0) {
+                ueChannelModel->emit(extCellInterferenceUlSignal, extint / usedRBs);
+            }
+            if (multint) {
+                ueChannelModel->emit(multiCellInterferenceUlSignal, multint / usedRBs);
+            }
+
+        }
     }
 
     // if sender is an eNodeB

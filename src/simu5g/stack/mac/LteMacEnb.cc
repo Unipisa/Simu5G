@@ -43,6 +43,9 @@ Define_Module(LteMacEnb);
 
 using namespace omnetpp;
 
+simsignal_t LteMacEnb::grantedBlocksSignal = registerSignal("grantedBlocks");
+simsignal_t LteMacEnb::bsrSizeSignal = registerSignal("bsrSize");
+
 /*********************
 * PUBLIC FUNCTIONS
 *********************/
@@ -316,6 +319,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
            << " for LCID: " << cid.getLcid()
            << " Current BSR size: " << bsr->getSize() << "\n";
 
+        emit(bsrSizeSignal, bsr->getSize());
         // Signal backlog to Uplink scheduler
         enbSchedulerUl_->backlog(cid);
     }
@@ -327,6 +331,8 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
         EV << "LteBsrBuffers : BSR buffer for node: " << cid.getNodeId()
            << " for LCID: " << cid.getLcid()
            << " - now empty" << "\n";
+
+        emit(bsrSizeSignal, 0);
     }
 }
 
@@ -449,6 +455,7 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
             if (packetFlowManager_ != nullptr)
                 packetFlowManager_->grantSent(nodeId, grant->getGrantId());
 
+            emit(grantedBlocksSignal,granted);
             // Send grant to PHY layer
             sendLowerPackets(pkt);
         }
