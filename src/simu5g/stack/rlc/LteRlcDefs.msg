@@ -9,6 +9,7 @@
 // and cannot be removed from it.
 //
 
+import inet.common.TagBase;
 import simu5g.common.LteControlInfo;
 import simu5g.stack.rlc.packet.LteRlcPdu;
 import simu5g.stack.rlc.packet.LteRlcSdu;
@@ -199,3 +200,7 @@ enum RlcUmTimerType
 
 struct NackInfo { @existingClass; }
 struct StatusPduData { @existingClass; }
+
+//This should go to common anyway
+class RadioLinkFailure extends inet::TagBase {
+}

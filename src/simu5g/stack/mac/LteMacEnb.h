@@ -205,6 +205,9 @@ class LteMacEnb : public LteMacBase
      */
     void deleteQueues(MacNodeId nodeId) override;
 
+    // Radio Link Failure. Delete queues and interrupt HARQ processes
+    void deleteQueuesRadioLinkFailure(MacNodeId nodeId);
+    void informRadioLinkFailure(MacNodeId nodeId);
     /**
      * Getter for AMC module.
      */

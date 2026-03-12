@@ -123,10 +123,17 @@ void LteMacBase::fromPhy(cPacket *pktAux)
             // where the HARQ buffer was deleted but a feedback was in transit)
             // this case must be taken care of
 
-            if (binder_->hasUeHandoverTriggered(nodeId_) || binder_->hasUeHandoverTriggered(src))
+            if (binder_->hasUeHandoverTriggered(nodeId_) || binder_->hasUeHandoverTriggered(src)) {
                 return;
+            } else {
+            // Radio Link Failure. If a RLF has been notified by the RLC AM module, buffers are deleted to restart
+            //the connection (this is my current approach), so we just let it go
+            //TODO: To improve reliability we should define some mechanism to be sure that is the case
+                return;
+            }
 
-            throw cRuntimeError("Mac::fromPhy(): Received feedback for a non-existing H-ARQ TX buffer");
+
+            //throw cRuntimeError("Mac::fromPhy(): Received feedback for a non-existing H-ARQ TX buffer");
         }
 
         auto hfbpkt = pkt->peekAtFront<LteHarqFeedback>();

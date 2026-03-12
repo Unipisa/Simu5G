@@ -38,9 +38,14 @@ void LteHarqProcessRx::insertPdu(Codeword cw, Packet *pkt)
 
     bool ndi = lteInfo->getNdi();
 
-    EV << "LteHarqProcessRx::insertPdu - ndi is " << ndi << endl;
-    if (ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY))
+    EV<< "; LteHarqProcessRx::insertPdu - ndi is " << ndi << endl;
+    if (ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY)) {
+        std::cout<<NOW<< "; LteHarqProcessRx::insertPdu error - status is  " << (status_.at(cw) )<< endl;
+        if (pdu_.at(cw) != nullptr) {
+            std::cout<<NOW<< "; LteHarqProcessRx::insertPdu error -id="<<pdu_.at(cw)->getId()<<"pdu is  " <<  pdu_.at(cw)<< endl;
+        }
         throw cRuntimeError("New data arriving in busy HARQ process -- this should not happen");
+    }
 
     if (!ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY) && !(status_.at(cw) == RXHARQ_PDU_CORRUPTED))
         throw cRuntimeError(

@@ -119,6 +119,36 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
     enbSchedulerUl_->removePendingRac(nodeId);
 }
 
+void LteMacEnb::deleteQueuesRadioLinkFailure(MacNodeId nodeId)
+{
+    Enter_Method_Silent();
+    EV<<NOW<<"LteMacEnb::deleteQueuesRadioLinkFailure( interrupting HARQ processes"<<endl;
+    for (auto& mit : harqRxBuffers_) {
+        HarqRxBuffers::iterator hit = mit.second.find(nodeId);
+        if (hit != mit.second.end()) {
+            for (unsigned int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
+                unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
+                for (unsigned int i = 0; i < numUnits; i++) {
+                    hit->second->getProcess(proc)->purgeCorruptedPdu(i); // delete contained PDU
+                    hit->second->getProcess(proc)->resetCodeword(i);     // reset unit
+                }
+            }
+        }
+    }
+
+    // notify that this UE is switching during this TTI
+    resetHarq_[nodeId] = NOW;
+    deleteQueues(nodeId);
+
+
+
+}
+void LteMacEnb::informRadioLinkFailure(MacNodeId nodeId) {
+    pendingRLFNode=nodeId;
+    radioLinkFailurePending=true;
+
+}
+
 void LteMacEnb::initialize(int stage)
 {
     LteMacBase::initialize(stage);
@@ -234,7 +264,20 @@ void LteMacEnb::handleMessage(cMessage *msg)
             return;
         }
     }
+    //Now we  clear the queues again, before handling packets from RLC or after handling packets from PHY since a pending packet may have been received in this TTI
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == upInGate_ && radioLinkFailurePending) {
+        deleteQueuesRadioLinkFailure(pendingRLFNode);
+        radioLinkFailurePending=false;
+    }
+
     LteMacBase::handleMessage(msg);
+
+
+    if (incoming == downInGate_ && radioLinkFailurePending) {
+        deleteQueuesRadioLinkFailure(pendingRLFNode);
+        radioLinkFailurePending=false;
+    }
 }
 
 void LteMacEnb::macSduRequest()

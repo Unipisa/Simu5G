@@ -193,9 +193,15 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
         EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << " Codeword " << cw << " not addressed"
                                                                                              " to the actually contained pdu (maybe it was dropped)" << endl;
         EV << "Received id: " << fbPduId << endl;
-        EV << "PDU id: " << unitPduId << endl;
+        EV<<NOW << "PDU id: " << unitPduId << endl;
         // todo: comment endsim after tests
-        throw cRuntimeError("H-ARQ TX: feedback is not for the pdu in this unit, maybe the addressed one was dropped");
+        // Radio Failure Link, this happens after a RFL and posterior cleaning of the connection deleteOldQueue
+        //So it has been commented out
+        //TODO: consider whether deleteOldQueus should
+        //throw cRuntimeError("H-ARQ TX: feedback is not for the pdu in this unit, maybe the addressed one was dropped");
+        delete pkt;
+        return;
+
     }
 
     /*
@@ -217,7 +223,7 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
 
     // debug output
     const char *ack = result ? "ACK" : "NACK";
-    EV << "H-ARQ TX: feedback received for process " << (int)acid << " codeword " << (int)cw << ""
+   EV<< ";H-ARQ TX: feedback received for process " << (int)acid << " codeword " << (int)cw << ""
                                                                                                 " result is " << ack << endl;
 
     ASSERT(pkt->getOwner() == this->macOwner_);

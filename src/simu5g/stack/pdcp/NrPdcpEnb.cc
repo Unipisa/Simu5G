@@ -13,7 +13,7 @@
 
 #include "simu5g/stack/pdcp/NrPdcpEnb.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
-
+#include "simu5g/stack/rlc/LteRlcDefs_m.h"
 namespace simu5g {
 
 Define_Module(NrPdcpEnb);
@@ -96,6 +96,12 @@ MacCid NrPdcpEnb::analyzePacket(inet::Packet *pkt)
 void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
+    //TODO: at the moment just remove entities
+    auto tag=pkt->findTag<RadioLinkFailure>();
+    if (tag) {
+        handleRadioLinkFailure(pkt);
+        return;
+    }
     pkt->trim();
 
     // if dual connectivity is enabled and this is a secondary node,
@@ -172,6 +178,10 @@ void NrPdcpEnb::activeUeUL(std::set<MacNodeId> *ueSet)
         if (!(rxEntity->isEmpty()))
             ueSet->insert(nodeId);
     }
+}
+void NrPdcpEnb::handleRadioLinkFailure(Packet* pkt) {
+    LtePdcpEnb::handleRadioLinkFailure( pkt);
+
 }
 
 } //namespace

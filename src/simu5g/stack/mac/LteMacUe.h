@@ -193,6 +193,9 @@ class LteMacUe : public LteMacBase
      * @param nodeId Id of the node whose queues are deleted
      */
     void deleteQueues(MacNodeId nodeId) override;
+    // Radio Link Failure. Delete queues and interrupt HARQ processes
+    void deleteQueuesRadioLinkFailure(MacNodeId nodeId) ;
+    void informRadioLinkFailure(MacNodeId nodeId);
 
     // update ID of the serving cell during handover
     virtual void doHandover(MacNodeId targetEnb);

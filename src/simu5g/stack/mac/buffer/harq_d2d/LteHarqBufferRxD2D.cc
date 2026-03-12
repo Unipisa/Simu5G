@@ -62,6 +62,7 @@ void LteHarqBufferRxD2D::insertPdu(Codeword cw, Packet *pkt)
     }
 
     unsigned char acid = uInfo->getAcid();
+    std::cout << NOW<<"; LteHarqBufferRxD2D::insertPdu() H-ARQ RX: new PDU (id " << pdu->getId() << " ) inserted into process " << (int)acid << endl;
     // TODO add codeword to insertPdu
     processes_[acid]->insertPdu(cw, pkt);
     // debug output

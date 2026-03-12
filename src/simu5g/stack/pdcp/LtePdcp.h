@@ -189,6 +189,10 @@ class LtePdcpBase : public cSimpleModule
      * Delete TX/RX entities (redefine this function)
      */
     virtual void deleteEntities(MacNodeId nodeId) {}
+    /*
+     * Delete buffers to restablish connection
+     */
+    virtual void handleRadioLinkFailure(Packet* pkt) {}
 
   protected:
 
@@ -351,6 +355,12 @@ class LtePdcpUe : public LtePdcpBase
   public:
     void initialize(int stage) override;
     void deleteEntities(MacNodeId nodeId) override;
+    /*
+        * Delete buffers to restablish connection
+        */
+   virtual void handleRadioLinkFailure(Packet* pkt) override;
+   // Required to avoid include errors since REORDERING is defined twice if we include LteDefs in NRPdcpRrc
+   virtual void handleRadioLinkFailure(Packet* pkt, MacNodeId nodeId) ;
 };
 
 class LtePdcpEnb : public LtePdcpBase
@@ -384,6 +394,7 @@ class LtePdcpEnb : public LtePdcpBase
   public:
     void initialize(int stage) override;
     void deleteEntities(MacNodeId nodeId) override;
+    virtual void handleRadioLinkFailure(Packet* pkt) override;
 };
 
 } //namespace

@@ -82,7 +82,15 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 }
 
 void LteRlcAm::handleRadioLinkFailure(FlowControlInfo* lteInfo) {
+    Enter_Method("handleRadioLinkFailure()");
+    //Inform the upper layer to reestablish connection
+    auto pkt = new inet::Packet("Radio Link Failure");
+    *(pkt->addTagIfAbsent<FlowControlInfo>()) = *lteInfo;
+    pkt->addTag<RadioLinkFailure>();
+    send(pkt, upOutGate_);
+    emit(radioLinkFailureSignal,1);
 }
+
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
