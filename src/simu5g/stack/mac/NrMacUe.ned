@@ -22,4 +22,6 @@ simple NrMacUe extends LteMacUeD2D
     parameters:
         @class("NrMacUe");
         harqProcesses = default(5);
+        raResponseWindow = default(20);        // NR: longer RA response window
+        retxBsrTimer = default(320);           // NR: longer BSR retransmission timer
 }
