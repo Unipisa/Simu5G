@@ -1,5 +1,177 @@
 # What's New in Simu5G
 
+## v1.5.0 (2026-07-13)
+
+This release continues the architectural overhaul of Simu5G. Major themes
+include consolidating Control Plane functions under the RRC module, adding QoS
+support via DRBs and the SDAP protocol, restructuring Ip2Nic and other modules
+for cleaner architecture, and improving type safety throughout the codebase.
+
+Tested with INET-4.5.4 and OMNeT++ 6.3, compatible with INET-4.6.0 and OMNeT++
+6.1 through 6.4.
+
+### More explicit Control Plane modeling
+
+Continuing the direction set in v1.4.3, code fragments that implement pieces of
+the 3GPP Control Plane have been identified throughout the codebase and collected
+under the `Rrc` module. `Rrc` is now a compound module with the following
+submodules:
+
+- **BearerManagement**: The former simple `Rrc` module, renamed and extended.
+  It now owns the lifecycle (creation, deletion, lookup) of all PDCP and RLC
+  entities. Previously, entity management was scattered across the monolithic
+  PDCP module and the `LteRlcUm`/`LteRlcAm` modules.
+
+- **Registration**: Node registration and deregistration logic, previously
+  embedded in `Ip2Nic`, was moved here.
+
+- **HandoverController**: Handover decision and execution logic was extracted
+  from `LtePhyUe` into this new module. This is architecturally more correct,
+  as handover is an RRC function, not PHY. The internal "handover packet"
+  misnomer was corrected to "beacon" (`HANDOVERPKT` -> `BEACONPKT`,
+  `broadcastMessageInterval` -> `beaconInterval`). Several parameters were
+  exposed as NED parameters (`hysteresisFactor`, `handoverDetachmentTime`,
+  `isNr`).
+
+- **D2DModeController**: D2D mode selection was moved here from the former
+  `stack/d2dModeSelection/` directory, and D2D peer tracking from
+  `LteRlcUmD2D`.
+
+### QoS support: SDAP, DRBs and per-bearer PDCP/RLC entities
+
+QoS (Quality of Service) support was added through Data Radio Bearers (DRBs)
+and the SDAP (Service Data Adaptation Protocol) layer, which is part of the 5G
+NR protocol stack. The code is based on a contribution by Mohamed Seliem
+(University College Cork); see releases v1.4.1-sdap and v1.4.1-sdap-2 for
+details. In this release, the code was substantially reworked and integrated
+into the main codebase.
+
+In accordance with the 3GPP architecture, the PDCP and RLC layers were
+transformed so that they purely consist of per-DRB entities, created and
+configured by `BearerManagement` (RRC). Each DRB has dedicated PDCP TX/RX and
+RLC TX/RX entity modules, wired directly to each other via per-bearer gate
+connections.
+
+Details:
+
+- **SDAP protocol layer**: An SDAP implementation was added, providing
+  QFI-to-DRB routing with a JSON-configured `DrbTable`. The SDAP layer is
+  optional in NR NICs (enabled via `hasSdap=true`).
+
+- **QFI propagation via GTP-U**: QFI is set by the application via DSCP,
+  picked up by `TrafficFlowFilter`/UPF, carried in the GTP-U protocol header
+  (mirroring the 3GPP PDU Session Container extension header), and extracted
+  by the gNB for SDAP routing.
+
+- **QoS-aware proportional fairness scheduler**: A `QoSAwareScheduler` was
+  added to MAC, supporting QFI-based scheduling with configurable weight
+  constants. Enable with `LteMacEnb.schedulingDisciplineDl/Ul = "QOS_PF"`.
+
+- **DRB configuration in JSON**: DRB configuration is split between SDAP
+  (`sdap.drbConfig` for QFI-to-DRB routing) and MAC (`mac.drbQosConfig` for
+  QoS scheduler parameters), both in JSON format.
+
+- **Non-IP PDU session support**: SDAP was generalized for non-IP PDU session
+  types, with `PduSessionType` enum and `upperProtocol` in DRB configuration.
+
+- **PDCP refactored into per-bearer entities**: The former monolithic PDCP
+  module (which had six subclass variants for LTE/NR × UE/eNB/D2D) was
+  replaced with per-bearer `PdcpTxEntity` and `PdcpRxEntity` modules, plus
+  `PdcpMux` for upper-layer routing and `DcMux` for Dual Connectivity X2
+  forwarding. Bypass entities handle the DC secondary leg. Entities communicate
+  via OMNeT++ gates, not C++ method calls.
+
+- **RLC refactored into per-bearer entities**: The former `LteRlc` compound
+  module (containing `LteRlcUm`/`LteRlcUmD2D`, `LteRlcAm`, `LteRlcTm`) was
+  replaced with per-bearer TX/RX entity modules for all three RLC modes (UM,
+  AM, TM), plus `RlcMux` for MAC↔entity routing.
+
+- **PDCP↔RLC directly wired**: PDCP and RLC entities are connected directly
+  via per-bearer gates. All submodules now reside directly at NIC level -- the
+  former `PdcpLayer` and `LteRlc` compound modules no longer exist.
+
+- **Example simulations**: `simulations/nr/standalone_drb/` with
+  multi-UE, multi-QFI configurations.
+
+### Ip2Nic decomposed, further module architecture improvements
+
+The `Ip2Nic` module, which had accumulated various unrelated responsibilities
+over time, was decomposed. Several code fragments were factored out into
+separate modules:
+
+- **`analyzePacket()` moved to Ip2Nic from PDCP**: Packet classification
+  (filling `FlowControlInfo` tags) was moved to where it logically belongs --
+  at the IP-to-NIC boundary. The `IpFlowInd` tag was eliminated. RLC type NED
+  parameters (`conversationalRlc`, etc.) also moved from PDCP to `Ip2Nic`.
+
+- **HandoverPacketHolderUe/Enb**: Handover packet buffering was factored out
+  of `Ip2Nic` into separate modules. X2 tunneled packets are now received via
+  gates instead of C++ method calls.
+
+- **TechnologyDecision**: Dual Connectivity technology selection logic was
+  extracted into a separate, configurable module that uses NED expressions.
+
+Further module architecture improvements:
+
+- **MAC turned into compound module**: MAC is now a compound module with `AMC`
+  and DL/UL `Scheduler` as proper `cSimpleModule` submodules (previously
+  created via `new` in C++). They perform their own staged initialization.
+
+- **UPF and PgwStandard** now derive from INET's `ApplicationLayerNodeBase`.
+
+- **PacketFlowObserver refactored to use OMNeT++ signals**: Direct C++ calls
+  from PDCP, RLC, and MAC into `PacketFlowObserver` were replaced with
+  OMNeT++ signals, fully decoupling the observer from protocol modules.
+
+- Replaced method-call-based packet passing with gate connections in several
+  places: `LteHandoverManager`, `DualConnectivityManager`, `Ip2Nic` (X2 path).
+
+### Type safety improvements
+
+- **Strong typedefs**: `SIMU5G_STRONG_TYPEDEF` macro applied to `MacNodeId`,
+  `DrbId`, `LogicalCid`, and `Qfi`, preventing accidental mixing of ID types.
+
+- **Direction enum**: `LteControlInfo.direction` changed from `unsigned short`
+  to a proper `Direction` enum.
+
+- **C++ types extracted**: Types previously defined in `LteCommon.msg` were
+  moved into a dedicated `LteTypes.h` header.
+
+- **ROHC header**: PDCP header compression now uses a proper ROHC header
+  representation instead of simply truncating the IP header.
+
+- `FlowControlInfo`: `lcid` field renamed to `drbId`.
+
+### Naming and layout cleanup
+
+- Gate renames throughout the NIC for clarity and consistency:
+  `MAC_to_RLC`/`RLC_to_MAC` -> `upperLayerIn`/`upperLayerOut` and
+  `macIn`/`macOut`; `MAC_to_PHY`/`PHY_to_MAC` -> `phyOut`/`phyIn`;
+  `filterGate` -> `dnPppg`. Several `inout` gates split into separate `input`
+  + `output` gates.
+
+- Submodule renames: `pdcpUpperMux` -> `pdcpMux`, `rlcLowerMux` -> `rlcMux`,
+  `pppIf` -> `dpPpp` (in UPF/PGW).
+
+- Module renames: `DualConnectivityManager` -> `DcX2Forwarder`,
+  `LteHandoverManager` -> `HandoverX2Forwarder`.
+
+- Improved NED layout of NIC internals for better visualization in Qtenv:
+  data-path modules arranged vertically, control-plane modules on the left
+  edge, dynamically created PDCP/RLC entities positioned between muxes.
+
+### Bug fixes
+
+- `LteSchedulerEnb`: Fixed multi-UE starvation in multi-DRB scheduling.
+
+### Other
+
+- Added `tilx` fingerprints (resistant to module renames) to the fingerprint
+  test suite. Fingerprint test coverage for MEC simulations improved.
+
+- `SplitBearersTable` turned into `std::ordered_map`.
+
+
 ## v1.4.5 (2026-07-09)
 
 This release is a collection of bug fixes to the physical-layer error model
