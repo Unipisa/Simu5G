@@ -1,7 +1,8 @@
 //
 //                  Simu5G
 //
-// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Copyright (C) 2019-2021 Giovanni Nardini, Giovanni Stea, Antonio Virdis et al. (University of Pisa)
+// Copyright (C) 2022-2026 Giovanni Nardini, Giovanni Stea et al. (University of Pisa)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -66,7 +67,7 @@ cplusplus(UserTxParams) {{
     UserTxParams* dup() const { return new UserTxParams(*this); }
     size_t getCqiVectorArraySize() const { return cqiVector.size(); }
     void setCqiVectorArraySize(size_t size) { cqiVector.resize(size); }
-    Cqi getCqiVector(size_t k) const { return cqiVector.at(k); } 
+    Cqi getCqiVector(size_t k) const { return cqiVector.at(k); }
     void setCqiVector(size_t k, Cqi cqi) { cqiVector.at(k) = cqi; }
     void eraseCqiVector(size_t k) { cqiVector.clear(); }
 
