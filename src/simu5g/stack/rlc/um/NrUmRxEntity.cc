@@ -58,37 +58,7 @@ NrUmRxEntity::~NrUmRxEntity()
     cancelAndDelete(t_ReassemblyTimer);
     delete flowControlInfo_;
 }
-bool NrUmRxEntity::completeSdu(unsigned int sduSequenceNumber, unsigned int size, bool removeIfComplete)
-{
-    auto it = sduMap.find(sduSequenceNumber);
-    if (it == sduMap.end()) return false;
 
-    auto& segments = it->second;
-
-    // Sort segments based on start offset
-    std::sort(segments.begin(), segments.end());
-
-    unsigned int expectedStart = 0;
-    unsigned int aux=0;
-    for (const auto& seg : segments) {
-        EV <<NOW<<"; "<<rlc_<<"; NrAmRxQueue::completeSdu() seg="<<seg.first<<","<<seg.second<<endl;
-
-        if (seg.first != expectedStart) return false;
-        aux += (seg.second-seg.first);
-        expectedStart = seg.second;
-
-    }
-    bool complete=false;
-    if (aux==size) {
-        complete = true;
-        if (removeIfComplete) {
-            sduMap.erase(it);
-        }
-    }
-    return complete;
-
-
-}
 void NrUmRxEntity::enque(cPacket *pktAux)
 {
     Enter_Method("NrUmRxEntity::enque()");
@@ -115,6 +85,7 @@ void NrUmRxEntity::enque(cPacket *pktAux)
         //Remove header and deliver  to upper layer
         size_t sduLengthPktLeng;
         auto pktSdu = check_and_cast<Packet *>(pdu->popSdu(sduLengthPktLeng));
+
         // for burst
         ttiBits_ += sduLengthPktLeng;
         toPdcp(pktSdu);
@@ -123,16 +94,10 @@ void NrUmRxEntity::enque(cPacket *pktAux)
 
     } else {
         // Get the RLC PDU Transmission sequence number (x)
-        int tsn = pdu->getPduSequenceNumber();
+        unsigned int tsn = pdu->getPduSequenceNumber();
 
-        if (((RX_Next_Highest-UM_Window_Size)<=tsn) && (tsn<RX_Next_Reassembly)) {
-            //Discard: it might be inside the window but RX_Next_Reassembly is the earliest PDU considered for reassembly
+        handlePDUInReceivedBuffer(pdu,static_cast<uint32_t>(tsn));
 
-
-        } else {
-
-            handlePDUInReceivedBuffer(pdu,tsn);
-        }
     }
     /* @author Alessandro Noferi
      *
@@ -145,111 +110,52 @@ void NrUmRxEntity::enque(cPacket *pktAux)
         handleBurst(ENQUE);
     }
 
-    // emit statistics
-    MacNodeId ueId;
-    if (lteInfo->getDirection() == DL || lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)                                                                                                                    // This module is at a UE
-        ueId = ownerNodeId_;
-    else           // UL. This module is at the eNB: get the node id of the sender
-        ueId = lteInfo->getSourceId();
-    totalPduRcvdBytes_ += pktPdu->getByteLength();
-    double tputSample = (double)totalPduRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
-    // emit statistics
-    cModule *ue = getRlcByMacNodeId(binder_, ueId, UM);
-    if (ue != nullptr) {
-        if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
-            ue->emit(rlcPduThroughputSignal_[dir_], tputSample);
-            ue->emit(rlcPduDelaySignal_[dir_], (NOW - pktPdu->getCreationTime()).dbl());
-        }
-        else { // UE in DM
-            ue->emit(rlcPduThroughputD2DSignal_, tputSample);
-            ue->emit(rlcPduDelayD2DSignal_, (NOW - pktPdu->getCreationTime()).dbl());
-        }
-    }
     pktPdu->insertAtFront(pdu);
     delete pktPdu;
-    //showStateVariables();
+
 
 }
 
-void NrUmRxEntity::handlePDUInReceivedBuffer(inet::Ptr<NrRlcUmDataPdu> pdu,  int tsn) {
+void NrUmRxEntity::handlePDUInReceivedBuffer(inet::Ptr<NrRlcUmDataPdu> pdu,  unsigned int tsn) {
 
     //With this we insert the PDU in the buffer actually
     //Notice that since we copy the complete SDU in all the "segmented" PDUs we can always reassemble from the last segment without actually storing the previous ones
-    auto& segments = sduMap[tsn];
-    //WARNING: this only works if the segments do not change, that is, if we do not resegment the retransmitted SDUs, only retransmit previous segments
-    //For UM there is no retransmission anayway
-    segments.emplace_back(pdu->getStartOffset(), pdu->getEndOffset());
-    // Check if this PDU forms a complete SDU
-    if (completeSdu(tsn,pdu->getLengthMainPacket(),true)) { //Delete from map if complete
-        size_t sduLengthPktLeng;
-        auto pktSdu = check_and_cast<Packet *>(pdu->popSdu(sduLengthPktLeng));
+    size_t totalLength= pdu->getLengthMainPacket();
+    Packet* sdu=check_and_cast<Packet *>(pdu->popSdu(totalLength));
+
+    bool complete=sduBuffer->handleSegment(tsn, totalLength, pdu->getStartOffset(), pdu->getEndOffset(), sdu );
+    if (complete) { //If not complete either it has been discarded or it is buffered
+        size_t sduLengthPktLen=totalLength;
+
         // for burst
-        ttiBits_ += sduLengthPktLeng;
-
-        toPdcp(pktSdu);
-        pktSdu = nullptr;
-
-
-        if (tsn==RX_Next_Reassembly) {
-            //We have removed the SN already from the map, so we assign the first next SN
-            if (sduMap.empty()) {
-                //No SDU waiting for reassembly
-                RX_Next_Reassembly=tsn+1;
-            } else {
-                int first_waiting=sduMap.begin()->first;
-                ASSERT(first_waiting>RX_Next_Reassembly);
-                RX_Next_Reassembly= first_waiting;
-
-            }
-
-        }
-    } else if (!inReassemblyWindow(tsn)){
-        RX_Next_Highest=tsn+1;
-
-        //Discard any PDUs that fall outside the reassembly window
-        discard(true);
-
-        if (!inReassemblyWindow(RX_Next_Reassembly)) {
-            auto it=sduMap.begin();
-            while (it!=sduMap.end()) {
-                if (it->first>RX_Next_Reassembly) {
-                    RX_Next_Reassembly=it->first;
-                    break;
-                }
-                ++it;
-            }
-
-
-        }
+        ttiBits_ += sduLengthPktLen;
+        toPdcp(sdu);
+        sdu = nullptr;
     }
+
     if (t_ReassemblyTimer->isScheduled()) {
-        bool condition1=(Rx_Timer_Trigger<=RX_Next_Reassembly);
-        bool condition2=(!inReassemblyWindow(Rx_Timer_Trigger) && Rx_Timer_Trigger!=RX_Next_Highest);
-        bool condition3=false;
-        if (RX_Next_Highest==(RX_Next_Reassembly+1)){
-            auto it=sduMap.find(RX_Next_Reassembly);
-            if (it==sduMap.end()) {
-                condition3=true;
-            }
-        }
-        if (condition1 || condition2 || condition3) {
+        bool  shouldStop= sduBuffer->stopTimer(true);
+        if (shouldStop) {
             cancelEvent(t_ReassemblyTimer);
         }
-
     }
+
+
 
     //No else here, because the timer might have been cancelled in the previous if
     if (!t_ReassemblyTimer->isScheduled()) {
         //Check and restart if necessary
-        restartReassemblyTimer();
+        if (sduBuffer->startTimer()) {
+            scheduleAfter(t_Reassembly, t_ReassemblyTimer);
+        }
     }
 
 
 }
 
 
-//void NrUmRxEntity::toPdcp(LteRlcSdu* rlcSdu)
+
 void NrUmRxEntity::toPdcp(Packet *pktAux)
 {
 
@@ -323,9 +229,16 @@ void NrUmRxEntity::initialize()
 {
     binder_.reference(this, "binderModule", true);
 
-    RX_Next_Highest=0;
-    RX_Next_Reassembly=0;
+
+
     UM_Window_Size= par("UM_Window_Size");
+    if (UM_Window_Size==static_cast<uint32_t>(2048)) {
+        sduBuffer = new RlcUmReceptionBuffer(12);
+    } else  if (UM_Window_Size==static_cast<uint32_t>(32)) {
+        sduBuffer = new RlcUmReceptionBuffer(6);
+    } else {
+        throw cRuntimeError("NrUmRxEntity::initialize() UM_Window_Size=%u, but only 2048 or 32 are valid values ",UM_Window_Size);
+    }
     Rx_Timer_Trigger=0;
 
     t_ReassemblyTimer = new cMessage("UM Reassembly timer");
@@ -363,43 +276,15 @@ void NrUmRxEntity::initialize()
 void NrUmRxEntity::handleMessage(cMessage *msg)
 {
     if (msg==t_ReassemblyTimer) {
-        for (const auto& it: sduMap) {
-            if (it.first>=Rx_Timer_Trigger) {
-                RX_Next_Reassembly=it.first;
-                break;
-            }
-        }
-        discard(false); //Discard all SN below RX_Next_Reassembly
+        sduBuffer->onTimerExpiry();
         //Check and restart if necessary
-        restartReassemblyTimer();
-       // showStateVariables();
-    }
-}
-void NrUmRxEntity::discard(bool notInWindow) {
-    //notInWindow Discarded because SN is outside the reassembly window or because it is below the next reassemnly
-    auto it=sduMap.begin();
-    while (it!=sduMap.end()) {
-        if (notInWindow) {
-            int snpdu=it->first;
-            if (!inReassemblyWindow(snpdu)) {
-                //Discarding
-                // TODO: emit statistics: but we can discard when the timer expires and we need to know which mode D2D? we are
-                //rlc->emit(rlcPduPacketLossSignal_[dir_], 1.0);
-                it=sduMap.erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            if (it->first<RX_Next_Reassembly) {
-                // TODO: emit statistics: but we can discard when the timer expires and we need to know which mode D2D? we are
-                //rlc->emit(rlcPduPacketLossSignal_[dir_], 1.0);
-                it=sduMap.erase(it);
-            } else {
-                ++it;
-            }
+        if (sduBuffer->startTimer()) {
+            scheduleAfter(t_Reassembly, t_ReassemblyTimer);
         }
+
     }
 }
+
 
 
 void NrUmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer)
@@ -416,10 +301,16 @@ void NrUmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool
 
             EV << NOW << " NrUmRxEntity::rlcHandleD2DModeSwitch - clear RX buffer of the RLC entity associated with the old mode" << endl;
             //TODO: clear buffer of the entity
+            sduBuffer->clearBuffer();
+            if (t_ReassemblyTimer->isScheduled()) {
+                cancelEvent(t_ReassemblyTimer);
+            }
+
             /*for (unsigned int i = 0; i < rxWindowDesc_.windowSize_; i++) {
                 // try to reassemble
                 reassemble(i);
             }
+
 
             // clear the buffer
             pduBuffer_.clear();
@@ -438,10 +329,9 @@ void NrUmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool
     }
     else {
         EV << NOW << " NrUmRxEntity::rlcHandleD2DModeSwitch - handle numbering of the RLC entity associated with the newly selected mode" << endl;
-
         // TODO: reset sequence numbering
         //rxWindowDesc_.clear();
-
+        sduBuffer->reset();
         resetFlag_ = true;
     }
 }
@@ -466,11 +356,11 @@ void NrUmRxEntity::handleBurst(BurstCheck event)
      *          burst = 1
      *          update total var with temp var
      */
-    EV_FATAL << "NrUmRxEntity::handleBurst - size: " << sduMap.size() << endl;
+    EV_FATAL << "NrUmRxEntity::handleBurst - size: " << sduBuffer->isEmpty() << endl;
 
     simtime_t t1 = simTime();
 
-    if (sduMap.empty()) { // last TTI emptied the burst
+    if (sduBuffer->isEmpty()) { // last TTI emptied the burst
         if (isBurst_) { // burst ends
             // send stats
             // if the transmission requires two TTIs and I do not count
@@ -514,30 +404,8 @@ void NrUmRxEntity::handleBurst(BurstCheck event)
     ttiBits_ = 0;
 }
 
-bool NrUmRxEntity::inReassemblyWindow(int sn) {
 
-    if (((RX_Next_Highest-UM_Window_Size)<=sn) && (sn<RX_Next_Highest)) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
-bool NrUmRxEntity::restartReassemblyTimer() {
 
-    if (RX_Next_Highest>(RX_Next_Reassembly+1) || (RX_Next_Highest==RX_Next_Reassembly+1 && (sduMap.find(RX_Next_Reassembly)!=sduMap.end())) ) {
-        scheduleAfter(t_Reassembly, t_ReassemblyTimer);
-        Rx_Timer_Trigger=RX_Next_Highest;
-        return true;
-
-    } else {
-        return false;
-    }
-}
-
-void NrUmRxEntity::showStateVariables() {
-    std::cout<<NOW<<"| RX_Next_Highest |  Lower window | RX_Next_Reassembly | Rx_Timer_Trigger | t_ReassemblyTimer"<<endl;
-    std::cout<<NOW<<"| "<< RX_Next_Highest<< " | "<<  (RX_Next_Highest- UM_Window_Size)<<" | " <<RX_Next_Reassembly <<" | "<< Rx_Timer_Trigger<<" | " <<t_ReassemblyTimer->isScheduled()<<endl;
-}
 
 } //namespace

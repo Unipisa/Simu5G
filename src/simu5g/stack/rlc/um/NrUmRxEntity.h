@@ -3,15 +3,15 @@
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
 #ifndef __SIMU5G_NRUMRXENTITY_H_
 #define __SIMU5G_NRUMRXENTITY_H_
@@ -21,6 +21,7 @@
 
 #include "simu5g/stack/rlc/um/NrRlcUm.h"
 #include "NrRlcUmDataPdu.h"
+#include "RlcUmReceptionBuffer.h"
 
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
@@ -60,7 +61,11 @@ public:
     // returns if the entity contains RLC pdus
     bool isEmpty() const {
         //The entity only holds PDU with segments
-        return sduMap.empty();
+        if (sduBuffer) {
+            return sduBuffer->isEmpty();
+        } else {
+            return false;
+        }
     }
 
 
@@ -123,21 +128,12 @@ protected:
     std::string name_entity;
     // State variables
 
-    int RX_Next_Highest;
-    int RX_Next_Reassembly;
+    RlcUmReceptionBuffer* sduBuffer=nullptr;
     int UM_Window_Size;
     int Rx_Timer_Trigger;
-    //Map for SDU reassembly
-    std::map<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>> sduMap;
     cMessage* t_ReassemblyTimer;
     simtime_t t_Reassembly;
 
-    // The SDU waiting for the missing portion
-    struct Buffered {
-        inet::Packet *pkt = nullptr;
-        size_t size;
-        unsigned int currentPduSno;   // next PDU sequence number expected
-    } buffered_;
 
     // Sequence number of the last SDU delivered to the upper layer
     unsigned int lastSnoDelivered_ = 0;
@@ -187,13 +183,8 @@ protected:
 
     // deliver a PDCP PDU to the PDCP layer
     void toPdcp(inet::Packet *rlcSdu);
-    bool restartReassemblyTimer();
-    void discard(bool notInWindow);
-    bool completeSdu(unsigned int sduSequenceNumber, unsigned int size, bool removeIfComplete);
-    bool inReassemblyWindow( int sn);
-    void handlePDUInReceivedBuffer(inet::Ptr<NrRlcUmDataPdu> pdu,  int tsn);
-    //Debug
-    void showStateVariables();
+    void handlePDUInReceivedBuffer(inet::Ptr<NrRlcUmDataPdu> pdu,  unsigned int tsn);
+
 
 
 };

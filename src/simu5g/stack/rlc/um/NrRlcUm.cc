@@ -66,7 +66,7 @@ NrUmTxEntity *NrRlcUm::getNrTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 
         if (lteInfo != nullptr) {
             // store control info for this flow
-            txEnt->setFlowControlInfo(lteInfo.get());
+            txEnt->setFlowControlInfo(lteInfo.get(), cid);
         }
 
         EV << "NrRlcUm : Added new NrUmTxEntity: " << txEnt->getId() <<
