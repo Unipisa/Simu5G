@@ -22,7 +22,7 @@ simple NrUmRxEntity extends UmRxEntity
 {
     parameters:
         @class(NrUmRxEntity);
-         double t_Reassembly @unit(s)=default(80ms);
+         double t_Reassembly @unit(s)=default(50ms);
          int UM_Window_Size =default(2048); //For 12 SN bit, 32 if using 6 SN bit. This should be configured by RRC
 
 }
