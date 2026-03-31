@@ -23,6 +23,7 @@
 #include "simu5g/stack/rlc/um/NrRlcUm.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
+#include "RlcUmTransmitterBuffer.h"
 
 using namespace omnetpp;
 
@@ -56,7 +57,7 @@ public:
      */
     void rlcPduMake(int pduSize);
 
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
+    void setFlowControlInfo(FlowControlInfo *lteInfo, MacCid cid) ;
     FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // force the sequence number to assume the sno passed as an argument
@@ -110,25 +111,16 @@ protected:
      * Initialized with the control info of the first packet of the flow
      */
     FlowControlInfo *flowControlInfo_ = nullptr;
-
+    MacCid infoCid_;
     /*
      * The SDU enqueue buffer.
      */
-    struct SDUInfo {
-        inet::Packet *sdu;
-        int currentOffset;
-        SDUInfo() {
-            sdu = nullptr;
-            currentOffset=0;
-        }
-        ~SDUInfo() {
-            if (sdu) {
-                delete sdu;
-            }
-        }
-    };
 
-    std::queue<SDUInfo*> sduBuffer;
+
+
+    RlcUmTransmitterBuffer* sduBuffer;
+
+    int sn_FieldLength;
 
     //For debug
     std::string name_entity;
@@ -167,8 +159,7 @@ private:
     // Node id of the owner module
     MacNodeId ownerNodeId_;
 
-    /// Next PDU sequence number to be assigned
-    unsigned int sn;
+
 
 };
 

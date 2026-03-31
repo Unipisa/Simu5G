@@ -22,4 +22,5 @@ simple NrUmTxEntity extends UmTxEntity
 {
     parameters:
         @class(NrUmTxEntity);
+        int sn_FieldLength=default(12); //Number of bits for the SN, only 6 or 12, TODO: convert to enum
 }
