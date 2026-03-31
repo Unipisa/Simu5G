@@ -143,7 +143,10 @@ void LteX2Manager::fromStack(Packet *pkt)
 
 void LteX2Manager::fromX2(Packet *pkt)
 {
-    auto x2msg = pkt->peekAtFront<LteX2Message>();
+    // allow incomplete chunks for emulation
+    auto x2msg = pkt->peekAtFront<LteX2Message>(b(-1), Chunk::PF_ALLOW_INCOMPLETE | Chunk::PF_ALLOW_INCORRECT);
+
+    // auto x2msg = pkt->peekAtFront<LteX2Message>();
     LteX2MessageType msgType = x2msg->getType();
 
     if (msgType == X2_UNKNOWN_MSG) {
