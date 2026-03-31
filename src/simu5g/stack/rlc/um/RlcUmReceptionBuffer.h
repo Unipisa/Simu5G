@@ -40,43 +40,38 @@ public:
 
     /**
      * @brief Check if SN falls within the reassembly window.
-     * Logic: (RX_Next_Highest – UM_Window_Size) <= SN < RX_Next_Highest
+     * Standard: (RX_Next_Highest – UM_Window_Size) <= SN < RX_Next_Highest
      */
     bool isWithinWindow(uint32_t sn) const {
         uint32_t lowerBound = (RX_Next_Highest + snModulus - UM_Window_Size) % snModulus;
 
         if (lowerBound < RX_Next_Highest) {
             return (sn >= lowerBound && sn < RX_Next_Highest);
-        } else {
-            // Window wraps around the modulus
+        } else if (lowerBound > RX_Next_Highest) {
             return (sn >= lowerBound || sn < RX_Next_Highest);
+        } else {
+            // Initialization case (0 == 0): SN 0 is NOT < 0.
+            return false;
         }
     }
 
+    bool isEmpty() const {
+        return sduBuffer.empty();
+    }
+
+
+    void reset() {
+        RX_Next_Reassembly = 0;
+        RX_Next_Highest = 0;
+        RX_Timer_Trigger = 0;
+    }
     /**
      * @brief Processes an incoming UMD PDU segment.
+     * returns true is the SDU is complete
      */
-    void handleSegment(uint32_t sn, uint32_t totalLen, uint32_t start, uint32_t end, inet::Packet* ptr);
+    bool handleSegment(uint32_t sn, uint32_t totalLen, uint32_t start, uint32_t end, inet::Packet* ptr);
 
-    void onTimerExpiry() {
-        std::cout << "[RLC UM RX] t-Reassembly expired." << std::endl;
-        isTimerRunning = false;
-
-        // Update RX_Next_Reassembly to first SN >= RX_Timer_Trigger not reassembled
-        RX_Next_Reassembly = RX_Timer_Trigger;
-        updateNextReassembly();
-
-        // Discard all segments with SN < updated RX_Next_Reassembly
-        for (auto it = sduBuffer.begin(); it != sduBuffer.end(); ) {
-            if (isSnLessThan(it->first, RX_Next_Reassembly)) {
-                it = sduBuffer.erase(it);
-            } else {
-                ++it;
-            }
-        }
-
-        manageTimer();
-    }
+    void onTimerExpiry();
 
 
     bool isSnLessThan(uint32_t sn1, uint32_t sn2) const {
@@ -94,64 +89,27 @@ public:
     void setNextReassemblyToFirstInWindow() {
         uint32_t lowerBound = (RX_Next_Highest + snModulus - UM_Window_Size) % snModulus;
         RX_Next_Reassembly = lowerBound;
+
         updateNextReassembly();
     }
 
-    void discardOutsideWindow() {
-        for (auto it = sduBuffer.begin(); it != sduBuffer.end(); ) {
-            if (!isWithinWindow(it->first)) {
-                it = sduBuffer.erase(it);
-            } else {
-                ++it;
+    void discardOutsideWindow();
+
+    bool stopTimer(bool isTimerRunning );
+    bool startTimer() ;
+    /**
+     * @brief Clears the reception buffer and deletes all stored packet pointers.
+     */
+    void clearBuffer() {
+        for (auto& pair : sduBuffer) {
+            if (pair.second.sduPointer) {
+                delete pair.second.sduPointer;
+                pair.second.sduPointer = nullptr;
             }
         }
+        sduBuffer.clear();
     }
 
-    void manageTimer() {
-        bool shouldStop = false;
-        if (isTimerRunning) {
-            // Check stopping conditions from 5.2.2.2.3
-            bool cond1 = !isSnLessThan(RX_Next_Reassembly, RX_Timer_Trigger); // RX_Timer_Trigger <= RX_Next_Reassembly
-            bool cond2 = (!isWithinWindow(RX_Timer_Trigger) && RX_Timer_Trigger != RX_Next_Highest);
-
-            bool cond3 = false;
-            uint32_t nextAfterReas = (RX_Next_Reassembly + 1) % snModulus;
-            if (RX_Next_Highest == nextAfterReas) {
-                auto it = sduBuffer.find(RX_Next_Reassembly);
-                if (it != sduBuffer.end() && !it->second.hasMissingByteSegmentBeforeLast()) {
-                    cond3 = true;
-                }
-            }
-
-            if (cond1 || cond2 || cond3) {
-                isTimerRunning = false;
-                shouldStop = true;
-            }
-        }
-
-        if (!isTimerRunning) {
-            // Check starting conditions
-            bool startCond1 = isSnLessThan(RX_Next_Reassembly + 1, RX_Next_Highest);
-            bool startCond2 = false;
-            if (RX_Next_Highest == (RX_Next_Reassembly + 1) % snModulus) {
-                auto it = sduBuffer.find(RX_Next_Reassembly);
-                if (it != sduBuffer.end() && it->second.hasMissingByteSegmentBeforeLast()) {
-                    startCond2 = true;
-                }
-            }
-
-            if (startCond1 || startCond2) {
-                isTimerRunning = true;
-                RX_Timer_Trigger = RX_Next_Highest;
-                // In actual simulation, trigger the physical timer here
-            }
-        }
-    }
-
-    void deliverToUpperLayer(uint32_t sn) {
-        std::cout << "[RLC UM RX] SDU SN=" << sn << " Reassembled and Delivered." << std::endl;
-        // In simulation, logic to pop from buffer and send up
-    }
 
 };
 
