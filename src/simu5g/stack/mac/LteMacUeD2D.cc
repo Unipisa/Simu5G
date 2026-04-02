@@ -524,11 +524,13 @@ void LteMacUeD2D::checkRAC()
         pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(RACPKT);
 
         auto racReq = makeShared<LteRac>();
+        racReq->setPreambleIndex(intuniform(0, numPreambles_ - 1));
 
         pkt->insertAtFront(racReq);
         sendLowerPackets(pkt);
 
-        EV << NOW << " Ue  " << nodeId_ << " cell " << cellId_ << ", RAC request sent to PHY " << endl;
+        EV << NOW << " Ue  " << nodeId_ << " cell " << cellId_ << ", RAC request sent to PHY (preamble="
+           << racReq->getPreambleIndex() << ")" << endl;
 
         // wait at least  "raRespWinStart_" TTIs before another RAC request
         raRespTimer_ = raRespWinStart_;

@@ -56,6 +56,7 @@ class LteMacUe : public LteMacBase
 
     // RAC and BSR configuration
     // TODO adjust C++ names to match NED parameter names
+    int numPreambles_ = 64;
     unsigned int maxRacTryouts_ = 0;
     unsigned int minRacBackoff_ = 0;
     unsigned int maxRacBackoff_ = 0;

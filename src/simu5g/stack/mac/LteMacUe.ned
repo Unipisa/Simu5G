@@ -27,6 +27,7 @@ simple LteMacUe extends LteMacBase
         @class("LteMacUe");
         string collectorModule = default("");
 
+        int numPreambles = default(64);        // number of RACH preambles available for contention-based random access
         int maxRacAttempts = default(10);      // preambleTransMax; max RAC attempts (0 = give up after first failure)
         int racBackoffMin = default(0);        // min random backoff (TTIs) after failed RAC
         int racBackoffMax = default(20);       // max random backoff (TTIs) after failed RAC (0 = no backoff, instant retry)

@@ -64,6 +64,10 @@ LteMacEnb::~LteMacEnb()
 
     for (auto &[key, value] : bsrbuf_)
         delete value;
+
+    for (auto &[preamble, pkts] : pendingRacRequests_)
+        for (auto *pkt : pkts)
+            delete pkt;
 }
 
 /***********************
@@ -129,6 +133,8 @@ void LteMacEnb::initialize(int stage)
         getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
 
         cellId_ = nodeId_;
+
+        numPreambles_ = par("numPreambles");
 
         cellInfo_.reference(this, "cellInfoModule", true);
 
@@ -454,24 +460,62 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
 
 void LteMacEnb::macHandleRac(cPacket *pktAux)
 {
-    EV << NOW << "LteMacEnb::macHandleRac" << endl;
-
     auto pkt = check_and_cast<Packet *>(pktAux);
+    auto racPkt = pkt->peekAtFront<LteRac>();
+    int preamble = racPkt->getPreambleIndex();
 
-    auto racPkt = pkt->removeAtFront<LteRac>();
-    auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
+    EV << NOW << "LteMacEnb::macHandleRac - buffering RAC from UE "
+       << pkt->getTag<UserControlInfo>()->getSourceId()
+       << " preamble=" << preamble << endl;
 
-    enbSchedulerUl_->signalRac(uinfo->getSourceId(), uinfo->getCarrierFrequency());
+    pendingRacRequests_[preamble].push_back(pkt);
+}
 
-    // TODO: all RACs are marked as successful
-    racPkt->setSuccess(true);
-    pkt->insertAtFront(racPkt);
+void LteMacEnb::resolveRacCollisions()
+{
+    if (pendingRacRequests_.empty())
+        return;
 
-    uinfo->setDestId(uinfo->getSourceId());
-    uinfo->setSourceId(nodeId_);
-    uinfo->setDirection(DL);
+    EV << NOW << "LteMacEnb::resolveRacCollisions - resolving "
+       << pendingRacRequests_.size() << " preamble groups" << endl;
 
-    sendLowerPackets(pkt);
+    for (auto& [preamble, pkts] : pendingRacRequests_) {
+        bool collision = (pkts.size() > 1);
+
+        if (collision) {
+            EV << NOW << "LteMacEnb::resolveRacCollisions - COLLISION on preamble "
+               << preamble << " (" << pkts.size() << " UEs)" << endl;
+        }
+
+        for (auto *pkt : pkts) {
+            auto racPkt = pkt->removeAtFront<LteRac>();
+            auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
+            MacNodeId ueId = uinfo->getSourceId();
+
+            if (collision) {
+                // preamble collision: RAC fails
+                racPkt->setSuccess(false);
+                EV << NOW << "LteMacEnb::resolveRacCollisions - UE " << ueId
+                   << " RAC FAILED (preamble collision)" << endl;
+            }
+            else {
+                // unique preamble: RAC succeeds
+                racPkt->setSuccess(true);
+                enbSchedulerUl_->signalRac(ueId, uinfo->getCarrierFrequency());
+                EV << NOW << "LteMacEnb::resolveRacCollisions - UE " << ueId
+                   << " RAC SUCCESS" << endl;
+            }
+
+            pkt->insertAtFront(racPkt);
+
+            uinfo->setDestId(ueId);
+            uinfo->setSourceId(nodeId_);
+            uinfo->setDirection(DL);
+
+            sendLowerPackets(pkt);
+        }
+    }
+    pendingRacRequests_.clear();
 }
 
 void LteMacEnb::macPduMake(MacCid cid)
@@ -752,6 +796,9 @@ void LteMacEnb::handleSelfMessage()
     ***************/
 
     EV << "-----" << "ENB MAIN LOOP -----" << endl;
+
+    // Resolve any RAC requests buffered since the last TTI (preamble collision detection)
+    resolveRacCollisions();
 
     // Reception
 

@@ -60,6 +60,7 @@ void LteMacUe::initialize(int stage)
         bool isNr = strcmp(getFullName(), "nrMac") == 0;
         nodeId_ = MacNodeId(networkNode_->par(isNr ? "nrMacNodeId" : "macNodeId").intValue());
 
+        numPreambles_ = par("numPreambles");
         maxRacTryouts_ = par("maxRacAttempts");
         minRacBackoff_ = par("racBackoffMin");
         maxRacBackoff_ = par("racBackoffMax");
@@ -876,6 +877,7 @@ void LteMacUe::checkRAC()
         auto pkt = new Packet("RacRequest");
 
         auto racReq = makeShared<LteRac>();
+        racReq->setPreambleIndex(intuniform(0, numPreambles_ - 1));
         pkt->insertAtFront(racReq);
 
         GHz carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
@@ -887,7 +889,8 @@ void LteMacUe::checkRAC()
 
         sendLowerPackets(pkt);
 
-        EV << NOW << " UE  " << nodeId_ << " cell " << cellId_ << " ,RAC request sent to PHY " << endl;
+        EV << NOW << " UE  " << nodeId_ << " cell " << cellId_ << " ,RAC request sent to PHY (preamble="
+           << racReq->getPreambleIndex() << ")" << endl;
 
         // wait at least "raRespWinStart_" TTIs before another RAC request
         raRespTimer_ = raRespWinStart_;

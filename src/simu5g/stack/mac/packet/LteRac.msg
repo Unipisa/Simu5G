@@ -18,5 +18,7 @@ class LteRac extends inet::FieldsChunk
 {
     // meaningful only for DL (response) RAC packets : if true RAC request has been admitted.
     bool success;
+    // preamble index chosen by UE (0..numPreambles-1); used for collision detection at eNB
+    int preambleIndex = -1;
     chunkLength = inet::B(1); // TODO: size 0
 }
