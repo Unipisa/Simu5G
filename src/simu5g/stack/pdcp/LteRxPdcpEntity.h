@@ -39,9 +39,6 @@ class LteRxPdcpEntity : public cSimpleModule
     // whether headers are compressed
     bool headerCompressionEnabled_;
 
-    // Logical CID for this connection
-    LogicalCid lcid_;
-
     // handler for PDCP SDU
     virtual void handlePdcpSdu(Packet *pkt, unsigned int sequenceNumber);
 
