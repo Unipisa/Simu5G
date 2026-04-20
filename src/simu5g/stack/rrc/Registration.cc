@@ -71,6 +71,12 @@ void Registration::initialize(int stage)
             MacNodeId nodeId = isNr ? nrNodeId : lteNodeId;
             MacNodeId masterId = MacNodeId(bs->par("masterId").intValue());
             binder->registerMasterNode(masterId, nodeId);  // note: even if masterId == NODEID_NONE!
+
+            if (bs->hasPar("isTransparentNtn") && bs->par("isTransparentNtn").boolValue()) {
+                MacNodeId ntnGatewayId = MacNodeId(bs->par("ntnGatewayId").intValue());
+                MacNodeId satelliteId = MacNodeId(bs->par("satelliteId").intValue());
+                binder->setGnbNtnAssociation(nodeId, ntnGatewayId, satelliteId, true);
+            }
         }
         if (nodeType == UE) {
             cModule *ue = inet::getContainingNode(this);

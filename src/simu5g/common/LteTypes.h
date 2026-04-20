@@ -58,6 +58,10 @@ constexpr unsigned short BGUE_ID      = 1024;
 constexpr unsigned short UE_MIN_ID    = 1025;
 constexpr unsigned short NR_UE_MIN_ID = 2049;
 constexpr unsigned short BGUE_MIN_ID  = 4097;
+constexpr unsigned short NTN_GW_MIN_ID = 16384;
+constexpr unsigned short NTN_GW_MAX_ID = 17407;
+constexpr unsigned short SAT_MIN_ID    = 17408;
+constexpr unsigned short SAT_MAX_ID    = 18431;
 constexpr unsigned short UE_MAX_ID    = 32767;
 constexpr unsigned short MULTICAST_DEST_MIN_ID = 32768;
 
