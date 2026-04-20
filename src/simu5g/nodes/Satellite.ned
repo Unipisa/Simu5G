@@ -27,10 +27,8 @@ module Satellite
         @labels(node,ethernet-node,wireless-node);
         @display("i=device/satellite;bgb=420,220");
 
-        string binderModule = default("binder");
         string nodeType = default("SATELLITE"); // DO NOT CHANGE
         int macNodeId = default(SAT_MIN_ID + simu5g_seq("Satellite_macNodeId"));
-        double relayDelay @unit(s) = default(0s);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
@@ -55,9 +53,6 @@ module Satellite
         relay: NtnRelay {
             parameters:
                 @display("p=210,88");
-                binderModule = parent.binderModule;
-                nodeType = parent.nodeType;
-                relayDelay = parent.relayDelay;
         }
 
     connections:
