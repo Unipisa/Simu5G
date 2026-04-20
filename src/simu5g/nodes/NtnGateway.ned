@@ -11,6 +11,7 @@
 
 package simu5g.nodes;
 
+import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.ppp.PppInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
@@ -34,7 +35,7 @@ module NtnGateway
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
-        inout gnbLink @loose @labels(PppFrame-conn);
+        inout gnbLink @loose @labels(EtherFrame-conn);
         inout feederLink @loose @labels(PppFrame-conn);
 
     submodules:
@@ -44,7 +45,7 @@ module NtnGateway
         mobility: <default("StationaryMobility")> like IMobility {
             @display("p=70,55;is=s");
         }
-        gnbNic: PppInterface {
+        gnbNic: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
                 @display("p=110,168");
         }
