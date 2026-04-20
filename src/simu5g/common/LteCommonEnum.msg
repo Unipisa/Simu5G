@@ -176,7 +176,9 @@ enum RanNodeType
 {
     NODEB  = 0; // eNodeB / gNodeB
     UE = 1; // UE
-    UNKNOWN_NODE_TYPE  = 2;
+    SATELLITE_NODE = 2;
+    NTN_GATEWAY_NODE = 3;
+    UNKNOWN_NODE_TYPE  = 4;
 };
 
 

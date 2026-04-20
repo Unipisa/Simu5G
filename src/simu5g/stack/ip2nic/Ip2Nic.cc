@@ -91,6 +91,12 @@ void Ip2Nic::initialize(int stage)
             cModule *bs = getContainingNode(this);
             MacNodeId masterId = MacNodeId(bs->par("masterId").intValue());
             binder_->registerMasterNode(masterId, nodeId_);  // note: even if masterId == NODEID_NONE!
+
+            if (bs->hasPar("isTransparentNtn") && bs->par("isTransparentNtn").boolValue()) {
+                MacNodeId ntnGatewayId = MacNodeId(bs->par("ntnGatewayId").intValue());
+                MacNodeId satelliteId = MacNodeId(bs->par("satelliteId").intValue());
+                binder_->setGnbNtnAssociation(nodeId_, ntnGatewayId, satelliteId, true);
+            }
         }
         if (nodeType_ == UE) {
             binder_->registerServingNode(servingNodeId_, nodeId_);

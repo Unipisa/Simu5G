@@ -26,7 +26,7 @@ module NrUe extends LteUe
         cellularNic.typename = default("NrNicUe");
 
         int nrServingNodeId = default(0); // the initial serving gNodeB of the UE; 0 if none
-        int nrMacNodeId = default(2049+simu5g_seq("NrUe_macNodeId"));
+        int nrMacNodeId = default(NR_UE_MIN_ID + simu5g_seq("NrUe_macNodeId"));
 
         cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.nrUeCollector" : "";
         cellularNic.nrPhy.hasCollector = hasRniSupport;

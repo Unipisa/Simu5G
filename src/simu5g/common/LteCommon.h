@@ -309,6 +309,31 @@ struct UeInfo
     std::string str() const;
 };
 
+struct SatelliteInfo
+{
+    bool init = false;
+    MacNodeId id = NODEID_NONE;
+    opp_component_ptr<cModule> satelliteModule;
+    std::string str() const;
+};
+
+struct NtnGatewayInfo
+{
+    bool init = false;
+    MacNodeId id = NODEID_NONE;
+    opp_component_ptr<cModule> gatewayModule;
+    std::string str() const;
+};
+
+struct GnbNtnAssociation
+{
+    MacNodeId gnbId = NODEID_NONE;
+    MacNodeId ntnGatewayId = NODEID_NONE;
+    MacNodeId satelliteId = NODEID_NONE;
+    bool isTransparent = true;
+    std::string str() const;
+};
+
 /**********************************
  * Background UEs avg CQI support *
  *********************************/

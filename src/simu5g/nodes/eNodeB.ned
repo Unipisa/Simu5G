@@ -65,6 +65,9 @@ module eNodeB
         int masterId = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity
         int macNodeId = default(1+simu5g_seq("eNodeB_macNodeId"));
         int macCellId = default(macNodeId);
+        int ntnGatewayId = default(0);
+        int satelliteId = default(0);
+        bool isTransparentNtn = default(false);
         double txPower @unit(mw) = default(100mw);
 
         //# Network Layer specs

@@ -156,8 +156,16 @@ void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType typ
         if (isNr != (num(nodeId) >= NR_UE_MIN_ID))
             throw cRuntimeError("Cannot register node %s in Binder: Wrong macNodeId %d: Technology (LTE/NR) mismatch", nodeModule->getFullPath().c_str(), num(nodeId));
     }
+    else if (type == SATELLITE_NODE) {
+        if (getNodeTypeById(nodeId) != SATELLITE_NODE)
+            throw cRuntimeError("Cannot register node %s in Binder: Wrong macNodeId %d: Does not correspond to the range Simu5G reserves for Satellite nodes", nodeModule->getFullPath().c_str(), num(nodeId));
+    }
+    else if (type == NTN_GATEWAY_NODE) {
+        if (getNodeTypeById(nodeId) != NTN_GATEWAY_NODE)
+            throw cRuntimeError("Cannot register node %s in Binder: Wrong macNodeId %d: Does not correspond to the range Simu5G reserves for NTN Gateway nodes", nodeModule->getFullPath().c_str(), num(nodeId));
+    }
     else {
-        throw cRuntimeError("Cannot register node %s in Binder: Wrong node type: Expected UE or NODEB, but got %d", nodeModule->getFullPath().c_str(), type);
+        throw cRuntimeError("Cannot register node %s in Binder: Unsupported node type %d", nodeModule->getFullPath().c_str(), type);
     }
 
     EV << "Binder : Registering module " << nodeModule->getFullPath() << " with MacNodeId " << nodeId << "\n";
@@ -166,6 +174,32 @@ void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType typ
     NodeInfo nodeInfo;
     nodeInfo.moduleRef = nodeModule;
     nodeInfoMap_[nodeId] = nodeInfo;
+}
+
+void Binder::registerSatelliteNode(MacNodeId satId, cModule *satModule)
+{
+    Enter_Method_Silent();
+
+    registerNode(satId, satModule, SATELLITE_NODE);
+
+    auto *info = new SatelliteInfo();
+    info->init = true;
+    info->id = satId;
+    info->satelliteModule = satModule;
+    satelliteList_.push_back(info);
+}
+
+void Binder::registerNtnGatewayNode(MacNodeId ntnGwId, cModule *gwModule)
+{
+    Enter_Method_Silent();
+
+    registerNode(ntnGwId, gwModule, NTN_GATEWAY_NODE);
+
+    auto *info = new NtnGatewayInfo();
+    info->init = true;
+    info->id = ntnGwId;
+    info->gatewayModule = gwModule;
+    ntnGatewayList_.push_back(info);
 }
 
 void Binder::unregisterNode(MacNodeId id)
@@ -184,7 +218,8 @@ void Binder::unregisterNode(MacNodeId id)
     // iterate all nodeIds and find HarqRx buffers dependent on 'id'
     for (const auto& [nodeId, nodeInfo] : nodeInfoMap_) {
         LteMacBase *mac = getMacFromMacNodeId(nodeId);
-        mac->unregisterHarqBufferRx(id);
+        if (mac != nullptr)
+            mac->unregisterHarqBufferRx(id);
     }
 
     // remove 'id' from consolidated node info map
@@ -206,6 +241,46 @@ void Binder::unregisterNode(MacNodeId id)
             }
         }
     }
+
+    for (auto it = gnbNtnAssoc_.begin(); it != gnbNtnAssoc_.end(); ) {
+        if (it->first == id || it->second.ntnGatewayId == id || it->second.satelliteId == id)
+            it = gnbNtnAssoc_.erase(it);
+        else
+            ++it;
+    }
+}
+
+void Binder::unregisterSatelliteNode(MacNodeId satId)
+{
+    for (auto it = satelliteList_.begin(); it != satelliteList_.end(); ++it) {
+        if ((*it)->id == satId) {
+            delete *it;
+            satelliteList_.erase(it);
+            break;
+        }
+    }
+
+    unregisterNode(satId);
+}
+
+void Binder::unregisterNtnGatewayNode(MacNodeId ntnGwId)
+{
+    for (auto it = ntnGatewayList_.begin(); it != ntnGatewayList_.end(); ++it) {
+        if ((*it)->id == ntnGwId) {
+            delete *it;
+            ntnGatewayList_.erase(it);
+            break;
+        }
+    }
+
+    for (auto it = gnbNtnAssoc_.begin(); it != gnbNtnAssoc_.end(); ) {
+        if (it->second.ntnGatewayId == ntnGwId)
+            it = gnbNtnAssoc_.erase(it);
+        else
+            ++it;
+    }
+
+    unregisterNode(ntnGwId);
 }
 
 void Binder::registerServingNode(MacNodeId enbId, MacNodeId ueId)
@@ -255,9 +330,57 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     secondaryNodeToMasterNodeOrSelf_[num(slaveId)] = (masterId != NODEID_NONE) ? masterId : slaveId;  // the "or self" bit
 }
 
+void Binder::setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId, bool transparent)
+{
+    Enter_Method_Silent("setGnbNtnAssociation");
+
+    if (getNodeTypeById(gnbId) != NODEB)
+        throw cRuntimeError("Binder::setGnbNtnAssociation - gNB id %hu is not a NODEB", num(gnbId));
+    if (ntnGwId == NODEID_NONE || getNodeTypeById(ntnGwId) != NTN_GATEWAY_NODE)
+        throw cRuntimeError("Binder::setGnbNtnAssociation - NTN gateway id %hu is invalid", num(ntnGwId));
+    if (satId == NODEID_NONE || getNodeTypeById(satId) != SATELLITE_NODE)
+        throw cRuntimeError("Binder::setGnbNtnAssociation - satellite id %hu is invalid", num(satId));
+    if (!nodeExists(gnbId) || !nodeExists(ntnGwId) || !nodeExists(satId))
+        throw cRuntimeError("Binder::setGnbNtnAssociation - referenced nodes must be registered before creating the NTN association");
+
+    GnbNtnAssociation association;
+    association.gnbId = gnbId;
+    association.ntnGatewayId = ntnGwId;
+    association.satelliteId = satId;
+    association.isTransparent = transparent;
+    gnbNtnAssoc_[gnbId] = association;
+}
+
+const GnbNtnAssociation *Binder::getGnbNtnAssociation(MacNodeId gnbId) const
+{
+    auto it = gnbNtnAssoc_.find(gnbId);
+    return it != gnbNtnAssoc_.end() ? &it->second : nullptr;
+}
+
+SatelliteInfo *Binder::getSatelliteInfo(MacNodeId satId) const
+{
+    for (auto *info : satelliteList_) {
+        if (info->id == satId)
+            return info;
+    }
+    return nullptr;
+}
+
+NtnGatewayInfo *Binder::getNtnGatewayInfo(MacNodeId ntnGwId) const
+{
+    for (auto *info : ntnGatewayList_) {
+        if (info->id == ntnGwId)
+            return info;
+    }
+    return nullptr;
+}
+
 inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
 inline ostream& operator<<(ostream& os, const UeInfo& info) { return os << info.str(); }
 inline ostream& operator<<(ostream& os, const EnbInfo& info) { return os << info.str(); }
+inline ostream& operator<<(ostream& os, const SatelliteInfo& info) { return os << info.str(); }
+inline ostream& operator<<(ostream& os, const NtnGatewayInfo& info) { return os << info.str(); }
+inline ostream& operator<<(ostream& os, const GnbNtnAssociation& info) { return os << info.str(); }
 inline ostream& operator<<(ostream& os, const BgTrafficManagerInfo& info) { return os << info.str(); }
 
 void Binder::initialize(int stage)
@@ -279,6 +402,9 @@ void Binder::initialize(int stage)
         // WATCH_MAP(bgSchedulerList_); // Commented out - contains vectors of BackgroundScheduler* pointers that don't have stream operators
         WATCH_PTRVECTOR(enbList_); // Commented out - contains EnbInfo* pointers that don't have stream operators
         WATCH_PTRVECTOR(ueList_); // Commented out - contains UeInfo* pointers that don't have stream operators
+        WATCH_PTRVECTOR(satelliteList_);
+        WATCH_PTRVECTOR(ntnGatewayList_);
+        WATCH_MAP(gnbNtnAssoc_);
         WATCH_PTRVECTOR(bgTrafficManagerList_); // Commented out - contains BgTrafficManagerInfo* pointers that don't have stream operators
         WATCH(totalBands_);
         // WATCH_MAP(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
@@ -379,6 +505,9 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
     if (id == NODEID_NONE)
         return nullptr;
 
+    if (getNodeTypeById(id) != NODEB && getNodeTypeById(id) != UE)
+        return nullptr;
+
     auto it = nodeInfoMap_.find(id);
     if (it == nodeInfoMap_.end())
         return nullptr;
@@ -394,7 +523,7 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 
 MacNodeId Binder::getNextHop(MacNodeId nodeId)
 {
-    return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) == NODEB) ? nodeId : getServingNode(nodeId);
+    return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) != UE) ? nodeId : getServingNode(nodeId);
 }
 
 MacNodeId Binder::getMasterNodeOrSelf(MacNodeId secondaryEnbId)

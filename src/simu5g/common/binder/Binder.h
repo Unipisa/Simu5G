@@ -78,6 +78,11 @@ class Binder : public cSimpleModule
     // list of all UEs. Used for inter-cell interference evaluation
     std::vector<UeInfo *> ueList_;
 
+    // NTN relay nodes and gNB associations
+    std::vector<SatelliteInfo *> satelliteList_;
+    std::vector<NtnGatewayInfo *> ntnGatewayList_;
+    std::map<MacNodeId, GnbNtnAssociation> gnbNtnAssoc_;
+
     // list of all background traffic managers. Used for background UEs CQI computation
     std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
 
@@ -180,6 +185,12 @@ class Binder : public cSimpleModule
 
         for (auto ue : ueList_)
             delete ue;
+
+        for (auto satellite : satelliteList_)
+            delete satellite;
+
+        for (auto gateway : ntnGatewayList_)
+            delete gateway;
     }
 
     virtual std::string& getNetworkName()
@@ -239,10 +250,18 @@ class Binder : public cSimpleModule
      */
     virtual void registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType type, bool isNr = false);
 
+    virtual void registerSatelliteNode(MacNodeId satId, cModule *satModule);
+
+    virtual void registerNtnGatewayNode(MacNodeId ntnGwId, cModule *gwModule);
+
     /**
      * Un-registers a node from the global Binder module.
      */
     virtual void unregisterNode(MacNodeId id);
+
+    virtual void unregisterSatelliteNode(MacNodeId satId);
+
+    virtual void unregisterNtnGatewayNode(MacNodeId ntnGwId);
 
     /**
      * Binds an UE with its serving eNodeB/gNodeB. Invoked at the start of
@@ -269,6 +288,14 @@ class Binder : public cSimpleModule
      * @param slaveId MacNodeId of the Slave
      */
     virtual void registerMasterNode(MacNodeId masterId, MacNodeId slaveId);
+
+    virtual void setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId, bool transparent = true);
+
+    virtual const GnbNtnAssociation *getGnbNtnAssociation(MacNodeId gnbId) const;
+
+    virtual SatelliteInfo *getSatelliteInfo(MacNodeId satId) const;
+
+    virtual NtnGatewayInfo *getNtnGatewayInfo(MacNodeId ntnGwId) const;
 
     /**
      * Returns true if the node exists.

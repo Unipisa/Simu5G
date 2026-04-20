@@ -236,6 +236,8 @@ const char *nodeTypeToA(RanNodeType t)
     switch (t) {
         case UE: return "UE";
         case NODEB: return "NODEB";
+        case SATELLITE_NODE: return "SATELLITE";
+        case NTN_GATEWAY_NODE: return "NTNGATEWAY";
         default: return "UNKNOWN";
     }
 }
@@ -246,6 +248,10 @@ RanNodeType aToNodeType(std::string name)
         return UE;
     else if (name == "ENODEB" || name == "GNODEB")
         return NODEB;
+    else if (name == "SATELLITE")
+        return SATELLITE_NODE;
+    else if (name == "NTNGATEWAY")
+        return NTN_GATEWAY_NODE;
     else
         throw cRuntimeError("Unknown node type: %s", name.c_str());
 }
@@ -254,6 +260,10 @@ RanNodeType getNodeTypeById(MacNodeId id)
 {
     if (num(id) >= ENB_MIN_ID && num(id) <= ENB_MAX_ID)
         return NODEB;
+    if (num(id) >= NTN_GW_MIN_ID && num(id) <= NTN_GW_MAX_ID)
+        return NTN_GATEWAY_NODE;
+    if (num(id) >= SAT_MIN_ID && num(id) <= SAT_MAX_ID)
+        return SATELLITE_NODE;
     if (num(id) >= UE_MIN_ID && num(id) <= UE_MAX_ID)
         return UE;
     return UNKNOWN_NODE_TYPE;
@@ -495,6 +505,34 @@ std::string UeInfo::str() const
     oss << "UeInfo[id=" << id << ", module=" << (ue ? ue->getFullName() : "null")
         << ", cellId=" << cellId << ", init=" << (init ? "Y" : "N")
         << ", txPwr=" << txPwr << "dBm]";
+    return oss.str();
+}
+
+std::string SatelliteInfo::str() const
+{
+    std::ostringstream oss;
+    oss << "SatelliteInfo[id=" << id << ", module="
+        << (satelliteModule ? satelliteModule->getFullName() : "null")
+        << ", init=" << (init ? "Y" : "N") << "]";
+    return oss.str();
+}
+
+std::string NtnGatewayInfo::str() const
+{
+    std::ostringstream oss;
+    oss << "NtnGatewayInfo[id=" << id << ", module="
+        << (gatewayModule ? gatewayModule->getFullName() : "null")
+        << ", init=" << (init ? "Y" : "N") << "]";
+    return oss.str();
+}
+
+std::string GnbNtnAssociation::str() const
+{
+    std::ostringstream oss;
+    oss << "GnbNtnAssociation[gnbId=" << gnbId
+        << ", ntnGatewayId=" << ntnGatewayId
+        << ", satelliteId=" << satelliteId
+        << ", isTransparent=" << (isTransparent ? "Y" : "N") << "]";
     return oss.str();
 }
 

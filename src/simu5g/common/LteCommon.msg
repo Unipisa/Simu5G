@@ -36,10 +36,14 @@ inline void doParsimUnpacking(omnetpp::cCommBuffer *buffer, MacNodeId& d) {unsig
 constexpr MacNodeId NODEID_NONE  = MacNodeId(0);
 constexpr unsigned short ENB_MIN_ID   = 1;
 constexpr unsigned short ENB_MAX_ID   = 1023;
-constexpr unsigned short BGUE_ID      = 1024;
-constexpr unsigned short UE_MIN_ID    = 1025;
-constexpr unsigned short NR_UE_MIN_ID = 2049;
-constexpr unsigned short BGUE_MIN_ID  = 4097;
+constexpr unsigned short NTN_GW_MIN_ID = 1024;
+constexpr unsigned short NTN_GW_MAX_ID = 1279;
+constexpr unsigned short SAT_MIN_ID    = 1280;
+constexpr unsigned short SAT_MAX_ID    = 1535;
+constexpr unsigned short BGUE_ID       = 1535;
+constexpr unsigned short UE_MIN_ID     = 1536;
+constexpr unsigned short NR_UE_MIN_ID  = 2560;
+constexpr unsigned short BGUE_MIN_ID   = 4608;
 constexpr unsigned short UE_MAX_ID    = 32767;
 constexpr unsigned short MULTICAST_DEST_MIN_ID = 32768;
 
