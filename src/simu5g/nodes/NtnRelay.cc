@@ -26,9 +26,9 @@ void NtnRelay::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         relayDelay_ = par("relayDelay");
-        cModule *node = inet::getContainingNode(this);
-        nodeId_ = MacNodeId(node->par("macNodeId").intValue());
-        nodeType_ = aToNodeType(par("nodeType").stdstringValue());
+        nodeId_ = MacNodeId(getParentModule()->par("macNodeId").intValue());
+        nodeType_ = aToNodeType(getParentModule()->par("nodeType").stdstringValue());
+        cModule *node = getParentModule();
         node->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%hu", num(nodeId_)).c_str());
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {

@@ -15,7 +15,6 @@ simple NtnRelay
 {
     parameters:
         string binderModule = default("binder");
-        string nodeType;
         double relayDelay @unit(s) = default(0s);
     gates:
         input leftNicIn;

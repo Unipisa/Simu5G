@@ -28,10 +28,8 @@ module NtnGateway
         @labels(node,ethernet-node);
         @display("i=abstract/server;bgb=420,220");
 
-        string binderModule = default("binder");
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
         int macNodeId = default(NTN_GW_MIN_ID + simu5g_seq("NtnGateway_macNodeId"));
-        double relayDelay @unit(s) = default(0s);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
@@ -56,9 +54,6 @@ module NtnGateway
         relay: NtnRelay {
             parameters:
                 @display("p=210,88");
-                binderModule = parent.binderModule;
-                nodeType = parent.nodeType;
-                relayDelay = parent.relayDelay;
         }
 
     connections:
