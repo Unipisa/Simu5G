@@ -14,6 +14,7 @@ package simu5g.nodes;
 import inet.linklayer.ppp.PppInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
+import simu5g.stack.NtnFeederLinkNic;
 
 //
 // Transparent NTN satellite relay with one NIC facing the service link and one
@@ -25,7 +26,7 @@ module Satellite
     parameters:
         @networkNode();
         @labels(node,ethernet-node,wireless-node);
-        @display("i=device/satellite;bgb=420,220");
+        @display("i=device/satellite;bgb=469,282");
 
         string nodeType = default("SATELLITE"); // DO NOT CHANGE
         int macNodeId = default(SAT_MIN_ID + simu5g_seq("Satellite_macNodeId"));
@@ -33,7 +34,6 @@ module Satellite
 
     gates:
         inout serviceLink @loose @labels(PppFrame-conn);
-        inout feederLink @loose @labels(PppFrame-conn);
 
     submodules:
         interfaceTable: InterfaceTable {
@@ -44,15 +44,15 @@ module Satellite
         }
         serviceNic: PppInterface {
             parameters:
-                @display("p=110,168");
+                @display("p=181,217");
         }
-        feederNic: PppInterface {
+        feederNic: NtnFeederLinkNic {
             parameters:
-                @display("p=310,168");
+                @display("p=384,217");
         }
         relay: NtnRelay {
             parameters:
-                @display("p=210,88");
+                @display("p=282,120");
         }
 
     connections:
@@ -62,5 +62,4 @@ module Satellite
         feederNic.upperLayerIn <-- relay.rightNicOut;
 
         serviceNic.phys <--> serviceLink;
-        feederNic.phys <--> feederLink;
 }

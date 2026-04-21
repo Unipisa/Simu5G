@@ -9,17 +9,16 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes;
+package simu5g.stack;
 
-simple NtnRelay
+simple NtnFeederLinkNic
 {
     parameters:
-        @display("i=block/downarrow;bgb=704,443;bgl=3");
+        @display("i=block/wrxtx;bgb=704,443;bgl=3");
         string binderModule = default("binder");
-        double relayDelay @unit(s) = default(0s);
     gates:
-        input leftNicIn;
-        output leftNicOut;
-        input rightNicIn;
-        output rightNicOut;
+        input upperLayerIn;
+        output upperLayerOut;
+        input radioIn @directIn;
+        inout phys @loose;
 }

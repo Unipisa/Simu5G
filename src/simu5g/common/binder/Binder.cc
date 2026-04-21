@@ -357,6 +357,42 @@ const GnbNtnAssociation *Binder::getGnbNtnAssociation(MacNodeId gnbId) const
     return it != gnbNtnAssoc_.end() ? &it->second : nullptr;
 }
 
+MacNodeId Binder::getAssociatedSatelliteForGateway(MacNodeId ntnGwId) const
+{
+    MacNodeId satelliteId = NODEID_NONE;
+    for (const auto& [gnbId, association] : gnbNtnAssoc_) {
+        (void)gnbId;
+        if (association.ntnGatewayId != ntnGwId)
+            continue;
+        if (satelliteId == NODEID_NONE)
+            satelliteId = association.satelliteId;
+        else if (satelliteId != association.satelliteId)
+            throw cRuntimeError("Binder::getAssociatedSatelliteForGateway - gateway %hu maps to multiple satellites", num(ntnGwId));
+    }
+
+    if (satelliteId == NODEID_NONE)
+        throw cRuntimeError("Binder::getAssociatedSatelliteForGateway - gateway %hu has no associated satellite", num(ntnGwId));
+    return satelliteId;
+}
+
+MacNodeId Binder::getAssociatedGatewayForSatellite(MacNodeId satId) const
+{
+    MacNodeId gatewayId = NODEID_NONE;
+    for (const auto& [gnbId, association] : gnbNtnAssoc_) {
+        (void)gnbId;
+        if (association.satelliteId != satId)
+            continue;
+        if (gatewayId == NODEID_NONE)
+            gatewayId = association.ntnGatewayId;
+        else if (gatewayId != association.ntnGatewayId)
+            throw cRuntimeError("Binder::getAssociatedGatewayForSatellite - satellite %hu maps to multiple gateways", num(satId));
+    }
+
+    if (gatewayId == NODEID_NONE)
+        throw cRuntimeError("Binder::getAssociatedGatewayForSatellite - satellite %hu has no associated gateway", num(satId));
+    return gatewayId;
+}
+
 SatelliteInfo *Binder::getSatelliteInfo(MacNodeId satId) const
 {
     for (auto *info : satelliteList_) {

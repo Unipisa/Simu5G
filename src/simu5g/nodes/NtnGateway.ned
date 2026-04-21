@@ -12,9 +12,9 @@
 package simu5g.nodes;
 
 import inet.linklayer.contract.IEthernetInterface;
-import inet.linklayer.ppp.PppInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
+import simu5g.stack.NtnFeederLinkNic;
 
 //
 // Ground NTN gateway relay with one NIC facing the terrestrial gNB side and one
@@ -26,7 +26,7 @@ module NtnGateway
     parameters:
         @networkNode();
         @labels(node,ethernet-node);
-        @display("i=abstract/server;bgb=420,220");
+        @display("i=device/receiverdish;bgb=476,316");
 
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
         int macNodeId = default(NTN_GW_MIN_ID + simu5g_seq("NtnGateway_macNodeId"));
@@ -34,7 +34,6 @@ module NtnGateway
 
     gates:
         inout gnbLink @loose @labels(EtherFrame-conn);
-        inout feederLink @loose @labels(PppFrame-conn);
 
     submodules:
         interfaceTable: InterfaceTable {
@@ -45,15 +44,15 @@ module NtnGateway
         }
         gnbNic: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=110,168");
+                @display("p=188,207");
         }
-        feederNic: PppInterface {
+        feederNic: NtnFeederLinkNic {
             parameters:
-                @display("p=310,168");
+                @display("p=370,207");
         }
         relay: NtnRelay {
             parameters:
-                @display("p=210,88");
+                @display("p=288,120");
         }
 
     connections:
@@ -63,5 +62,4 @@ module NtnGateway
         feederNic.upperLayerIn <-- relay.rightNicOut;
 
         gnbNic.phys <--> gnbLink;
-        feederNic.phys <--> feederLink;
 }
