@@ -27,6 +27,10 @@ class LtePhyEnb : public LtePhyBase
 {
 
   protected:
+    bool useTransparentNtn_ = false;
+    cGate* ntnInGate_ = nullptr;
+    cGate* ntnOutGate_ = nullptr;
+
     /** Broadcast message interval (equal to updatePos interval for mobility) */
     double beaconInterval_;
 
@@ -44,6 +48,9 @@ class LtePhyEnb : public LtePhyBase
 
     void handleSelfMessage(cMessage *msg) override;
     void handleAirFrame(cMessage *msg) override;
+    void sendBroadcast(LteAirFrame *airFrame) override;
+    void sendUnicast(LteAirFrame *airFrame) override;
+    void sendNtn(LteAirFrame *airFrame);
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);

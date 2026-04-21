@@ -40,5 +40,6 @@ moduleinterface ILtePhy
         input upperGateIn;
         output upperGateOut;
         input radioIn;
+        input ntnIn @loose;
+        output ntnOut @loose;
 }
-
