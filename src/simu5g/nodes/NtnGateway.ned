@@ -26,7 +26,7 @@ module NtnGateway
     parameters:
         @networkNode();
         @labels(node,ethernet-node);
-        @display("i=device/receiverdish;bgb=476,316");
+        @display("i=device/receiverdish;bgb=476,275");
 
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
         int macNodeId = default(NTN_GW_MIN_ID + simu5g_seq("NtnGateway_macNodeId"));
@@ -34,6 +34,7 @@ module NtnGateway
 
     gates:
         inout gnbLink @loose @labels(EtherFrame-conn);
+        input feederLinkRadioIn @loose;
 
     submodules:
         interfaceTable: InterfaceTable {
@@ -58,8 +59,10 @@ module NtnGateway
     connections:
         gnbNic.upperLayerOut --> relay.leftNicIn;
         gnbNic.upperLayerIn <-- relay.leftNicOut;
+        gnbNic.phys <--> gnbLink;
+
         feederNic.upperLayerOut --> relay.rightNicIn;
         feederNic.upperLayerIn <-- relay.rightNicOut;
+        feederNic.radioIn <-- feederLinkRadioIn;
 
-        gnbNic.phys <--> gnbLink;
 }

@@ -11,10 +11,10 @@
 
 package simu5g.nodes;
 
-import inet.linklayer.ppp.PppInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
 import simu5g.stack.NtnFeederLinkNic;
+import simu5g.stack.NtnServiceLinkNic;
 
 //
 // Transparent NTN satellite relay with one NIC facing the service link and one
@@ -33,7 +33,8 @@ module Satellite
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
-        inout serviceLink @loose @labels(PppFrame-conn);
+        input serviceLinkRadioIn @loose;
+        input feederLinkRadioIn @loose;
 
     submodules:
         interfaceTable: InterfaceTable {
@@ -42,7 +43,7 @@ module Satellite
         mobility: <default("StationaryMobility")> like IMobility {
             @display("p=70,55;is=s");
         }
-        serviceNic: PppInterface {
+        serviceNic: NtnServiceLinkNic {
             parameters:
                 @display("p=181,217");
         }
@@ -61,5 +62,6 @@ module Satellite
         feederNic.upperLayerOut --> relay.rightNicIn;
         feederNic.upperLayerIn <-- relay.rightNicOut;
 
-        serviceNic.phys <--> serviceLink;
+        serviceNic.radioIn <-- serviceLinkRadioIn;
+        feederNic.radioIn <-- feederLinkRadioIn;
 }

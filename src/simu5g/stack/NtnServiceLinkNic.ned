@@ -11,7 +11,7 @@
 
 package simu5g.stack;
 
-simple NtnFeederLinkNic
+simple NtnServiceLinkNic
 {
     parameters:
         @display("i=block/wrxtx;bgb=704,443;bgl=3");

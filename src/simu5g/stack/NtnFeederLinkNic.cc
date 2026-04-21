@@ -52,10 +52,6 @@ void NtnFeederLinkNic::handleMessage(cMessage *msg)
         send(pkt, "upperLayerOut");
         return;
     }
-
-    if (arrivalGate->isName("phys"))
-        throw cRuntimeError("NtnFeederLinkNic::handleMessage - feeder link uses sendDirect(), unexpected packet on phys gate");
-
     throw cRuntimeError("NtnFeederLinkNic::handleMessage - unexpected gate %s", arrivalGate->getName());
 }
 
@@ -83,13 +79,9 @@ cModule *NtnFeederLinkNic::resolvePeerNode() const
 cGate *NtnFeederLinkNic::resolvePeerGate() const
 {
     cModule *peerNode = resolvePeerNode();
-    cModule *peerNic = peerNode->getSubmodule("feederNic");
-    if (peerNic == nullptr)
-        throw cRuntimeError("NtnFeederLinkNic::resolvePeerGate - node %s has no feederNic submodule", peerNode->getFullPath().c_str());
-
-    cGate *peerGate = peerNic->gate("radioIn");
+    cGate *peerGate = peerNode->gate("feederLinkRadioIn");
     if (peerGate == nullptr)
-        throw cRuntimeError("NtnFeederLinkNic::resolvePeerGate - feederNic of %s has no radioIn gate", peerNode->getFullPath().c_str());
+        throw cRuntimeError("NtnFeederLinkNic::resolvePeerGate - feederNic of %s has no feederLinkRadioIn gate", peerNode->getFullPath().c_str());
     return peerGate;
 }
 
