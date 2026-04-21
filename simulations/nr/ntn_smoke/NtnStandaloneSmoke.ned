@@ -65,5 +65,4 @@ network NtnStandaloneSmoke
         upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
         iUpf.pppg++ <--> Eth10G <--> gnb.ppp;
         gnb.ntn <--> Eth10G <--> ntnGateway.gnbLink;
-        ntnGateway.feederLink <--> Eth10G <--> satellite.feederLink;
 }

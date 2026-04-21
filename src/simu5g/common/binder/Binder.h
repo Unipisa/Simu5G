@@ -294,6 +294,10 @@ class Binder : public cSimpleModule
 
     virtual const GnbNtnAssociation *getGnbNtnAssociation(MacNodeId gnbId) const;
 
+    virtual MacNodeId getAssociatedSatelliteForGateway(MacNodeId ntnGwId) const;
+
+    virtual MacNodeId getAssociatedGatewayForSatellite(MacNodeId satId) const;
+
     virtual SatelliteInfo *getSatelliteInfo(MacNodeId satId) const;
 
     virtual NtnGatewayInfo *getNtnGatewayInfo(MacNodeId ntnGwId) const;
