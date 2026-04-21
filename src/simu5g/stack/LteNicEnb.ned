@@ -11,7 +11,6 @@
 
 
 package simu5g.stack;
-
 import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
@@ -27,7 +26,7 @@ import simu5g.x2.LteX2Manager;
 // allow customization of the eNodeB's behavior, including whether it supports
 // D2D communication, CoMP (Coordinated MultiPoint), or dual connectivity.
 //
-module LteNicEnb extends LteNicBase
+module LteNicEnb extends LteNicBase like ICellularNicEnb
 {
     parameters:
         pdcp.typename = default("LtePdcpEnb");
@@ -37,6 +36,10 @@ module LteNicEnb extends LteNicBase
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
         *.handoverManagerModule = "^.handoverManager";
+
+    gates:
+        input ntnIn @loose;
+        output ntnOut @loose;
 
     submodules:
         ulFbGen: LteUlFeedbackGenerator {
@@ -85,4 +88,7 @@ module LteNicEnb extends LteNicBase
             x2$i[i] --> x2Manager.x2$i++;
             x2$o[i] <-- x2Manager.x2$o++;
         }
+
+        ntnIn --> phy.ntnIn;
+        phy.ntnOut --> ntnOut;
 }

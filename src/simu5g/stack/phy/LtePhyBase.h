@@ -79,7 +79,6 @@ class LtePhyBase : public ChannelAccess
     int upperGateOut_ = -1;
     /** The id of the radioIn gate to receive LteAirFrames */
     int radioInGate_ = -1;
-
     /** Pointer to the World Utility, to obtain some global information*/
     //BaseWorldUtility* world_;
     /** Statistics */

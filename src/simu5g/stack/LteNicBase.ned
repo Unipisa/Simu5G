@@ -135,4 +135,3 @@ module LteNicBase extends NetworkInterface like ICellularNic
         ip2nic.upperLayerOut --> {  delay = parent.processingDelayOut; } --> upperLayerOut;
         upperLayerIn --> {  delay = parent.processingDelayIn; } --> ip2nic.upperLayerIn;
 }
-

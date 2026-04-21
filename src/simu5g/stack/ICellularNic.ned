@@ -26,7 +26,17 @@ moduleinterface ICellularNic extends IWirelessInterface
         //bool d2dCapable;            // inherit the value from the parent module
         @networkInterface;
     gates:
-        inout x2[] @loose;     // optional x2 manager
         input nrRadioIn @loose;        // for NR support
 }
 
+//
+// Interface for eNodeB/gNodeB cellular NICs that also expose X2 and the
+// optional wired NTN backhaul used in transparent NTN configurations.
+//
+moduleinterface ICellularNicEnb extends ICellularNic
+{
+    gates:
+        inout x2[] @loose;     // optional x2 manager
+        input ntnIn @loose;    // optional NTN backhaul ingress
+        output ntnOut @loose;  // optional NTN backhaul egress
+}

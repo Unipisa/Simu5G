@@ -46,5 +46,6 @@ simple LtePhyBase like ILtePhy
         input upperGateIn;       // from upper layer
         output upperGateOut;    // to upper layer
         input radioIn;           // gate to receive message via sendDirect
+        input ntnIn @loose;      // optional wired NTN backhaul ingress
+        output ntnOut @loose;    // optional wired NTN backhaul egress
 }
-

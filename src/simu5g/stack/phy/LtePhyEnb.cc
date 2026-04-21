@@ -40,7 +40,9 @@ void LtePhyEnb::initialize(int stage)
         // get local id
         nodeId_ = MacNodeId(hostModule->par("macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
-
+        useTransparentNtn_ = hostModule->hasPar("useTransparentNtn") && hostModule->par("useTransparentNtn").boolValue();
+        ntnInGate_ = gate("ntnIn");
+        ntnOutGate_ = gate("ntnOut");
         isNr_ = (std::string(getContainingNicModule(this)->getComponentType()->getName()) == "NrNicEnb");
 
         randomChannelIndex_ = intuniform(1, binder_->phyPisaData.maxChannel2()); // NOTE: moving this to the next stage (where it is used will change random number stream and CHANGE FINGERPRINTS!
@@ -108,6 +110,36 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
     }
 }
 
+void LtePhyEnb::sendNtn(LteAirFrame *airFrame)
+{
+    if (ntnOutGate_ == nullptr || !ntnOutGate_->isConnected())
+        throw cRuntimeError("LtePhyEnb::sendNtn - NTN fronthaul gate is not connected for %s", getFullPath().c_str());
+
+    if (airFrame->getControlInfo() != nullptr) {
+        UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
+        airFrame->setAdditionalInfo(*userControlInfo);
+        delete userControlInfo;
+    }
+
+    send(airFrame, ntnOutGate_);
+}
+
+void LtePhyEnb::sendBroadcast(LteAirFrame *airFrame)
+{
+    if (useTransparentNtn_)
+        sendNtn(airFrame);
+    else
+        LtePhyBase::sendBroadcast(airFrame);
+}
+
+void LtePhyEnb::sendUnicast(LteAirFrame *airFrame)
+{
+    if (useTransparentNtn_)
+        sendNtn(airFrame);
+    else
+        LtePhyBase::sendUnicast(airFrame);
+}
+
 bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
     EV << "Received control packet " << endl;
@@ -144,6 +176,14 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 
 void LtePhyEnb::handleAirFrame(cMessage *msg)
 {
+    if (msg->getArrivalGate() == ntnInGate_) {
+        auto *pkt = check_and_cast<Packet *>(msg);
+        auto *frame = check_and_cast<LteAirFrame *>(pkt->decapsulate());
+        delete pkt;
+        handleAirFrame(frame);
+        return;
+    }
+
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
