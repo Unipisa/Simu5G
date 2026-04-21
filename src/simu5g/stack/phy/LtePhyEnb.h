@@ -44,6 +44,7 @@ class LtePhyEnb : public LtePhyBase
     inet::ModuleRefByPar<LteUlFeedbackGenerator> ulFbGen_;
 
     void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
 
     void handleSelfMessage(cMessage *msg) override;
     void handleAirFrame(cMessage *msg) override;

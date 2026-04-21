@@ -90,6 +90,18 @@ void LtePhyEnb::initialize(int stage)
     }
 }
 
+void LtePhyEnb::handleMessage(cMessage *msg)
+{
+    if (ntnInGate_ != nullptr && msg->getArrivalGate() == ntnInGate_) {
+        auto *pkt = check_and_cast<Packet *>(msg);
+        auto *frame = check_and_cast<LteAirFrame *>(pkt->decapsulate());
+        delete pkt;
+        handleAirFrame(frame);
+        return;
+    }
+    LtePhyBase::handleMessage(msg);
+}
+
 void LtePhyEnb::handleSelfMessage(cMessage *msg)
 {
     if (msg->isName("bdcStarter")) {
@@ -121,7 +133,9 @@ void LtePhyEnb::sendNtn(LteAirFrame *airFrame)
         delete userControlInfo;
     }
 
-    send(airFrame, ntnOutGate_);
+    auto *pkt = new Packet(airFrame->getName());
+    pkt->encapsulate(airFrame);
+    send(pkt, ntnOutGate_);
 }
 
 void LtePhyEnb::sendBroadcast(LteAirFrame *airFrame)
@@ -176,14 +190,6 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 
 void LtePhyEnb::handleAirFrame(cMessage *msg)
 {
-    if (msg->getArrivalGate() == ntnInGate_) {
-        auto *pkt = check_and_cast<Packet *>(msg);
-        auto *frame = check_and_cast<LteAirFrame *>(pkt->decapsulate());
-        delete pkt;
-        handleAirFrame(frame);
-        return;
-    }
-
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
