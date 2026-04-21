@@ -34,7 +34,7 @@ module NtnGateway
 
     gates:
         inout gnbLink @loose @labels(EtherFrame-conn);
-        input feederLinkRadioIn @loose;
+        input feederLinkRadioIn @loose @directIn;
 
     submodules:
         interfaceTable: InterfaceTable {

@@ -19,5 +19,5 @@ simple NtnFeederLinkNic
     gates:
         input upperLayerIn;
         output upperLayerOut;
-        input radioIn @directIn;
+        input radioIn @loose @directIn;
 }

@@ -33,8 +33,8 @@ module Satellite
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
-        input serviceLinkRadioIn @loose;
-        input feederLinkRadioIn @loose;
+        input serviceLinkRadioIn @loose @directIn;
+        input feederLinkRadioIn @loose @directIn;
 
     submodules:
         interfaceTable: InterfaceTable {
