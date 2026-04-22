@@ -9,6 +9,7 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/packet/Packet.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 
 #include "simu5g/stack/phy/LtePhyEnb.h"
@@ -23,7 +24,6 @@ Define_Module(LtePhyEnb);
 
 using namespace omnetpp;
 using namespace inet;
-
 
 LtePhyEnb::~LtePhyEnb()
 {
@@ -93,10 +93,7 @@ void LtePhyEnb::initialize(int stage)
 void LtePhyEnb::handleMessage(cMessage *msg)
 {
     if (ntnInGate_ != nullptr && msg->getArrivalGate() == ntnInGate_) {
-        auto *pkt = check_and_cast<Packet *>(msg);
-        auto *frame = check_and_cast<LteAirFrame *>(pkt->decapsulate());
-        delete pkt;
-        handleAirFrame(frame);
+        handleAirFrame(msg);
         return;
     }
     LtePhyBase::handleMessage(msg);
@@ -133,9 +130,7 @@ void LtePhyEnb::sendNtn(LteAirFrame *airFrame)
         delete userControlInfo;
     }
 
-    auto *pkt = new Packet(airFrame->getName());
-    pkt->encapsulate(airFrame);
-    send(pkt, ntnOutGate_);
+    send(airFrame, ntnOutGate_);
 }
 
 void LtePhyEnb::sendBroadcast(LteAirFrame *airFrame)

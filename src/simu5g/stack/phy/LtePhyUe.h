@@ -123,6 +123,7 @@ class LtePhyUe : public LtePhyBase
     void finish(cComponent *component, simsignal_t signalID) override { cIListener::finish(component, signalID); }
 
     void handleUpperMessage(cMessage *msg) override;
+    void sendUnicast(LteAirFrame *airFrame) override;
 
     void emitMobilityStats() override;
 
@@ -142,6 +143,8 @@ class LtePhyUe : public LtePhyBase
     void updateSrsConfiguration();
     LtePhyEnb *getServingEnbPhy() const;
     virtual void sendSrsReferenceSignalFrame();
+
+    virtual bool sendUnicastViaNtn(LteAirFrame *airFrame);
 
   public:
     ~LtePhyUe() override;

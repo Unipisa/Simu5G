@@ -608,6 +608,45 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     LtePhyBase::handleUpperMessage(msg);
 }
 
+void LtePhyUe::sendUnicast(LteAirFrame *airFrame)
+{
+    if (sendUnicastViaNtn(airFrame))
+        return;
+
+    LtePhyBase::sendUnicast(airFrame);
+}
+
+bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
+{
+    auto *ci = check_and_cast<UserControlInfo *>(airFrame->getControlInfo());
+    MacNodeId destId = ci->getDestId();
+    if (masterId_ == NODEID_NONE || destId != masterId_)
+        return false;
+
+    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
+    if (association == nullptr || !association->isTransparent)
+        return false;
+
+    SatelliteInfo *satelliteInfo = binder_->getSatelliteInfo(association->satelliteId);
+    if (satelliteInfo == nullptr || satelliteInfo->satelliteModule == nullptr)
+        throw cRuntimeError("LtePhyUe::sendUnicastViaNtn - satellite %hu for serving node %hu is not registered", num(association->satelliteId), num(masterId_));
+
+    cGate *serviceLinkGate = satelliteInfo->satelliteModule->gate("serviceLinkRadioIn");
+    if (serviceLinkGate == nullptr)
+        throw cRuntimeError("LtePhyUe::sendUnicastViaNtn - satellite %s has no serviceLinkRadioIn gate", satelliteInfo->satelliteModule->getFullPath().c_str());
+
+    if (airFrame->getControlInfo() != nullptr) {
+        UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
+        airFrame->setAdditionalInfo(*userControlInfo);
+        delete userControlInfo;
+    }
+
+    EV << NOW << " LtePhyUe::sendUnicastViaNtn - forwarding frame for serving node "
+       << destId << " to satellite " << association->satelliteId << endl;
+    sendDirect(airFrame, 0, airFrame->getDuration(), serviceLinkGate);
+    return true;
+}
+
 void LtePhyUe::emitMobilityStats()
 {
     // emit serving cell id
