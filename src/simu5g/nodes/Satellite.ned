@@ -29,7 +29,7 @@ module Satellite
         @display("i=device/satellite;bgb=469,282");
 
         string nodeType = default("SATELLITE"); // DO NOT CHANGE
-        int macNodeId = default(1280 + simu5g_seq("Satellite_macNodeId"));
+        int macNodeId = default(17408 + simu5g_seq("Satellite_macNodeId"));
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
