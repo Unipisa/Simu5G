@@ -11,13 +11,22 @@
 
 package simu5g.stack;
 
-simple NtnFeederLinkNic
+module NtnFeederLinkNic
 {
     parameters:
-        @display("i=block/wrxtx;bgb=704,443;bgl=3");
-        string binderModule = default("binder");
+        @display("i=block/ifcard;bgb=704,443;bgl=3");
     gates:
         input upperLayerIn;
         output upperLayerOut;
         input radioIn @loose @directIn;
+    submodules:
+        phy: NtnPhyBase {
+            parameters:
+                @display("p=352,221");
+                linkType = "feeder";
+        }
+    connections:
+        upperLayerIn --> phy.upperLayerIn;
+        upperLayerOut <-- phy.upperLayerOut;
+        radioIn --> phy.radioIn;
 }

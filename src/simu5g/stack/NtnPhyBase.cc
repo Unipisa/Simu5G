@@ -1,0 +1,121 @@
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
+#include "simu5g/stack/NtnPhyBase.h"
+
+#include <inet/common/ModuleAccess.h>
+
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/packet/LteAirFrame_m.h"
+
+namespace simu5g {
+
+using namespace omnetpp;
+using namespace inet;
+
+Define_Module(NtnPhyBase);
+
+void NtnPhyBase::initialize(int stage)
+{
+    if (stage == inet::INITSTAGE_LOCAL) {
+        binder_.reference(this, "binderModule", true);
+        isFeederLink_ = par("linkType").stdstringValue() == "feeder";
+
+        if (isFeederLink_) {
+            cModule *node = getContainingNode(this);
+            nodeId_ = MacNodeId(node->par("macNodeId").intValue());
+            nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
+        }
+    }
+}
+
+void NtnPhyBase::handleMessage(cMessage *msg)
+{
+    cGate *arrivalGate = msg->getArrivalGate();
+    if (arrivalGate->isName("upperLayerIn")) {
+        if (isFeederLink_) {
+            auto *frame = check_and_cast<AirFrame *>(msg);
+            cModule *peerNode = resolvePeerNode();
+            cGate *peerGate = resolvePeerGate();
+            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
+               << " to peer node " << peerNode->getFullPath() << endl;
+            sendDirect(frame, 0, frame->getDuration(), peerGate);
+        }
+        else {
+            auto *frame = check_and_cast<LteAirFrame *>(msg);
+            MacNodeId destId = frame->getAdditionalInfo().getDestId();
+            cModule *receiver = binder_->getNodeModule(destId);
+            if (receiver == nullptr) {
+                EV << "NtnPhyBase::handleMessage - destination node " << destId
+                   << " is not available. Delete frame " << frame->getName() << endl;
+                delete frame;
+                return;
+            }
+
+            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
+               << " to node " << destId << endl;
+            sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
+        }
+        return;
+    }
+
+    if (arrivalGate->isName("radioIn")) {
+        EV << "NtnPhyBase::handleMessage - received air frame " << msg->getName()
+           << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio, forwarding to relay" << endl;
+        send(msg, "upperLayerOut");
+        return;
+    }
+
+    throw cRuntimeError("NtnPhyBase::handleMessage - unexpected gate %s", arrivalGate->getName());
+}
+
+cModule *NtnPhyBase::resolvePeerNode() const
+{
+    if (nodeType_ == NTN_GATEWAY_NODE) {
+        MacNodeId satelliteId = binder_->getAssociatedSatelliteForGateway(nodeId_);
+        SatelliteInfo *info = binder_->getSatelliteInfo(satelliteId);
+        if (info == nullptr || info->satelliteModule == nullptr)
+            throw cRuntimeError("NtnPhyBase::resolvePeerNode - satellite %hu is not registered", num(satelliteId));
+        return info->satelliteModule.get();
+    }
+
+    if (nodeType_ == SATELLITE_NODE) {
+        MacNodeId gatewayId = binder_->getAssociatedGatewayForSatellite(nodeId_);
+        NtnGatewayInfo *info = binder_->getNtnGatewayInfo(gatewayId);
+        if (info == nullptr || info->gatewayModule == nullptr)
+            throw cRuntimeError("NtnPhyBase::resolvePeerNode - NTN gateway %hu is not registered", num(gatewayId));
+        return info->gatewayModule.get();
+    }
+
+    throw cRuntimeError("NtnPhyBase::resolvePeerNode - unsupported NTN node type %s", nodeTypeToA(nodeType_));
+}
+
+cGate *NtnPhyBase::resolvePeerGate() const
+{
+    cModule *peerNode = resolvePeerNode();
+    cGate *peerGate = peerNode->gate("feederLinkRadioIn");
+    if (peerGate == nullptr)
+        throw cRuntimeError("NtnPhyBase::resolvePeerGate - peer node %s has no feederLinkRadioIn gate", peerNode->getFullPath().c_str());
+    return peerGate;
+}
+
+int NtnPhyBase::getReceiverGateIndex(const cModule *receiver, bool isNr) const
+{
+    int gate = isNr ? receiver->findGate("nrRadioIn") : receiver->findGate("radioIn");
+    if (gate < 0) {
+        gate = receiver->findGate("lteRadioIn");
+        if (gate < 0)
+            throw cRuntimeError("receiver \"%s\" has no suitable radio input gate", receiver->getFullPath().c_str());
+    }
+    return gate;
+}
+
+} // namespace simu5g
