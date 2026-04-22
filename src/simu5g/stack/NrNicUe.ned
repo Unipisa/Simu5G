@@ -37,6 +37,7 @@ module NrNicUe extends LteNicUeD2D
         sdap.nodeRole = default("UE");
         sdap.useReflectiveQos = default(this.useReflectiveQos);
         sdap.reflectiveQosTableModule = default(this.useReflectiveQos ? "^.reflectiveQosTable" : "");
+        bool hasNtnSupport = default(false);
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
         string ntnChannelModelType = default("NrChannelModel_3GPP38_901");
 
@@ -59,7 +60,7 @@ module NrNicUe extends LteNicUeD2D
         nrDlFbGen.isNr = true;
         rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
-        nrPhy.ntnChannelModelModule = "^.ntnChannelModel[0]";
+        nrPhy.ntnChannelModelModule = hasNtnSupport ? "^.ntnChannelModel[0]" : "";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.rrc.nrHandoverController";
         rrc.nrHandoverController.macModule = "^.^.nrMac";
@@ -90,7 +91,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=80,60,col;g=left");
         }
         // NTN Channel Model
-        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel {
+        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel if hasNtnSupport {
             @display("p=620,314");
         }
 
