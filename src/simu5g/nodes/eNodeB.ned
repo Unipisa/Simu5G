@@ -14,9 +14,9 @@ package simu5g.nodes;
 
 import inet.applications.contract.IApp;
 import inet.common.MessageDispatcher;
-import inet.linklayer.contract.IEthernetInterface;
 import simu5g.stack.ICellularNic;
 import simu5g.stack.ICellularNicEnb;
+import simu5g.stack.NtnFronthaulNic;
 import simu5g.x2.LteX2App;
 import inet.linklayer.ppp.PppInterface;
 import inet.mobility.static.StationaryMobility;
@@ -107,7 +107,7 @@ module eNodeB
 
     gates:
         inout ppp @loose;         // connection to the Core Network
-        inout ntn @loose @labels(EthernetSignal); // optional NTN backhaul toward the NTN gateway
+        inout ntn @loose; // optional NTN backhaul toward the NTN gateway
         input radioIn @directIn;  // connection to the radio interface
         inout x2[];               // connection to the X2 interface
 
@@ -146,7 +146,7 @@ module eNodeB
                 @display("p=824,519");
         }
 
-        ntnIf: <default("EthernetInterface")> like IEthernetInterface if useTransparentNtn {
+        ntnIf: NtnFronthaulNic if useTransparentNtn {
             parameters:
                 @display("p=281,518");
         }

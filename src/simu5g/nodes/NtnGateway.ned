@@ -11,9 +11,9 @@
 
 package simu5g.nodes;
 
-import inet.linklayer.contract.IEthernetInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
+import simu5g.stack.NtnFronthaulNic;
 import simu5g.stack.NtnFeederLinkNic;
 
 //
@@ -25,7 +25,7 @@ module NtnGateway
 {
     parameters:
         @networkNode();
-        @labels(node,ethernet-node);
+        @labels(node);
         @display("i=device/receiverdish;bgb=476,275");
 
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
@@ -33,7 +33,7 @@ module NtnGateway
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
-        inout gnbLink @loose @labels(EtherFrame-conn);
+        inout gnbLink @loose;
         input feederLinkRadioIn @loose @directIn;
 
     submodules:
@@ -43,7 +43,7 @@ module NtnGateway
         mobility: <default("StationaryMobility")> like IMobility {
             @display("p=70,55;is=s");
         }
-        gnbNic: <default("EthernetInterface")> like IEthernetInterface {
+        gnbNic: NtnFronthaulNic {
             parameters:
                 @display("p=188,207");
         }

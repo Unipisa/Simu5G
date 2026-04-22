@@ -11,8 +11,6 @@
 
 #include "simu5g/stack/NtnFeederLinkNic.h"
 
-#include <inet/common/packet/Packet.h>
-
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 
 namespace simu5g {
@@ -36,20 +34,19 @@ void NtnFeederLinkNic::handleMessage(cMessage *msg)
 {
     cGate *arrivalGate = msg->getArrivalGate();
     if (arrivalGate->isName("upperLayerIn")) {
-        auto *pkt = check_and_cast<Packet *>(msg);
-        auto *frame = check_and_cast<AirFrame *>(pkt->decapsulate());
-        delete pkt;
+        auto *frame = check_and_cast<AirFrame *>(msg);
 
         cGate *peerGate = resolvePeerGate();
+        EV << "NtnFeederLinkNic::handleMessage - forwarding air frame " << frame->getName()
+           << " to peer node " << resolvePeerNode()->getFullPath() << endl;
         sendDirect(frame, 0, frame->getDuration(), peerGate);
         return;
     }
 
     if (arrivalGate->isName("radioIn")) {
-        auto *frame = check_and_cast<AirFrame *>(msg);
-        auto *pkt = new Packet(frame->getName());
-        pkt->encapsulate(frame);
-        send(pkt, "upperLayerOut");
+        EV << "NtnFeederLinkNic::handleMessage - received air frame " << msg->getName()
+           << " from feeder link radio, forwarding to relay" << endl;
+        send(msg, "upperLayerOut");
         return;
     }
     throw cRuntimeError("NtnFeederLinkNic::handleMessage - unexpected gate %s", arrivalGate->getName());

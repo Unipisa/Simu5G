@@ -11,8 +11,6 @@
 
 #include "simu5g/stack/NtnServiceLinkNic.h"
 
-#include <inet/common/packet/Packet.h>
-
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
 
 namespace simu5g {
@@ -32,26 +30,27 @@ void NtnServiceLinkNic::handleMessage(cMessage *msg)
 {
     cGate *arrivalGate = msg->getArrivalGate();
     if (arrivalGate->isName("upperLayerIn")) {
-        auto *pkt = check_and_cast<Packet *>(msg);
-        auto *frame = check_and_cast<LteAirFrame *>(pkt->decapsulate());
-        delete pkt;
+        auto *frame = check_and_cast<LteAirFrame *>(msg);
 
         MacNodeId destId = frame->getAdditionalInfo().getDestId();
         cModule *receiver = binder_->getNodeModule(destId);
         if (receiver == nullptr) {
+            EV << "NtnServiceLinkNic::handleMessage - destination node " << destId
+               << " is not available. Delete frame " << frame->getName() << endl;
             delete frame;
             return;
         }
 
+        EV << "NtnServiceLinkNic::handleMessage - forwarding air frame " << frame->getName()
+           << " to node " << destId << endl;
         sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
         return;
     }
 
     if (arrivalGate->isName("radioIn")) {
-        auto *frame = check_and_cast<LteAirFrame *>(msg);
-        auto *pkt = new Packet(frame->getName());
-        pkt->encapsulate(frame);
-        send(pkt, "upperLayerOut");
+        EV << "NtnServiceLinkNic::handleMessage - received air frame " << msg->getName()
+           << " from service link radio, forwarding to relay" << endl;
+        send(msg, "upperLayerOut");
         return;
     }
 
