@@ -11,22 +11,14 @@
 
 package simu5g.stack;
 
-module NtnServiceLinkNic
+simple NtnPhyBase
 {
     parameters:
-        @display("i=block/ifcard;bgb=704,443;bgl=3");
+        @display("i=block/wrxtx;bgb=704,443;bgl=3");
+        string binderModule = default("binder");
+        string linkType @enum("feeder","service");
     gates:
         input upperLayerIn;
         output upperLayerOut;
-        input radioIn @directIn;
-    submodules:
-        phy: NtnPhyBase {
-            parameters:
-                @display("p=352,221");
-                linkType = "service";
-        }
-    connections:
-        upperLayerIn --> phy.upperLayerIn;
-        upperLayerOut <-- phy.upperLayerOut;
-        radioIn --> phy.radioIn;
+        input radioIn @loose @directIn;
 }
