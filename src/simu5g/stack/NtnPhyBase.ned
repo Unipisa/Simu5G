@@ -16,6 +16,7 @@ simple NtnPhyBase
     parameters:
         @display("i=block/wrxtx;bgb=704,443;bgl=3");
         string binderModule = default("binder");
+        string channelModelModule = default("^.channelModel[0]");
         string linkType @enum("feeder","service");
     gates:
         input upperLayerIn;

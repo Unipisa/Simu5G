@@ -17,18 +17,17 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/carrierAggregation/ComponentCarrier.h"
-#include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/phy/packet/LteAirFrame.h"
+#include "simu5g/world/radio/ChannelAccess.h"
 namespace simu5g {
 
 using namespace inet;
 using namespace omnetpp;
 
 class LteAirFrame;
-class LtePhyBase;
-class Binder;
-
 class LteChannelModel : public cSimpleModule
 {
   protected:
@@ -39,7 +38,7 @@ class LteChannelModel : public cSimpleModule
     inet::ModuleRefByPar<CellInfo> cellInfo_;
 
     // Reference to the corresponding PHY layer
-    opp_component_ptr<LtePhyBase> phy_;
+    opp_component_ptr<ChannelAccess> phy_;
 
     // Reference to the component carrier
     inet::ModuleRefByPar<ComponentCarrier> componentCarrier_;
@@ -73,7 +72,7 @@ class LteChannelModel : public cSimpleModule
      */
     virtual unsigned int getNumerologyIndex() const { return componentCarrier_->getNumerologyIndex(); }
 
-    virtual void setPhy(LtePhyBase *phy) { phy_ = phy; }
+    virtual void setPhy(ChannelAccess *phy) { phy_ = phy; }
 
     /*
      * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
@@ -163,4 +162,3 @@ class LteChannelModel : public cSimpleModule
 } //namespace
 
 #endif
-
