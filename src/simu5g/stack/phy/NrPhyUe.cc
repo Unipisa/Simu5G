@@ -34,6 +34,13 @@ void NrPhyUe::initialize(int stage)
 
 void NrPhyUe::initializeChannelModels()
 {
+    if (!getParentModule()->par("hasNtnSupport").boolValue())
+        return;
+
+    const char *ntnChannelModelModule = par("ntnChannelModelModule").stringValue();
+    if (ntnChannelModelModule == nullptr || !*ntnChannelModelModule)
+        return;
+
     primaryNtnChannelModel_.reference(this, "ntnChannelModelModule", true);
     primaryNtnChannelModel_->setPhy(this);
     GHz carrierFreq = primaryNtnChannelModel_->getCarrierFrequency();

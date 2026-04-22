@@ -29,6 +29,7 @@ import simu5g.stack.rlc.LteRlc;
 module NrNicUe extends LteNicUeD2D
 {
     parameters:
+        bool hasNtnSupport = default(false);
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
         string ntnChannelModelType = default("NrChannelModel_3GPP38_901");
 
@@ -47,7 +48,7 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.rlcUmModule = "^.nrRlc.um";
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
-        nrPhy.ntnChannelModelModule = "^.ntnChannelModel[0]";
+        nrPhy.ntnChannelModelModule = hasNtnSupport ? "^.ntnChannelModel[0]" : "";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrMac.packetFlowObserverModule = hasRniSupport ? "^.nrPacketFlowObserver" : "";
         phy.otherPhyModule = "^.nrPhy";
@@ -74,7 +75,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=620,389");
         }
         // NTN Channel Model
-        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel {
+        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel if hasNtnSupport {
             @display("p=620,314");
         }
 

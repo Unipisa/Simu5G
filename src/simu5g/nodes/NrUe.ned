@@ -24,10 +24,12 @@ module NrUe extends LteUe
 {
     parameters:
         cellularNic.typename = default("NrNicUe");
+        bool hasNtnSupport = default(false);
 
         int nrServingNodeId = default(0); // the initial serving gNodeB of the UE; 0 if none
         int nrMacNodeId = default(2560 + simu5g_seq("NrUe_macNodeId"));
 
+        cellularNic.hasNtnSupport = this.hasNtnSupport;
         cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.nrUeCollector" : "";
         cellularNic.nrPhy.hasCollector = hasRniSupport;
     gates:
