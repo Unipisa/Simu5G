@@ -29,7 +29,7 @@ module NtnGateway
         @display("i=device/receiverdish;bgb=476,275");
 
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
-        int macNodeId = default(NTN_GW_MIN_ID + simu5g_seq("NtnGateway_macNodeId"));
+        int macNodeId = default(1024 + simu5g_seq("NtnGateway_macNodeId"));
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 
     gates:
