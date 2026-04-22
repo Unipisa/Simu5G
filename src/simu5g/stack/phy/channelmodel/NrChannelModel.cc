@@ -30,11 +30,11 @@ double NrChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
     double speed = .0;
 
     // COMPUTE 3D and 2D DISTANCE between UE and eNodeB
-    double threeDimDistance = phy_->getCoord().distance(coord);
-    double twoDimDistance = getTwoDimDistance(phy_->getCoord(), coord);
+    double threeDimDistance = phy_->getRadioPosition().distance(coord);
+    double twoDimDistance = getTwoDimDistance(phy_->getRadioPosition(), coord);
 
     if (dir == DL) // sender is UE
-        speed = computeSpeed(nodeId, phy_->getCoord());
+        speed = computeSpeed(nodeId, phy_->getRadioPosition());
     else
         speed = computeSpeed(nodeId, coord);
 
@@ -60,7 +60,7 @@ double NrChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
     // if sender is an eNodeB
     if (dir == DL)
         // store the position of user
-        updatePositionHistory(nodeId, phy_->getCoord());
+        updatePositionHistory(nodeId, phy_->getRadioPosition());
     else
         // sender is a UE
         updatePositionHistory(nodeId, coord);
@@ -411,7 +411,7 @@ bool NrChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 
 double NrChannelModel::computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId)
 {
-    computeSpeed(nodeId, phy_->getCoord());
+    computeSpeed(nodeId, phy_->getRadioPosition());
 
     // Compute attenuation based on selected scenario and based on LOS or NLOS
     bool los = losMap_[nodeId];

@@ -25,6 +25,8 @@ Define_Module(NtnPhyBase);
 
 void NtnPhyBase::initialize(int stage)
 {
+    ChannelAccess::initialize(stage);
+
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
@@ -34,6 +36,25 @@ void NtnPhyBase::initialize(int stage)
             nodeId_ = MacNodeId(node->par("macNodeId").intValue());
             nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
         }
+    }
+    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
+        initializeChannelModels();
+    }
+}
+
+void NtnPhyBase::initializeChannelModels()
+{
+    primaryChannelModel_.reference(this, "channelModelModule", true);
+    primaryChannelModel_->setPhy(this);
+    GHz carrierFreq = primaryChannelModel_->getCarrierFrequency();
+    channelModel_[carrierFreq] = primaryChannelModel_;
+
+    int numChannelModels = primaryChannelModel_->getVectorSize();
+    for (int index = 1; index < numChannelModels; index++) {
+        LteChannelModel *chanModel = check_and_cast<LteChannelModel *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
+        chanModel->setPhy(this);
+        carrierFreq = chanModel->getCarrierFrequency();
+        channelModel_[carrierFreq] = chanModel;
     }
 }
 

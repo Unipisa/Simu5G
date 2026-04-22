@@ -23,5 +23,5 @@ simple NrPhyUe extends LtePhyUeD2D
     parameters:
         @class("NrPhyUe");
         string otherPhyModule;
+        string ntnChannelModelModule = default("^.ntnChannelModel[0]");
 }
-

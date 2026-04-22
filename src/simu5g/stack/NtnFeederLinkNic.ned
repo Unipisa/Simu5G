@@ -11,10 +11,14 @@
 
 package simu5g.stack;
 
+import simu5g.stack.phy.channelmodel.ILteChannelModel;
+
 module NtnFeederLinkNic
 {
     parameters:
         @display("i=block/ifcard;bgb=704,443;bgl=3");
+        string channelModelType = default("NrChannelModel_3GPP38_901");
+        int numCarriers = default(1);
     gates:
         input upperLayerIn;
         output upperLayerOut;
@@ -24,6 +28,9 @@ module NtnFeederLinkNic
             parameters:
                 @display("p=352,221");
                 linkType = "feeder";
+        }
+        channelModel[numCarriers]: <channelModelType> like ILteChannelModel {
+            @display("p=100,221");
         }
     connections:
         upperLayerIn --> phy.upperLayerIn;

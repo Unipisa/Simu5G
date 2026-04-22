@@ -12,6 +12,8 @@
 #ifndef _NRPHYUE_H_
 #define _NRPHYUE_H_
 
+#include <map>
+
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
@@ -22,11 +24,14 @@ class NrPhyUe : public LtePhyUeD2D
 {
 
   protected:
+    std::map<GHz, opp_component_ptr<LteChannelModel>> ntnChannelModel_;
+    inet::ModuleRefByPar<LteChannelModel> primaryNtnChannelModel_;
 
     // reference to the parallel PHY layer
     inet::ModuleRefByPar<NrPhyUe> otherPhy_;
 
     void initialize(int stage) override;
+    void initializeChannelModels();
     void handleAirFrame(cMessage *msg) override;
     void triggerHandover() override;
     void doHandover() override;
@@ -39,4 +44,3 @@ class NrPhyUe : public LtePhyUeD2D
 } //namespace
 
 #endif /* _NRPHYUE_H_ */
-

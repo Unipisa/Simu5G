@@ -30,10 +30,12 @@ module NrNicUe extends LteNicUeD2D
 {
     parameters:
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
+        string ntnChannelModelType = default("NrChannelModel_3GPP38_901");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
         int numNrCarriers = default(1);
+        int numNtnCarriers = default(1);
 
         pdcp.typename = default("NrPdcpUe");
         phy.typename = default("NrPhyUe");	        // TODO fix this
@@ -41,10 +43,11 @@ module NrNicUe extends LteNicUeD2D
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
 
-        @display("bgb=694,443");
+        @display("bgb=740,456");
         nrPhy.rlcUmModule = "^.nrRlc.um";
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
+        nrPhy.ntnChannelModelModule = "^.ntnChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrMac.packetFlowObserverModule = hasRniSupport ? "^.nrPacketFlowObserver" : "";
         phy.otherPhyModule = "^.nrPhy";
@@ -68,7 +71,11 @@ module NrNicUe extends LteNicUeD2D
         }
         // NR Channel Model
         nrChannelModel[numNrCarriers]: <nrChannelModelType> like ILteChannelModel {
-            @display("p=232,389");
+            @display("p=620,389");
+        }
+        // NTN Channel Model
+        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel {
+            @display("p=620,314");
         }
 
         // Feedback generator submodule

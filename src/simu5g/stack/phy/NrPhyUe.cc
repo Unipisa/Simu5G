@@ -27,6 +27,25 @@ void NrPhyUe::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         otherPhy_.reference(this, "otherPhyModule", true);
     }
+    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
+        initializeChannelModels();
+    }
+}
+
+void NrPhyUe::initializeChannelModels()
+{
+    primaryNtnChannelModel_.reference(this, "ntnChannelModelModule", true);
+    primaryNtnChannelModel_->setPhy(this);
+    GHz carrierFreq = primaryNtnChannelModel_->getCarrierFrequency();
+    ntnChannelModel_[carrierFreq] = primaryNtnChannelModel_;
+
+    int numChannelModels = primaryNtnChannelModel_->getVectorSize();
+    for (int index = 1; index < numChannelModels; index++) {
+        LteChannelModel *chanModel = check_and_cast<LteChannelModel *>(primaryNtnChannelModel_->getParentModule()->getSubmodule(primaryNtnChannelModel_->getName(), index));
+        chanModel->setPhy(this);
+        carrierFreq = chanModel->getCarrierFrequency();
+        ntnChannelModel_[carrierFreq] = chanModel;
+    }
 }
 
 // TODO: ***reorganize*** method

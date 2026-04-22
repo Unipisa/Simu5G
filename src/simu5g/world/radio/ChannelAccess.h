@@ -50,6 +50,8 @@ class ChannelAccess : public cSimpleModule, public cListener
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
+    const inet::Coord& getRadioPosition() const { return radioPos; }
+
     /** Finds the channelControl module in the network */
     IChannelControl *getChannelControl();
 
@@ -65,7 +67,6 @@ class ChannelAccess : public cSimpleModule, public cListener
     virtual void sendToChannel(AirFrame *msg);
 
     virtual cPar& getChannelControlPar(const char *parName) { return check_and_cast<cModule *>(cc.get())->par(parName); }
-    const inet::Coord& getRadioPosition() const { return radioPos; }
     cModule *getHostModule() const { return hostModule; }
 
     /** Register with ChannelControl and subscribe to hostPos*/

@@ -102,11 +102,11 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
     double correlationDist = .0;
 
     //COMPUTE DISTANCE between UE and eNodeB
-    double sqrDistance = phy_->getCoord().distance(coord);
+    double sqrDistance = phy_->getRadioPosition().distance(coord);
 
     if (dir == DL) { // sender is UE
-        speed = computeSpeed(nodeId, phy_->getCoord());
-        correlationDist = computeCorrelationDistance(nodeId, phy_->getCoord());
+        speed = computeSpeed(nodeId, phy_->getRadioPosition());
+        correlationDist = computeCorrelationDistance(nodeId, phy_->getRadioPosition());
     }
     else {
         speed = computeSpeed(nodeId, coord);
@@ -137,8 +137,8 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
     //if sender is an eNodeB
     if (dir == DL) {
         //store the position of user
-        updatePositionHistory(nodeId, phy_->getCoord());
-        updateCorrelationDistance(nodeId, phy_->getCoord());
+        updatePositionHistory(nodeId, phy_->getRadioPosition());
+        updateCorrelationDistance(nodeId, phy_->getRadioPosition());
     }
     else {
         //sender is an UE
@@ -440,10 +440,10 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
         eNbId = lteInfo->getSourceId();
 
         // get position of UE and eNb
-        ueCoord = phy_->getCoord();
+        ueCoord = phy_->getRadioPosition();
         enbCoord = lteInfo->getCoord();
 
-        speed = computeSpeed(ueId, phy_->getCoord());
+        speed = computeSpeed(ueId, phy_->getRadioPosition());
     }
     /*
      * If direction is UL OR
@@ -482,7 +482,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
         // get position of UE and eNb
         ueCoord = coord;
-        enbCoord = phy_->getCoord();
+        enbCoord = phy_->getRadioPosition();
     }
 
     CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
@@ -679,7 +679,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     // if sender is an eNodeB
     if (dir == DL)
         // store the position of user
-        updatePositionHistory(ueId, phy_->getCoord());
+        updatePositionHistory(ueId, phy_->getRadioPosition());
     // sender is a UE
     else
         updatePositionHistory(ueId, coord);
@@ -735,10 +735,10 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
         eNbId = lteInfo->getSourceId();
 
         // get position of UE and eNB
-        ueCoord = phy_->getCoord();
+        ueCoord = phy_->getRadioPosition();
         enbCoord = lteInfo->getCoord();
 
-        speed = computeSpeed(ueId, phy_->getCoord());
+        speed = computeSpeed(ueId, phy_->getRadioPosition());
     }
     /*
      * If direction is UL OR
@@ -777,7 +777,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
 
         // get position of UE and eNB
         ueCoord = coord;
-        enbCoord = phy_->getCoord();
+        enbCoord = phy_->getRadioPosition();
     }
 
     CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
@@ -902,7 +902,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
 
     // position of e/gNb and UE
     Coord ueCoord = lteInfo->getCoord();
-    Coord enbCoord = phy_->getCoord();
+    Coord enbCoord = phy_->getRadioPosition();
 
     double antennaGainTx = 0.0;
     double antennaGainRx = 0.0;
@@ -1561,7 +1561,7 @@ std::vector<double> LteRealisticChannelModel::getSIR(LteAirFrame *frame,
     // if direction is DL
     if (dir == DL && (lteInfo->getFrameType() != FEEDBACKPKT)) {
         id = lteInfo->getDestId();
-        speed = computeSpeed(id, phy_->getCoord());
+        speed = computeSpeed(id, phy_->getRadioPosition());
     }
     /*
      * If direction is UL OR
@@ -1604,7 +1604,7 @@ std::vector<double> LteRealisticChannelModel::getSIR(LteAirFrame *frame,
     // if sender is an eNodeB
     if (dir == DL)
         // store the position of the user
-        updatePositionHistory(id, phy_->getCoord());
+        updatePositionHistory(id, phy_->getRadioPosition());
     // sender is a UE
     else
         updatePositionHistory(id, coord);
@@ -1747,7 +1747,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
     std::vector<double> snrV;
     if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
         MacNodeId destId = lteInfo->getDestId();
-        Coord destCoord = phy_->getCoord();
+        Coord destCoord = phy_->getRadioPosition();
         MacNodeId enbId = binder_->getNextHop(lteInfo->getSourceId());
         snrV = getSINR_D2D(frame, lteInfo, destId, destCoord, enbId);
     }
@@ -1891,7 +1891,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, Use
     std::vector<double> snrV;
     if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
         MacNodeId peerUeMacNodeId = lteInfo->getDestId();
-        Coord peerCoord = phy_->getCoord();
+        Coord peerCoord = phy_->getRadioPosition();
         MacNodeId enbId = MacNodeId(1); // TODO get an appropriate way to get EnbId
 
         if (lteInfo->getDirection() == D2D) {
@@ -2638,14 +2638,14 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
             double txAngle = enbInfo->txAngle;
 
             // compute the angle between uePosition and reference axis, considering the eNB as center
-            double ueAngle = computeAngle(interfChanModel->phy_->getCoord(), coord);
+            double ueAngle = computeAngle(interfChanModel->phy_->getRadioPosition(), coord);
 
             // compute the reception angle between ue and eNB
             double recvAngle = fabs(txAngle - ueAngle);
             if (recvAngle > 180)
                 recvAngle = 360 - recvAngle;
 
-            double verticalAngle = computeVerticalAngle(interfChanModel->phy_->getCoord(), coord);
+            double verticalAngle = computeVerticalAngle(interfChanModel->phy_->getRadioPosition(), coord);
 
             // compute attenuation due to sectorial tx
             angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
