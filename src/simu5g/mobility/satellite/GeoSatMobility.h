@@ -7,7 +7,7 @@
 #include "inet/common/INETDefs.h"
 #include "inet/common/InitStages.h"
 
-#include "simu5g/mobility/geographic/GeographicReferenceSystem.h"
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 
 using namespace omnetpp;
 using namespace inet;

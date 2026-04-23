@@ -1,4 +1,4 @@
-package simu5g.mobility.geographic;
+package simu5g.mobility.georeference;
 
 simple GeographicReferenceSystem
 {

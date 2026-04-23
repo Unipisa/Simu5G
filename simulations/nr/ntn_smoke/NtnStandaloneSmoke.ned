@@ -18,7 +18,7 @@ import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.mobility.geographic.GeographicReferenceSystem;
+import simu5g.mobility.georeference.GeographicReferenceSystem;
 import simu5g.nodes.NtnGateway;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.Satellite;
