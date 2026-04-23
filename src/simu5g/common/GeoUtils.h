@@ -19,10 +19,12 @@
   #define GEOUTILS_RESTORE_NAN
 #endif
 
+#include <GeographicLib/Constants.hpp>
 #include "GeographicLib/GeoCoords.hpp"
 #include "GeographicLib/Geoid.hpp"
 #include "GeographicLib/Geodesic.hpp"
 #include "GeographicLib/Geocentric.hpp"
+#include "GeographicLib/LocalCartesian.hpp"
 #include "GeographicLib/Intersect.hpp"
 
 // Restore NaN macro if it existed
