@@ -1,17 +1,34 @@
 #include "simu5g/mobility/satellite/GeoSatMobility.h"
 
-using namespace simu5g;
+namespace simu5g {
 
 Define_Module(GeoSatMobility);
 
 void GeoSatMobility::initialize( int stage )
 {
     StationaryMobility::initialize( stage );
+    if (stage == INITSTAGE_LOCAL)
+    {
+        // create projection context
+        pj_ctx = proj_context_create();
+
+        // create wgs84_to_wgs84cartesian_projection
+        wgs84_to_wgs84cartesian_projection = proj_create(pj_ctx, "+proj=pipeline +step proj=cart +ellps=WGS84");    // from WGS84 geodetic to cartesian
+
+    }
     if (stage == space_veins::INITSTAGE_SPACEVEINS_SATMOBILITY)
     {
         // has to be done after the SOP stage in which the sop_omnet_coord is retrieved from its mobility
         // Get access to SOP
         sop_ = space_veins::SatelliteObservationPointAccess().get();
+        ASSERT(sop_);
+        const PJ_COORD sop_wgs84_proj_cart = sop_->get_sop_wgs84_proj_cart();
+        // create geocentric to topocentric projection (requires sop_wgs84 as Cartesian coordinate)
+        std::stringstream ss_proj;
+        ss_proj << "+proj=topocentric +ellps=WGS84 +X_0=" << sop_wgs84_proj_cart.xyz.x << " +Y_0=" << sop_wgs84_proj_cart.xyz.y << " +Z_0=" << sop_wgs84_proj_cart.xyz.z;
+        EV_DEBUG << "SGP4Mobility: ss_proj: " << ss_proj.str() << std::endl;
+        // geocentric to topocentric projection
+        wgs84cartesian_to_topocentric_projection = proj_create(pj_ctx, ss_proj.str().c_str());
 
         // read position parameters
         double lat = par("initialLatitude");
@@ -41,12 +58,12 @@ void GeoSatMobility::initialize( int stage )
         EV_TRACE << "GeoSatMobility satellite position: " << satellitePosition << std::endl;
 
         lastPosition = satellitePosition;
+
+        emitMobilityStateChangedSignal();
+        refreshDisplay();
+
+        EV_TRACE << "GeoSatMobility updated display string" << std::endl;
     }
 }
 
-
-void GeoSatMobility::initializePosition()
-{
-//    checkPosition();
-//    emitMobilityStateChangedSignal();
 }

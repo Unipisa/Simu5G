@@ -8,7 +8,7 @@ import inet.mobility.static.StationaryMobility;
 simple GeoSatMobility extends StationaryMobility
 {
     parameters:
-        @class(simu5g::GeoSatMobility);
+        @class(GeoSatMobility);
         initialLatitude = default(0deg);    // initial latitude (in degrees)
         initialLongitude = default(0deg);   // initial longitude (in degrees)
         initialAltitude = default(35786km); // initial altitude (in meters)

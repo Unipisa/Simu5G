@@ -24,10 +24,10 @@ protected:
     // SOP pointer
     space_veins::SatelliteObservationPoint* sop_;
 
+    /* PROJ objects */
+    PJ_CONTEXT* pj_ctx;
     PJ* wgs84_to_wgs84cartesian_projection;
     PJ* wgs84cartesian_to_topocentric_projection;
-
-    virtual void initializePosition() override;
 
 public:
 
