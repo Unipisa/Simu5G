@@ -43,7 +43,7 @@ network NtnStandaloneSmoke
             @display("p=50,75;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,125");
+            @display("p=50,125;is=s");
         }
         binder: Binder {
             @display("p=50,175;is=s");
@@ -53,7 +53,7 @@ network NtnStandaloneSmoke
         }
 
         geoRef: GeographicReferenceSystem {
-            @display("p=50,345");
+            @display("p=50,345;is=s");
         }
 
         server: StandardHost {
