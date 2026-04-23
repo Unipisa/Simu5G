@@ -6,13 +6,12 @@
 #include <sstream>
 #include <string>
 
-#include <proj.h>
-
 #include "inet/common/INETDefs.h"
 #include "inet/common/InitStages.h"
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
 
+#include "simu5g/common/GeoUtils.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/mobility/satellite/SGP4.h"
 #include "simu5g/mobility/satellite/TLE.h"
@@ -32,9 +31,6 @@ class LeoSatMobility : public inet::MovingMobilityBase
     };
 
     bool isPreInitialized_ = false;
-
-    PJ_CONTEXT *pjCtx_ = nullptr;
-    PJ *itrf2008ToWgs84Projection_ = nullptr;
 
     elsetrec satrec_;
     TLE tle_;
@@ -65,7 +61,6 @@ class LeoSatMobility : public inet::MovingMobilityBase
 
   public:
     LeoSatMobility() = default;
-    ~LeoSatMobility() override;
 
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
