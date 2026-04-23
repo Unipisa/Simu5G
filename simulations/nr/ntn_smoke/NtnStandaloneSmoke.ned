@@ -16,10 +16,9 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import org.car2x.veins.modules.world.annotations.AnnotationManager;
-import space_veins.modules.SatelliteObservationPoint.SatelliteObservationPoint;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.mobility.geographic.GeographicReferenceSystem;
 import simu5g.nodes.NtnGateway;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.Satellite;
@@ -53,11 +52,8 @@ network NtnStandaloneSmoke
             @display("p=50,258;is=s");
         }
 
-        annotations: AnnotationManager {
-            @display("p=133,24");
-        }
-        sop: SatelliteObservationPoint {
-            @display("p=862,60");
+        geoRef: GeographicReferenceSystem {
+            @display("p=50,345");
         }
 
         server: StandardHost {
