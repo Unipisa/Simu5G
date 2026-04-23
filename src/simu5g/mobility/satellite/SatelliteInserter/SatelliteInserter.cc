@@ -22,8 +22,9 @@
 //
 
 #include <fstream>
-#include <sstream>
 #include <regex>
+#include <sstream>
+#include <vector>
 
 #include "simu5g/mobility/satellite/SatelliteInserter/SatelliteInserter.h"
 #include "simu5g/mobility/satellite/LeoSatMobility.h"
@@ -34,6 +35,20 @@ namespace simu5g {
 using namespace omnetpp;
 
 Define_Module(SatelliteInserter);
+
+namespace {
+
+void collectLeoSatMobilityModules(cModule *module, std::vector<LeoSatMobility *>& result)
+{
+    if (module == nullptr)
+        return;
+    if (auto *mobility = dynamic_cast<LeoSatMobility *>(module))
+        result.push_back(mobility);
+    for (cModule::SubmoduleIterator it(module); !it.end(); ++it)
+        collectLeoSatMobilityModules(*it, result);
+}
+
+} // namespace
 
 void SatelliteInserter::initialize(int stage)
 {
@@ -142,7 +157,8 @@ void SatelliteInserter::createSatellite(TLE tle, unsigned int satNum, unsigned i
 
     mod->finalizeParameters();
     mod->buildInside();
-    auto leoSatMobilityModules = veins::getSubmodulesOfType<LeoSatMobility>(mod);
+    std::vector<LeoSatMobility *> leoSatMobilityModules;
+    collectLeoSatMobilityModules(mod, leoSatMobilityModules);
     for (auto mobility : leoSatMobilityModules) {
         mobility->preInitialize(tle, wall_clock_sim_start_time_utc);
     }

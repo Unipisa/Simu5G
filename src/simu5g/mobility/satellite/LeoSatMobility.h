@@ -16,7 +16,6 @@
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/mobility/satellite/SGP4.h"
 #include "simu5g/mobility/satellite/TLE.h"
-#include "veins/base/utils/FindModule.h"
 
 namespace simu5g {
 
@@ -81,10 +80,24 @@ class LeoSatMobility : public inet::MovingMobilityBase
 };
 
 class LeoSatMobilityAccess {
+  protected:
+    static LeoSatMobility *findRecursively(omnetpp::cModule *module)
+    {
+        if (module == nullptr)
+            return nullptr;
+        if (auto *leoSatMobility = dynamic_cast<LeoSatMobility *>(module))
+            return leoSatMobility;
+        for (omnetpp::cModule::SubmoduleIterator it(module); !it.end(); ++it) {
+            if (auto *found = findRecursively(*it))
+                return found;
+        }
+        return nullptr;
+    }
+
   public:
     LeoSatMobility *get(omnetpp::cModule *host)
     {
-        auto *leoSatMobility = veins::FindModule<LeoSatMobility *>::findSubModule(host);
+        auto *leoSatMobility = findRecursively(host);
         ASSERT(leoSatMobility != nullptr);
         return leoSatMobility;
     }
