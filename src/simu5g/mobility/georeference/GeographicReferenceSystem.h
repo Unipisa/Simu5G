@@ -9,7 +9,6 @@
 #include "inet/common/InitStages.h"
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
-#include "veins/base/utils/FindModule.h"
 
 namespace simu5g {
 
@@ -39,10 +38,24 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
 };
 
 class GeographicReferenceSystemAccess {
+  protected:
+    static GeographicReferenceSystem *findRecursively(omnetpp::cModule *module)
+    {
+        if (module == nullptr)
+            return nullptr;
+        if (auto *referenceSystem = dynamic_cast<GeographicReferenceSystem *>(module))
+            return referenceSystem;
+        for (omnetpp::cModule::SubmoduleIterator it(module); !it.end(); ++it) {
+            if (auto *found = findRecursively(*it))
+                return found;
+        }
+        return nullptr;
+    }
+
   public:
     GeographicReferenceSystem *get()
     {
-        return veins::FindModule<GeographicReferenceSystem *>::findGlobalModule();
+        return findRecursively(omnetpp::cSimulation::getActiveSimulation()->getSystemModule());
     }
 };
 
