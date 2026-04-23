@@ -40,7 +40,7 @@ module Satellite
         interfaceTable: InterfaceTable {
             @display("p=70,120;is=s");
         }
-        mobility: <default("StationaryMobility")> like IMobility {
+        mobility: <default("GeoSatMobility")> like IMobility {
             @display("p=70,55;is=s");
         }
         serviceNic: NtnServiceLinkNic {
