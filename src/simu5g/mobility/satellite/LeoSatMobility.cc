@@ -166,7 +166,7 @@ void LeoSatMobility::updateSatellitePosition()
     inet::GeoCoord satelliteWgs84(inet::deg(geo.lpz.phi), inet::deg(geo.lpz.lam), inet::m(geo.lpz.z));
 
     EV_TRACE << "LeoSatMobility simTime(): " << simTime() << std::endl;
-    EV_TRACE << "LeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
+    EV_DEBUG << "LeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
              << ", lon(deg) " << satelliteWgs84.longitude
              << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
 
