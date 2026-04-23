@@ -12,12 +12,10 @@ using namespace omnetpp;
 
 Define_Module(LeoSatMobility);
 
-LeoSatMobility::~LeoSatMobility()
-{
-    if (itrf2008ToWgs84Projection_ != nullptr)
-        proj_destroy(itrf2008ToWgs84Projection_);
-    if (pjCtx_ != nullptr)
-        proj_context_destroy(pjCtx_);
+namespace {
+const GeographicLib::Geocentric WGS84_EARTH(
+        GeographicLib::Constants::WGS84_a(),
+        GeographicLib::Constants::WGS84_f());
 }
 
 void LeoSatMobility::preInitialize(TLE tle, std::string wallClockSimStartTimeUtc)
@@ -43,12 +41,6 @@ void LeoSatMobility::initialize(int stage)
         WATCH(tle_.tle_line1);
         WATCH(tle_.tle_line2);
         WATCH(wallClockSimStartTimeUtc_);
-
-        pjCtx_ = proj_context_create();
-        itrf2008ToWgs84Projection_ = proj_create_crs_to_crs(pjCtx_, "EPSG:5332", "EPSG:4326", nullptr);
-        itrf2008ToWgs84Projection_ = proj_normalize_for_visualization(pjCtx_, itrf2008ToWgs84Projection_);
-        if (itrf2008ToWgs84Projection_ == nullptr)
-            throw cRuntimeError("itrf2008_to_wgs84_projection initialization error");
 
         initializePropagator();
         initializeTimeState();
@@ -161,9 +153,14 @@ void LeoSatMobility::updateSatellitePosition()
 
     auto itrf = TEME_to_ITRF(currentWallClockTimeJd_, rTEME, vTEME, 0.0, 0.0, currentWallClockTimeFrac_);
 
-    PJ_COORD toTransfer = proj_coord(itrf.first[0] * 1000, itrf.first[1] * 1000, itrf.first[2] * 1000, 0);
-    PJ_COORD geo = proj_trans(itrf2008ToWgs84Projection_, PJ_FWD, toTransfer);
-    inet::GeoCoord satelliteWgs84(inet::deg(geo.lpz.phi), inet::deg(geo.lpz.lam), inet::m(geo.lpz.z));
+    double latitude = 0;
+    double longitude = 0;
+    double altitude = 0;
+    // TEME_to_ITRF returns Earth-fixed Cartesian coordinates in the ITRF family.
+    // Here we treat ITRF2008 and WGS84 as equivalent for simulation purposes and
+    // convert directly to geodetic coordinates on the WGS84 ellipsoid.
+    WGS84_EARTH.Reverse(itrf.first[0] * 1000, itrf.first[1] * 1000, itrf.first[2] * 1000, latitude, longitude, altitude);
+    inet::GeoCoord satelliteWgs84{inet::deg(latitude), inet::deg(longitude), inet::m(altitude)};
 
     EV_TRACE << "LeoSatMobility simTime(): " << simTime() << std::endl;
     EV_DEBUG << "LeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
