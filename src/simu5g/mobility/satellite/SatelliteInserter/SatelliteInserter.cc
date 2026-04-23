@@ -27,7 +27,7 @@
 
 #include "simu5g/mobility/satellite/SatelliteInserter/SatelliteInserter.h"
 #include "simu5g/mobility/satellite/LeoSatMobility.h"
-#include "veins/base/utils/FindModule.h"
+#include "simu5g/common/InitStages.h"
 
 namespace simu5g {
 
@@ -37,18 +37,17 @@ Define_Module(SatelliteInserter);
 
 void SatelliteInserter::initialize(int stage)
 {
-    switch (stage)
+    if (stage == inet::INITSTAGE_LOCAL)
     {
-        case 0:
-            pathToTleFile = par("pathToTleFile").stringValue();
-            satelliteModuleType = par("satelliteModuleType").stringValue();
-            satelliteModuleDefaultName = par("satelliteModuleDefaultName").stringValue();
-            wall_clock_sim_start_time_utc = par("wall_clock_sim_start_time_utc").stringValue();
-            ignoreUnknownSatellites = par("ignoreUnknownSatellites").boolValue();
-            break;
-        case 98:
-            parseTleFile(pathToTleFile);
-            break;
+        pathToTleFile = par("pathToTleFile").stringValue();
+        satelliteModuleType = par("satelliteModuleType").stringValue();
+        satelliteModuleDefaultName = par("satelliteModuleDefaultName").stringValue();
+        wall_clock_sim_start_time_utc = par("wall_clock_sim_start_time_utc").stringValue();
+        ignoreUnknownSatellites = par("ignoreUnknownSatellites").boolValue();
+    }
+    else if (stage == simu5g::INITSTAGE_SIMU5G_REGISTRATIONS2)
+    {
+        parseTleFile(pathToTleFile);
     }
 }
 

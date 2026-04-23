@@ -24,7 +24,7 @@ package simu5g.mobility.satellite.SatelliteInserter;
 simple SatelliteInserter
 {
     parameters:
-        @class(simu5g::SatelliteInserter);
+        @display("i=block/control");
         string satelliteModuleType = default("simu5g.nodes.Satellite");
         string satelliteModuleDefaultName = default("Satellite");
         bool ignoreUnknownSatellites = default(true); // Satellites whose name does not start with a constellation name listed in examples/space_veins/SatelliteExampleScenario.ned will be ignored
