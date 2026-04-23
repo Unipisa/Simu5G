@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>inet4.5</project>
-		<project>space_veins</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
