@@ -8,7 +8,7 @@
 #include "inet/common/INETDefs.h"
 #include "inet/common/InitStages.h"
 #include "inet/common/geometry/common/Coord.h"
-#include "space_veins/modules/utility/WGS84Coord.h"
+#include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "veins/base/utils/FindModule.h"
 
 namespace simu5g {
@@ -17,7 +17,7 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
 {
   protected:
     inet::Coord referenceOmnetCoord_;
-    space_veins::WGS84Coord referenceWgs84_;
+    inet::GeoCoord referenceWgs84_ = inet::GeoCoord::NIL;
     PJ_COORD referenceWgs84ProjCart_;
 
     PJ_CONTEXT *pjCtx_ = nullptr;
@@ -32,10 +32,10 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     const inet::Coord& getReferenceOmnetCoord() const { return referenceOmnetCoord_; }
-    const space_veins::WGS84Coord& getReferenceWgs84() const { return referenceWgs84_; }
+    const inet::GeoCoord& getReferenceWgs84() const { return referenceWgs84_; }
     PJ_COORD getReferenceWgs84ProjCart() const { return referenceWgs84ProjCart_; }
 
-    inet::Coord omnetFromWgs84(const space_veins::WGS84Coord& wgs84Coord) const;
+    inet::Coord omnetFromWgs84(const inet::GeoCoord& wgs84Coord) const;
 };
 
 class GeographicReferenceSystemAccess {

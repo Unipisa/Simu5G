@@ -13,8 +13,10 @@ void GeoSatMobility::initialize( int stage )
     referenceSystem_ = GeographicReferenceSystemAccess().get();
     ASSERT(referenceSystem_ != nullptr);
 
-    space_veins::WGS84Coord satelliteWgs84(par("initialLatitude"), par("initialLongitude"), par("initialAltitude"));
-    EV_TRACE << "GeoSatMobility sat_pos_wgs84: " << satelliteWgs84 << std::endl;
+    inet::GeoCoord satelliteWgs84(inet::deg(par("initialLatitude")), inet::deg(par("initialLongitude")), inet::m(par("initialAltitude")));
+    EV_TRACE << "GeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
+             << ", lon(deg) " << satelliteWgs84.longitude
+             << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
 
     lastPosition = referenceSystem_->omnetFromWgs84(satelliteWgs84);
 

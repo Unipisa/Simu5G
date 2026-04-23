@@ -29,14 +29,14 @@ void GeographicReferenceSystem::initialize(int stage)
         return;
 
     referenceOmnetCoord_ = inet::Coord(par("x"), par("y"), par("z"));
-    referenceWgs84_ = space_veins::WGS84Coord(par("referenceLatitude"), par("referenceLongitude"), par("referenceAltitude"));
+    referenceWgs84_ = inet::GeoCoord(inet::deg(par("referenceLatitude")), inet::deg(par("referenceLongitude")), inet::m(par("referenceAltitude")));
 
     pjCtx_ = proj_context_create();
     wgs84ToWgs84CartesianProjection_ = proj_create(pjCtx_, "+proj=pipeline +step proj=cart +ellps=WGS84");
 
     ASSERT(wgs84ToWgs84CartesianProjection_ != nullptr);
 
-    PJ_COORD referenceWgs84ProjRad = proj_coord(referenceWgs84_.lon * DEG_TO_RAD, referenceWgs84_.lat * DEG_TO_RAD, referenceWgs84_.alt, 0);
+    PJ_COORD referenceWgs84ProjRad = proj_coord(referenceWgs84_.longitude.get() * DEG_TO_RAD, referenceWgs84_.latitude.get() * DEG_TO_RAD, referenceWgs84_.altitude.get(), 0);
     referenceWgs84ProjCart_ = proj_trans(wgs84ToWgs84CartesianProjection_, PJ_FWD, referenceWgs84ProjRad);
 
     std::stringstream ssProj;
@@ -47,9 +47,9 @@ void GeographicReferenceSystem::initialize(int stage)
     ASSERT(wgs84CartesianToTopocentricProjection_ != nullptr);
 }
 
-inet::Coord GeographicReferenceSystem::omnetFromWgs84(const space_veins::WGS84Coord& wgs84Coord) const
+inet::Coord GeographicReferenceSystem::omnetFromWgs84(const inet::GeoCoord& wgs84Coord) const
 {
-    PJ_COORD toTransfer = proj_coord(wgs84Coord.lon * DEG_TO_RAD, wgs84Coord.lat * DEG_TO_RAD, wgs84Coord.alt, 0);
+    PJ_COORD toTransfer = proj_coord(wgs84Coord.longitude.get() * DEG_TO_RAD, wgs84Coord.latitude.get() * DEG_TO_RAD, wgs84Coord.altitude.get(), 0);
     PJ_COORD geoCart = proj_trans(wgs84ToWgs84CartesianProjection_, PJ_FWD, toTransfer);
     PJ_COORD topoCart = proj_trans(wgs84CartesianToTopocentricProjection_, PJ_FWD, geoCart);
 
