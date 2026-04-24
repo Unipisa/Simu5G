@@ -55,6 +55,26 @@ void NrPhyUe::initializeChannelModels()
     }
 }
 
+LteChannelModel *NrPhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
+{
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
+    if (!getParentModule()->par("hasNtnSupport").boolValue())
+        return getChannelModel(carrierFreq);
+
+    // Transparent NTN relaying currently preserves the serving gNB as sourceId.
+    // Because of that, we infer "satellite-originated" reception from the source
+    // gNB's NTN association instead of checking for a SATELLITE_NODE source here.
+    // Future review note: if frame sourceId semantics change to expose the actual
+    // satellite ID on downlink frames, this lookup logic should be updated.
+    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(lteInfo->getSourceId());
+    if (association == nullptr || !association->isTransparent)
+        return getChannelModel(carrierFreq);
+
+    EV_DEBUG << "NrPhyUe::getReceptionChannelModel - using NTN channel model" << endl;
+    auto it = ntnChannelModel_.find(carrierFreq);
+    return (it == ntnChannelModel_.end()) ? nullptr : it->second;
+}
+
 // TODO: ***reorganize*** method
 void NrPhyUe::handleAirFrame(cMessage *msg)
 {
@@ -72,7 +92,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
     }
 
     GHz carrierFreq = lteInfo->getCarrierFrequency();
-    LteChannelModel *channelModel = getChannelModel(carrierFreq);
+    LteChannelModel *channelModel = getReceptionChannelModel(lteInfo);
     if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
