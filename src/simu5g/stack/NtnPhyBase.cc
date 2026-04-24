@@ -86,33 +86,38 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
     send(msg, "upperLayerOut");
 }
 
+void NtnPhyBase::handleUpperMessage(cMessage *msg)
+{
+    if (isFeederLink_) {
+        auto *frame = check_and_cast<LteAirFrame *>(msg);
+        cModule *peerNode = resolvePeerNode();
+        cGate *peerGate = resolvePeerGate();
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
+           << " to peer node " << peerNode->getFullPath() << endl;
+        sendDirect(frame, 0, frame->getDuration(), peerGate);
+    }
+    else {
+        auto *frame = check_and_cast<LteAirFrame *>(msg);
+        MacNodeId destId = frame->getAdditionalInfo().getDestId();
+        cModule *receiver = binder_->getNodeModule(destId);
+        if (receiver == nullptr) {
+            EV << "NtnPhyBase::handleUpperMessage - destination node " << destId
+               << " is not available. Delete frame " << frame->getName() << endl;
+            delete frame;
+            return;
+        }
+
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
+           << " to node " << destId << endl;
+        sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
+    }
+}
+
 void NtnPhyBase::handleMessage(cMessage *msg)
 {
     cGate *arrivalGate = msg->getArrivalGate();
     if (arrivalGate->isName("upperLayerIn")) {
-        if (isFeederLink_) {
-            auto *frame = check_and_cast<LteAirFrame *>(msg);
-            cModule *peerNode = resolvePeerNode();
-            cGate *peerGate = resolvePeerGate();
-            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
-               << " to peer node " << peerNode->getFullPath() << endl;
-            sendDirect(frame, 0, frame->getDuration(), peerGate);
-        }
-        else {
-            auto *frame = check_and_cast<LteAirFrame *>(msg);
-            MacNodeId destId = frame->getAdditionalInfo().getDestId();
-            cModule *receiver = binder_->getNodeModule(destId);
-            if (receiver == nullptr) {
-                EV << "NtnPhyBase::handleMessage - destination node " << destId
-                   << " is not available. Delete frame " << frame->getName() << endl;
-                delete frame;
-                return;
-            }
-
-            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
-               << " to node " << destId << endl;
-            sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
-        }
+        handleUpperMessage(msg);
         return;
     }
 

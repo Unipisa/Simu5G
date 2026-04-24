@@ -29,6 +29,7 @@ class NtnPhyBase : public ChannelAccess
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(omnetpp::cMessage *msg) override;
     void handleAirFrame(omnetpp::cMessage *msg);
+    void handleUpperMessage(omnetpp::cMessage *msg);
 
     omnetpp::cGate *resolvePeerGate() const;
     omnetpp::cModule *resolvePeerNode() const;
