@@ -29,6 +29,7 @@ class NrPhyUe : public LtePhyUeD2D
 
     void initialize(int stage) override;
     void initializeChannelModels();
+    LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo);
     void handleAirFrame(cMessage *msg) override;
 };
 
