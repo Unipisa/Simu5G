@@ -13,7 +13,6 @@
 
 #include <inet/common/ModuleAccess.h>
 
-#include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
 
 namespace simu5g {
@@ -58,40 +57,72 @@ void NtnPhyBase::initializeChannelModels()
     }
 }
 
+LteChannelModel *NtnPhyBase::getChannelModel(GHz carrierFreq) const
+{
+    auto it = channelModel_.find(carrierFreq);
+    return (it == channelModel_.end()) ? nullptr : it->second;
+}
+
+void NtnPhyBase::handleAirFrame(cMessage *msg)
+{
+    auto *frame = check_and_cast<LteAirFrame *>(msg);
+    UserControlInfo lteInfo(frame->getAdditionalInfo());
+    if (lteInfo.getFrameType() == DATAPKT) {
+        LteChannelModel *channelModel = getChannelModel(lteInfo.getCarrierFrequency());
+        if (channelModel != nullptr) {
+            bool isReceptionSuccessful = channelModel->isReceptionSuccessful(frame, &lteInfo);
+            (void)isReceptionSuccessful;
+            // TODO do something
+        }
+        else {
+            EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
+               << lteInfo.getCarrierFrequency() << " on " << (isFeederLink_ ? "feeder" : "service")
+               << " link" << endl;
+        }
+    }
+
+    EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName()
+       << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio, forwarding to relay" << endl;
+    send(msg, "upperLayerOut");
+}
+
+void NtnPhyBase::handleUpperMessage(cMessage *msg)
+{
+    if (isFeederLink_) {
+        auto *frame = check_and_cast<LteAirFrame *>(msg);
+        cModule *peerNode = resolvePeerNode();
+        cGate *peerGate = resolvePeerGate();
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
+           << " to peer node " << peerNode->getFullPath() << endl;
+        sendDirect(frame, 0, frame->getDuration(), peerGate);
+    }
+    else {
+        auto *frame = check_and_cast<LteAirFrame *>(msg);
+        MacNodeId destId = frame->getAdditionalInfo().getDestId();
+        cModule *receiver = binder_->getNodeModule(destId);
+        if (receiver == nullptr) {
+            EV << "NtnPhyBase::handleUpperMessage - destination node " << destId
+               << " is not available. Delete frame " << frame->getName() << endl;
+            delete frame;
+            return;
+        }
+
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
+           << " to node " << destId << endl;
+        sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
+    }
+}
+
 void NtnPhyBase::handleMessage(cMessage *msg)
 {
     cGate *arrivalGate = msg->getArrivalGate();
     if (arrivalGate->isName("upperLayerIn")) {
-        if (isFeederLink_) {
-            auto *frame = check_and_cast<AirFrame *>(msg);
-            cModule *peerNode = resolvePeerNode();
-            cGate *peerGate = resolvePeerGate();
-            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
-               << " to peer node " << peerNode->getFullPath() << endl;
-            sendDirect(frame, 0, frame->getDuration(), peerGate);
-        }
-        else {
-            auto *frame = check_and_cast<LteAirFrame *>(msg);
-            MacNodeId destId = frame->getAdditionalInfo().getDestId();
-            cModule *receiver = binder_->getNodeModule(destId);
-            if (receiver == nullptr) {
-                EV << "NtnPhyBase::handleMessage - destination node " << destId
-                   << " is not available. Delete frame " << frame->getName() << endl;
-                delete frame;
-                return;
-            }
-
-            EV << "NtnPhyBase::handleMessage - forwarding air frame " << frame->getName()
-               << " to node " << destId << endl;
-            sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
-        }
+        handleUpperMessage(msg);
         return;
     }
 
     if (arrivalGate->isName("radioIn")) {
-        EV << "NtnPhyBase::handleMessage - received air frame " << msg->getName()
-           << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio, forwarding to relay" << endl;
-        send(msg, "upperLayerOut");
+        handleAirFrame(msg);
         return;
     }
 
