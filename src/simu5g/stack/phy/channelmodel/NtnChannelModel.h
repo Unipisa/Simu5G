@@ -18,8 +18,13 @@ namespace simu5g {
 
 class NtnChannelModel : public LteRealisticChannelModel
 {
+  protected:
+    inet::Coord lastUeCoord_;
+    inet::Coord lastNtnCoord_;
+
   public:
     double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
+    void computeLosProbability(double d, MacNodeId nodeId);
 };
 
 } // namespace simu5g
