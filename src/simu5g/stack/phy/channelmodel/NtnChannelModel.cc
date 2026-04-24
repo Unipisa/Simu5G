@@ -30,11 +30,11 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
 
     double distance = phy_->getRadioPosition().distance(coord);
     if (dir == DL) {
-        lastUeCoord_ = phy_->getRadioPosition();
+        lastGroundCoord_ = phy_->getRadioPosition();
         lastNtnCoord_ = coord;
     }
     else {
-        lastUeCoord_ = coord;
+        lastGroundCoord_ = coord;
         lastNtnCoord_ = phy_->getRadioPosition();
     }
 
@@ -81,7 +81,7 @@ void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
         return;
     }
 
-    double elevationAngle = computeVerticalAngle(lastUeCoord_, lastNtnCoord_);
+    double elevationAngle = computeVerticalAngle(lastGroundCoord_, lastNtnCoord_);
     int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
     roundedAngle = std::max(10, std::min(90, roundedAngle));
     int angleIndex = roundedAngle / 10 - 1;
@@ -104,6 +104,98 @@ void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
     }
 
     losMap_[nodeId] = uniform(0.0, 1.0) <= p;
+}
+
+std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    (void)frame;
+
+    MacNodeId transmitterId = lteInfo->getRadioTransmitterId() != NODEID_NONE ? lteInfo->getRadioTransmitterId() : lteInfo->getSourceId();
+    MacNodeId receiverId = lteInfo->getRadioReceiverId() != NODEID_NONE ? lteInfo->getRadioReceiverId() : lteInfo->getDestId();
+    Coord transmitterCoord = transmitterId != NODEID_NONE ? lteInfo->getRadioTransmitterCoord() : lteInfo->getCoord();
+    Coord receiverCoord = phy_->getRadioPosition();
+    RanNodeType transmitterType = transmitterId != NODEID_NONE ? getNodeTypeById(transmitterId) : UNKNOWN_NODE_TYPE;
+    RanNodeType receiverType = receiverId != NODEID_NONE ? getNodeTypeById(receiverId) : UNKNOWN_NODE_TYPE;
+    MacNodeId stateNodeId = transmitterType == SATELLITE_NODE ? receiverId : transmitterId;
+    bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
+    Coord stateCoord = stateNodeId == receiverId ? receiverCoord : transmitterCoord;
+    double speed = computeSpeed(stateNodeId, stateCoord);
+
+    double recvPower = lteInfo->getTxPower();
+    RbMap rbmap = lteInfo->getGrantedBlocks();
+
+    double noiseFigure = receiverType == UE ? ueNoiseFigure_ : bsNoiseFigure_;
+    double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
+    double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
+
+    double attenuation = getAttenuation(stateNodeId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
+    recvPower -= attenuation;
+    recvPower += antennaGainTx;
+    recvPower += antennaGainRx;
+    recvPower -= cableLoss_;
+
+    std::vector<double> snrVector(numBands_, 0.0);
+    for (unsigned int i = 0; i < numBands_; i++) {
+        double fadingAttenuation = 0;
+        if (fading_) {
+            if (fadingType_ == RAYLEIGH)
+                fadingAttenuation = rayleighFading(stateNodeId, i);
+            else if (fadingType_ == JAKES)
+                fadingAttenuation = jakesFading(stateNodeId, speed, i, false);
+        }
+        snrVector[i] = recvPower + fadingAttenuation;
+    }
+
+    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
+    for (unsigned int i = 0; i < numBands_; i++) {
+        if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
+            continue;
+        double den = linearToDBm(totN);
+        snrVector[i] -= den;
+    }
+
+    updatePositionHistory(stateNodeId, stateCoord);
+    return snrVector;
+}
+
+std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    (void)frame;
+
+    MacNodeId transmitterId = lteInfo->getRadioTransmitterId() != NODEID_NONE ? lteInfo->getRadioTransmitterId() : lteInfo->getSourceId();
+    MacNodeId receiverId = lteInfo->getRadioReceiverId() != NODEID_NONE ? lteInfo->getRadioReceiverId() : lteInfo->getDestId();
+    Coord transmitterCoord = transmitterId != NODEID_NONE ? lteInfo->getRadioTransmitterCoord() : lteInfo->getCoord();
+    Coord receiverCoord = phy_->getRadioPosition();
+    RanNodeType transmitterType = transmitterId != NODEID_NONE ? getNodeTypeById(transmitterId) : UNKNOWN_NODE_TYPE;
+    RanNodeType receiverType = receiverId != NODEID_NONE ? getNodeTypeById(receiverId) : UNKNOWN_NODE_TYPE;
+    MacNodeId stateNodeId = transmitterType == SATELLITE_NODE ? receiverId : transmitterId;
+    bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
+    Coord stateCoord = stateNodeId == receiverId ? receiverCoord : transmitterCoord;
+    double speed = computeSpeed(stateNodeId, stateCoord);
+
+    double recvPower = lteInfo->getTxPower();
+
+    double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
+    double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
+    double attenuation = getAttenuation(stateNodeId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
+    recvPower -= attenuation;
+    recvPower += antennaGainTx;
+    recvPower += antennaGainRx;
+    recvPower -= cableLoss_;
+
+    std::vector<double> rsrpVector(numBands_, 0.0);
+    for (unsigned int i = 0; i < numBands_; i++) {
+        double fadingAttenuation = 0;
+        if (fading_) {
+            if (fadingType_ == RAYLEIGH)
+                fadingAttenuation = rayleighFading(stateNodeId, i);
+            else if (fadingType_ == JAKES)
+                fadingAttenuation = jakesFading(stateNodeId, speed, i, false);
+        }
+        rsrpVector[i] = recvPower + fadingAttenuation;
+    }
+
+    return rsrpVector;
 }
 
 } // namespace simu5g

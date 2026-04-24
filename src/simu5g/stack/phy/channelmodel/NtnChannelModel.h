@@ -19,12 +19,14 @@ namespace simu5g {
 class NtnChannelModel : public LteRealisticChannelModel
 {
   protected:
-    inet::Coord lastUeCoord_;
+    inet::Coord lastGroundCoord_;
     inet::Coord lastNtnCoord_;
 
   public:
     double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
     void computeLosProbability(double d, MacNodeId nodeId);
+    std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 };
 
 } // namespace simu5g
