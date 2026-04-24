@@ -637,6 +637,9 @@ bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
 
     if (airFrame->getControlInfo() != nullptr) {
         UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
+        userControlInfo->setRadioTransmitterId(nodeId_);
+        userControlInfo->setRadioTransmitterCoord(getRadioPosition());
+        userControlInfo->setRadioReceiverId(association->satelliteId);
         airFrame->setAdditionalInfo(*userControlInfo);
         delete userControlInfo;
     }

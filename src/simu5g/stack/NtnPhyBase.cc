@@ -29,12 +29,9 @@ void NtnPhyBase::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
-
-        if (isFeederLink_) {
-            cModule *node = getContainingNode(this);
-            nodeId_ = MacNodeId(node->par("macNodeId").intValue());
-            nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
-        }
+        cModule *node = getContainingNode(this);
+        nodeId_ = MacNodeId(node->par("macNodeId").intValue());
+        nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
         initializeChannelModels();
@@ -92,13 +89,19 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         auto *frame = check_and_cast<LteAirFrame *>(msg);
         cModule *peerNode = resolvePeerNode();
         cGate *peerGate = resolvePeerGate();
+        UserControlInfo lteInfo(frame->getAdditionalInfo());
+        lteInfo.setRadioTransmitterId(nodeId_);
+        lteInfo.setRadioTransmitterCoord(getRadioPosition());
+        lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
+        frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
            << " to peer node " << peerNode->getFullPath() << endl;
         sendDirect(frame, 0, frame->getDuration(), peerGate);
     }
     else {
         auto *frame = check_and_cast<LteAirFrame *>(msg);
-        MacNodeId destId = frame->getAdditionalInfo().getDestId();
+        UserControlInfo lteInfo(frame->getAdditionalInfo());
+        MacNodeId destId = lteInfo.getDestId();
         cModule *receiver = binder_->getNodeModule(destId);
         if (receiver == nullptr) {
             EV << "NtnPhyBase::handleUpperMessage - destination node " << destId
@@ -107,6 +110,10 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
             return;
         }
 
+        lteInfo.setRadioTransmitterId(nodeId_);
+        lteInfo.setRadioTransmitterCoord(getRadioPosition());
+        lteInfo.setRadioReceiverId(destId);
+        frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
            << " to node " << destId << endl;
         sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));

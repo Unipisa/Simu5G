@@ -120,6 +120,9 @@ class UserControlInfo extends LteControlInfo {
     UserTxParams *userTxParams @owned;
     RbMap grantedBlocks;
     inet::Coord coord;                                  // The playground position of the sending host
+    MacNodeId radioTransmitterId = NODEID_NONE;         // Actual transmitter of the current wireless hop
+    inet::Coord radioTransmitterCoord;                  // Position of the actual transmitter of the current wireless hop
+    MacNodeId radioReceiverId = NODEID_NONE;            // Actual receiver of the current wireless hop
     FeedbackRequest feedbackReq;
 }
 
