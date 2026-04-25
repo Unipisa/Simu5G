@@ -8,6 +8,7 @@
 #include "simu5g/common/InitStages.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
 #include "simu5g/world/radio/ChannelAccess.h"
 
@@ -17,6 +18,7 @@ class NtnPhyBase : public ChannelAccess
 {
   protected:
     inet::ModuleRefByPar<Binder> binder_;
+    GeographicReferenceSystem *referenceSystem_ = nullptr;
     std::map<GHz, opp_component_ptr<LteChannelModel>> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
     MacNodeId nodeId_ = NODEID_NONE;

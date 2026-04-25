@@ -37,4 +37,16 @@ inet::Coord GeographicReferenceSystem::omnetFromWgs84(const inet::GeoCoord& wgs8
             up + referenceOmnetCoord_.z);
 }
 
+inet::GeoCoord GeographicReferenceSystem::wgs84FromOmnet(const inet::Coord& omnetCoord) const
+{
+    double east = omnetCoord.x - referenceOmnetCoord_.x;
+    double north = -(omnetCoord.y - referenceOmnetCoord_.y);
+    double up = omnetCoord.z - referenceOmnetCoord_.z;
+    double latitude = 0;
+    double longitude = 0;
+    double altitude = 0;
+    localFrame_.Reverse(east, north, up, latitude, longitude, altitude);
+    return inet::GeoCoord(inet::deg(latitude), inet::deg(longitude), inet::m(altitude));
+}
+
 } // namespace simu5g

@@ -1,16 +1,34 @@
 #include "simu5g/common/GeoUtils.h"
 #include "inet/common/geometry/common/Coord.h"
 
-inet::m computeDistance(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2)
+inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord)
 {
     Geocentric earth(Constants::WGS84_a(), Constants::WGS84_f());
 
-    inet::Coord p1, p2;
-    earth.Forward(geo1.Latitude(), geo1.Longitude(), alt1, p1.x, p1.y, p1.z);
-    earth.Forward(geo2.Latitude(), geo2.Longitude(), alt2, p2.x, p2.y, p2.z);
-
-    return inet::m(p1.distance(p2));
+    inet::Coord ecefCoord;
+    earth.Forward(wgs84Coord.latitude.get(), wgs84Coord.longitude.get(), wgs84Coord.altitude.get(), ecefCoord.x, ecefCoord.y, ecefCoord.z);
+    return ecefCoord;
 }
+
+double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, const inet::Coord& observerEcef, const inet::Coord& targetEcef)
+{
+    inet::Coord losVector = targetEcef - observerEcef;
+    double losNorm = losVector.length();
+    if (losNorm == 0.0)
+        return 90.0;
+
+    double latitudeRad = observerWgs84.latitude.get() * M_PI / 180.0;
+    double longitudeRad = observerWgs84.longitude.get() * M_PI / 180.0;
+    inet::Coord upVector(
+        std::cos(latitudeRad) * std::cos(longitudeRad),
+        std::cos(latitudeRad) * std::sin(longitudeRad),
+        std::sin(latitudeRad));
+
+    double projection = (losVector.x * upVector.x + losVector.y * upVector.y + losVector.z * upVector.z) / losNorm;
+    projection = std::max(-1.0, std::min(1.0, projection));
+    return std::asin(projection) * 180.0 / M_PI;
+}
+
 
 double computeUVDistance(const UVCoords& p1, const UVCoords& p2)
 {
@@ -23,7 +41,6 @@ double computeUVAngle(const UVCoords& p1, const UVCoords& p2)
     double x = p2.first - p1.first;
     return atan2(y,x);
 }
-
 
 double computeAzimuth(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2)
 {
@@ -40,31 +57,6 @@ double computeAzimuth(const GeoCoords& geo1, double alt1, const GeoCoords& geo2,
         azimuth -= 180;
 
     return azimuth;
-}
-
-double computeElevation(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2)
-{
-    // taken from Busquet-Maral, chapter 2.1.6.3
-    // not sure this is correct when one endpoint is different from the satellite
-
-    double maxAlt = (alt1 > alt2) ? alt1 : alt2;
-
-    double dLong = geo2.Longitude() - geo1.Longitude();
-    double dLat = geo2.Latitude() - geo1.Latitude();
-
-    if (dLong == 0 && dLat == 0)
-         return 0.0;
-
-    double cosPhi = Math::cosd(dLong) * Math::cosd(geo1.Latitude()) * Math::cosd(geo2.Latitude()) + Math::sind(geo1.Latitude()) * Math::sind(geo2.Latitude());
-    double Re_r = (EARTH_RADIUS / (EARTH_RADIUS + maxAlt));
-    double R_r = sqrt(1 + Re_r * Re_r - 2 * Re_r * cosPhi);
-    double sinEl = (cosPhi - Re_r) / R_r;
-    double elevation = asin(sinEl) * 180 / M_PI;
-
-//    if (alt2 < alt1)
-//        elevation = (-1) * elevation;
-
-    return elevation;
 }
 
 double computeNadir(double elevation, double alt)

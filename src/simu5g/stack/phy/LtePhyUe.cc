@@ -10,11 +10,13 @@
 //
 
 #include <assert.h>
+#include "simu5g/common/GeoUtils.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -637,8 +639,12 @@ bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
 
     if (airFrame->getControlInfo() != nullptr) {
         UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
+        GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
+        ASSERT(referenceSystem != nullptr);
+        inet::GeoCoord txWgs84 = referenceSystem->wgs84FromOmnet(getRadioPosition());
         userControlInfo->setRadioTransmitterId(nodeId_);
         userControlInfo->setRadioTransmitterCoord(getRadioPosition());
+        userControlInfo->setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         userControlInfo->setRadioReceiverId(association->satelliteId);
         airFrame->setAdditionalInfo(*userControlInfo);
         delete userControlInfo;

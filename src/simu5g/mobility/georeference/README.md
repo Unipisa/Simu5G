@@ -298,7 +298,9 @@ Instead, the Earth-aware approach is:
 
 This gives the straight-line 3D separation, often called the slant range.
 
-This is exactly what Simu5G already does in `computeDistance()` in `src/simu5g/common/GeoUtils.cc`.
+This is exactly the geometry Simu5G now builds by converting the two WGS84 endpoints with
+`ecefFromWgs84()` in `src/simu5g/common/GeoUtils.cc` and then taking the Euclidean distance
+between the resulting ECEF points.
 
 That function:
 

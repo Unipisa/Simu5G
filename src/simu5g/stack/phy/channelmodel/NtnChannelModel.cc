@@ -15,6 +15,8 @@
 #include <array>
 #include <cmath>
 
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+
 namespace simu5g {
 
 static constexpr std::array<double, 9> kDenseUrbanLosProb = {0.282, 0.331, 0.398, 0.468, 0.537, 0.612, 0.738, 0.820, 0.981};
@@ -25,27 +27,14 @@ Define_Module(NtnChannelModel);
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
 {
-    double speed = .0;
-    double correlationDist = .0;
+    (void)dir;
+    (void)coord;
 
-    double distance = phy_->getRadioPosition().distance(coord);
-    if (dir == DL) {
-        lastGroundCoord_ = phy_->getRadioPosition();
-        lastNtnCoord_ = coord;
-    }
-    else {
-        lastGroundCoord_ = coord;
-        lastNtnCoord_ = phy_->getRadioPosition();
-    }
-
-    if (dir == DL) {
-        speed = computeSpeed(nodeId, phy_->getRadioPosition());
-        correlationDist = computeCorrelationDistance(nodeId, phy_->getRadioPosition());
-    }
-    else {
-        speed = computeSpeed(nodeId, coord);
-        correlationDist = computeCorrelationDistance(nodeId, coord);
-    }
+    double speed = computeSpeed(nodeId, lastTerrestrialEndpointCoord_);
+    double correlationDist = computeCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
+    inet::Coord groundEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    inet::Coord ntnEcef = lastSatelliteEndpointEcefCoord_;
+    double distance = groundEcef.distance(ntnEcef);
 
     if (correlationDist > correlationDistance_ || losMap_.find(nodeId) == losMap_.end())
         computeLosProbability(distance, nodeId);
@@ -57,14 +46,8 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
     if (num(nodeId) < BGUE_MIN_ID && shadowing_)
         attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
 
-    if (dir == DL) {
-        updatePositionHistory(nodeId, phy_->getRadioPosition());
-        updateCorrelationDistance(nodeId, phy_->getRadioPosition());
-    }
-    else {
-        updatePositionHistory(nodeId, coord);
-        updateCorrelationDistance(nodeId, coord);
-    }
+    updatePositionHistory(nodeId, lastTerrestrialEndpointCoord_);
+    updateCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
 
     EV << "NtnChannelModel::getAttenuation - computed attenuation at distance " << distance
        << " is " << attenuation << endl;
@@ -81,7 +64,9 @@ void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
         return;
     }
 
-    double elevationAngle = computeVerticalAngle(lastGroundCoord_, lastNtnCoord_);
+    inet::Coord groundEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    inet::Coord ntnEcef = lastSatelliteEndpointEcefCoord_;
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, groundEcef, ntnEcef);
     int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
     roundedAngle = std::max(10, std::min(90, roundedAngle));
     int angleIndex = roundedAngle / 10 - 1;
@@ -110,26 +95,58 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
 {
     (void)frame;
 
-    MacNodeId transmitterId = lteInfo->getRadioTransmitterId() != NODEID_NONE ? lteInfo->getRadioTransmitterId() : lteInfo->getSourceId();
-    MacNodeId receiverId = lteInfo->getRadioReceiverId() != NODEID_NONE ? lteInfo->getRadioReceiverId() : lteInfo->getDestId();
-    Coord transmitterCoord = transmitterId != NODEID_NONE ? lteInfo->getRadioTransmitterCoord() : lteInfo->getCoord();
+    GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
+    ASSERT(referenceSystem != nullptr);
+
+    MacNodeId transmitterId = lteInfo->getRadioTransmitterId();
+    MacNodeId receiverId = lteInfo->getRadioReceiverId();
+    Coord transmitterCoord = lteInfo->getRadioTransmitterCoord();
     Coord receiverCoord = phy_->getRadioPosition();
-    RanNodeType transmitterType = transmitterId != NODEID_NONE ? getNodeTypeById(transmitterId) : UNKNOWN_NODE_TYPE;
-    RanNodeType receiverType = receiverId != NODEID_NONE ? getNodeTypeById(receiverId) : UNKNOWN_NODE_TYPE;
-    MacNodeId stateNodeId = transmitterType == SATELLITE_NODE ? receiverId : transmitterId;
+    RanNodeType transmitterType = getNodeTypeById(transmitterId);
+    RanNodeType receiverType = getNodeTypeById(receiverId);
+    Coord transmitterEcef = lteInfo->getRadioTransmitterEcefCoord();
+    inet::GeoCoord receiverWgs84 = referenceSystem->wgs84FromOmnet(receiverCoord);
+
+    if (transmitterType != SATELLITE_NODE && receiverType != SATELLITE_NODE)
+        throw cRuntimeError("NtnChannelModel::getSINR - one hop endpoint must be the satellite");
+
+    MacNodeId terrestrialEndpointId;
+    Coord terrestrialEndpointCoord;
+    Coord satelliteEndpointCoord;
+    inet::GeoCoord terrestrialEndpointWgs84 = inet::GeoCoord::NIL;
+    Coord satelliteEndpointEcefCoord;
+    if (transmitterType == SATELLITE_NODE) {
+        terrestrialEndpointId = receiverId;
+        terrestrialEndpointCoord = receiverCoord;
+        satelliteEndpointCoord = transmitterCoord;
+        terrestrialEndpointWgs84 = receiverWgs84;
+        satelliteEndpointEcefCoord = transmitterEcef;
+    }
+    else {
+        terrestrialEndpointId = transmitterId;
+        terrestrialEndpointCoord = transmitterCoord;
+        satelliteEndpointCoord = receiverCoord;
+        terrestrialEndpointWgs84 = referenceSystem->wgs84FromOmnet(transmitterCoord);
+        satelliteEndpointEcefCoord = ecefFromWgs84(receiverWgs84);
+    }
+
     bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
-    Coord stateCoord = stateNodeId == receiverId ? receiverCoord : transmitterCoord;
-    double speed = computeSpeed(stateNodeId, stateCoord);
+    lastTerrestrialEndpointCoord_ = terrestrialEndpointCoord;
+    lastSatelliteEndpointCoord_ = satelliteEndpointCoord;
+    lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
+    lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
-    double recvPower = lteInfo->getTxPower();
-    RbMap rbmap = lteInfo->getGrantedBlocks();
+    // TODO if satellite is moving, you need to compute speed differently
+    double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
+
+    // TODO fix noise figure and gains
     double noiseFigure = receiverType == UE ? ueNoiseFigure_ : bsNoiseFigure_;
     double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
     double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
 
-    double attenuation = getAttenuation(stateNodeId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
-    recvPower -= attenuation;
+    double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
+    double recvPower = lteInfo->getTxPower() - attenuation;
     recvPower += antennaGainTx;
     recvPower += antennaGainRx;
     recvPower -= cableLoss_;
@@ -139,13 +156,14 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         double fadingAttenuation = 0;
         if (fading_) {
             if (fadingType_ == RAYLEIGH)
-                fadingAttenuation = rayleighFading(stateNodeId, i);
+                fadingAttenuation = rayleighFading(terrestrialEndpointId, i);
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(stateNodeId, speed, i, false);
+                fadingAttenuation = jakesFading(terrestrialEndpointId, speed, i, false);
         }
         snrVector[i] = recvPower + fadingAttenuation;
     }
 
+    RbMap rbmap = lteInfo->getGrantedBlocks();
     double totN = dBmToLinear(thermalNoise_ + noiseFigure);
     for (unsigned int i = 0; i < numBands_; i++) {
         if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
@@ -154,7 +172,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         snrVector[i] -= den;
     }
 
-    updatePositionHistory(stateNodeId, stateCoord);
+    updatePositionHistory(terrestrialEndpointId, terrestrialEndpointCoord);
     return snrVector;
 }
 
@@ -162,22 +180,38 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
 {
     (void)frame;
 
-    MacNodeId transmitterId = lteInfo->getRadioTransmitterId() != NODEID_NONE ? lteInfo->getRadioTransmitterId() : lteInfo->getSourceId();
-    MacNodeId receiverId = lteInfo->getRadioReceiverId() != NODEID_NONE ? lteInfo->getRadioReceiverId() : lteInfo->getDestId();
-    Coord transmitterCoord = transmitterId != NODEID_NONE ? lteInfo->getRadioTransmitterCoord() : lteInfo->getCoord();
+    GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
+    ASSERT(referenceSystem != nullptr);
+
+    MacNodeId transmitterId = lteInfo->getRadioTransmitterId();
+    MacNodeId receiverId = lteInfo->getRadioReceiverId();
+    Coord transmitterCoord = lteInfo->getRadioTransmitterCoord();
     Coord receiverCoord = phy_->getRadioPosition();
-    RanNodeType transmitterType = transmitterId != NODEID_NONE ? getNodeTypeById(transmitterId) : UNKNOWN_NODE_TYPE;
-    RanNodeType receiverType = receiverId != NODEID_NONE ? getNodeTypeById(receiverId) : UNKNOWN_NODE_TYPE;
-    MacNodeId stateNodeId = transmitterType == SATELLITE_NODE ? receiverId : transmitterId;
+    RanNodeType transmitterType = getNodeTypeById(transmitterId);
+    RanNodeType receiverType = getNodeTypeById(receiverId);
+    Coord transmitterEcef = lteInfo->getRadioTransmitterEcefCoord();
+    inet::GeoCoord receiverWgs84 = referenceSystem->wgs84FromOmnet(receiverCoord);
+
+    if (transmitterType != SATELLITE_NODE && receiverType != SATELLITE_NODE)
+        throw cRuntimeError("NtnChannelModel::getRSRP - one hop endpoint must be the satellite");
+
+    MacNodeId terrestrialEndpointId = transmitterType == SATELLITE_NODE ? receiverId : transmitterId;
     bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
-    Coord stateCoord = stateNodeId == receiverId ? receiverCoord : transmitterCoord;
-    double speed = computeSpeed(stateNodeId, stateCoord);
+    Coord terrestrialEndpointCoord = transmitterType == SATELLITE_NODE ? receiverCoord : transmitterCoord;
+    Coord satelliteEndpointCoord = transmitterType == SATELLITE_NODE ? transmitterCoord : receiverCoord;
+    inet::GeoCoord terrestrialEndpointWgs84 = transmitterType == SATELLITE_NODE ? receiverWgs84 : referenceSystem->wgs84FromOmnet(transmitterCoord);
+    Coord satelliteEndpointEcefCoord = transmitterType == SATELLITE_NODE ? transmitterEcef : ecefFromWgs84(receiverWgs84);
+    double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
+    lastTerrestrialEndpointCoord_ = terrestrialEndpointCoord;
+    lastSatelliteEndpointCoord_ = satelliteEndpointCoord;
+    lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
+    lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
     double recvPower = lteInfo->getTxPower();
 
     double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
     double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
-    double attenuation = getAttenuation(stateNodeId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
+    double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
     recvPower -= attenuation;
     recvPower += antennaGainTx;
     recvPower += antennaGainRx;
@@ -188,9 +222,9 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
         double fadingAttenuation = 0;
         if (fading_) {
             if (fadingType_ == RAYLEIGH)
-                fadingAttenuation = rayleighFading(stateNodeId, i);
+                fadingAttenuation = rayleighFading(terrestrialEndpointId, i);
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(stateNodeId, speed, i, false);
+                fadingAttenuation = jakesFading(terrestrialEndpointId, speed, i, false);
         }
         rsrpVector[i] = recvPower + fadingAttenuation;
     }

@@ -13,6 +13,7 @@
 
 #include <inet/common/ModuleAccess.h>
 
+#include "simu5g/common/GeoUtils.h"
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
 
 namespace simu5g {
@@ -28,6 +29,8 @@ void NtnPhyBase::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
+        referenceSystem_ = GeographicReferenceSystemAccess().get();
+        ASSERT(referenceSystem_ != nullptr);
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
         cModule *node = getContainingNode(this);
         nodeId_ = MacNodeId(node->par("macNodeId").intValue());
@@ -90,8 +93,10 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         cModule *peerNode = resolvePeerNode();
         cGate *peerGate = resolvePeerGate();
         UserControlInfo lteInfo(frame->getAdditionalInfo());
+        inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
         lteInfo.setRadioTransmitterId(nodeId_);
         lteInfo.setRadioTransmitterCoord(getRadioPosition());
+        lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
@@ -110,8 +115,10 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
             return;
         }
 
+        inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
         lteInfo.setRadioTransmitterId(nodeId_);
         lteInfo.setRadioTransmitterCoord(getRadioPosition());
+        lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(destId);
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
