@@ -32,6 +32,7 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
     const inet::Coord& getReferenceEcefCoord() const { return referenceEcefCoord_; }
 
     inet::Coord omnetFromWgs84(const inet::GeoCoord& wgs84Coord) const;
+    inet::GeoCoord wgs84FromOmnet(const inet::Coord& omnetCoord) const;
 };
 
 class GeographicReferenceSystemAccess {

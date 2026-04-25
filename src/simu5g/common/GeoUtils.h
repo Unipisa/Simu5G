@@ -33,6 +33,8 @@
   #undef GEOUTILS_RESTORE_NAN
 #endif
 
+#include "inet/common/geometry/common/Coord.h"
+#include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "inet/common/Units_m.h"
 
 using namespace GeographicLib;
@@ -41,18 +43,44 @@ const double EARTH_RADIUS = 6371000;   // 6371km (average radius of the geoid)
 
 typedef std::pair<double, double> UVCoords;
 
-// returns the geocentric distance between two geo points
-inet::m computeDistance(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2);
+// converts a WGS84 point into an ECEF Cartesian point
+inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord);
+
+// returns the elevation angle of the target endpoint as seen from the observer point.
+// The computation follows the usual geometric definition in an Earth-centered frame:
+// build the line-of-sight vector from the observer endpoint to the target endpoint in ECEF,
+// project it onto the local zenith (Up) direction at the observer point, and derive the
+// elevation from that projection.
+//
+//                         target endpoint
+//                              *
+//                             /
+//                            /
+//                           /   LOS
+//                          /
+//                         /  E
+//                        /
+//                       *
+//                       +-------------------- local horizontal
+//                       |
+//                       |
+//                       | Up
+//                       |
+//                 observer endpoint
+//
+// See ESA Navipedia, "Transformations between ECEF and ENU coordinates", especially the
+// "Elevation and azimuth computation" section
+// (https://gssc.esa.int/navipedia/index.php/Transformations_between_ECEF_and_ENU_coordinates)
+double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, const inet::Coord& observerEcef, const inet::Coord& targetEcef);
+
+// returns the relative azimuth between the two specified geographical coordinates
+double computeAzimuth(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2);
+
 // returns the distance between two u-v coords
 double computeUVDistance(const UVCoords& p1, const UVCoords& p2);
 // returns the angle (in radians) between two u-v coords
 double computeUVAngle(const UVCoords& p1, const UVCoords& p2);
 
-// returns the relative azimuth between the two specified geographical coordinates
-double computeAzimuth(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2);
-
-// returns the relative elevation between the two specified geographical coordinates
-double computeElevation(const GeoCoords& geo1, double alt1, const GeoCoords& geo2, double alt2);
 
 // returns the nadir angle
 double computeNadir(double elevation, double alt);

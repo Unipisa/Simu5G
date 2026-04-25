@@ -12,6 +12,7 @@
 #ifndef NTNCHANNELMODEL_H_
 #define NTNCHANNELMODEL_H_
 
+#include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "simu5g/stack/phy/channelmodel/LteRealisticChannelModel.h"
 
 namespace simu5g {
@@ -19,8 +20,10 @@ namespace simu5g {
 class NtnChannelModel : public LteRealisticChannelModel
 {
   protected:
-    inet::Coord lastGroundCoord_;
-    inet::Coord lastNtnCoord_;
+    inet::Coord lastTerrestrialEndpointCoord_;
+    inet::Coord lastSatelliteEndpointCoord_;
+    inet::GeoCoord lastTerrestrialEndpointWgs84_ = inet::GeoCoord::NIL;
+    inet::Coord lastSatelliteEndpointEcefCoord_;
 
   public:
     double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
