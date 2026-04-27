@@ -19,9 +19,23 @@
 
 namespace simu5g {
 
+// LOS probabilities from 3GPP TR 38.811, Section 6.6.1, Table 6.6.1-1,
+// for the reference elevation angles 10, 20, ..., 90 degrees.
 static constexpr std::array<double, 9> kDenseUrbanLosProb = {0.282, 0.331, 0.398, 0.468, 0.537, 0.612, 0.738, 0.820, 0.981};
 static constexpr std::array<double, 9> kUrbanLosProb = {0.246, 0.386, 0.493, 0.613, 0.726, 0.805, 0.919, 0.968, 0.992};
 static constexpr std::array<double, 9> kSuburbanRuralLosProb = {0.782, 0.869, 0.919, 0.929, 0.935, 0.940, 0.949, 0.952, 0.998};
+// Shadow-fading standard deviations sigma_SF [dB] from 3GPP TR 38.811, Section 6.6.2,
+// Table 6.6.2-1, for the reference elevation angles 10, 20, ..., 90 degrees.
+static constexpr std::array<double, 9> kDenseUrbanSbandLosSf = {3.5, 3.4, 2.9, 3.0, 3.1, 2.7, 2.5, 2.3, 1.2};
+static constexpr std::array<double, 9> kDenseUrbanSbandNlosSf = {15.5, 13.9, 12.4, 11.7, 10.6, 10.5, 10.1, 9.2, 9.2};
+static constexpr std::array<double, 9> kDenseUrbanKabandLosSf = {2.9, 2.4, 2.7, 2.4, 2.4, 2.7, 2.6, 2.8, 0.6};
+static constexpr std::array<double, 9> kDenseUrbanKabandNlosSf = {17.1, 17.1, 15.6, 14.6, 14.2, 12.6, 12.1, 12.3, 12.3};
+static constexpr std::array<double, 9> kUrbanLosSf = {4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0};
+static constexpr std::array<double, 9> kUrbanNlosSf = {6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0};
+static constexpr std::array<double, 9> kSuburbanRuralSbandLosSf = {1.79, 1.14, 1.14, 0.92, 1.42, 1.56, 0.85, 0.72, 0.72};
+static constexpr std::array<double, 9> kSuburbanRuralSbandNlosSf = {8.93, 9.08, 8.78, 10.25, 10.56, 10.74, 10.17, 11.52, 11.52};
+static constexpr std::array<double, 9> kSuburbanRuralKabandLosSf = {1.9, 1.6, 1.9, 2.3, 2.7, 3.1, 3.0, 3.6, 0.4};
+static constexpr std::array<double, 9> kSuburbanRuralKabandNlosSf = {10.7, 10.0, 11.2, 11.6, 11.8, 10.8, 10.8, 10.8, 10.8};
 
 // TR 38.811 section 6.6.2 uses scenario-specific shadow-fading sigmas, but the clutter-loss
 // values in tables 6.6.2-1/2/3 are shared across dense urban, urban, suburban, and rural cases.
@@ -86,6 +100,71 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
 
     double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
     return pathLoss + clutterLoss;
+}
+
+double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl)
+{
+    (void)distance;
+
+    ShadowFadingMap *actualShadowingMap;
+    if (cqiDl)
+        actualShadowingMap = obtainShadowingMap(nodeId);
+    else
+        actualShadowingMap = &lastComputedSF_;
+
+    if (actualShadowingMap == nullptr)
+        throw cRuntimeError("NtnChannelModel::computeShadowing - actualShadowingMap not found (nullptr)");
+
+    inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
+    int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
+    roundedAngle = std::max(10, std::min(90, roundedAngle));
+    int angleIndex = roundedAngle / 10 - 1;
+
+    const bool isSband = carrierFrequency_.get() < 13.0;
+    const bool los = losMap_[nodeId];
+
+    double stdDev = 0.0;
+    switch (scenario_) {
+        case INDOOR_HOTSPOT:
+        case URBAN_MICROCELL:
+            if (isSband)
+                stdDev = los ? kDenseUrbanSbandLosSf[angleIndex] : kDenseUrbanSbandNlosSf[angleIndex];
+            else
+                stdDev = los ? kDenseUrbanKabandLosSf[angleIndex] : kDenseUrbanKabandNlosSf[angleIndex];
+            break;
+        case URBAN_MACROCELL:
+            stdDev = los ? kUrbanLosSf[angleIndex] : kUrbanNlosSf[angleIndex];
+            break;
+        case SUBURBAN_MACROCELL:
+        case RURAL_MACROCELL:
+            if (isSband)
+                stdDev = los ? kSuburbanRuralSbandLosSf[angleIndex] : kSuburbanRuralSbandNlosSf[angleIndex];
+            else
+                stdDev = los ? kSuburbanRuralKabandLosSf[angleIndex] : kSuburbanRuralKabandNlosSf[angleIndex];
+            break;
+        default:
+            throw cRuntimeError("NtnChannelModel::computeShadowing - unsupported scenario value %d", scenario_);
+    }
+
+    double att;
+    if (actualShadowingMap->find(nodeId) == actualShadowingMap->end()) {
+        att = normal(0.0, stdDev);
+        (*actualShadowingMap)[nodeId] = std::make_pair(NOW, att);
+    }
+    else if ((NOW - actualShadowingMap->at(nodeId).first).dbl() * speed > correlationDistance_) {
+        double time = (NOW - actualShadowingMap->at(nodeId).first).dbl();
+        double space = time * speed;
+        double a = exp(-0.5 * (space / correlationDistance_));
+        double old = actualShadowingMap->at(nodeId).second;
+        att = a * old + sqrt(1 - pow(a, 2)) * normal(0.0, stdDev);
+        (*actualShadowingMap)[nodeId] = std::make_pair(NOW, att);
+    }
+    else {
+        att = actualShadowingMap->at(nodeId).second;
+    }
+
+    return att;
 }
 
 void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
