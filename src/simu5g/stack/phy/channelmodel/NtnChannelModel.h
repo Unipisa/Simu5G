@@ -30,6 +30,7 @@ class NtnChannelModel : public LteRealisticChannelModel
     double computePathLoss(double distance, double dbp, bool los) override;
     double computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl) override;
     double computeAtmosphericLoss();
+    double computeScintillationLoss();
     void computeLosProbability(double d, MacNodeId nodeId);
     std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
     std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;

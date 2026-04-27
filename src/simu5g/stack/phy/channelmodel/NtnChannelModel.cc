@@ -59,6 +59,10 @@ static constexpr std::array<double, 101> kAtmosphericAbsorption = {
     0.8000, 0.8029, 0.8112, 0.8243, 0.8416, 0.8625, 0.8864, 0.9127, 0.9408, 0.9701,
     1.0000};
 
+// Tropospheric scintillation loss [dB] with 99% probability at 20 GHz in Toulouse from
+// 3GPP TR 38.811, Table 6.6.6.2.1-1, for the reference elevation angles 10, 20, ..., 90 degrees.
+static constexpr std::array<double, 9> kTroposphericScintillationLoss = {1.08, 0.48, 0.30, 0.22, 0.17, 0.13, 0.12, 0.12, 0.12};
+
 Define_Module(NtnChannelModel);
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
@@ -78,15 +82,19 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
 
     bool los = losMap_[nodeId];
     double dbp = 0;
+
+    // compute base path loss
     double attenuation = computePathLoss(distance, dbp, los);
 
     // add shadowing
-    if (num(nodeId) < BGUE_MIN_ID && shadowing_)
-        attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
+        if (num(nodeId) < BGUE_MIN_ID && shadowing_)
+            attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
 
     // add atmospheric loss
     attenuation += computeAtmosphericLoss();
 
+    // add scintillation loss
+    attenuation += computeScintillationLoss();
 
     updatePositionHistory(nodeId, lastTerrestrialEndpointCoord_);
     updateCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
@@ -115,6 +123,7 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
     if (los)
         return pathLoss;
 
+    // add clutter loss if non-LOS
     inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
     double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
     int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
@@ -144,6 +153,25 @@ double NtnChannelModel::computeAtmosphericLoss()
     double sinElevation = std::sin(elevationAngle * M_PI / 180.0);
     sinElevation = std::max(sinElevation, std::numeric_limits<double>::epsilon());
     return kAtmosphericAbsorption[roundedFrequencyGHz] / sinElevation;
+}
+
+double NtnChannelModel::computeScintillationLoss()
+{
+    inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
+    double carrierFrequencyGHz = carrierFrequency_.get();
+
+    // 3GPP TR 38.811 section 6.6.6 baseline:
+    // - below 6 GHz, use the ionospheric scintillation approximation of 6.6.6.1.4
+    // - otherwise, use the tropospheric scintillation table of 6.6.6.2.1 at the nearest
+    //   reference elevation angle
+    if (carrierFrequencyGHz < 6.0)
+        return 6.22 / std::pow(carrierFrequencyGHz, 1.5);
+
+    int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
+    roundedAngle = std::max(10, std::min(90, roundedAngle));
+    int angleIndex = roundedAngle / 10 - 1;
+    return kTroposphericScintillationLoss[angleIndex];
 }
 
 double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl)
