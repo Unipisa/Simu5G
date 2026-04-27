@@ -23,6 +23,11 @@ static constexpr std::array<double, 9> kDenseUrbanLosProb = {0.282, 0.331, 0.398
 static constexpr std::array<double, 9> kUrbanLosProb = {0.246, 0.386, 0.493, 0.613, 0.726, 0.805, 0.919, 0.968, 0.992};
 static constexpr std::array<double, 9> kSuburbanRuralLosProb = {0.782, 0.869, 0.919, 0.929, 0.935, 0.940, 0.949, 0.952, 0.998};
 
+// TR 38.811 section 6.6.2 uses scenario-specific shadow-fading sigmas, but the clutter-loss
+// values in tables 6.6.2-1/2/3 are shared across dense urban, urban, suburban, and rural cases.
+static constexpr std::array<double, 9> kSbandClutterLoss = {34.3, 30.9, 29.0, 27.7, 26.8, 26.2, 25.8, 25.5, 25.5};
+static constexpr std::array<double, 9> kKabandClutterLoss = {44.3, 39.9, 37.5, 35.8, 34.6, 33.8, 33.3, 33.0, 32.9};
+
 Define_Module(NtnChannelModel);
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
@@ -53,6 +58,34 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
        << " is " << attenuation << endl;
 
     return attenuation;
+}
+
+double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
+{
+    (void)dbp;
+
+    if (distance <= 0.0)
+        throw cRuntimeError("NtnChannelModel::computePathLoss - invalid distance %g", distance);
+
+    // 3GPP TR 38.811, Section 6.6.2:
+    // PLb = FSPL(d, fc) + SF + CL(alpha, fc).
+    // Shadow fading is already handled separately by computeShadowing(), so here we apply
+    // free-space path loss from (6.6-2) and clutter loss from (6.6-4). In LOS, clutter
+    // loss is negligible and set to 0 dB as stated by the specification.
+    // TODO revisit whether the same clutter-loss model should be applied to feeder links,
+    // where the terrestrial endpoint is a gateway rather than a service-link terminal.
+    double pathLoss = 32.45 + 20 * log10CarrierFrequencyGHz_ + 20 * std::log10(distance);
+    if (los)
+        return pathLoss;
+
+    inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
+    int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
+    roundedAngle = std::max(10, std::min(90, roundedAngle));
+    int angleIndex = roundedAngle / 10 - 1;
+
+    double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
+    return pathLoss + clutterLoss;
 }
 
 void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
