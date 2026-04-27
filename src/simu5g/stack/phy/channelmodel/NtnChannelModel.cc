@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/math/distributions/normal.hpp>
 #include <cmath>
 #include <limits>
 
@@ -63,7 +64,31 @@ static constexpr std::array<double, 101> kAtmosphericAbsorption = {
 // 3GPP TR 38.811, Table 6.6.6.2.1-1, for the reference elevation angles 10, 20, ..., 90 degrees.
 static constexpr std::array<double, 9> kTroposphericScintillationLoss = {1.08, 0.48, 0.30, 0.22, 0.17, 0.13, 0.12, 0.12, 0.12};
 
+struct BuildingPenetrationCoefficients
+{
+    double r;
+    double s;
+    double t;
+    double u;
+    double v;
+    double w;
+    double x;
+    double y;
+    double z;
+};
+
+// Building entry loss coefficients from 3GPP TR 38.811, Table 6.6.3-1.
+static constexpr BuildingPenetrationCoefficients kTraditionalBuildingCoefficients = {12.64, 3.72, 0.96, 9.6, 2.0, 9.1, -3.0, 4.5, -2.0};
+static constexpr BuildingPenetrationCoefficients kThermallyEfficientBuildingCoefficients = {28.19, -3.00, 8.48, 13.5, 3.8, 27.8, -2.9, 9.4, -2.1};
+
 Define_Module(NtnChannelModel);
+
+void NtnChannelModel::initialize(int stage)
+{
+    LteRealisticChannelModel::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL && inside_building_)
+        useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
+}
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
 {
@@ -85,22 +110,20 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
 
     // compute base path loss
     double attenuation = computePathLoss(distance, dbp, los);
-
-    // add shadowing
-        if (num(nodeId) < BGUE_MIN_ID && shadowing_)
-            attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
-
+    // add O2I penetration loss
+    attenuation += computeBuildingPenetrationLoss(nodeId);
     // add atmospheric loss
     attenuation += computeAtmosphericLoss();
-
     // add scintillation loss
     attenuation += computeScintillationLoss();
+    // add shadowing
+    if (num(nodeId) < BGUE_MIN_ID && shadowing_)
+        attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
 
     updatePositionHistory(nodeId, lastTerrestrialEndpointCoord_);
     updateCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
 
-    EV << "NtnChannelModel::getAttenuation - computed attenuation at distance " << distance
-       << " is " << attenuation << endl;
+    EV << "NtnChannelModel::getAttenuation - computed attenuation at distance " << distance << " is " << attenuation << endl;
 
     return attenuation;
 }
@@ -132,6 +155,43 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
 
     double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
     return pathLoss + clutterLoss;
+}
+
+double NtnChannelModel::computeBuildingPenetrationLoss(MacNodeId nodeId)
+{
+    if (!inside_building_)
+        return 0.0;
+
+    auto probabilityIt = buildingPenetrationProbabilityMap_.find(nodeId);
+    if (probabilityIt == buildingPenetrationProbabilityMap_.end()) {
+        constexpr double epsilon = 1e-6;
+        double probability = uniform(epsilon, 1.0 - epsilon);
+        probabilityIt = buildingPenetrationProbabilityMap_.emplace(nodeId, probability).first;
+    }
+
+    inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
+    double carrierFrequencyGHz = carrierFrequency_.get();
+    double logFrequency = std::log10(carrierFrequencyGHz);
+
+    const BuildingPenetrationCoefficients& coeffs = useBuildingPenetrationHighLossModel_
+        ? kThermallyEfficientBuildingCoefficients
+        : kTraditionalBuildingCoefficients;
+
+    double horizontalMedianLoss = coeffs.r + coeffs.s * logFrequency + coeffs.t * std::pow(logFrequency, 2);
+    double elevationCorrection = 0.212 * elevationAngle;
+    double mu1 = horizontalMedianLoss + elevationCorrection;
+    double mu2 = coeffs.w + coeffs.x * logFrequency;
+    double sigma1 = coeffs.u + coeffs.v * logFrequency;
+    double sigma2 = coeffs.y + coeffs.z * logFrequency;
+
+    boost::math::normal_distribution<double> standardNormal;
+    double inverseNormalCdf = boost::math::quantile(standardNormal, probabilityIt->second);
+    double a = inverseNormalCdf * sigma1 + mu1;
+    double b = inverseNormalCdf * sigma2 + mu2;
+    constexpr double c = -3.0;
+
+    return 10.0 * std::log10(std::pow(10.0, 0.1 * a) + std::pow(10.0, 0.1 * b) + std::pow(10.0, 0.1 * c));
 }
 
 double NtnChannelModel::computeAtmosphericLoss()

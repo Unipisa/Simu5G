@@ -24,11 +24,14 @@ class NtnChannelModel : public LteRealisticChannelModel
     inet::Coord lastSatelliteEndpointCoord_;
     inet::GeoCoord lastTerrestrialEndpointWgs84_ = inet::GeoCoord::NIL;
     inet::Coord lastSatelliteEndpointEcefCoord_;
+    std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
 
   public:
+    void initialize(int stage) override;
     double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
     double computePathLoss(double distance, double dbp, bool los) override;
     double computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl) override;
+    double computeBuildingPenetrationLoss(MacNodeId nodeId);
     double computeAtmosphericLoss();
     double computeScintillationLoss();
     void computeLosProbability(double d, MacNodeId nodeId);
