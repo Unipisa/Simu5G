@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 
@@ -24,6 +25,7 @@ namespace simu5g {
 static constexpr std::array<double, 9> kDenseUrbanLosProb = {0.282, 0.331, 0.398, 0.468, 0.537, 0.612, 0.738, 0.820, 0.981};
 static constexpr std::array<double, 9> kUrbanLosProb = {0.246, 0.386, 0.493, 0.613, 0.726, 0.805, 0.919, 0.968, 0.992};
 static constexpr std::array<double, 9> kSuburbanRuralLosProb = {0.782, 0.869, 0.919, 0.929, 0.935, 0.940, 0.949, 0.952, 0.998};
+
 // Shadow-fading standard deviations sigma_SF [dB] from 3GPP TR 38.811, Section 6.6.2,
 // Table 6.6.2-1, for the reference elevation angles 10, 20, ..., 90 degrees.
 static constexpr std::array<double, 9> kDenseUrbanSbandLosSf = {3.5, 3.4, 2.9, 3.0, 3.1, 2.7, 2.5, 2.3, 1.2};
@@ -42,6 +44,21 @@ static constexpr std::array<double, 9> kSuburbanRuralKabandNlosSf = {10.7, 10.0,
 static constexpr std::array<double, 9> kSbandClutterLoss = {34.3, 30.9, 29.0, 27.7, 26.8, 26.2, 25.8, 25.5, 25.5};
 static constexpr std::array<double, 9> kKabandClutterLoss = {44.3, 39.9, 37.5, 35.8, 34.6, 33.8, 33.3, 33.0, 32.9};
 
+// Zenith attenuation A_zenith(f) [dB] sampled at integer frequencies 0..100 GHz from
+// ITU-R P.676 Figure 6, as referenced by the baseline method in 3GPP TR 38.811 section 6.6.4.
+static constexpr std::array<double, 101> kAtmosphericAbsorption = {
+    0.0, 0.0300, 0.0350, 0.0380, 0.0390, 0.0410, 0.0420, 0.0450, 0.0480, 0.0500,
+    0.0530, 0.0587, 0.0674, 0.0789, 0.0935, 0.1113, 0.1322, 0.1565, 0.1841, 0.2153,
+    0.2500, 0.3362, 0.4581, 0.5200, 0.5200, 0.5000, 0.4500, 0.3850, 0.3200, 0.2700,
+    0.2500, 0.2517, 0.2568, 0.2651, 0.2765, 0.2907, 0.3077, 0.3273, 0.3493, 0.3736,
+    0.4000, 0.4375, 0.4966, 0.5795, 0.6881, 0.8247, 0.9912, 1.1900, 1.4229, 1.6922,
+    2.0000, 4.2654, 10.1504, 19.2717, 31.2457, 45.6890, 62.2182, 80.4496, 100.0000, 140.0205,
+    170.0000, 100.0000, 78.1682, 59.3955, 43.5434, 30.4733, 20.0465, 12.1244, 6.5683, 3.2397,
+    2.0000, 1.7708, 1.5660, 1.3858, 1.2298, 1.0981, 0.9905, 0.9070, 0.8475, 0.8119,
+    0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000,
+    0.8000, 0.8029, 0.8112, 0.8243, 0.8416, 0.8625, 0.8864, 0.9127, 0.9408, 0.9701,
+    1.0000};
+
 Define_Module(NtnChannelModel);
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
@@ -55,6 +72,7 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
     inet::Coord ntnEcef = lastSatelliteEndpointEcefCoord_;
     double distance = groundEcef.distance(ntnEcef);
 
+    // compute LOS probability
     if (correlationDist > correlationDistance_ || losMap_.find(nodeId) == losMap_.end())
         computeLosProbability(distance, nodeId);
 
@@ -62,8 +80,13 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
     double dbp = 0;
     double attenuation = computePathLoss(distance, dbp, los);
 
+    // add shadowing
     if (num(nodeId) < BGUE_MIN_ID && shadowing_)
         attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
+
+    // add atmospheric loss
+    attenuation += computeAtmosphericLoss();
+
 
     updatePositionHistory(nodeId, lastTerrestrialEndpointCoord_);
     updateCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
@@ -100,6 +123,27 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
 
     double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
     return pathLoss + clutterLoss;
+}
+
+double NtnChannelModel::computeAtmosphericLoss()
+{
+    inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
+    double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
+    double carrierFrequencyGHz = carrierFrequency_.get();
+
+    // 3GPP TR 38.811 section 6.6.4 baseline:
+    // - ignore atmospheric absorption below 10 GHz,
+    //   except for elevation angles below 10 degrees when f > 1 GHz
+    // - use A_zenith(f) / sin(alpha), with A_zenith taken from ITU-R P.676 Figure 6
+    if (!((elevationAngle < 10.0 && carrierFrequencyGHz > 1.0) || carrierFrequencyGHz >= 10.0))
+        return 0.0;
+
+    int roundedFrequencyGHz = static_cast<int>(std::round(carrierFrequencyGHz));
+    roundedFrequencyGHz = std::max(0, std::min(static_cast<int>(kAtmosphericAbsorption.size()) - 1, roundedFrequencyGHz));
+
+    double sinElevation = std::sin(elevationAngle * M_PI / 180.0);
+    sinElevation = std::max(sinElevation, std::numeric_limits<double>::epsilon());
+    return kAtmosphericAbsorption[roundedFrequencyGHz] / sinElevation;
 }
 
 double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl)
