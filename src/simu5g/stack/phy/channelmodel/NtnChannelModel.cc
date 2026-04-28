@@ -234,6 +234,23 @@ double NtnChannelModel::computeScintillationLoss()
     return kTroposphericScintillationLoss[angleIndex];
 }
 
+double NtnChannelModel::computeFastFading(MacNodeId nodeId, double speed, bool cqiDl)
+{
+    if (!fading_)
+        return 0.0;
+
+    // 3GPP TR 38.811 section 6.7.1 allows a flat-fading simplification when the channel
+    // can be considered non frequency-selective. For now, we model only that flat aspect:
+    // one fading realization is computed for the whole NTN hop and then reused on all bands.
+    // TODO add the full ITU 2-state / Loo-model parameterization from Annex 2 of ITU-R P.681.
+    if (fadingType_ == RAYLEIGH)
+        return rayleighFading(nodeId, 0);
+    if (fadingType_ == JAKES)
+        return jakesFading(nodeId, speed, 0, cqiDl);
+
+    return 0.0;
+}
+
 double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl)
 {
     (void)distance;
@@ -396,14 +413,8 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     recvPower -= cableLoss_;
 
     std::vector<double> snrVector(numBands_, 0.0);
+    double fadingAttenuation = computeFastFading(terrestrialEndpointId, speed, cqiDl);
     for (unsigned int i = 0; i < numBands_; i++) {
-        double fadingAttenuation = 0;
-        if (fading_) {
-            if (fadingType_ == RAYLEIGH)
-                fadingAttenuation = rayleighFading(terrestrialEndpointId, i);
-            else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(terrestrialEndpointId, speed, i, false);
-        }
         snrVector[i] = recvPower + fadingAttenuation;
     }
 
@@ -462,14 +473,8 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     recvPower -= cableLoss_;
 
     std::vector<double> rsrpVector(numBands_, 0.0);
+    double fadingAttenuation = computeFastFading(terrestrialEndpointId, speed, cqiDl);
     for (unsigned int i = 0; i < numBands_; i++) {
-        double fadingAttenuation = 0;
-        if (fading_) {
-            if (fadingType_ == RAYLEIGH)
-                fadingAttenuation = rayleighFading(terrestrialEndpointId, i);
-            else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(terrestrialEndpointId, speed, i, false);
-        }
         rsrpVector[i] = recvPower + fadingAttenuation;
     }
 

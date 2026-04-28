@@ -26,15 +26,19 @@ class NtnChannelModel : public LteRealisticChannelModel
     inet::Coord lastSatelliteEndpointEcefCoord_;
     std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
 
-  public:
-    void initialize(int stage) override;
-    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
     double computePathLoss(double distance, double dbp, bool los) override;
     double computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl) override;
     double computeBuildingPenetrationLoss(MacNodeId nodeId);
     double computeAtmosphericLoss();
     double computeScintillationLoss();
+    double computeFastFading(MacNodeId nodeId, double speed, bool cqiDl);
     void computeLosProbability(double d, MacNodeId nodeId);
+
+  public:
+    void initialize(int stage) override;
+
+    // compute large scale attenuation (path loss, clutter loss, penetration loss, atmospheric, scintillation)
+    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
     std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
     std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 };
