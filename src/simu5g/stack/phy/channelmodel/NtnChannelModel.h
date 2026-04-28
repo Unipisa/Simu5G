@@ -19,12 +19,70 @@ namespace simu5g {
 
 class NtnChannelModel : public LteRealisticChannelModel
 {
+  public:
+    enum class LmsStateType
+    {
+        GOOD,
+        BAD
+    };
+
+    struct LmsStateParameters
+    {
+        double muDuration;
+        double sigmaDuration;
+        double minDuration;
+        double muMa;
+        double sigmaMa;
+        double h1;
+        double h2;
+        double g1;
+        double g2;
+        double correlationDistance;
+        double transitionSlope;
+        double transitionOffset;
+    };
+
+    struct LmsScenarioParameters
+    {
+        LmsStateParameters good;
+        LmsStateParameters bad;
+        double pBadMin;
+        double pBadMax;
+    };
+
+    struct LmsFadingState
+    {
+        bool initialized = false;
+        bool inTransition = false;
+        LmsStateType state = LmsStateType::GOOD;
+        double remainingDistance = 0.0;
+        double currentMa = 0.0;
+        double currentSigmaA = 0.0;
+        double currentMp = 0.0;
+        double currentCorrelationDistance = 1.0;
+        double directPathAmplitudeDb = 0.0;
+        double transitionLength = 0.0;
+        double transitionProgress = 0.0;
+        double sourceMa = 0.0;
+        double targetMa = 0.0;
+        double sourceSigmaA = 0.0;
+        double targetSigmaA = 0.0;
+        double sourceMp = 0.0;
+        double targetMp = 0.0;
+        double sourceCorrelationDistance = 1.0;
+        double targetCorrelationDistance = 1.0;
+        inet::Coord lastCoord;
+        bool hasLastCoord = false;
+    };
+
   protected:
+    bool useTwoStateModelFading_ = false;
     inet::Coord lastTerrestrialEndpointCoord_;
     inet::Coord lastSatelliteEndpointCoord_;
     inet::GeoCoord lastTerrestrialEndpointWgs84_ = inet::GeoCoord::NIL;
     inet::Coord lastSatelliteEndpointEcefCoord_;
     std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
+    std::map<MacNodeId, LmsFadingState> lmsFadingStateMap_;
 
     double computePathLoss(double distance, double dbp, bool los) override;
     double computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl) override;
@@ -32,6 +90,12 @@ class NtnChannelModel : public LteRealisticChannelModel
     double computeAtmosphericLoss();
     double computeScintillationLoss();
     double computeFastFading(MacNodeId nodeId, double speed, bool cqiDl);
+    const LmsScenarioParameters& getLmsScenarioParameters(double elevationAngle) const;
+    double sampleLmsDuration(const LmsStateParameters& params);
+    double sampleLmsMeanAmplitude(const LmsStateParameters& params, bool isBadState, double pBadMin, double pBadMax);
+    void initializeLmsFadingState(LmsFadingState& state, const LmsScenarioParameters& params);
+    void startLmsTransition(LmsFadingState& state, const LmsScenarioParameters& params);
+    void advanceLmsDirectPath(LmsFadingState& state, double distanceStep);
     void computeLosProbability(double d, MacNodeId nodeId);
 
   public:
