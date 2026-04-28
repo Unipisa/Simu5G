@@ -126,3 +126,6 @@ vim files
 
 # files for performance evaluation
 *.ipynb
+
+# ignore agent file
+AGENTS.md
