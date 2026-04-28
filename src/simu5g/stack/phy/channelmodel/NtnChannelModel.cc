@@ -15,6 +15,7 @@
 #include <array>
 #include <boost/math/distributions/normal.hpp>
 #include <cmath>
+#include <complex>
 #include <limits>
 
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
@@ -82,70 +83,136 @@ static constexpr BuildingPenetrationCoefficients kTraditionalBuildingCoefficient
 static constexpr BuildingPenetrationCoefficients kThermallyEfficientBuildingCoefficients = {28.19, -3.00, 8.48, 13.5, 3.8, 27.8, -2.9, 9.4, -2.1};
 
 // ITU-R P.681 Annex 2 two-state narrowband flat-fading parameters.
-static constexpr NtnChannelModel::LmsScenarioParameters kUrbanSBand20 = {{2.0042, 1.2049, 3.9889, -3.3681, 3.3226, 0.1739, -11.5966, 0.0036, 1.3230, 0.9680, 0.0870, 2.8469},
-                                                                          {3.6890, 0.9796, 10.3114, -18.1771, 3.2672, 1.1411, 4.0581, -0.2502, -1.2528, 0.9680, 0.0870, 2.8469},
-                                                                          0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kUrbanSBand30 = {{2.7332, 1.1030, 7.3174, -2.3773, 2.1222, 0.0941, -13.1679, -0.2811, 0.9323, 1.4731, 0.1378, 3.3733},
-                                                                          {2.7582, 1.2210, 5.7276, -17.4276, 3.9532, 0.9175, -0.8009, -0.1484, 0.5910, 1.4731, 0.1378, 3.3733},
-                                                                          0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kUrbanSBand45 = {{3.0639, 1.6980, 10.0, -1.8225, 1.1317, -0.0481, -14.7450, -0.4643, 0.3334, 1.7910, 0.0744, 2.1423},
-                                                                          {2.9108, 1.2602, 6.0, -15.4844, 3.3245, 0.9434, -1.7555, -0.0798, 2.8101, 1.7910, 0.0744, 2.1423},
-                                                                          0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kUrbanSBand60 = {{2.8135, 1.5962, 10.0, -1.5872, 1.2446, -0.5168, -17.4060, -0.1953, 0.5353, 1.7977, -0.1285, 5.4991},
-                                                                          {2.0211, 0.6568, 1.9126, -14.1435, 3.2706, 0.6975, -7.5383, 0.0422, 3.2030, 1.7977, -0.1285, 5.4991},
-                                                                          0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kUrbanSBand70 = {{4.2919, 2.4703, 118.3312, -1.8434, 0.5370, -4.7301, -26.5687, 0.5192, 1.9583, 2.0963, -0.0826, 2.8824},
-                                                                          {2.1012, 1.0341, 4.8569, -12.9383, 1.7588, 2.5318, 16.8468, 0.3768, 8.4377, 2.0963, -0.0826, 2.8824},
-                                                                          0.1, 0.9};
-
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanSBand20 = {{2.2201, 1.2767, 2.2914, -2.7191, 1.3840, -0.3037, -13.0719, -0.1254, 0.7894, 0.9290, 0.2904, 1.0324},
-                                                                              {2.2657, 1.3812, 2.5585, -13.8808, 2.5830, 1.0136, 0.5158, -0.1441, 0.7757, 0.9290, 0.2904, 1.0324},
-                                                                              0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanSBand30 = {{3.0138, 1.4161, 8.3214, -0.7018, 1.2107, -0.6543, -14.6457, -0.1333, 0.8992, 1.7135, 0.1091, 3.3000},
-                                                                              {2.4521, 0.7637, 5.9087, -11.9823, 3.4728, 0.6200, -7.5485, -0.1644, 0.2762, 1.7135, 0.1091, 3.3000},
-                                                                              0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanSBand45 = {{4.5857, 1.3918, 126.8375, -1.1496, 1.0369, 0.2148, -17.8462, 0.0729, 1.0303, 3.2293, 0.5766, 0.7163},
-                                                                              {2.2414, 0.7884, 4.3132, -10.3806, 2.3543, 0.0344, -14.2087, 0.0662, 3.5043, 3.2293, 0.5766, 0.7163},
-                                                                              0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanSBand60 = {{3.4124, 1.4331, 19.5431, -0.7811, 0.7979, -2.1102, -19.7954, -0.2284, 0.2796, 2.0215, -0.4097, 8.7440},
-                                                                              {1.9922, 0.7132, 3.1213, -12.1436, 3.1798, 0.4372, -8.3651, -0.2903, -0.6001, 2.0215, -0.4097, 8.7440},
-                                                                              0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanSBand70 = {{4.2919, 2.4703, 118.3312, -1.8434, 0.5370, -4.7301, -26.5687, 0.5192, 1.9583, 2.0963, -0.0826, 2.8824},
-                                                                              {2.1012, 1.0341, 4.8569, -12.9383, 1.7588, 2.5318, 16.8468, 0.3768, 8.4377, 2.0963, -0.0826, 2.8824},
-                                                                              0.1, 0.9};
-
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralWoodedSBand20 = {{2.1597, 1.3766, 2.0744, -0.8065, 1.5635, -0.9170, -12.1228, -0.0348, 0.9571, 0.8845, 0.0550, 2.6383},
-                                                                                 {1.9587, 1.5465, 1.3934, -10.6615, 2.6170, 0.8440, -1.4804, -0.1069, 1.6141, 0.8845, 0.0550, 2.6383},
-                                                                                 0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralWoodedSBand30 = {{2.5579, 1.2444, 3.5947, -1.3214, 1.6645, -1.0445, -14.3176, -0.1656, 0.7180, 1.0942, 0.0256, 3.8527},
-                                                                                 {2.3791, 1.1778, 2.2800, -10.4240, 2.4446, 0.6278, -4.8146, -0.0451, 2.2327, 1.0942, 0.0256, 3.8527},
-                                                                                 0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralWoodedSBand45 = {{3.1803, 1.3427, 6.7673, -0.9902, 1.0348, -0.4235, -16.8380, -0.1095, 0.6893, 2.3956, 0.2803, 4.0004},
-                                                                                 {2.5382, 1.1291, 3.3683, -10.2891, 2.3090, 0.3386, -9.7118, -0.0460, 2.1310, 2.3956, 0.2803, 4.0004},
-                                                                                 0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralWoodedSBand60 = {{2.9322, 1.3234, 5.7209, -0.6153, 1.1723, -1.4024, -16.9664, -0.2516, 0.5353, 1.7586, 0.1099, 4.2183},
-                                                                                 {2.1955, 1.1115, 1.6512, -9.9595, 2.2188, 0.2666, -9.0046, -0.0907, 1.4730, 1.7586, 0.1099, 4.2183},
-                                                                                 0.1, 0.9};
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralWoodedSBand70 = {{3.8768, 1.4738, 16.0855, -0.7818, 0.7044, -2.9566, -20.0326, -0.2874, 0.4050, 1.6546, -0.3914, 6.6931},
-                                                                                 {1.8445, 0.8874, 2.9629, -6.7769, 2.1339, -0.3723, -14.9638, -0.1822, 0.1163, 1.6546, -0.3914, 6.6931},
-                                                                                 0.1, 0.9};
-
-static constexpr NtnChannelModel::LmsScenarioParameters kSuburbanKaBand34 = {{1.0125, 1.6944, 1.5, -0.02, 0.0, 0.0, -38.17, 0.0, 0.39, 0.5, 0.036, 0.80},
-                                                                               {-0.8026, 1.2880, 1.1, -5.4, 7.3, 0.69, -15.97, -0.21, 0.0, 0.5, 0.036, 0.80},
-                                                                               0.1, 0.6};
-static constexpr NtnChannelModel::LmsScenarioParameters kRuralKaBand34 = {{1.7663, 1.9350, 0.9, 0.05, 0.0, 0.0, -40.25, 0.0, 0.39, 0.5, 0.088, 1.21},
-                                                                            {-0.4722, 1.7232, 0.8, -16.0, 10.4, 0.87, -14.26, -0.21, 0.0, 0.5, 0.088, 1.21},
-                                                                            0.1, 0.9};
-
-static double interpolateLinearly(double start, double end, double fraction)
-{
-    return start + (end - start) * fraction;
-}
-
-static double computeAverageEventLength(const NtnChannelModel::LmsStateParameters& params)
-{
-    return std::max(params.minDuration, std::exp(params.muDuration + 0.5 * params.sigmaDuration * params.sigmaDuration));
-}
+// Frequency-selective system-level parameters from 3GPP TR 38.811 section 6.7.2.
+// The 38.901 fast-fading generation process is reused, with these NTN-specific DS/K/rTau/N tables.
+static constexpr FrequencySelectiveScenarioParameters kDenseUrbanLosSband = {
+    {-7.12, -7.28, -7.45, -7.73, -7.91, -8.14, -8.23, -8.28, -8.36},
+    {0.80, 0.67, 0.68, 0.66, 0.62, 0.51, 0.45, 0.31, 0.08},
+    {4.4, 9.0, 9.3, 7.9, 7.4, 7.0, 6.9, 6.5, 6.8},
+    {3.3, 6.6, 6.1, 4.0, 3.0, 2.6, 2.2, 2.1, 1.9},
+    {2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5},
+    {3, 3, 3, 3, 3, 3, 3, 3, 3},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kDenseUrbanLosKaband = {
+    {-7.43, -7.62, -7.76, -8.02, -8.13, -8.30, -8.34, -8.39, -8.45},
+    {0.90, 0.78, 0.80, 0.72, 0.61, 0.47, 0.39, 0.26, 0.01},
+    {6.1, 13.7, 12.9, 10.3, 9.2, 8.4, 8.0, 7.4, 7.6},
+    {2.6, 6.8, 6.0, 3.3, 2.2, 1.9, 1.5, 1.6, 1.3},
+    {2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5},
+    {3, 3, 3, 3, 3, 3, 3, 3, 3},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kDenseUrbanNlosSband = {
+    {-6.84, -6.81, -6.94, -7.14, -7.34, -7.53, -7.67, -7.82, -7.84},
+    {0.82, 0.61, 0.49, 0.49, 0.51, 0.47, 0.44, 0.42, 0.55},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3},
+    {4, 4, 4, 4, 4, 4, 4, 4, 4},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kDenseUrbanNlosKaband = {
+    {-6.86, -6.84, -7.00, -7.21, -7.42, -7.86, -7.76, -8.07, -7.95},
+    {0.81, 0.61, 0.56, 0.56, 0.57, 0.55, 0.47, 0.42, 0.59},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3},
+    {4, 4, 4, 4, 4, 4, 4, 4, 4},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kUrbanLosSband = {
+    {-7.97, -8.12, -8.21, -8.31, -8.37, -8.39, -8.38, -8.35, -8.34},
+    {1.0, 0.83, 0.68, 0.48, 0.38, 0.24, 0.18, 0.13, 0.09},
+    {31.83, 18.78, 10.49, 7.46, 6.52, 5.47, 4.54, 4.03, 3.68},
+    {13.84, 13.78, 10.42, 8.01, 8.27, 7.26, 5.53, 4.49, 3.14},
+    {2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5},
+    {4, 3, 3, 3, 3, 3, 3, 3, 3},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kUrbanLosKaband = {
+    {-8.52, -8.59, -8.51, -8.49, -8.48, -8.44, -8.4, -8.37, -8.35},
+    {0.92, 0.79, 0.65, 0.48, 0.46, 0.34, 0.27, 0.19, 0.14},
+    {40.18, 23.62, 12.48, 8.56, 7.42, 5.97, 4.88, 4.22, 3.81},
+    {16.99, 18.96, 14.23, 11.06, 11.21, 9.47, 7.24, 5.79, 4.25},
+    {2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5},
+    {4, 3, 3, 3, 3, 3, 3, 3, 3},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kUrbanNlosSband = {
+    {-7.21, -7.63, -7.75, -7.97, -7.99, -8.01, -8.09, -7.97, -8.17},
+    {1.19, 0.98, 0.84, 0.73, 0.73, 0.72, 0.71, 0.78, 0.67},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3},
+    {3, 3, 3, 3, 3, 3, 2, 2, 2},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kUrbanNlosKaband = {
+    {-7.24, -7.7, -7.82, -8.04, -8.08, -8.1, -8.16, -8.03, -8.33},
+    {1.26, 0.99, 0.86, 0.75, 0.77, 0.76, 0.73, 0.79, 0.7},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3},
+    {3, 3, 3, 3, 3, 3, 2, 2, 2},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kSuburbanLosSband = {
+    {-8.16, -8.56, -8.72, -8.71, -8.72, -8.66, -8.38, -8.34, -8.34},
+    {0.99, 0.96, 0.79, 0.81, 1.12, 1.23, 0.55, 0.63, 0.63},
+    {11.40, 19.45, 20.80, 21.20, 21.60, 19.75, 12.00, 12.85, 12.85},
+    {6.26, 10.32, 16.34, 15.63, 14.22, 14.19, 5.70, 9.91, 9.91},
+    {2.20, 3.36, 3.50, 2.81, 2.39, 2.73, 2.07, 2.04, 2.04},
+    {3, 3, 3, 3, 3, 3, 2, 2, 2},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kSuburbanLosKaband = {
+    {-8.07, -8.61, -8.72, -8.63, -8.54, -8.48, -8.42, -8.39, -8.37},
+    {0.46, 0.45, 0.28, 0.17, 0.14, 0.15, 0.09, 0.05, 0.02},
+    {8.9, 14.0, 11.3, 9.0, 7.5, 6.6, 5.9, 5.5, 5.4},
+    {4.4, 4.6, 3.7, 3.5, 3.0, 2.6, 1.7, 0.7, 0.3},
+    {2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5},
+    {3, 3, 3, 3, 3, 3, 2, 2, 2},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kSuburbanNlosSband = {
+    {-7.91, -8.39, -8.69, -8.59, -8.64, -8.74, -8.98, -9.28, -9.28},
+    {1.42, 1.46, 1.46, 1.21, 1.18, 1.13, 1.37, 1.50, 1.50},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.28, 2.33, 2.43, 2.26, 2.71, 2.10, 2.19, 2.06, 2.06},
+    {4, 4, 4, 4, 4, 3, 3, 3, 3},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kSuburbanNlosKaband = {
+    {-7.43, -7.63, -7.86, -7.96, -7.98, -8.45, -8.21, -8.69, -8.69},
+    {0.50, 0.61, 0.56, 0.58, 0.59, 0.47, 0.36, 0.29, 0.29},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3},
+    {4, 4, 4, 4, 4, 3, 3, 3, 3},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kRuralLosSband = {
+    {-9.55, -8.68, -8.46, -8.36, -8.29, -8.26, -8.22, -8.2, -8.19},
+    {0.66, 0.44, 0.28, 0.19, 0.14, 0.1, 0.1, 0.05, 0.06},
+    {24.72, 12.31, 8.05, 6.21, 5.04, 4.42, 3.92, 3.65, 3.59},
+    {5.07, 5.75, 5.46, 5.23, 3.95, 3.75, 2.56, 1.77, 1.77},
+    {3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8},
+    {2, 2, 2, 2, 2, 2, 2, 2, 2},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kRuralLosKaband = {
+    {-9.68, -8.86, -8.59, -8.46, -8.36, -8.3, -8.26, -8.22, -8.21},
+    {0.46, 0.29, 0.18, 0.19, 0.14, 0.15, 0.13, 0.03, 0.07},
+    {25.43, 12.72, 8.40, 6.52, 5.24, 4.57, 4.02, 3.70, 3.62},
+    {7.04, 7.47, 7.18, 6.88, 5.28, 4.92, 3.40, 2.22, 2.28},
+    {3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8},
+    {2, 2, 2, 2, 2, 2, 2, 2, 2},
+    true};
+static constexpr FrequencySelectiveScenarioParameters kRuralNlosSband = {
+    {-9.01, -8.37, -8.05, -7.92, -7.92, -7.96, -7.91, -7.79, -7.74},
+    {1.59, 0.95, 0.92, 0.92, 0.87, 0.87, 0.82, 0.86, 0.81},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7},
+    {3, 3, 2, 2, 2, 2, 2, 2, 2},
+    false};
+static constexpr FrequencySelectiveScenarioParameters kRuralNlosKaband = {
+    {-9.13, -8.39, -8.1, -7.96, -7.99, -8.05, -8.01, -8.05, -7.91},
+    {1.91, 0.94, 0.92, 0.94, 0.89, 0.87, 0.82, 1.65, 0.76},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7},
+    {3, 3, 2, 2, 2, 2, 2, 2, 2},
+    false};
 
 Define_Module(NtnChannelModel);
 
@@ -153,7 +220,6 @@ void NtnChannelModel::initialize(int stage)
 {
     LteRealisticChannelModel::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        useTwoStateModelFading_ = par("useTwoStateModelFading").boolValue();
         if (inside_building_)
             useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
     }
@@ -303,203 +369,169 @@ double NtnChannelModel::computeScintillationLoss()
     return kTroposphericScintillationLoss[angleIndex];
 }
 
-const NtnChannelModel::LmsScenarioParameters& NtnChannelModel::getLmsScenarioParameters(double elevationAngle) const
+const FrequencySelectiveScenarioParameters& NtnChannelModel::getFrequencySelectiveScenarioParameters(bool los, bool isSband) const
 {
-    const double carrierFrequencyGHz = carrierFrequency_.get();
-    if (carrierFrequencyGHz < 6.0) {
-        int roundedAngle = 20;
-        if (elevationAngle <= 25.0)
-            roundedAngle = 20;
-        else if (elevationAngle <= 37.5)
-            roundedAngle = 30;
-        else if (elevationAngle <= 52.5)
-            roundedAngle = 45;
-        else if (elevationAngle <= 65.0)
-            roundedAngle = 60;
-        else
-            roundedAngle = 70;
-
-        switch (scenario_) {
-            case INDOOR_HOTSPOT:
-            case URBAN_MICROCELL:
-            case URBAN_MACROCELL:
-                switch (roundedAngle) {
-                    case 20: return kUrbanSBand20;
-                    case 30: return kUrbanSBand30;
-                    case 45: return kUrbanSBand45;
-                    case 60: return kUrbanSBand60;
-                    default: return kUrbanSBand70;
-                }
-            case SUBURBAN_MACROCELL:
-                switch (roundedAngle) {
-                    case 20: return kSuburbanSBand20;
-                    case 30: return kSuburbanSBand30;
-                    case 45: return kSuburbanSBand45;
-                    case 60: return kSuburbanSBand60;
-                    default: return kSuburbanSBand70;
-                }
-            case RURAL_MACROCELL:
-                switch (roundedAngle) {
-                    case 20: return kRuralWoodedSBand20;
-                    case 30: return kRuralWoodedSBand30;
-                    case 45: return kRuralWoodedSBand45;
-                    case 60: return kRuralWoodedSBand60;
-                    default: return kRuralWoodedSBand70;
-                }
-            default:
-                throw cRuntimeError("NtnChannelModel::getLmsScenarioParameters - unsupported S-band scenario value %d", scenario_);
-        }
-    }
-
     switch (scenario_) {
+        case INDOOR_HOTSPOT:
+        case URBAN_MICROCELL:
+            if (los)
+                return isSband ? kDenseUrbanLosSband : kDenseUrbanLosKaband;
+            return isSband ? kDenseUrbanNlosSband : kDenseUrbanNlosKaband;
+        case URBAN_MACROCELL:
+            if (los)
+                return isSband ? kUrbanLosSband : kUrbanLosKaband;
+            return isSband ? kUrbanNlosSband : kUrbanNlosKaband;
         case SUBURBAN_MACROCELL:
-            return kSuburbanKaBand34;
+            if (los)
+                return isSband ? kSuburbanLosSband : kSuburbanLosKaband;
+            return isSband ? kSuburbanNlosSband : kSuburbanNlosKaband;
         case RURAL_MACROCELL:
-            return kRuralKaBand34;
+            if (los)
+                return isSband ? kRuralLosSband : kRuralLosKaband;
+            return isSband ? kRuralNlosSband : kRuralNlosKaband;
         default:
-            throw cRuntimeError("NtnChannelModel::getLmsScenarioParameters - unsupported Ka-band scenario value %d", scenario_);
+            throw cRuntimeError("NtnChannelModel::getFrequencySelectiveScenarioParameters - unsupported scenario value %d", scenario_);
     }
 }
 
-double NtnChannelModel::sampleLmsDuration(const LmsStateParameters& params)
+double NtnChannelModel::getFadingRefreshDistance(bool los) const
 {
-    return std::max(params.minDuration, std::exp(normal(params.muDuration, params.sigmaDuration)));
+    switch (scenario_) {
+        case INDOOR_HOTSPOT:
+        case URBAN_MICROCELL:
+        case URBAN_MACROCELL:
+            return los ? 30.0 : 40.0;
+        case SUBURBAN_MACROCELL:
+            return los ? 30.0 : 40.0;
+        case RURAL_MACROCELL:
+            return los ? 50.0 : 36.0;
+        default:
+            throw cRuntimeError("NtnChannelModel::getFadingRefreshDistance - unsupported scenario value %d", scenario_);
+    }
 }
 
-double NtnChannelModel::sampleLmsMeanAmplitude(const LmsStateParameters& params, bool isBadState, double pBadMin, double pBadMax)
+std::vector<double> NtnChannelModel::getBandCenterFrequenciesHz() const
 {
-    if (!isBadState)
-        return normal(params.muMa, params.sigmaMa);
+    double subcarrierSpacingHz = 15000.0 * static_cast<double>(1u << getNumerologyIndex());
+    double bandWidthHz = 12.0 * subcarrierSpacingHz;
+    double centerOffset = 0.5 * static_cast<double>(numBands_ - 1);
 
-    double probability = uniform(pBadMin, pBadMax);
-    boost::math::normal_distribution<double> standardNormal;
-    return params.muMa + params.sigmaMa * boost::math::quantile(standardNormal, probability);
+    std::vector<double> frequencies(numBands_, carrierFrequencyHz_);
+    for (unsigned int i = 0; i < numBands_; ++i)
+        frequencies[i] += (static_cast<double>(i) - centerOffset) * bandWidthHz;
+    return frequencies;
 }
 
-void NtnChannelModel::initializeLmsFadingState(LmsFadingState& state, const LmsScenarioParameters& params)
+void NtnChannelModel::initializeFrequencySelectiveFadingState(FrequencySelectiveFadingState& state, const FrequencySelectiveScenarioParameters& params, int angleIndex, double maxDopplerHz)
 {
-    double meanGood = computeAverageEventLength(params.good);
-    double meanBad = computeAverageEventLength(params.bad);
-    double badProbability = meanBad / (meanGood + meanBad);
+    constexpr double epsilon = 1e-12;
 
-    state.state = uniform(0.0, 1.0) < badProbability ? LmsStateType::BAD : LmsStateType::GOOD;
-    const LmsStateParameters& stateParams = state.state == LmsStateType::GOOD ? params.good : params.bad;
-    bool isBadState = state.state == LmsStateType::BAD;
-    state.currentMa = sampleLmsMeanAmplitude(stateParams, isBadState, params.pBadMin, params.pBadMax);
-    state.currentSigmaA = stateParams.g1 * state.currentMa + stateParams.g2;
-    state.currentMp = stateParams.h1 * state.currentMa + stateParams.h2;
-    state.currentCorrelationDistance = std::max(stateParams.correlationDistance, 1e-6);
-    state.directPathAmplitudeDb = normal(state.currentMa, std::max(state.currentSigmaA, 1e-6));
-    state.remainingDistance = sampleLmsDuration(stateParams);
+    double delaySpreadSeconds = std::pow(10.0, normal(params.muLgDs[angleIndex], params.sigmaLgDs[angleIndex]));
+    delaySpreadSeconds = std::max(delaySpreadSeconds, epsilon);
+
+    int numClusters = std::max(params.numClusters[angleIndex], 1);
+    std::vector<double> delays(numClusters, 0.0);
+    for (int i = 0; i < numClusters; ++i) {
+        double sample = std::max(uniform(0.0, 1.0), epsilon);
+        delays[i] = -params.rTau[angleIndex] * delaySpreadSeconds * std::log(sample);
+    }
+    std::sort(delays.begin(), delays.end());
+    double minDelay = delays.front();
+    for (double& delay : delays)
+        delay -= minDelay;
+
+    std::vector<double> powers(numClusters, 0.0);
+    double powerSum = 0.0;
+    for (int i = 0; i < numClusters; ++i) {
+        double shadowingDb = normal(0.0, 3.0);
+        double decay = std::exp(-delays[i] * (params.rTau[angleIndex] - 1.0) / (params.rTau[angleIndex] * delaySpreadSeconds));
+        powers[i] = decay * std::pow(10.0, -shadowingDb / 10.0);
+        powerSum += powers[i];
+    }
+    powerSum = std::max(powerSum, epsilon);
+    for (double& power : powers)
+        power /= powerSum;
+
+    state.losLinearPower = 0.0;
+    if (params.hasLosComponent) {
+        double kDb = normal(params.muK[angleIndex], params.sigmaK[angleIndex]);
+        double kLinear = std::pow(10.0, kDb / 10.0);
+        state.losLinearPower = kLinear / (kLinear + 1.0);
+        for (double& power : powers)
+            power /= (kLinear + 1.0);
+    }
+
+    state.delaysSeconds = std::move(delays);
+    state.linearPowers = std::move(powers);
+    state.dopplerHz.resize(numClusters);
+    state.initialPhaseRad.resize(numClusters);
+    for (int i = 0; i < numClusters; ++i) {
+        double angle = uniform(0.0, 2.0 * M_PI);
+        state.dopplerHz[i] = maxDopplerHz * std::cos(angle);
+        state.initialPhaseRad[i] = uniform(0.0, 2.0 * M_PI);
+    }
+
+    double losAngle = uniform(0.0, 2.0 * M_PI);
+    state.losDopplerHz = maxDopplerHz * std::cos(losAngle);
+    state.losInitialPhaseRad = uniform(0.0, 2.0 * M_PI);
+    state.referenceTime = NOW;
+    state.lastRefreshCoord = lastTerrestrialEndpointCoord_;
     state.initialized = true;
 }
 
-void NtnChannelModel::startLmsTransition(LmsFadingState& state, const LmsScenarioParameters& params)
-{
-    LmsStateType nextStateType = state.state == LmsStateType::GOOD ? LmsStateType::BAD : LmsStateType::GOOD;
-    const LmsStateParameters& nextParams = nextStateType == LmsStateType::GOOD ? params.good : params.bad;
-    bool isBadState = nextStateType == LmsStateType::BAD;
-
-    state.sourceMa = state.currentMa;
-    state.sourceSigmaA = state.currentSigmaA;
-    state.sourceMp = state.currentMp;
-    state.sourceCorrelationDistance = state.currentCorrelationDistance;
-
-    state.targetMa = sampleLmsMeanAmplitude(nextParams, isBadState, params.pBadMin, params.pBadMax);
-    state.targetSigmaA = nextParams.g1 * state.targetMa + nextParams.g2;
-    state.targetMp = nextParams.h1 * state.targetMa + nextParams.h2;
-    state.targetCorrelationDistance = std::max(nextParams.correlationDistance, 1e-6);
-    state.transitionLength = std::max(nextParams.transitionSlope * std::fabs(state.targetMa - state.sourceMa) + nextParams.transitionOffset, 0.0);
-    state.transitionProgress = 0.0;
-    state.inTransition = state.transitionLength > 0.0;
-    state.state = nextStateType;
-
-    if (!state.inTransition) {
-        state.currentMa = state.targetMa;
-        state.currentSigmaA = state.targetSigmaA;
-        state.currentMp = state.targetMp;
-        state.currentCorrelationDistance = state.targetCorrelationDistance;
-        state.remainingDistance = sampleLmsDuration(nextParams);
-    }
-}
-
-void NtnChannelModel::advanceLmsDirectPath(LmsFadingState& state, double distanceStep)
-{
-    double correlationDistance = std::max(state.currentCorrelationDistance, 1e-6);
-    double rho = std::exp(-distanceStep / correlationDistance);
-    double sigmaA = std::max(state.currentSigmaA, 1e-6);
-    state.directPathAmplitudeDb = rho * state.directPathAmplitudeDb + std::sqrt(1.0 - rho * rho) * normal(state.currentMa, sigmaA);
-}
-
-double NtnChannelModel::computeFastFading(MacNodeId nodeId, double speed, bool cqiDl)
+std::vector<double> NtnChannelModel::computeFrequencySelectiveFading(MacNodeId nodeId, double speed)
 {
     if (!fading_)
-        return 0.0;
-
-    if (!useTwoStateModelFading_) {
-        if (fadingType_ == RAYLEIGH)
-            return rayleighFading(nodeId, 0);
-        if (fadingType_ == JAKES)
-            return jakesFading(nodeId, speed, 0, cqiDl);
-        return 0.0;
-    }
-
-    (void)speed;
-    (void)cqiDl;
+        return std::vector<double>(numBands_, 0.0);
 
     inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
     double elevationAngle = computeElevationFromEcefEndpoints(lastTerrestrialEndpointWgs84_, terrestrialEndpointEcef, lastSatelliteEndpointEcefCoord_);
-    const LmsScenarioParameters& params = getLmsScenarioParameters(elevationAngle);
-    LmsFadingState& state = lmsFadingStateMap_[nodeId];
+    int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
+    roundedAngle = std::max(10, std::min(90, roundedAngle));
+    int angleIndex = roundedAngle / 10 - 1;
+    bool los = losMap_[nodeId];
+    bool isSband = carrierFrequency_.get() < 13.0;
 
-    if (!state.initialized)
-        initializeLmsFadingState(state, params);
+    const FrequencySelectiveScenarioParameters& params = getFrequencySelectiveScenarioParameters(los, isSband);
+    FrequencySelectiveFadingState& state = fadingStateMap_[nodeId];
+    double maxDopplerHz = speed * carrierFrequencyHz_ / SPEED_OF_LIGHT;
+    double refreshDistance = getFadingRefreshDistance(los);
 
-    double distanceStep = state.hasLastCoord ? state.lastCoord.distance(lastTerrestrialEndpointCoord_) : 0.0;
-    while (distanceStep > 0.0) {
-        if (state.inTransition) {
-            double remainingTransition = std::max(state.transitionLength - state.transitionProgress, 0.0);
-            double step = std::min(distanceStep, remainingTransition);
-            state.transitionProgress += step;
-            double fraction = state.transitionLength > 0.0 ? std::min(state.transitionProgress / state.transitionLength, 1.0) : 1.0;
-            state.currentMa = interpolateLinearly(state.sourceMa, state.targetMa, fraction);
-            state.currentSigmaA = interpolateLinearly(state.sourceSigmaA, state.targetSigmaA, fraction);
-            state.currentMp = interpolateLinearly(state.sourceMp, state.targetMp, fraction);
-            state.currentCorrelationDistance = interpolateLinearly(state.sourceCorrelationDistance, state.targetCorrelationDistance, fraction);
-            advanceLmsDirectPath(state, step);
-            distanceStep -= step;
+    bool shouldRefresh = !state.initialized ||
+        state.los != los ||
+        state.isSband != isSband ||
+        state.angleIndex != angleIndex ||
+        state.scenario != scenario_ ||
+        state.lastRefreshCoord.distance(lastTerrestrialEndpointCoord_) > refreshDistance;
 
-            if (fraction >= 1.0) {
-                state.inTransition = false;
-                const LmsStateParameters& stateParams = state.state == LmsStateType::GOOD ? params.good : params.bad;
-                state.remainingDistance = sampleLmsDuration(stateParams);
-            }
-        }
-        else {
-            double step = std::min(distanceStep, std::max(state.remainingDistance, 0.0));
-            if (step > 0.0) {
-                advanceLmsDirectPath(state, step);
-                state.remainingDistance -= step;
-                distanceStep -= step;
-            }
-
-            if (state.remainingDistance <= 0.0)
-                startLmsTransition(state, params);
-            else if (step <= 0.0)
-                break;
-        }
+    if (shouldRefresh) {
+        state.los = los;
+        state.isSband = isSband;
+        state.angleIndex = angleIndex;
+        state.scenario = scenario_;
+        state.refreshDistance = refreshDistance;
+        initializeFrequencySelectiveFadingState(state, params, angleIndex, maxDopplerHz);
     }
 
-    state.lastCoord = lastTerrestrialEndpointCoord_;
-    state.hasLastCoord = true;
-
-    double directAmplitudeLinear = std::pow(10.0, state.directPathAmplitudeDb / 20.0);
-    double multipathPowerLinear = std::pow(10.0, state.currentMp / 10.0);
-    double multipathSigma = std::sqrt(std::max(multipathPowerLinear, 0.0) / 2.0);
-    double re = normal(directAmplitudeLinear, multipathSigma);
-    double im = normal(0.0, multipathSigma);
-    double totalPowerLinear = std::max(re * re + im * im, std::numeric_limits<double>::epsilon());
-    return linearToDb(totalPowerLinear);
+    double elapsedTime = SIMTIME_DBL(NOW - state.referenceTime);
+    std::vector<double> bandFrequenciesHz = getBandCenterFrequenciesHz();
+    std::vector<double> fadingAttenuation(numBands_, 0.0);
+    for (unsigned int band = 0; band < numBands_; ++band) {
+        std::complex<double> response(0.0, 0.0);
+        for (size_t cluster = 0; cluster < state.linearPowers.size(); ++cluster) {
+            double phase = state.initialPhaseRad[cluster]
+                + 2.0 * M_PI * state.dopplerHz[cluster] * elapsedTime
+                - 2.0 * M_PI * bandFrequenciesHz[band] * state.delaysSeconds[cluster];
+            response += std::polar(std::sqrt(state.linearPowers[cluster]), phase);
+        }
+        if (state.losLinearPower > 0.0) {
+            double losPhase = state.losInitialPhaseRad + 2.0 * M_PI * state.losDopplerHz * elapsedTime;
+            response += std::polar(std::sqrt(state.losLinearPower), losPhase);
+        }
+        double linearGain = std::max(std::norm(response), std::numeric_limits<double>::epsilon());
+        fadingAttenuation[band] = linearToDb(linearGain);
+    }
+    return fadingAttenuation;
 }
 
 double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, double speed, bool cqiDl)
@@ -664,10 +696,9 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     recvPower -= cableLoss_;
 
     std::vector<double> snrVector(numBands_, 0.0);
-    // add flat fading (non-frequency selective)
-    double fadingAttenuation = computeFastFading(terrestrialEndpointId, speed, cqiDl);
+    std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
-        snrVector[i] = recvPower + fadingAttenuation;
+        snrVector[i] = recvPower + fadingAttenuation[i];
     }
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
@@ -725,9 +756,9 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     recvPower -= cableLoss_;
 
     std::vector<double> rsrpVector(numBands_, 0.0);
-    double fadingAttenuation = computeFastFading(terrestrialEndpointId, speed, cqiDl);
+    std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
-        rsrpVector[i] = recvPower + fadingAttenuation;
+        rsrpVector[i] = recvPower + fadingAttenuation[i];
     }
 
     return rsrpVector;

@@ -14,6 +14,5 @@ package simu5g.stack.phy.channelmodel;
 simple NtnChannelModel extends LteRealisticChannelModel
 {
     parameters:
-        bool useTwoStateModelFading = default(false);
         @class("NtnChannelModel");
 }
