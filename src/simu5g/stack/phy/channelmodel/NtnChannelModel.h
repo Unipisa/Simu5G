@@ -17,19 +17,9 @@
 
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "simu5g/stack/phy/channelmodel/LteRealisticChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/NtnChannelModelTables.h"
 
 namespace simu5g {
-
-struct FrequencySelectiveScenarioParameters
-{
-    std::array<double, 9> muLgDs;
-    std::array<double, 9> sigmaLgDs;
-    std::array<double, 9> muK;
-    std::array<double, 9> sigmaK;
-    std::array<double, 9> rTau;
-    std::array<int, 9> numClusters;
-    bool hasLosComponent;
-};
 
 class NtnChannelModel : public LteRealisticChannelModel
 {
