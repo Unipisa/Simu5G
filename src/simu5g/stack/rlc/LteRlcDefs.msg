@@ -162,7 +162,7 @@ struct FramingInfo {
 };
 
 cplusplus(FramingInfo) {{
-    short toValue() { return (firstIsFragment ? 2 : 0) | (lastIsFragment ? 1 : 0); }
+    short toValue() const { return (firstIsFragment ? 2 : 0) | (lastIsFragment ? 1 : 0); }
 }}
 
 //
