@@ -29,6 +29,7 @@ void NtnPhyBase::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
+        antennaModel_.reference(this, "antennaModelModule", true);
         referenceSystem_ = GeographicReferenceSystemAccess().get();
         ASSERT(referenceSystem_ != nullptr);
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
@@ -98,6 +99,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioTransmitterCoord(getRadioPosition());
         lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
+        lteInfo.setRadioTransmitterAntenna(antennaModel_);
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
            << " to peer node " << peerNode->getFullPath() << endl;
