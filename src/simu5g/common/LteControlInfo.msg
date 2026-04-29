@@ -18,6 +18,15 @@ import simu5g.common.LteCommon;
 import simu5g.common.LteCommonEnum;
 import simu5g.stack.mac.amc.UserTxParams;
 
+cplusplus {{
+#include "simu5g/stack/phy/antennamodel/IAntennaModel.h"    
+}}
+
+class simu5g::IAntennaModel
+{
+    @existingClass;
+}
+
 namespace simu5g;
 
 //
@@ -138,6 +147,7 @@ class UserControlInfo extends LteControlInfo {
     inet::Coord radioTransmitterCoord;                  // Position of the actual transmitter of the current wireless hop
     inet::Coord radioTransmitterEcefCoord;              // ECEF position of the actual transmitter of the current wireless hop
     MacNodeId radioReceiverId = NODEID_NONE;            // Actual receiver of the current wireless hop
+    IAntennaModel* radioTransmitterAntenna;             // Pointer to the radio transmitter antenna (for rx power computation at the receiver side)
     FeedbackRequest feedbackReq;
 }
 
