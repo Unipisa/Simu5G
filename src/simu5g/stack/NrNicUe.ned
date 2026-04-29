@@ -15,6 +15,7 @@ package simu5g.stack;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
+import simu5g.stack.phy.antennamodel.IAntennaModel;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
@@ -32,6 +33,7 @@ module NrNicUe extends LteNicUeD2D
         bool hasNtnSupport = default(false);
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
         string ntnChannelModelType = default("NrChannelModel_3GPP38_901");
+        string ntnAntennaModelType = default("IsotropicAntennaModel");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
@@ -77,6 +79,10 @@ module NrNicUe extends LteNicUeD2D
         // NTN Channel Model
         ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel if hasNtnSupport {
             @display("p=620,314");
+        }
+        // NTN Antenna Model
+        ntnAntennaModel: <ntnAntennaModelType> like IAntennaModel if hasNtnSupport {
+            @display("p=620,226");
         }
 
         // Feedback generator submodule
