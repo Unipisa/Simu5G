@@ -7,4 +7,5 @@ package simu5g.stack.phy.antennamodel;
 moduleinterface IAntennaModel
 {
     @display("i=device/antennatower");
+    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR);
 }
