@@ -12,13 +12,17 @@
 package simu5g.stack;
 
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
+import simu5g.stack.phy.antennamodel.IAntennaModel;
 
 module NtnFeederLinkNic
 {
     parameters:
-        @display("i=block/ifcard;bgb=704,443;bgl=3");
+        @display("i=block/ifcard;bgb=529,443;bgl=3");
         string channelModelType = default("NrChannelModel_3GPP38_901");
+        string antennaModelType;
         int numCarriers = default(1);
+        antennaModel.frequencyBand = default("KA");
+
     gates:
         input upperLayerIn;
         output upperLayerOut;
@@ -26,11 +30,14 @@ module NtnFeederLinkNic
     submodules:
         phy: NtnPhyBase {
             parameters:
-                @display("p=352,221");
+                @display("p=182,289");
                 linkType = "feeder";
         }
         channelModel[numCarriers]: <channelModelType> like ILteChannelModel {
-            @display("p=100,221");
+            @display("p=182,167");
+        }
+        antennaModel: <antennaModelType> like IAntennaModel {
+            @display("p=182,60");
         }
     connections:
         upperLayerIn --> phy.upperLayerIn;

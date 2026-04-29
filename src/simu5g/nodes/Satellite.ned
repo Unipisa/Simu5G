@@ -40,7 +40,7 @@ module Satellite
         interfaceTable: InterfaceTable {
             @display("p=70,120;is=s");
         }
-        mobility: <default("GeoSatMobility")> like IMobility {
+        mobility: <> like IMobility {
             @display("p=70,55;is=s");
         }
         serviceNic: NtnServiceLinkNic {
@@ -64,4 +64,31 @@ module Satellite
 
         serviceNic.radioIn <-- serviceLinkRadioIn;
         feederNic.radioIn <-- feederLinkRadioIn;
+}
+
+//
+// GEO satellite model extending the ~Satellite module
+//
+module GeoSatellite extends Satellite
+{
+    mobility.typename = default("GeoSatMobility");
+     *.antennaModelType = default("GeoNtnPlatformAntennaModel");
+}
+
+//
+// LEO satellite (altitude 600km) model extending the ~Satellite module
+//
+module Leo600Satellite extends Satellite
+{
+     mobility.typename = default("LeoSatMobility");
+     *.antennaModelType = default("Leo600NtnPlatformAntennaModel");
+}
+
+//
+// LEO satellite (altitude 1200km) model extending the ~Satellite module
+//
+module Leo1200Satellite extends Satellite
+{
+    mobility.typename = default("LeoSatMobility");
+    *.antennaModelType = default("Leo1200NtnPlatformAntennaModel");
 }

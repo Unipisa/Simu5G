@@ -35,7 +35,7 @@ network NtnLeo
 {
     parameters:
         int numUe = default(1);
-        string satelliteType = default("simu5g.nodes.Satellite");
+        string satelliteType = default("simu5g.nodes.Leo600Satellite");
         @display("i=block/network2;bgb=1000,600;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {

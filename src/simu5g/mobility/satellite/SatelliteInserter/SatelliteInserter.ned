@@ -25,7 +25,7 @@ simple SatelliteInserter
 {
     parameters:
         @display("i=block/control");
-        string satelliteModuleType = default("simu5g.nodes.Satellite");
+        string satelliteModuleType = default("simu5g.nodes.Leo600Satellite");
         string satelliteModuleDefaultName = default("Satellite");
         bool ignoreUnknownSatellites = default(true); // Satellites whose name does not start with a constellation name listed in examples/space_veins/SatelliteExampleScenario.ned will be ignored
         string pathToTleFile = default("satellite_tle.txt");
