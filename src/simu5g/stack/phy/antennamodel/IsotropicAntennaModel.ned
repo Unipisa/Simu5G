@@ -12,4 +12,5 @@ simple IsotropicAntennaModel like IAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(9dB);
+    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("LINEAR");
 }

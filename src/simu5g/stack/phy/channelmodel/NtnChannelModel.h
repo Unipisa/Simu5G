@@ -30,6 +30,7 @@ class NtnChannelModel : public LteRealisticChannelModel
     inet::GeoCoord lastTerrestrialEndpointWgs84_ = inet::GeoCoord::NIL;
     inet::Coord lastSatelliteEndpointEcefCoord_;
     std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
+    double polarizationMismatchLoss_ = 0.0; // in dB
 
     /*
      * Frequency-selective fading data structures

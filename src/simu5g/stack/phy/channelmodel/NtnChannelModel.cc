@@ -27,6 +27,9 @@ void NtnChannelModel::initialize(int stage)
 {
     LteRealisticChannelModel::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
+        polarizationMismatchLoss_ = par("polarizationMismatchLoss");
+        // TODO Apply this once per link when NTN Tx/Rx antenna-model references expose
+        // their polarizations and both endpoints are configured with different non-NONE values.
         if (inside_building_)
             useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
     }
