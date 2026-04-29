@@ -141,6 +141,7 @@ double dBmToLinear(double dbm);
 double dBToLinear(double db);
 double linearToDBm(double lin);
 double linearToDb(double lin);
+double inverseStandardNormalCdf(double probability);
 
 
 /*****************

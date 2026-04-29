@@ -2,10 +2,6 @@
 #include "inet/common/INETMath.h"
 
 #include <cmath>
-#ifdef __APPLE__
-// in MacOS, bessel functions do not come with clang, so we need to include boost libraries
-#include <boost/math/special_functions/bessel.hpp>
-#endif
 
 namespace simu5g {
 
@@ -37,11 +33,7 @@ double VSATAntennaModel::computeGain(double angle, double frequency) const
     if (std::abs(x) < 1e-9)
         return maxGain;
 
-    #ifdef __APPLE__
-    double bessel = boost::math::cyl_bessel_j(1, x);
-    #else
-    double bessel = std::cyl_bessel_j(1, x);
-    #endif
+    double bessel = ::j1(x);
 
     double d = (2.0 * bessel) / x;
     double besselFactor = d * d;
