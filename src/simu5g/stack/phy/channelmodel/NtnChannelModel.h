@@ -18,6 +18,7 @@
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "simu5g/stack/phy/channelmodel/LteRealisticChannelModel.h"
 #include "simu5g/stack/phy/channelmodel/NtnChannelModelTables.h"
+#include "simu5g/stack/phy/antennamodel/IAntennaModel.h"
 
 namespace simu5g {
 
@@ -31,6 +32,8 @@ class NtnChannelModel : public LteRealisticChannelModel
     inet::Coord lastSatelliteEndpointEcefCoord_;
     std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
     double polarizationMismatchLoss_ = 0.0; // in dB
+
+    inet::ModuleRefByPar<IAntennaModel> antennaModel_;
 
     /*
      * Frequency-selective fading data structures
