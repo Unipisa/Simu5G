@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/math/distributions/normal.hpp>
 #include <cmath>
 #include <complex>
 #include <limits>
@@ -27,6 +26,9 @@ void NtnChannelModel::initialize(int stage)
 {
     LteRealisticChannelModel::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
+        polarizationMismatchLoss_ = par("polarizationMismatchLoss");
+        // TODO Apply this once per link when NTN Tx/Rx antenna-model references expose
+        // their polarizations and both endpoints are configured with different non-NONE values.
         if (inside_building_)
             useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
     }
@@ -127,8 +129,7 @@ double NtnChannelModel::computeBuildingPenetrationLoss(MacNodeId nodeId)
     double sigma1 = coeffs.u + coeffs.v * logFrequency;
     double sigma2 = coeffs.y + coeffs.z * logFrequency;
 
-    boost::math::normal_distribution<double> standardNormal;
-    double inverseNormalCdf = boost::math::quantile(standardNormal, probabilityIt->second);
+    double inverseNormalCdf = inverseStandardNormalCdf(probabilityIt->second);
     double a = inverseNormalCdf * sigma1 + mu1;
     double b = inverseNormalCdf * sigma2 + mu2;
     constexpr double c = -3.0;

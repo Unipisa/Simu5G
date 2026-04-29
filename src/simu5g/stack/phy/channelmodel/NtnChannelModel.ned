@@ -15,4 +15,5 @@ simple NtnChannelModel extends LteRealisticChannelModel
 {
     parameters:
         @class("NtnChannelModel");
+        double polarizationMismatchLoss @unit(dB) = default(-3dB);
 }

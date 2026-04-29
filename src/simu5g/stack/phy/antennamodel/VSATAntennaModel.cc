@@ -1,9 +1,7 @@
 #include "simu5g/stack/phy/antennamodel/VSATAntennaModel.h"
 #include "inet/common/INETMath.h"
-#ifdef __APPLE__
-// in MacOS, bessel functions do not come with clang, so we need to include boost libraries
-#include <boost/math/special_functions/bessel.hpp>
-#endif
+
+#include <cmath>
 
 namespace simu5g {
 
@@ -18,6 +16,7 @@ void VSATAntennaModel::initialize()
     rxFeederLoss_ = par("rxFeederLoss");
     rxLumpedLoss_ = par("rxLumpedLoss");
     noiseFigure_ = par("noiseFigure");
+    antennaPolarization_ = antennaPolarizationFromString(par("antennaPolarization").stringValue());
 }
 
 double VSATAntennaModel::computeGain(double angle, double frequency) const
@@ -34,11 +33,7 @@ double VSATAntennaModel::computeGain(double angle, double frequency) const
     if (std::abs(x) < 1e-9)
         return maxGain;
 
-    #ifdef __APPLE__
-    double bessel = boost::math::cyl_bessel_j(1, x);
-    #else
-    double bessel = std::cyl_bessel_j(1, x);
-    #endif
+    double bessel = ::j1(x);
 
     double d = (2.0 * bessel) / x;
     double besselFactor = d * d;
