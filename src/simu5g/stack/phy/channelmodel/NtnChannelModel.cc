@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/phy/channelmodel/NtnChannelModel.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+#include "inet/common/ModuleRefByPar.h"
 
 #include <algorithm>
 #include <array>
@@ -31,6 +32,9 @@ void NtnChannelModel::initialize(int stage)
         // their polarizations and both endpoints are configured with different non-NONE values.
         if (inside_building_)
             useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
+    }
+    else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
+        antennaModel_.reference(this, "antennaModelModule", true);
     }
 }
 
@@ -491,23 +495,25 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     // TODO if satellite is moving, you need to compute speed differently
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
-
-    // TODO fix noise figure and gains
-    double noiseFigure = receiverType == UE ? ueNoiseFigure_ : bsNoiseFigure_;
+    // TODO obtain tx antenna pointer to compute tx antenna gain
     double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
-    double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
+    double antennaLossTx = cableLoss_;   // TODO change to tx feeder loss
+
+    double angle = 0.0;  // TODO compute angle
+    double antennaGainRx = antennaModel_->computeRxGain(angle, lteInfo->getCarrierFrequency().get());
+    double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
 
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
-    double recvPower = lteInfo->getTxPower() - attenuation;
-    recvPower += antennaGainTx;
-    recvPower += antennaGainRx;
-    recvPower -= cableLoss_;
+    double recvPower = lteInfo->getTxPower() - attenuation + antennaGainTx - antennaLossTx + antennaGainRx - antennaLossRx;
 
     std::vector<double> snrVector(numBands_, 0.0);
     std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
         snrVector[i] = recvPower + fadingAttenuation[i];
     }
+
+    // compute noise
+    double noiseFigure = receiverType == antennaModel_->getNoiseFigure();
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
     double totN = dBmToLinear(thermalNoise_ + noiseFigure);
@@ -553,15 +559,16 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
     lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
-    double recvPower = lteInfo->getTxPower();
-
+    // TODO obtain tx antenna pointer to compute tx antenna gain
     double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
-    double antennaGainRx = receiverType == UE ? antennaGainUe_ : antennaGainEnB_;
+    double antennaLossTx = cableLoss_;   // TODO change to tx feeder loss
+
+    double angle = 0.0;  // TODO compute angle
+    double antennaGainRx = antennaModel_->computeRxGain(angle, lteInfo->getCarrierFrequency().get());
+    double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
+
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
-    recvPower -= attenuation;
-    recvPower += antennaGainTx;
-    recvPower += antennaGainRx;
-    recvPower -= cableLoss_;
+    double recvPower = lteInfo->getTxPower() - attenuation + antennaGainTx - antennaLossTx + antennaGainRx - antennaLossRx;
 
     std::vector<double> rsrpVector(numBands_, 0.0);
     std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
