@@ -21,6 +21,11 @@ void VSATAntennaModel::initialize()
 
 double VSATAntennaModel::computeGain(double angle, double frequency) const
 {
+    if (frequency <= 0.0)
+        throw omnetpp::cRuntimeError("VSATAntennaModel::computeGain - frequency must be positive");
+    if (angle < 0.0 || angle > 90.0)
+        throw omnetpp::cRuntimeError("VSATAntennaModel::computeGain - angle must be in the [0, 90] degree range");
+
     double lambda = SPEED_OF_LIGHT / frequency;
     double v = M_PI * (diameter_ / lambda);
     double maxGain = inet::math::fraction2dB(efficiency_ * v * v);
