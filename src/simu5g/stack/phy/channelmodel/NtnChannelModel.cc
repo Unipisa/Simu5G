@@ -454,6 +454,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
     ASSERT(referenceSystem != nullptr);
 
+    const IAntennaModel* txAntenna = lteInfo->getRadioTransmitterAntenna();
     MacNodeId transmitterId = lteInfo->getRadioTransmitterId();
     MacNodeId receiverId = lteInfo->getRadioReceiverId();
     Coord transmitterCoord = lteInfo->getRadioTransmitterCoord();
@@ -495,12 +496,14 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     // TODO if satellite is moving, you need to compute speed differently
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
-    // TODO obtain tx antenna pointer to compute tx antenna gain
-    double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
-    double antennaLossTx = cableLoss_;   // TODO change to tx feeder loss
+    double frequency = lteInfo->getCarrierFrequency().get();
 
-    double angle = 0.0;  // TODO compute angle
-    double antennaGainRx = antennaModel_->computeRxGain(angle, lteInfo->getCarrierFrequency().get());
+    double txAngle = 0.0;  // TODO compute angle
+    double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
+    double antennaLossTx = txAntenna->getTxFeederLoss();
+
+    double rxAngle = 0.0;  // TODO compute angle
+    double antennaGainRx = antennaModel_->computeRxGain(rxAngle, frequency);
     double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
 
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
@@ -535,6 +538,7 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
     ASSERT(referenceSystem != nullptr);
 
+    const IAntennaModel* txAntenna = lteInfo->getRadioTransmitterAntenna();
     MacNodeId transmitterId = lteInfo->getRadioTransmitterId();
     MacNodeId receiverId = lteInfo->getRadioReceiverId();
     Coord transmitterCoord = lteInfo->getRadioTransmitterCoord();
@@ -559,12 +563,14 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
     lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
-    // TODO obtain tx antenna pointer to compute tx antenna gain
-    double antennaGainTx = transmitterType == UE ? antennaGainUe_ : antennaGainEnB_;
-    double antennaLossTx = cableLoss_;   // TODO change to tx feeder loss
+    double frequency = lteInfo->getCarrierFrequency().get();
 
-    double angle = 0.0;  // TODO compute angle
-    double antennaGainRx = antennaModel_->computeRxGain(angle, lteInfo->getCarrierFrequency().get());
+    double txAngle = 0.0;  // TODO compute angle
+    double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
+    double antennaLossTx = txAntenna->getTxFeederLoss();
+
+    double rxAngle = 0.0;  // TODO compute angle
+    double antennaGainRx = antennaModel_->computeRxGain(rxAngle, frequency);
     double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
 
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
