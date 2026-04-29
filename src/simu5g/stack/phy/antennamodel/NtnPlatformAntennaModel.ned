@@ -16,7 +16,6 @@ moduleinterface NtnPlatformAntennaModel extends IAntennaModel
     double rxFeederLoss;
     double rxLumpedLoss;
     double noiseFigure;
-    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR);
 }
 
 //
@@ -24,6 +23,7 @@ moduleinterface NtnPlatformAntennaModel extends IAntennaModel
 //
 simple GeoNtnPlatformAntennaModel like NtnPlatformAntennaModel
 {
+    @display("i=device/antennatower");
     @class(NtnPlatformAntennaModel);
     string frequencyBand @enum(S,KA);
     double txPower @unit(dBm) = default(frequencyBand == "S" ? 38dBm : 11.5dBm);
@@ -35,6 +35,7 @@ simple GeoNtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 7.376dB : 5.876dB);
+    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
 //
@@ -42,6 +43,7 @@ simple GeoNtnPlatformAntennaModel like NtnPlatformAntennaModel
 //
 simple Leo1200NtnPlatformAntennaModel like NtnPlatformAntennaModel
 {
+    @display("i=device/antennatower");
     @class(NtnPlatformAntennaModel);
     string frequencyBand @enum(S,KA);
     double txPower @unit(dBm) = default(frequencyBand == "S" ? 40dBm : 1.5dBm);
@@ -53,6 +55,7 @@ simple Leo1200NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
+    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
 //
@@ -60,6 +63,7 @@ simple Leo1200NtnPlatformAntennaModel like NtnPlatformAntennaModel
 //
 simple Leo600NtnPlatformAntennaModel like NtnPlatformAntennaModel
 {
+    @display("i=device/antennatower");
     @class(NtnPlatformAntennaModel);
     string frequencyBand @enum(S,KA);
     double txPower @unit(dBm) = default(frequencyBand == "S" ? 34dBm : -4.5dBm);
@@ -71,4 +75,5 @@ simple Leo600NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
+    string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
