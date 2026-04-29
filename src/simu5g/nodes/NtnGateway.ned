@@ -31,6 +31,7 @@ module NtnGateway
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
         int macNodeId = default(16384 + simu5g_seq("NtnGateway_macNodeId"));
         *.interfaceTableModule = default(absPath(".interfaceTable"));
+        feederNic.antennaModelType = default("IsotropicAntennaModel");  // TODO to be updated with specific gateway antenna
 
     gates:
         inout gnbLink @loose;
