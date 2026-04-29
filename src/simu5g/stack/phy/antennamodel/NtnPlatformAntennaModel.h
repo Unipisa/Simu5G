@@ -7,7 +7,7 @@ namespace simu5g {
 //
 // Model for an NTN platform antenna
 //
-class NtnPlatformAntennaModel : public omnetpp::cSimpleModule, IAntennaModel
+class NtnPlatformAntennaModel : public omnetpp::cSimpleModule, public IAntennaModel
 {
 
   protected:

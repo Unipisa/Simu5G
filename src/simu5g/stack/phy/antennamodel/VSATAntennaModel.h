@@ -7,7 +7,7 @@ namespace simu5g {
 //
 // Model for an VSAT antenna
 //
-class VSATAntennaModel : public omnetpp::cSimpleModule, IAntennaModel
+class VSATAntennaModel : public omnetpp::cSimpleModule, public IAntennaModel
 {
 
   protected:

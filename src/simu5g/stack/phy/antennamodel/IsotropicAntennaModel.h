@@ -7,7 +7,7 @@ namespace simu5g {
 //
 // Model for an isotropic antenna
 //
-class IsotropicAntennaModel : public omnetpp::cSimpleModule, IAntennaModel
+class IsotropicAntennaModel : public omnetpp::cSimpleModule, public IAntennaModel
 {
 
   protected:
