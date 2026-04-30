@@ -102,7 +102,12 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
     int angleIndex = roundedAngle / 10 - 1;
 
     double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
+
+    EV_DEBUG << " NtnChannelModel::computePathLoss - path loss[" << pathLoss << "dB] clutter loss[" << clutterLoss << "dB] "
+            << "total[" << pathLoss + clutterLoss << "dB]" << endl;
+
     return pathLoss + clutterLoss;
+
 }
 
 double NtnChannelModel::computeBuildingPenetrationLoss(MacNodeId nodeId)
@@ -138,7 +143,9 @@ double NtnChannelModel::computeBuildingPenetrationLoss(MacNodeId nodeId)
     double b = inverseNormalCdf * sigma2 + mu2;
     constexpr double c = -3.0;
 
-    return 10.0 * std::log10(std::pow(10.0, 0.1 * a) + std::pow(10.0, 0.1 * b) + std::pow(10.0, 0.1 * c));
+    double penetrationLoss = 10.0 * std::log10(std::pow(10.0, 0.1 * a) + std::pow(10.0, 0.1 * b) + std::pow(10.0, 0.1 * c));
+    EV_DEBUG << " NtnChannelModel::computeBuildingPenetrationLoss - O2I penetration loss[" << penetrationLoss << "dB]" << endl;
+    return penetrationLoss;
 }
 
 double NtnChannelModel::computeAtmosphericLoss()
@@ -159,7 +166,10 @@ double NtnChannelModel::computeAtmosphericLoss()
 
     double sinElevation = std::sin(elevationAngle * M_PI / 180.0);
     sinElevation = std::max(sinElevation, std::numeric_limits<double>::epsilon());
-    return kAtmosphericAbsorption[roundedFrequencyGHz] / sinElevation;
+
+    double atmLoss = kAtmosphericAbsorption[roundedFrequencyGHz] / sinElevation;
+    EV_DEBUG << " NtnChannelModel::computeBuildingPenetrationLoss - atmospheric absorption loss[" << atmLoss << "dB]" << endl;
+    return atmLoss;
 }
 
 double NtnChannelModel::computeScintillationLoss()
@@ -178,6 +188,8 @@ double NtnChannelModel::computeScintillationLoss()
     int roundedAngle = static_cast<int>(std::round(elevationAngle / 10.0)) * 10;
     roundedAngle = std::max(10, std::min(90, roundedAngle));
     int angleIndex = roundedAngle / 10 - 1;
+
+    EV_DEBUG << " NtnChannelModel::computeBuildingPenetrationLoss - scintillation loss[" << kTroposphericScintillationLoss[angleIndex] << "dB]" << endl;
     return kTroposphericScintillationLoss[angleIndex];
 }
 
@@ -509,10 +521,16 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
     double recvPower = lteInfo->getTxPower() - attenuation + antennaGainTx - antennaLossTx + antennaGainRx - antennaLossRx;
 
+    EV_DEBUG << " NtnChannelModel::getSINR - recvPower[" << recvPower
+       << "dBm] antenna gain tx["  << antennaGainTx << "dB] antenna gain rx[" << antennaGainRx
+       << "dB] tx antenna loss   " << antennaLossTx << "dB] rx antenna loss [" << antennaLossRx
+       << "dB] attenuation " << attenuation << endl;
+
     std::vector<double> snrVector(numBands_, 0.0);
     std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
         snrVector[i] = recvPower + fadingAttenuation[i];
+        EV_DEBUG << " NtnChannelModel::getSINR - band[" << i << "] fast fading[" << fadingAttenuation[i] << "dB] rx power[" << snrVector[i] << "dBm]" << endl;
     }
 
     // compute noise
@@ -525,6 +543,10 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
             continue;
         double den = linearToDBm(totN);
         snrVector[i] -= den;
+
+        EV_INFO << " NtnChannelModel::getSINR - band[" << i << "]";
+        EV_DEBUG << " noise figure[" << noiseFigure << "dB]" << " thermal noise[" << thermalNoise_ << "dB]";
+        EV_INFO << " snr[" << snrVector[i] << "dB]" << endl;
     }
 
     updatePositionHistory(terrestrialEndpointId, terrestrialEndpointCoord);
@@ -576,10 +598,16 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     double attenuation = getAttenuation(terrestrialEndpointId, static_cast<Direction>(lteInfo->getDirection()), transmitterCoord, cqiDl);
     double recvPower = lteInfo->getTxPower() - attenuation + antennaGainTx - antennaLossTx + antennaGainRx - antennaLossRx;
 
+    EV_DEBUG << " NtnChannelModel::getSINR - recvPower[" << recvPower
+       << "dBm] antenna gain tx["  << antennaGainTx << "dB] antenna gain rx[" << antennaGainRx
+       << "dB] tx antenna loss   " << antennaLossTx << "dB] rx antenna loss [" << antennaLossRx
+       << "dB] attenuation " << attenuation << endl;
+
     std::vector<double> rsrpVector(numBands_, 0.0);
     std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
         rsrpVector[i] = recvPower + fadingAttenuation[i];
+        EV_DEBUG << " NtnChannelModel::getSINR - band[" << i << "] fast fading[" << fadingAttenuation[i] << "dB] rx power[" << rsrpVector[i] << "dBm]" << endl;
     }
 
     return rsrpVector;
