@@ -223,18 +223,17 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (binder_->getNextHop(lteInfo->getSourceId()) != nodeId_) {
+    MacNodeId sourceId = lteInfo->getSourceId();
+    if (binder_->getNextHop(sourceId) != nodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
-        EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
+        EV << "Source MacNodeId: " << sourceId << endl;
         EV << "Master MacNodeId: " << nodeId_ << endl;
         delete lteInfo;
         delete frame;
         return;
     }
 
-    connectedNodeId_ = lteInfo->getSourceId();
-
-    if (!binder_->nodeExists(connectedNodeId_) || !binder_->nodeExists(lteInfo->getDestId())) {
+    if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
         // either source or destination have left the simulation
         delete msg;
         return;
@@ -263,18 +262,17 @@ void LtePhyEnb::handleNtnAirFrame(cMessage *msg)
         return;
     }
 
-    if (binder_->getNextHop(lteInfo->getSourceId()) != nodeId_) {
+    MacNodeId sourceId = lteInfo->getSourceId();
+    if (binder_->getNextHop(sourceId) != nodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
-        EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
+        EV << "Source MacNodeId: " << sourceId << endl;
         EV << "Master MacNodeId: " << nodeId_ << endl;
         delete lteInfo;
         delete frame;
         return;
     }
 
-    connectedNodeId_ = lteInfo->getSourceId();
-
-    if (!binder_->nodeExists(connectedNodeId_) || !binder_->nodeExists(lteInfo->getDestId())) {
+    if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
         delete lteInfo;
         delete frame;
         return;
