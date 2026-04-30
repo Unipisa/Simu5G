@@ -85,6 +85,12 @@ void LtePhyBase::handleControlMsg(LteAirFrame *frame,
     send(pkt, upperGateOut_);
 }
 
+LteAirFrame *LtePhyBase::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    (void)lteInfo;
+    return new LteAirFrame(name);
+}
+
 void LtePhyBase::handleUpperMessage(cMessage *msg)
 {
     EV << "LtePhy: message from stack" << endl;
@@ -101,7 +107,7 @@ void LtePhyBase::handleUpperMessage(cMessage *msg)
         default: name = "airframe"; break;
     }
 
-    LteAirFrame *frame = new LteAirFrame(name);
+    LteAirFrame *frame = createAirFrame(name, *lteInfo);
 
     frame->encapsulate(check_and_cast<cPacket *>(msg));
 

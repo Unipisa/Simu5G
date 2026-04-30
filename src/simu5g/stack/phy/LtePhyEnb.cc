@@ -16,6 +16,7 @@
 #include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/phy/feedback/LteUlFeedbackGenerator.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -99,6 +100,12 @@ void LtePhyEnb::initialize(int stage)
     }
 }
 
+LteAirFrame *LtePhyEnb::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    (void)lteInfo;
+    return useTransparentNtn_ ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
+}
+
 void LtePhyEnb::handleMessage(cMessage *msg)
 {
     if (ntnInGate_ != nullptr && msg->getArrivalGate() == ntnInGate_) {
@@ -130,13 +137,13 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
 LteAirFrame *LtePhyEnb::createBeaconMessage()
 {
     // broadcast airframe
-    LteAirFrame *beaconAirFrame = new LteAirFrame("beaconMessage");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(BEACONPKT);
     cInfo->setTxPower(txPower_);
     cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
     cInfo->setIsNr(isNr_);
+    LteAirFrame *beaconAirFrame = createAirFrame("beaconMessage", *cInfo);
     beaconAirFrame->setControlInfo(cInfo);
     beaconAirFrame->setDuration(0);
     beaconAirFrame->setSchedulingPriority(airFramePriority_);
