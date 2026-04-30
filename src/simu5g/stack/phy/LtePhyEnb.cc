@@ -15,6 +15,7 @@
 #include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/phy/feedback/LteUlFeedbackGenerator.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -88,6 +89,12 @@ void LtePhyEnb::initialize(int stage)
             scheduleAt(NOW, csiRsStarter_);
         }
     }
+}
+
+LteAirFrame *LtePhyEnb::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    (void)lteInfo;
+    return useTransparentNtn_ ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
 }
 
 void LtePhyEnb::handleMessage(cMessage *msg)

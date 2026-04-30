@@ -47,6 +47,12 @@ class LtePhyEnb : public LtePhyBase
     void handleMessage(cMessage *msg) override;
 
     void handleSelfMessage(cMessage *msg) override;
+
+    /**
+     * Create a new LteAirFrame with the given name. If the frame should be sent via a transparent NTN node, create an NtnAirFrame object
+     */
+    LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
+
     void handleAirFrame(cMessage *msg) override;
     void sendBroadcast(LteAirFrame *airFrame) override;
     void sendUnicast(LteAirFrame *airFrame) override;

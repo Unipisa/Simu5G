@@ -18,6 +18,7 @@
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -149,8 +150,7 @@ void LtePhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCand
             continue;
 
         MacNodeId cellId = enbInfo->id;
-        LtePhyBase *cellPhy = check_and_cast<LtePhyBase*>(
-                enbInfo->eNodeB->getSubmodule("cellularNic")->getSubmodule("phy"));
+        LtePhyBase *cellPhy = check_and_cast<LtePhyBase*>(enbInfo->eNodeB->getSubmodule("cellularNic")->getSubmodule("phy"));
         double cellTxPower = cellPhy->getTxPwr();
         Coord cellPos = cellPhy->getCoord();
         // check whether the BS supports the carrier frequency used by the UE
@@ -179,6 +179,11 @@ void LtePhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCand
     }
     delete cInfo;
     delete frame;
+}
+
+LteAirFrame *LtePhyUe::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    return shouldSendViaTransparentNtn(lteInfo.getDestId()) ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
 }
 
 void LtePhyUe::handleSelfMessage(cMessage *msg)
@@ -618,17 +623,23 @@ void LtePhyUe::sendUnicast(LteAirFrame *airFrame)
     LtePhyBase::sendUnicast(airFrame);
 }
 
-bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
+bool LtePhyUe::shouldSendViaTransparentNtn(MacNodeId destId) const
 {
-    auto *ci = check_and_cast<UserControlInfo *>(airFrame->getControlInfo());
-    MacNodeId destId = ci->getDestId();
     if (masterId_ == NODEID_NONE || destId != masterId_)
         return false;
 
     const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
-    if (association == nullptr || !association->isTransparent)
+    return association != nullptr && association->isTransparent;
+}
+
+bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
+{
+    auto *ci = check_and_cast<UserControlInfo *>(airFrame->getControlInfo());
+    MacNodeId destId = ci->getDestId();
+    if (!shouldSendViaTransparentNtn(destId))
         return false;
 
+    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
     SatelliteInfo *satelliteInfo = binder_->getSatelliteInfo(association->satelliteId);
     if (satelliteInfo == nullptr || satelliteInfo->satelliteModule == nullptr)
         throw cRuntimeError("LtePhyUe::sendUnicastViaNtn - satellite %hu for serving node %hu is not registered", num(association->satelliteId), num(masterId_));
@@ -726,7 +737,7 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
     uinfo->setDestId(masterId_);
     uinfo->setFrameType(FEEDBACKPKT);
     // create LteAirFrame and encapsulate a feedback packet
-    LteAirFrame *frame = new LteAirFrame("feedback_pkt");
+    LteAirFrame *frame = createAirFrame("feedback_pkt", *uinfo);
     frame->encapsulate(check_and_cast<cPacket *>(pkt));
     uinfo->setFeedbackReq(req);
     uinfo->setDirection(UL);

@@ -85,16 +85,22 @@ void LtePhyBase::handleControlMsg(LteAirFrame *frame,
     send(pkt, upperGateOut_);
 }
 
+LteAirFrame *LtePhyBase::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    (void)lteInfo;
+    return new LteAirFrame(name);
+}
+
 LteAirFrame *LtePhyBase::createHandoverMessage()
 {
     // broadcast airframe
-    LteAirFrame *bdcAirFrame = new LteAirFrame("handoverFrame");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(HANDOVERPKT);
     cInfo->setTxPower(txPower_);
     cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
     cInfo->setIsNr(isNr_);
+    LteAirFrame *bdcAirFrame = createAirFrame("handoverFrame", *cInfo);
     bdcAirFrame->setControlInfo(cInfo);
     bdcAirFrame->setDuration(0);
     bdcAirFrame->setSchedulingPriority(airFramePriority_);
@@ -119,7 +125,7 @@ void LtePhyBase::handleUpperMessage(cMessage *msg)
         default: name = "airframe"; break;
     }
 
-    LteAirFrame *frame = new LteAirFrame(name);
+    LteAirFrame *frame = createAirFrame(name, *lteInfo);
 
     frame->encapsulate(check_and_cast<cPacket *>(msg));
 

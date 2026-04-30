@@ -118,6 +118,12 @@ class LtePhyUe : public LtePhyBase
 
     void initialize(int stage) override;
     void handleSelfMessage(cMessage *msg) override;
+
+    /**
+     * Create a new LteAirFrame with the given name. If the frame should be sent via a transparent NTN node, create an NtnAirFrame object
+     */
+    LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
+
     void handleAirFrame(cMessage *msg) override;
     void finish() override;
     void finish(cComponent *component, simsignal_t signalID) override { cIListener::finish(component, signalID); }
@@ -144,6 +150,7 @@ class LtePhyUe : public LtePhyBase
     LtePhyEnb *getServingEnbPhy() const;
     virtual void sendSrsReferenceSignalFrame();
 
+    bool shouldSendViaTransparentNtn(MacNodeId destId) const;
     virtual bool sendUnicastViaNtn(LteAirFrame *airFrame);
 
   public:

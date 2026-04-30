@@ -217,6 +217,11 @@ class LtePhyBase : public ChannelAccess
     void handleMessage(cMessage *msg) override;
 
     /**
+     * Create a new LteAirFrame with the given name
+     */
+    virtual LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo);
+
+    /**
      * Sends a frame to all NICs in range.
      *
      * Frames are sent with zero transmission delay.
