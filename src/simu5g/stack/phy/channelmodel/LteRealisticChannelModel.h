@@ -452,6 +452,8 @@ class LteRealisticChannelModel : public LteChannelModel
      */
     bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
 
+    virtual std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo);
+
     /*
      * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
@@ -487,4 +489,3 @@ class LteRealisticChannelModel : public LteChannelModel
 } //namespace
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */
-

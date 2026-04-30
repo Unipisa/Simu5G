@@ -15,6 +15,7 @@
 
 #include "simu5g/common/GeoUtils.h"
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 
 namespace simu5g {
 
@@ -66,24 +67,39 @@ LteChannelModel *NtnPhyBase::getChannelModel(GHz carrierFreq) const
 
 void NtnPhyBase::handleAirFrame(cMessage *msg)
 {
+    EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName() << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio" << endl;
     auto *frame = check_and_cast<LteAirFrame *>(msg);
     UserControlInfo lteInfo(frame->getAdditionalInfo());
     if (lteInfo.getFrameType() == DATAPKT) {
         LteChannelModel *channelModel = getChannelModel(lteInfo.getCarrierFrequency());
         if (channelModel != nullptr) {
-            bool isReceptionSuccessful = channelModel->isReceptionSuccessful(frame, &lteInfo);
-            (void)isReceptionSuccessful;
-            // TODO do something
+            if (nodeType_ == SATELLITE_NODE) {
+                auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+                if (ntnFrame == nullptr)
+                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN data frame %s is not an NtnAirFrame", frame->getFullName());
+                std::vector<double> sinrVector = channelModel->getSINR(frame, &lteInfo);
+                ntnFrame->setRelayHopSinrVector(sinrVector);
+                EV << "NtnPhyBase::handleAirFrame - forward the frame to the " << (isFeederLink_ ? "service" : "feeder") << " NIC for relaying" << endl;
+            }
+
+            // if you are here, this is the NTN gateway
+
+            // check correctness
+            bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
+            EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
+            EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
+
+            // TODO need to add some info to the frame/packet to make eNB/gNB aware about the decision
         }
         else {
             EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
-               << lteInfo.getCarrierFrequency() << " on " << (isFeederLink_ ? "feeder" : "service")
-               << " link" << endl;
+               << lteInfo.getCarrierFrequency() << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
         }
     }
-
-    EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName()
-       << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio, forwarding to relay" << endl;
+    else {
+        // CONTROL packet
+        EV << "NtnPhyBase::handleAirFrame - forward the control frame to " << ((nodeType_ == SATELLITE_NODE) ? (isFeederLink_ ? "the service link NIC for relaying" : "the feeder link NIC for relaying") : "the connected eNB/gNB") << endl;
+    }
     send(msg, "upperLayerOut");
 }
 

@@ -60,6 +60,8 @@ class NtnChannelModel : public LteRealisticChannelModel
 
     std::map<MacNodeId, FrequencySelectiveFadingState> fadingStateMap_;
 
+    std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+
     // compute Line-of-Sight probability and store it into the specific los map
     void computeLosProbability(double d, MacNodeId nodeId);
 
