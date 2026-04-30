@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/phy/channelmodel/NtnChannelModel.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "inet/common/ModuleRefByPar.h"
 
 #include <algorithm>
@@ -36,6 +37,32 @@ void NtnChannelModel::initialize(int stage)
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         antennaModel_.reference(this, "antennaModelModule", true);
     }
+}
+
+std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+    if (ntnFrame == nullptr || !ntnFrame->hasRelayHopSinr())
+        return LteRealisticChannelModel::computeReceptionSinr(frame, lteInfo);
+
+    // compute SINR on the last hop
+    std::vector<double> localHopSinr = getSINR(frame, lteInfo);
+    // obtain the relay hop SINR
+    std::vector<double> relayHopSinr = ntnFrame->getRelayHopSinrVector();
+    if (relayHopSinr.size() != localHopSinr.size()) {
+        throw cRuntimeError("NtnChannelModel::computeReceptionSinr - relay-hop SINR vector size %lu differs from local-hop SINR vector size %lu",
+                static_cast<unsigned long>(relayHopSinr.size()), static_cast<unsigned long>(localHopSinr.size()));
+    }
+
+    // use harmonic formula to combine service and feeder link SINRs (see Maral-Bousequets, chap 5)
+    std::vector<double> combinedSinr(localHopSinr.size(), 0.0);
+    for (size_t i = 0; i < combinedSinr.size(); i++) {
+        double relayLinear = dBToLinear(relayHopSinr[i]);
+        double localLinear = dBToLinear(localHopSinr[i]);
+        double combinedSinrLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
+        combinedSinr[i] = linearToDb(combinedSinrLinear);
+    }
+    return combinedSinr;
 }
 
 double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)

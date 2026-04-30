@@ -18,7 +18,7 @@ module NtnServiceLinkNic
 {
     parameters:
         @display("i=block/ifcard;bgb=507,396;bgl=3");
-        string channelModelType = default("NrChannelModel_3GPP38_901");
+        string channelModelType = default("NtnChannelModel");
         string antennaModelType;
         int numCarriers = default(1);
         antennaModel.frequencyBand = default("S");

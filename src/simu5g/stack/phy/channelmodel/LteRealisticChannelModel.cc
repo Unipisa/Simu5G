@@ -1743,17 +1743,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
     // Get txmode
     TxMode txmode = (TxMode)lteInfo->getTxMode();
 
-    // Take sinr
-    std::vector<double> snrV;
-    if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
-        MacNodeId destId = lteInfo->getDestId();
-        Coord destCoord = phy_->getRadioPosition();
-        MacNodeId enbId = binder_->getNextHop(lteInfo->getSourceId());
-        snrV = getSINR_D2D(frame, lteInfo, destId, destCoord, enbId);
-    }
-    else {
-        snrV = getSINR(frame, lteInfo);
-    }
+    std::vector<double> snrV = computeReceptionSinr(frame, lteInfo);
 
     // Get the resource Block id used to transmit this packet
     RbMap rbmap = lteInfo->getGrantedBlocks();
@@ -1845,6 +1835,17 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
        << ") -> Receive AirFrame." << endl;
 
     return true;
+}
+
+std::vector<double> LteRealisticChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
+        MacNodeId destId = lteInfo->getDestId();
+        Coord destCoord = phy_->getRadioPosition();
+        MacNodeId enbId = binder_->getNextHop(lteInfo->getSourceId());
+        return getSINR_D2D(frame, lteInfo, destId, destCoord, enbId);
+    }
+    return getSINR(frame, lteInfo);
 }
 
 bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)

@@ -32,7 +32,7 @@ module NrNicUe extends LteNicUeD2D
     parameters:
         bool hasNtnSupport = default(false);
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
-        string ntnChannelModelType = default("NrChannelModel_3GPP38_901");
+        string ntnChannelModelType = default("NtnChannelModel");
         string ntnAntennaModelType = default("IsotropicAntennaModel");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
@@ -79,6 +79,7 @@ module NrNicUe extends LteNicUeD2D
         // NTN Channel Model
         ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel if hasNtnSupport {
             @display("p=620,314");
+            antennaModelModule = "^.ntnAntennaModel";
         }
         // NTN Antenna Model
         ntnAntennaModel: <ntnAntennaModelType> like IAntennaModel if hasNtnSupport {
