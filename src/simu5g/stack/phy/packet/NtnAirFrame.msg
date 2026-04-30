@@ -24,6 +24,8 @@ namespace simu5g;
 packet NtnAirFrame extends LteAirFrame
 {
     double relayHopSinr[];
+    bool gatewayReceptionResultValid = false;
+    bool gatewayReceptionResult = false;
 }
 
 cplusplus(NtnAirFrame) {{
@@ -45,5 +47,19 @@ cplusplus(NtnAirFrame) {{
         for (size_t i = 0; i < sinr.size(); i++)
             sinr[i] = getRelayHopSinr(i);
         return sinr;
+    }
+
+    bool hasGatewayReceptionResult() const { return getGatewayReceptionResultValid(); }
+
+    void setGatewayReceptionResultInfo(bool result)
+    {
+        setGatewayReceptionResult(result);
+        setGatewayReceptionResultValid(true);
+    }
+
+    void clearGatewayReceptionResult()
+    {
+        setGatewayReceptionResult(false);
+        setGatewayReceptionResultValid(false);
     }
 }}

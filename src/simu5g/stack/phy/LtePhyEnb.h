@@ -54,6 +54,8 @@ class LtePhyEnb : public LtePhyBase
     LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
 
     void handleAirFrame(cMessage *msg) override;
+    void handleNtnAirFrame(cMessage *msg);
+    void sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInfo, bool result);
     void sendBroadcast(LteAirFrame *airFrame) override;
     void sendUnicast(LteAirFrame *airFrame) override;
     void sendNtn(LteAirFrame *airFrame);
