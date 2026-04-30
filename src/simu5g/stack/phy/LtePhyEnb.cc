@@ -109,7 +109,7 @@ LteAirFrame *LtePhyEnb::createAirFrame(const char *name, const UserControlInfo& 
 void LtePhyEnb::handleMessage(cMessage *msg)
 {
     if (ntnInGate_ != nullptr && msg->getArrivalGate() == ntnInGate_) {
-        handleAirFrame(msg);
+        handleNtnAirFrame(msg);
         return;
     }
     LtePhyBase::handleMessage(msg);
@@ -249,16 +249,17 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (binder_->getServingNodeOrSelf(lteInfo->getSourceId()) != nodeId_) {
+    MacNodeId sourceId = lteInfo->getSourceId();
+    if (binder_->getServingNodeOrSelf(sourceId) != nodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
-        EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
+        EV << "Source MacNodeId: " << sourceId << endl;
         EV << "Master MacNodeId: " << nodeId_ << endl;
         delete lteInfo;
         delete frame;
         return;
     }
 
-    if (!binder_->nodeExists(lteInfo->getSourceId()) || !binder_->nodeExists(lteInfo->getDestId())) {
+    if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
         // either source or destination have left the simulation
         delete msg;
         return;
@@ -270,6 +271,55 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
 
     // DAS removed - single antenna only
     bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    sendDecodedDataFrame(frame, lteInfo, result);
+}
+
+void LtePhyEnb::handleNtnAirFrame(cMessage *msg)
+{
+    LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
+    UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
+
+    EV << "LtePhyEnb::handleNtnAirFrame - received new LteAirFrame with ID " << frame->getId() << " from NTN gateway" << endl;
+
+    if (lteInfo->getFrameType() == HANDOVERPKT) {
+        EV << "LtePhyEnb::handleNtnAirFrame - received handover packet from NTN gateway. Ignore it." << endl;
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
+    MacNodeId sourceId = lteInfo->getSourceId();
+    if (binder_->getNextHop(sourceId) != nodeId_) {
+        EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
+        EV << "Source MacNodeId: " << sourceId << endl;
+        EV << "Master MacNodeId: " << nodeId_ << endl;
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
+    if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
+    if (handleControlPkt(lteInfo, frame))
+        return;
+
+    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+    if (ntnFrame == nullptr)
+        throw cRuntimeError("LtePhyEnb::handleNtnAirFrame - frame %s from NTN gateway is not an NtnAirFrame", frame->getFullName());
+    if (!ntnFrame->hasGatewayReceptionResult())
+        throw cRuntimeError("LtePhyEnb::handleNtnAirFrame - NtnAirFrame %s from NTN gateway has no gateway reception result", frame->getFullName());
+
+    // decision has already been made by the gateway, do not recompute SINR
+    bool result = ntnFrame->getGatewayReceptionResult();
+    sendDecodedDataFrame(frame, lteInfo, result);
+}
+
+void LtePhyEnb::sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInfo, bool result)
+{
     if (result)
         numAirFrameReceived_++;
     else

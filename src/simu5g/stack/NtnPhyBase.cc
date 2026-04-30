@@ -81,15 +81,16 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
                 ntnFrame->setRelayHopSinrVector(sinrVector);
                 EV << "NtnPhyBase::handleAirFrame - forward the frame to the " << (isFeederLink_ ? "service" : "feeder") << " NIC for relaying" << endl;
             }
+            else {
+                auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+                if (ntnFrame == nullptr)
+                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN data frame %s is not an NtnAirFrame", frame->getFullName());
 
-            // if you are here, this is the NTN gateway
-
-            // check correctness
-            bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
-            EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
-            EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
-
-            // TODO need to add some info to the frame/packet to make eNB/gNB aware about the decision
+                bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
+                ntnFrame->setGatewayReceptionResultInfo(result);
+                EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
+                EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
+            }
         }
         else {
             EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
