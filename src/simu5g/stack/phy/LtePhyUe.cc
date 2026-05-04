@@ -431,6 +431,18 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
         return;
     }
 
+    if (lteInfo->getFrameType() == CSIRSPKT) {
+        if (lteInfo->getSourceId() == masterId_) {
+            lteInfo->setDestId(nodeId_);
+            fbGen_->handleCsiReferenceSignal(frame, lteInfo);
+            return;
+        }
+
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
     // Check if the frame is for us ( MacNodeId matches )
     if (lteInfo->getDestId() != nodeId_) {
         EV << "ERROR: Frame is not for us. Delete it." << endl;
@@ -595,7 +607,7 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
     auto fbPkt = makeShared<LteFeedbackPkt>();
     //Set the feedback
     fbPkt->setLteFeedbackDoubleVectorDl(fbDl);
-    fbPkt->setLteFeedbackDoubleVectorDl(fbUl);
+    fbPkt->setLteFeedbackDoubleVectorUl(fbUl);
     fbPkt->setSourceNodeId(nodeId_);
 
     auto pkt = new Packet("feedback_pkt");

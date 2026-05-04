@@ -62,54 +62,50 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
     std::map<Remote, int> antennaCws; // DAS functionality removed
     antennaCws[MACRO] = 1; // Default single antenna
     unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
-    Direction dir = UL;
-    while (dir != UNKNOWN_DIRECTION) {
-        // For each RU the computation feedback function is called
+    // For each RU the computation feedback function is called
+    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
+            antennaCws, numPreferredBand, nRus, snr,
+            lteinfo->getSourceId());
+    header->setLteFeedbackDoubleVectorUl(fb);
+
+    if (!req.dlFeedbackFromUe) {
+        // Prepare parameters for DL SNR computation.
+        lteinfo->setTxPower(txPower_);
+        lteinfo->setDirection(DL);
+        if (channelModel != nullptr)
+            snr = channelModel->getSINR(frame, lteinfo);
+        else
+            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
+
         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
                 antennaCws, numPreferredBand, nRus, snr,
                 lteinfo->getSourceId());
-        if (dir == UL) {
-            header->setLteFeedbackDoubleVectorUl(fb);
-            // Prepare parameters for next loop iteration - in order to compute SNR in DL
-            lteinfo->setTxPower(txPower_);
-            lteinfo->setDirection(DL);
-            // Get SNR for DL direction
-            if (channelModel != nullptr)
-                snr = channelModel->getSINR(frame, lteinfo);
-            else
-                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
+        header->setLteFeedbackDoubleVectorDl(fb);
 
-            dir = DL;
-        }
-        else if (dir == DL) {
-            header->setLteFeedbackDoubleVectorDl(fb);
+        if (enableD2DCqiReporting_) {
+            // Compute D2D feedback for all possible peering UEs
+            for (const auto& ueInfo : binder_->getUeList()) {
+                MacNodeId peerId = ueInfo->id;
+                if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
+                    // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
 
-            if (enableD2DCqiReporting_) {
-                // Compute D2D feedback for all possible peering UEs
-                for (const auto& ueInfo : binder_->getUeList()) {
-                    MacNodeId peerId = ueInfo->id;
-                    if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
-                        // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
+                    // Retrieve the position of the peer
+                    Coord peerCoord = ueInfo->phy->getCoord();
 
-                        // Retrieve the position of the peer
-                        Coord peerCoord = ueInfo->phy->getCoord();
+                    // Get SINR for this link
+                    if (channelModel != nullptr)
+                        snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
+                    else
+                        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
 
-                        // Get SINR for this link
-                        if (channelModel != nullptr)
-                            snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
-                        else
-                            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
+                    // Compute the feedback for this link
+                    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
+                            antennaCws, numPreferredBand, nRus, snr,
+                            lteinfo->getSourceId());
 
-                        // Compute the feedback for this link
-                        fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-                                antennaCws, numPreferredBand, nRus, snr,
-                                lteinfo->getSourceId());
-
-                        header->setLteFeedbackDoubleVectorD2D(peerId, fb);
-                    }
+                    header->setLteFeedbackDoubleVectorD2D(peerId, fb);
                 }
             }
-            dir = UNKNOWN_DIRECTION;
         }
     }
     EV << "LtePhyEn::requestFeedback : Feedback Generated for nodeId: "

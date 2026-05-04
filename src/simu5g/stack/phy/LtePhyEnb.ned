@@ -23,5 +23,6 @@ simple LtePhyEnb extends LtePhyBase
     @class("LtePhyEnb");
 
     double targetBler = default(0.001);
+    bool useUeDlFeedbackComputation = default(false);
+    double csiRsPeriod @unit(s) = default(0s);
 }
-

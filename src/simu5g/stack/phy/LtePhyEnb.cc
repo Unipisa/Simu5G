@@ -27,6 +27,7 @@ using namespace inet;
 LtePhyEnb::~LtePhyEnb()
 {
     cancelAndDelete(bdcStarter_);
+    cancelAndDelete(csiRsStarter_);
     delete lteFeedbackComputation_;
 }
 
@@ -51,6 +52,8 @@ void LtePhyEnb::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         initializeFeedbackComputation();
+        useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
+        csiRsPeriod_ = par("csiRsPeriod");
 
         //check eNb type and set TX power
         if (cellInfo_->getEnbType() == MICRO_ENB)
@@ -75,6 +78,10 @@ void LtePhyEnb::initialize(int stage)
             bdcStarter_ = new cMessage("bdcStarter");
             scheduleAt(NOW, bdcStarter_);
         }
+        if (useUeDlFeedbackComputation_ && csiRsPeriod_ != 0) {
+            csiRsStarter_ = new cMessage("csiRsStarter");
+            scheduleAt(NOW, csiRsStarter_);
+        }
     }
 }
 
@@ -85,6 +92,13 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
         LteAirFrame *f = createHandoverMessage();
         sendBroadcast(f);
         scheduleAt(NOW + bdcUpdateInterval_, msg);
+    }
+    else if (msg->isName("csiRsStarter")) {
+        for (const auto& [carrierFrequency, channelModel] : channelModel_) {
+            LteAirFrame *f = createCsiReferenceSignal(carrierFrequency);
+            sendCsiReferenceSignalToAttachedUes(f);
+        }
+        scheduleAt(NOW + csiRsPeriod_, msg);
     }
     else {
         delete msg;
@@ -237,34 +251,71 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
     antennaCws[MACRO] = 1;
     unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
 
-    for (Direction dir = UL; dir != UNKNOWN_DIRECTION;
-         dir = ((dir == UL) ? DL : UNKNOWN_DIRECTION))
-    {
-        // MIMO/DAS support removed. We only support MACRO and treat it as IDEAL for now.
+    // MIMO/DAS support removed. We only support MACRO and treat it as IDEAL for now.
+    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
+            antennaCws, numPreferredBand, nRus, snr,
+            lteinfo->getSourceId());
+    header->setLteFeedbackDoubleVectorUl(fb);
+
+    if (!req.dlFeedbackFromUe) {
+        // Prepare parameters for DL SNR computation.
+        lteinfo->setTxPower(txPower_);
+        lteinfo->setDirection(DL);
+
+        if (channelModel != nullptr)
+            snr = channelModel->getSINR(frame, lteinfo);
+        else
+            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is a null pointer");
+
         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
                 antennaCws, numPreferredBand, nRus, snr,
                 lteinfo->getSourceId());
-
-        if (dir == UL) {
-            header->setLteFeedbackDoubleVectorUl(fb);
-            //Prepare  parameters for next loop iteration - in order to compute SNR in DL
-            lteinfo->setTxPower(txPower_);
-            lteinfo->setDirection(DL);
-
-            //Get snr for DL direction
-            if (channelModel != nullptr)
-                snr = channelModel->getSINR(frame, lteinfo);
-            else
-                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is a null pointer");
-        }
-        else
-            header->setLteFeedbackDoubleVectorDl(fb);
+        header->setLteFeedbackDoubleVectorDl(fb);
     }
     EV << "LtePhyEnb::requestFeedback : Pisa Feedback Generated for nodeId: "
        << nodeId_ << " Feedback size: " << fb.size()
        << " Carrier: " << lteinfo->getCarrierFrequency() << endl;
 
     pktAux->insertAtFront(header);
+}
+
+LteAirFrame *LtePhyEnb::createCsiReferenceSignal(GHz carrierFrequency)
+{
+    LteAirFrame *csiAirFrame = new LteAirFrame("csiReferenceSignal");
+    UserControlInfo *cInfo = new UserControlInfo();
+    cInfo->setSourceId(nodeId_);
+    cInfo->setFrameType(CSIRSPKT);
+    cInfo->setDirection(DL);
+    cInfo->setTxPower(txPower_);
+    cInfo->setCarrierFrequency(carrierFrequency);
+    cInfo->setIsNr(isNr_);
+    cInfo->setCoord(getRadioPosition());
+    csiAirFrame->setControlInfo(cInfo);
+    csiAirFrame->setDuration(TTI);
+    csiAirFrame->setSchedulingPriority(airFramePriority_);
+    return csiAirFrame;
+}
+
+void LtePhyEnb::sendCsiReferenceSignalToAttachedUes(LteAirFrame *frame)
+{
+    UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
+    frame->setAdditionalInfo(*ci);
+    delete frame->removeControlInfo();
+
+    std::vector<MacNodeId> attachedUes = binder_->getDeployedUes(nodeId_);
+    for (MacNodeId ueId : attachedUes) {
+        if (isNrUe(ueId) != isNr_)
+            continue;
+
+        cModule *receiver = binder_->getNodeModule(ueId);
+        if (receiver == nullptr)
+            continue;
+
+        LteAirFrame *frameToSend = frame->dup();
+        sendDirect(frameToSend, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(ueId)));
+    }
+
+    delete frame;
 }
 
 void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,

@@ -20,6 +20,7 @@
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/common/timer/TTimerMsg_m.h"
 #include "simu5g/stack/phy/feedback/LteFeedbackComputation.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 
 namespace simu5g {
@@ -37,14 +38,14 @@ class LteDlFeedbackGenerator : public cSimpleModule
 {
     enum FbTimerType
     {
-        PERIODIC_SENSING = 0, PERIODIC_TX, APERIODIC_TX
+        PERIODIC_TX = 0, APERIODIC_TX
     };
 
   private:
 
     FeedbackType fbType_;               /// feedback type (ALLBANDS, PREFERRED, WIDEBAND)
     RbAllocationType rbAllocationType_; /// resource allocation type
-    // LteFeedbackComputation* lteFeedbackComputation_; // Object used to compute the feedback
+    LteFeedbackComputation *lteFeedbackComputation_ = nullptr; // Object used to compute the feedback
     /**
      * NOTE: fbPeriod_ MUST be greater than fbDelay_,
      * otherwise we have overlapping transmissions
@@ -66,7 +67,6 @@ class LteDlFeedbackGenerator : public cSimpleModule
     int numBands_;                      /// number of cell bands
 
     // Timers
-    TTimer *tPeriodicSensing_ = nullptr;
     TTimer *tPeriodicTx_ = nullptr;
     TTimer *tAperiodicTx_ = nullptr;
 
@@ -80,11 +80,14 @@ class LteDlFeedbackGenerator : public cSimpleModule
     MacNodeId nodeId_;
 
     bool feedbackComputationPisa_;
+    bool useUeDlFeedbackComputation_ = false;
+    double targetBler_ = 0.001;
 
   private:
 
     // initialize cell information
     void initCellInfo();
+    void initializeFeedbackComputation();
 
     /**
      * DUMMY: should be provided by PHY
@@ -108,11 +111,6 @@ class LteDlFeedbackGenerator : public cSimpleModule
      */
     void handleMessage(cMessage *msg) override;
 
-    /**
-     * Channel sensing
-     */
-    void sensing(FbPeriodicity per);
-
   public:
 
     /**
@@ -133,6 +131,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
      * @param newTxMode new transmission mode
      */
     void setTxMode(TxMode newTxMode);
+    void handleCsiReferenceSignal(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     /*
      * Perform handover-related operations

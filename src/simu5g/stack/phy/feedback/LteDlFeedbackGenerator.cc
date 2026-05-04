@@ -41,21 +41,20 @@ void LteDlFeedbackGenerator::initialize(int stage)
         rbAllocationType_ = getRbAllocationType(par("rbAllocationType").stringValue());
         usePeriodic_ = par("usePeriodic");
         currentTxMode_ = aToTxMode(par("initialTxMode"));
+        useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
+        targetBler_ = par("targetBler");
 
         cModule *networkNode = getContainingNode(this);
         bool isNr = strcmp(getFullName(), "nrDlFbGen") == 0;
         nodeId_ = MacNodeId(networkNode->par(isNr ? "nrMacNodeId" : "macNodeId").intValue()); //TODO or
 
         // Initialize timers
-        tPeriodicSensing_ = new TTimer(this);
-        tPeriodicSensing_->setTimerId(PERIODIC_SENSING);
-
         tPeriodicTx_ = new TTimer(this);
         tPeriodicTx_->setTimerId(PERIODIC_TX);
 
         tAperiodicTx_ = new TTimer(this);
         tAperiodicTx_->setTimerId(APERIODIC_TX);
-        feedbackComputationPisa_ = false;
+        feedbackComputationPisa_ = !useUeDlFeedbackComputation_;
         WATCH(fbType_);
         WATCH(rbAllocationType_);
         WATCH(fbPeriod_);
@@ -79,15 +78,15 @@ void LteDlFeedbackGenerator::initialize(int stage)
            << " phyUe taken" << endl;
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe used" << endl;
-        // TODO: remove this parameter
-        feedbackComputationPisa_ = true;
+        if (useUeDlFeedbackComputation_)
+            initializeFeedbackComputation();
 
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " feedback computation initialize" << endl;
         WATCH(numBands_);
         WATCH(numPreferredBands_);
-        if (masterId_ != NODEID_NONE && usePeriodic_) {
-            tPeriodicSensing_->start(0);
+        if (masterId_ != NODEID_NONE && usePeriodic_ && !useUeDlFeedbackComputation_) {
+            tPeriodicTx_->start(0);
         }
     }
 }
@@ -97,16 +96,12 @@ void LteDlFeedbackGenerator::handleMessage(cMessage *msg)
     TTimerMsg *tmsg = check_and_cast<TTimerMsg *>(msg);
     FbTimerType type = (FbTimerType)tmsg->getTimerId();
 
-    if (type == PERIODIC_SENSING) {
-        EV << NOW << " Periodic Sensing" << endl;
-        tPeriodicSensing_->handle();
-        tPeriodicSensing_->start(fbPeriod_);
-        sensing(PERIODIC);
-    }
-    else if (type == PERIODIC_TX) {
+    if (type == PERIODIC_TX) {
         EV << NOW << " Periodic Tx" << endl;
         tPeriodicTx_->handle();
         sendFeedback(periodicFeedback, PERIODIC);
+        if (usePeriodic_ && !useUeDlFeedbackComputation_)
+            tPeriodicTx_->start(fbPeriod_);
     }
     else if (type == APERIODIC_TX) {
         EV << NOW << " Aperiodic Tx" << endl;
@@ -133,42 +128,11 @@ void LteDlFeedbackGenerator::initCellInfo()
        << numPreferredBands_ << endl;
 }
 
-void LteDlFeedbackGenerator::sensing(FbPeriodicity per)
+void LteDlFeedbackGenerator::initializeFeedbackComputation()
 {
-    if (per == PERIODIC && tAperiodicTx_->busy()
-        && tAperiodicTx_->elapsed() < 0.001)
-    {
-        /* In this TTI an APERIODIC sensing has been done
-         * (an APERIODIC tx is scheduled).
-         * Ignore this PERIODIC request.
-         */
-        EV << NOW << " Aperiodic before Periodic in the same TTI: ignore Periodic" << endl;
-        return;
-    }
-
-    if (per == APERIODIC && tAperiodicTx_->busy()) {
-        /* An APERIODIC tx is already scheduled:
-         * ignore this request.
-         */
-        EV << NOW << " Aperiodic overlapping: ignore second Aperiodic" << endl;
-        return;
-    }
-
-    if (per == APERIODIC && tPeriodicTx_->busy()
-        && tPeriodicTx_->elapsed() < 0.001)
-    {
-        /* In this TTI a PERIODIC sensing has been done.
-         * Deschedule the PERIODIC tx and continue with APERIODIC.
-         */
-        EV << NOW << " Periodic before Aperiodic in the same TTI: remove Periodic" << endl;
-        tPeriodicTx_->stop();
-    }
-
-    // Schedule feedback transmission
-    if (per == PERIODIC)
-        tPeriodicTx_->start(fbDelay_);
-    else if (per == APERIODIC)
-        tAperiodicTx_->start(fbDelay_);
+    if (lteFeedbackComputation_)
+        delete lteFeedbackComputation_;
+    lteFeedbackComputation_ = new LteFeedbackComputationRealistic(binder_, targetBler_, numBands_);
 }
 
 /***************************
@@ -178,7 +142,7 @@ void LteDlFeedbackGenerator::sensing(FbPeriodicity per)
 
 LteDlFeedbackGenerator::~LteDlFeedbackGenerator()
 {
-    delete tPeriodicSensing_;
+    delete lteFeedbackComputation_;
     delete tPeriodicTx_;
     delete tAperiodicTx_;
 }
@@ -187,7 +151,27 @@ void LteDlFeedbackGenerator::aperiodicRequest()
 {
     Enter_Method("aperiodicRequest()");
     EV << NOW << " Aperiodic request" << endl;
-    sensing(APERIODIC);
+    if (useUeDlFeedbackComputation_ && aperiodicFeedback.empty()) {
+        EV << NOW << " Aperiodic request ignored: no CSI-RS-based feedback available yet" << endl;
+        return;
+    }
+
+    if (useUeDlFeedbackComputation_) {
+        sendFeedback(aperiodicFeedback, APERIODIC);
+        return;
+    }
+
+    if (tAperiodicTx_->busy()) {
+        EV << NOW << " Aperiodic overlapping: ignore second Aperiodic" << endl;
+        return;
+    }
+
+    if (tPeriodicTx_->busy() && tPeriodicTx_->elapsed() < 0.001) {
+        EV << NOW << " Periodic before Aperiodic in the same TTI: remove Periodic" << endl;
+        tPeriodicTx_->stop();
+    }
+
+    tAperiodicTx_->start(fbDelay_);
 }
 
 void LteDlFeedbackGenerator::setTxMode(TxMode newTxMode)
@@ -199,22 +183,26 @@ void LteDlFeedbackGenerator::setTxMode(TxMode newTxMode)
 void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
         FbPeriodicity per)
 {
-    EV << "sendFeedback() in DL" << endl;
-    EV << "Periodicity: " << periodicityToA(per) << " nodeId: " << nodeId_ << endl;
+    EV << "LteDlFeedbackGenerator::sendFeedback - sending " << periodicityToA(per) << " CSI feedback, nodeId: " << nodeId_ << endl;
+
+    if (useUeDlFeedbackComputation_ && fb.empty()) {
+        EV << NOW << " Feedback transmission skipped: no cached DL feedback available" << endl;
+        return;
+    }
 
     FeedbackRequest feedbackReq;
-    if (feedbackComputationPisa_) {
-        feedbackReq.request = true;
-        feedbackReq.type = fbType_;
-        feedbackReq.txMode = currentTxMode_;
-        feedbackReq.rbAllocationType = rbAllocationType_;
-    }
-    else {
-        feedbackReq.request = false;
-    }
+    feedbackReq.request = true;
+    feedbackReq.type = fbType_;
+    feedbackReq.txMode = currentTxMode_;
+    feedbackReq.dasAware = false;
+    feedbackReq.rbAllocationType = rbAllocationType_;
+    feedbackReq.dlFeedbackFromUe = useUeDlFeedbackComputation_;
+
+    LteFeedbackDoubleVector feedbackDl = useUeDlFeedbackComputation_ ? fb : LteFeedbackDoubleVector();
+    LteFeedbackDoubleVector feedbackUl;
 
     //use PHY function to send feedback
-    phy_->sendFeedback(fb, fb, feedbackReq);
+    phy_->sendFeedback(feedbackDl, feedbackUl, feedbackReq);
 }
 
 // TODO adjust default value
@@ -233,18 +221,54 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
 {
     Enter_Method("LteDlFeedbackGenerator::handleHandover()");
     masterId_ = newEnbId;
+    periodicFeedback.clear();
+    aperiodicFeedback.clear();
     if (masterId_ != NODEID_NONE) {
         initCellInfo();
+        if (useUeDlFeedbackComputation_)
+            initializeFeedbackComputation();
         EV << NOW << " LteDlFeedbackGenerator::handleHandover - Master ID updated to " << masterId_ << endl;
-        if (tPeriodicSensing_->idle())                                         // resume feedback
-            tPeriodicSensing_->start(0);
+        if (!useUeDlFeedbackComputation_ && usePeriodic_ && tPeriodicTx_->idle())                                         // resume feedback
+            tPeriodicTx_->start(0);
     }
     else {
         cellInfo_ = nullptr;
 
-        // stop measuring feedback
-        tPeriodicSensing_->stop();
+        if (tPeriodicTx_->busy())
+            tPeriodicTx_->stop();
     }
+}
+
+void LteDlFeedbackGenerator::handleCsiReferenceSignal(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    Enter_Method("handleCsiReferenceSignal()");
+
+    if (!useUeDlFeedbackComputation_) {
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
+    LteChannelModel *channelModel = phy_->getChannelModel(lteInfo->getCarrierFrequency());
+    if (channelModel == nullptr)
+        throw cRuntimeError("LteDlFeedbackGenerator::handleCsiReferenceSignal - channelModel is NULL pointer");
+
+    take(frame);
+    frame->setControlInfo(lteInfo);
+    std::vector<double> snr = channelModel->getSINR(frame, lteInfo);
+
+    std::map<Remote, int> antennaCws;
+    antennaCws[MACRO] = 1;
+    periodicFeedback = lteFeedbackComputation_->computeFeedback(
+            fbType_, rbAllocationType_, currentTxMode_, antennaCws,
+            numPreferredBands_, 0, snr, nodeId_);
+    aperiodicFeedback = periodicFeedback;
+
+    EV << NOW << " LteDlFeedbackGenerator::handleCsiReferenceSignal - Computed CSI feedback for DL direction" << endl;
+
+    delete frame;
+
+    sendFeedback(periodicFeedback, PERIODIC);
 }
 
 } //namespace

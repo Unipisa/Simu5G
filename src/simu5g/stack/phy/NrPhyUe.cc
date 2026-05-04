@@ -89,6 +89,18 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
         return;
     }
 
+    if (lteInfo->getFrameType() == CSIRSPKT) {
+        if (lteInfo->getSourceId() == masterId_) {
+            lteInfo->setDestId(nodeId_);
+            fbGen_->handleCsiReferenceSignal(frame, lteInfo);
+            return;
+        }
+
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
     // Check if the frame is for us ( MacNodeId matches or - if this is a multicast communication - enrolled in multicast group)
     if (lteInfo->getDestId() != nodeId_ && !(binder_->isInMulticastGroup(nodeId_, lteInfo->getPacketMulticastGroupId()))) {
         EV << "ERROR: Frame is not for us. Delete it." << endl;

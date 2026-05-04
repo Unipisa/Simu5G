@@ -31,6 +31,8 @@ simple LtePhyUe extends LtePhyBase
         string pdcpModule = default("^.pdcp");
         string ip2nicModule = default("^.ip2nic");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
+        bool useUeDlFeedbackComputation = default(false);
+        double targetBler = default(0.001);
 
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);
@@ -52,4 +54,3 @@ simple LtePhyUe extends LtePhyBase
         @signal[averageCqiUl];
         @statistic[averageCqiUl](title="Average Cqi reported in UL"; unit="cqi"; source="averageCqiUl"; record=mean,count,vector);
 }
-

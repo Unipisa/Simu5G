@@ -75,6 +75,8 @@ module NrNicUe extends LteNicUeD2D
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=144,50;is=s");
             phyModule = "^.nrPhy";
+            useUeDlFeedbackComputation = parent.nrPhy.useUeDlFeedbackComputation;
+            targetBler = parent.nrPhy.targetBler;
         }
  		//#
         //# Modules used to take trace of PDCP pkt flow

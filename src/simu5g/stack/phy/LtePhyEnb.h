@@ -29,6 +29,10 @@ class LtePhyEnb : public LtePhyBase
 
     /** Self-message to trigger broadcast message sending for handover purposes */
     cMessage *bdcStarter_ = nullptr;
+    cMessage *csiRsStarter_ = nullptr;
+
+    double csiRsPeriod_ = 0;
+    bool useUeDlFeedbackComputation_ = false;
 
     int randomChannelIndex_;
 
@@ -39,6 +43,8 @@ class LtePhyEnb : public LtePhyBase
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt);
+    virtual LteAirFrame *createCsiReferenceSignal(inet::GHz carrierFrequency);
+    virtual void sendCsiReferenceSignalToAttachedUes(LteAirFrame *frame);
     // Feedback computation for PisaPhy
     LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
     void initializeFeedbackComputation();
