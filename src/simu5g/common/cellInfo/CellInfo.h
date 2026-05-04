@@ -97,6 +97,9 @@ class CellInfo : public cSimpleModule
     // Position of each UE
     std::map<MacNodeId, inet::Coord> uePosition;
 
+    // Set of attached UEs
+    std::set<MacNodeId> attachedUes_;
+
   protected:
 
     void initialize(int stage) override;
@@ -245,8 +248,15 @@ class CellInfo : public cSimpleModule
     unsigned int getCarrierLastBand(GHz carrierFrequency);
     /*******************************************************************************/
 
+    // remove the given node from the set of attached UEs
     void detachUser(MacNodeId nodeId);
+    // add the given node to the set of attached UEs
     void attachUser(MacNodeId nodeId);
+    // return the set of attached UEs
+    const std::set<MacNodeId>& getAttachedUes() const
+    {
+        return attachedUes_;
+    }
 
 };
 
