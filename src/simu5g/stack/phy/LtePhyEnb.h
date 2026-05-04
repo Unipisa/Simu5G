@@ -45,8 +45,8 @@ class LtePhyEnb : public LtePhyBase
     void handleAirFrame(cMessage *msg) override;
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
-    virtual LteAirFrame *createCsiReferenceSignal(inet::GHz carrierFrequency);
-    virtual void sendCsiReferenceSignalToAttachedUes(LteAirFrame *frame);
+    virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
+    virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
     // Feedback computation for PisaPhy
     LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
     void initializeFeedbackComputation();
