@@ -38,7 +38,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
 {
     enum FbTimerType
     {
-        PERIODIC_TX = 0, APERIODIC_TX
+        PERIODIC_SENSING = 0, PERIODIC_TX, APERIODIC_TX
     };
 
   private:
@@ -67,6 +67,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
     int numBands_;                      /// number of cell bands
 
     // Timers
+    TTimer *tPeriodicSensing_ = nullptr;
     TTimer *tPeriodicTx_ = nullptr;
     TTimer *tAperiodicTx_ = nullptr;
 
@@ -110,6 +111,11 @@ class LteDlFeedbackGenerator : public cSimpleModule
      * @param msg self message for sensing or transmission
      */
     void handleMessage(cMessage *msg) override;
+
+    /**
+     * Channel sensing
+     */
+    void sensing(FbPeriodicity per);
 
   public:
 

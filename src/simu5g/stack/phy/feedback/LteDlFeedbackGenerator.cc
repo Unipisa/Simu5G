@@ -49,6 +49,9 @@ void LteDlFeedbackGenerator::initialize(int stage)
         nodeId_ = MacNodeId(networkNode->par(isNr ? "nrMacNodeId" : "macNodeId").intValue()); //TODO or
 
         // Initialize timers
+        tPeriodicSensing_ = new TTimer(this);
+        tPeriodicSensing_->setTimerId(PERIODIC_SENSING);
+
         tPeriodicTx_ = new TTimer(this);
         tPeriodicTx_->setTimerId(PERIODIC_TX);
 
@@ -86,7 +89,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
         WATCH(numBands_);
         WATCH(numPreferredBands_);
         if (masterId_ != NODEID_NONE && usePeriodic_ && !useUeDlFeedbackComputation_) {
-            tPeriodicTx_->start(0);
+            tPeriodicSensing_->start(0);
         }
     }
 }
@@ -96,12 +99,16 @@ void LteDlFeedbackGenerator::handleMessage(cMessage *msg)
     TTimerMsg *tmsg = check_and_cast<TTimerMsg *>(msg);
     FbTimerType type = (FbTimerType)tmsg->getTimerId();
 
-    if (type == PERIODIC_TX) {
+    if (type == PERIODIC_SENSING) {
+        EV << NOW << " Periodic Sensing" << endl;
+        tPeriodicSensing_->handle();
+        tPeriodicSensing_->start(fbPeriod_);
+        sensing(PERIODIC);
+    }
+    else if (type == PERIODIC_TX) {
         EV << NOW << " Periodic Tx" << endl;
         tPeriodicTx_->handle();
         sendFeedback(periodicFeedback, PERIODIC);
-        if (usePeriodic_ && !useUeDlFeedbackComputation_)
-            tPeriodicTx_->start(fbPeriod_);
     }
     else if (type == APERIODIC_TX) {
         EV << NOW << " Aperiodic Tx" << endl;
@@ -135,6 +142,33 @@ void LteDlFeedbackGenerator::initializeFeedbackComputation()
     lteFeedbackComputation_ = new LteFeedbackComputationRealistic(binder_, targetBler_, numBands_);
 }
 
+void LteDlFeedbackGenerator::sensing(FbPeriodicity per)
+{
+    if (per == PERIODIC && tAperiodicTx_->busy()
+        && tAperiodicTx_->elapsed() < 0.001)
+    {
+        EV << NOW << " Aperiodic before Periodic in the same TTI: ignore Periodic" << endl;
+        return;
+    }
+
+    if (per == APERIODIC && tAperiodicTx_->busy()) {
+        EV << NOW << " Aperiodic overlapping: ignore second Aperiodic" << endl;
+        return;
+    }
+
+    if (per == APERIODIC && tPeriodicTx_->busy()
+        && tPeriodicTx_->elapsed() < 0.001)
+    {
+        EV << NOW << " Periodic before Aperiodic in the same TTI: remove Periodic" << endl;
+        tPeriodicTx_->stop();
+    }
+
+    if (per == PERIODIC)
+        tPeriodicTx_->start(fbDelay_);
+    else if (per == APERIODIC)
+        tAperiodicTx_->start(fbDelay_);
+}
+
 /***************************
 *    PUBLIC FUNCTIONS
 ***************************/
@@ -143,6 +177,7 @@ void LteDlFeedbackGenerator::initializeFeedbackComputation()
 LteDlFeedbackGenerator::~LteDlFeedbackGenerator()
 {
     delete lteFeedbackComputation_;
+    delete tPeriodicSensing_;
     delete tPeriodicTx_;
     delete tAperiodicTx_;
 }
@@ -160,18 +195,7 @@ void LteDlFeedbackGenerator::aperiodicRequest()
         sendFeedback(aperiodicFeedback, APERIODIC);
         return;
     }
-
-    if (tAperiodicTx_->busy()) {
-        EV << NOW << " Aperiodic overlapping: ignore second Aperiodic" << endl;
-        return;
-    }
-
-    if (tPeriodicTx_->busy() && tPeriodicTx_->elapsed() < 0.001) {
-        EV << NOW << " Periodic before Aperiodic in the same TTI: remove Periodic" << endl;
-        tPeriodicTx_->stop();
-    }
-
-    tAperiodicTx_->start(fbDelay_);
+    sensing(APERIODIC);
 }
 
 void LteDlFeedbackGenerator::setTxMode(TxMode newTxMode)
@@ -228,12 +252,14 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
         if (useUeDlFeedbackComputation_)
             initializeFeedbackComputation();
         EV << NOW << " LteDlFeedbackGenerator::handleHandover - Master ID updated to " << masterId_ << endl;
-        if (!useUeDlFeedbackComputation_ && usePeriodic_ && tPeriodicTx_->idle())                                         // resume feedback
-            tPeriodicTx_->start(0);
+        if (!useUeDlFeedbackComputation_ && usePeriodic_ && tPeriodicSensing_->idle())                                         // resume feedback
+            tPeriodicSensing_->start(0);
     }
     else {
         cellInfo_ = nullptr;
 
+        if (tPeriodicSensing_->busy())
+            tPeriodicSensing_->stop();
         if (tPeriodicTx_->busy())
             tPeriodicTx_->stop();
     }
