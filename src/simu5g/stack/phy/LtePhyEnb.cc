@@ -105,8 +105,8 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
     }
     else if (msg->isName("csiRsStarter")) {
         for (const auto& [carrierFrequency, channelModel] : channelModel_) {
-            LteAirFrame *f = createCsiReferenceSignal(carrierFrequency);
-            sendCsiReferenceSignalToAttachedUes(f);
+            LteAirFrame *f = createCsiReferenceSignalFrame(carrierFrequency);
+            sendCsiReferenceSignalFrameToAttachedUes(f);
         }
         scheduleAt(NOW + csiRsPeriod_, msg);
     }
@@ -244,9 +244,9 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
         updateDisplayString();
 }
 
-LteAirFrame *LtePhyEnb::createCsiReferenceSignal(GHz carrierFrequency)
+LteAirFrame *LtePhyEnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 {
-    LteAirFrame *csiAirFrame = new LteAirFrame("csiReferenceSignal");
+    LteAirFrame *csiAirFrame = new LteAirFrame("CsiReferenceSignal");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(CSIRSPKT);
@@ -261,7 +261,7 @@ LteAirFrame *LtePhyEnb::createCsiReferenceSignal(GHz carrierFrequency)
     return csiAirFrame;
 }
 
-void LtePhyEnb::sendCsiReferenceSignalToAttachedUes(LteAirFrame *frame)
+void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
 {
     UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
     frame->setAdditionalInfo(*ci);
