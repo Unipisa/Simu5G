@@ -19,6 +19,7 @@ simple NtnPhyBase
         string channelModelModule = default("^.channelModel[0]");
         string antennaModelModule = default("^.antennaModel");
         string linkType @enum("feeder","service");
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
     gates:
         input upperLayerIn;
         output upperLayerOut;

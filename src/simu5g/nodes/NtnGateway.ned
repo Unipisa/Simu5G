@@ -30,8 +30,12 @@ module NtnGateway
 
         string nodeType = default("NTNGATEWAY"); // DO NOT CHANGE
         int macNodeId = default(16384 + simu5g_seq("NtnGateway_macNodeId"));
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
+        gnbNic.feederLinkFrequencyOffset = default(this.feederLinkFrequencyOffset);
+        gnbNic.shiftFrequencyFromFeederLink = default(true);
         feederNic.antennaModelType = default("IsotropicAntennaModel");  // TODO to be updated with specific gateway antenna
+        feederNic.feederLinkFrequencyOffset = default(this.feederLinkFrequencyOffset);
 
     gates:
         inout gnbLink @loose;

@@ -21,6 +21,7 @@ module NtnFeederLinkNic
         string channelModelType = default("NrChannelModel_3GPP38_901");
         string antennaModelType;
         int numCarriers = default(1);
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
         antennaModel.frequencyBand = default("KA");
 
     gates:
@@ -32,6 +33,7 @@ module NtnFeederLinkNic
             parameters:
                 @display("p=182,289");
                 linkType = "feeder";
+                feederLinkFrequencyOffset = parent.feederLinkFrequencyOffset;
         }
         channelModel[numCarriers]: <channelModelType> like ILteChannelModel {
             @display("p=182,167");

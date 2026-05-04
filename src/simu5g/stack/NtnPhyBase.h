@@ -26,10 +26,12 @@ class NtnPhyBase : public ChannelAccess
     MacNodeId nodeId_ = NODEID_NONE;
     RanNodeType nodeType_ = UNKNOWN_NODE_TYPE;
     bool isFeederLink_ = false;
+    GHz feederLinkFrequencyOffset_ = GHz(NTN_FEEDER_LINK_FREQUENCY_OFFSET_GHZ);
 
     void initialize(int stage) override;
     void initializeChannelModels();
     LteChannelModel *getChannelModel(GHz carrierFreq) const;
+    GHz shiftFrequencyBand(GHz carrierFreq) const;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(omnetpp::cMessage *msg) override;
     void handleAirFrame(omnetpp::cMessage *msg);

@@ -21,6 +21,7 @@ module NtnServiceLinkNic
         string channelModelType = default("NtnChannelModel");
         string antennaModelType;
         int numCarriers = default(1);
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
         antennaModel.frequencyBand = default("S");
 
     gates:
@@ -32,6 +33,7 @@ module NtnServiceLinkNic
             parameters:
                 @display("p=182,261");
                 linkType = "service";
+                feederLinkFrequencyOffset = parent.feederLinkFrequencyOffset;
         }
         channelModel[numCarriers]: <channelModelType> like ILteChannelModel {
             @display("p=182,145");

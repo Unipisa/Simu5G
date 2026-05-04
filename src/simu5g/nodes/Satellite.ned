@@ -30,7 +30,9 @@ module Satellite
 
         string nodeType = default("SATELLITE"); // DO NOT CHANGE
         int macNodeId = default(17408 + simu5g_seq("Satellite_macNodeId"));
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
+        *.feederLinkFrequencyOffset = default(this.feederLinkFrequencyOffset);
 
     gates:
         input serviceLinkRadioIn @loose @directIn;

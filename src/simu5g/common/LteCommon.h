@@ -238,6 +238,7 @@ inline unsigned int nrAmHeaderBytes(NrUmSegState s, unsigned int snBits)
 }
 const unsigned int MAC_HEADER = 2;
 const unsigned int MAXGRANT = 4294967295U;
+constexpr double NTN_FEEDER_LINK_FREQUENCY_OFFSET_GHZ = 25.0;
 
 /*****************
 * MAC Support
