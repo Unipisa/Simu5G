@@ -97,6 +97,8 @@ void CellInfo::updateMCSScale(double& mcs, double signalRe,
 
 void CellInfo::detachUser(MacNodeId nodeId)
 {
+    attachedUes_.erase(nodeId);
+
     auto pt = uePosition.find(nodeId);
     if (pt != uePosition.end())
         uePosition.erase(pt);
@@ -104,6 +106,7 @@ void CellInfo::detachUser(MacNodeId nodeId)
 
 void CellInfo::attachUser(MacNodeId nodeId)
 {
+    attachedUes_.insert(nodeId);
 }
 
 unsigned int CellInfo::getNumBands()

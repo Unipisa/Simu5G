@@ -302,8 +302,7 @@ void LtePhyEnb::sendCsiReferenceSignalToAttachedUes(LteAirFrame *frame)
     frame->setAdditionalInfo(*ci);
     delete frame->removeControlInfo();
 
-    std::vector<MacNodeId> attachedUes = binder_->getDeployedUes(nodeId_);
-    for (MacNodeId ueId : attachedUes) {
+    for (MacNodeId ueId : cellInfo_->getAttachedUes()) {
         if (isNrUe(ueId) != isNr_)
             continue;
 

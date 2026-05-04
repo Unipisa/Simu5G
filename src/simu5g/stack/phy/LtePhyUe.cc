@@ -119,8 +119,10 @@ void LtePhyUe::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_CELLINFO_CHANNELUPDATE) { //TODO being fwd, eliminate stage
         // get cellInfo at this stage because the next hop of the node is registered in the Ip2Nic module at the INITSTAGE_SIMU5G_NETWORK_LAYER
-        if (masterId_ != NODEID_NONE)
+        if (masterId_ != NODEID_NONE) {
             cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);
+            cellInfo_->attachUser(nodeId_);
+        }
         else
             cellInfo_ = nullptr;
     }
