@@ -4,6 +4,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/phy/packet/LteAirFrame.h"
 #include "simu5g/stack/phy/feedback/LteFeedback.h"
 #include "simu5g/stack/phy/feedback/LteFeedbackComputation.h"
 
@@ -32,8 +33,8 @@ class LteUlFeedbackGenerator : public cSimpleModule
   public:
     ~LteUlFeedbackGenerator() override;
 
-    LteFeedbackDoubleVector computeUlFeedback(const FeedbackRequest& req, const std::vector<double>& snr, MacNodeId sourceNodeId);
-    LteFeedbackDoubleVector computeD2DFeedback(const FeedbackRequest& req, const std::vector<double>& snr, MacNodeId sourceNodeId);
+    LteFeedbackDoubleVector computeUlFeedback(UserControlInfo *lteinfo, LteAirFrame *frame);
+    LteFeedbackDoubleVector computeD2DFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, MacNodeId peerId, const inet::Coord& peerCoord);
 };
 
 } // namespace simu5g

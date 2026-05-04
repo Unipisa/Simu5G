@@ -38,21 +38,43 @@ LteUlFeedbackGenerator::~LteUlFeedbackGenerator()
     delete lteFeedbackComputation_;
 }
 
-LteFeedbackDoubleVector LteUlFeedbackGenerator::computeUlFeedback(const FeedbackRequest& req, const std::vector<double>& snr, MacNodeId sourceNodeId)
+LteFeedbackDoubleVector LteUlFeedbackGenerator::computeUlFeedback(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
     Enter_Method("computeUlFeedback()");
     EV_DEBUG << "LteUlFeedbackGenerator::computeUlFeedback - computing UL CSI" << endl;
+
+    LteChannelModel *channelModel = phy_->getChannelModel(lteinfo->getCarrierFrequency());
+    if (channelModel == nullptr)
+        throw cRuntimeError("LteUlFeedbackGenerator::computeUlFeedback - channelModel is NULL pointer");
+
+    Coord sendersPos = lteinfo->getCoord();
+    cellInfo_->setUePosition(lteinfo->getSourceId(), sendersPos);
+
+    std::vector<double> snr = channelModel->getSINR(frame, lteinfo);
+    FeedbackRequest req = lteinfo->getFeedbackReq();
     std::map<Remote, int> antennaCws;
     antennaCws[MACRO] = 1;
 
     return lteFeedbackComputation_->computeFeedback(req.type, req.rbAllocationType,
-            req.txMode, antennaCws, numPreferredBands_, 0, snr, sourceNodeId);
+            req.txMode, antennaCws, numPreferredBands_, 0, snr, lteinfo->getSourceId());
 }
 
-LteFeedbackDoubleVector LteUlFeedbackGenerator::computeD2DFeedback(const FeedbackRequest& req, const std::vector<double>& snr, MacNodeId sourceNodeId)
+LteFeedbackDoubleVector LteUlFeedbackGenerator::computeD2DFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, MacNodeId peerId, const inet::Coord& peerCoord)
 {
     Enter_Method("computeD2DFeedback()");
-    return computeUlFeedback(req, snr, sourceNodeId);
+    EV_DEBUG << "LteUlFeedbackGenerator::computeD2DFeedback - computing D2D CSI" << endl;
+
+    LteChannelModel *channelModel = phy_->getChannelModel(lteinfo->getCarrierFrequency());
+    if (channelModel == nullptr)
+        throw cRuntimeError("LteUlFeedbackGenerator::computeD2DFeedback - channelModel is NULL pointer");
+
+    std::vector<double> snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, phy_->getMacNodeId());
+    FeedbackRequest req = lteinfo->getFeedbackReq();
+    std::map<Remote, int> antennaCws;
+    antennaCws[MACRO] = 1;
+
+    return lteFeedbackComputation_->computeFeedback(req.type, req.rbAllocationType,
+            req.txMode, antennaCws, numPreferredBands_, 0, snr, lteinfo->getSourceId());
 }
 
 } // namespace simu5g

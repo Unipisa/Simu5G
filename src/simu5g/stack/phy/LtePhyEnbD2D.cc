@@ -29,35 +29,26 @@ void LtePhyEnbD2D::initialize(int stage)
         enableD2DCqiReporting_ = par("enableD2DCqiReporting");
 }
 
-void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Packet *pktAux)
+void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
-    EV << NOW << " LtePhyEnbD2D::requestFeedback " << endl;
-
-    LteFeedbackDoubleVector fb;
-
-    // Select the correct channel model according to the carrier frequency
-    LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
-
+    EV << "LtePhyEnbD2D::handleFeedbackPkt - received Feedback Packet with ID " << frame->getId() << endl;
+    auto pktAux = check_and_cast<Packet *>(frame->decapsulate());
     auto header = pktAux->removeAtFront<LteFeedbackPkt>();
 
-    // Get UE position
-    Coord sendersPos = lteinfo->getCoord();
-    cellInfo_->setUePosition(lteinfo->getSourceId(), sendersPos);
+    *(pktAux->addTagIfAbsent<UserControlInfo>()) = *lteinfo;
 
-    // Apply analog model (pathloss)
-    // Get SNR for UL direction
-    std::vector<double> snr;
-    if (channelModel != nullptr)
-        snr = channelModel->getSINR(frame, lteinfo);
-    else
-        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
+    LteFeedbackDoubleVector fb;
     FeedbackRequest req = lteinfo->getFeedbackReq();
-    // Feedback computation
     fb.clear();
-    fb = ulFbGen_->computeUlFeedback(req, snr, lteinfo->getSourceId());
+    fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
     header->setLteFeedbackDoubleVectorUl(fb);
 
     if (!req.dlFeedbackFromUe) {
+        LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
+        if (channelModel == nullptr)
+            throw cRuntimeError("LtePhyEnbD2D::handleFeedbackPkt - channelModel is null pointer");
+
+        EV_DEBUG << "LtePhyEnbD2D::handleFeedbackPkt - computing DL CSI" << endl;
         int nRus = 0;
         TxMode txmode = req.txMode;
         FeedbackType type = req.type;
@@ -66,48 +57,34 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
         antennaCws[MACRO] = 1; // Default single antenna
         unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
 
-        // Prepare parameters for DL SNR computation.
         lteinfo->setTxPower(txPower_);
         lteinfo->setDirection(DL);
-        if (channelModel != nullptr)
-            snr = channelModel->getSINR(frame, lteinfo);
-        else
-            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
+        std::vector<double> snr = channelModel->getSINR(frame, lteinfo);
 
         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
                 antennaCws, numPreferredBand, nRus, snr,
                 lteinfo->getSourceId());
         header->setLteFeedbackDoubleVectorDl(fb);
 
-        if (enableD2DCqiReporting_) {
-            // Compute D2D feedback for all possible peering UEs
-            for (const auto& ueInfo : binder_->getUeList()) {
-                MacNodeId peerId = ueInfo->id;
-                if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
-                    // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
+    }
 
-                    // Retrieve the position of the peer
-                    Coord peerCoord = ueInfo->phy->getCoord();
-
-                    // Get SINR for this link
-                    if (channelModel != nullptr)
-                        snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
-                    else
-                        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
-
-                    // Compute the feedback for this link
-                    fb = ulFbGen_->computeD2DFeedback(req, snr, lteinfo->getSourceId());
-
-                    header->setLteFeedbackDoubleVectorD2D(peerId, fb);
-                }
+    if (enableD2DCqiReporting_) {
+        for (const auto& ueInfo : binder_->getUeList()) {
+            MacNodeId peerId = ueInfo->id;
+            if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
+                Coord peerCoord = ueInfo->phy->getCoord();
+                fb = ulFbGen_->computeD2DFeedback(lteinfo, frame, peerId, peerCoord);
+                header->setLteFeedbackDoubleVectorD2D(peerId, fb);
             }
         }
     }
-    EV << "LtePhyEn::requestFeedback : Feedback Generated for nodeId: "
+    EV << "LtePhyEnbD2D::handleFeedbackPkt : Feedback Generated for nodeId: "
        << nodeId_ << " Fb size: " << fb.size()
        << " Carrier: " << lteinfo->getCarrierFrequency() << endl;
 
     pktAux->insertAtFront(header);
+    delete lteinfo;
+    send(pktAux, upperGateOut_);
 }
 
 void LtePhyEnbD2D::handleAirFrame(cMessage *msg)

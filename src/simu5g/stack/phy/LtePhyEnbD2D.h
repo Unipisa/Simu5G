@@ -26,7 +26,7 @@ class LtePhyEnbD2D : public LtePhyEnb
   protected:
 
     void initialize(int stage) override;
-    void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt) override;
+    void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame) override;
     void handleAirFrame(cMessage *msg) override;
 };
 
