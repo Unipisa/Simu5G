@@ -18,6 +18,7 @@ import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dcX2Forwarder.DcX2Forwarder;
 import simu5g.stack.pdcp.DcMux;
 import simu5g.stack.handoverX2Forwarder.HandoverX2Forwarder;
+import simu5g.stack.phy.feedback.LteUlFeedbackGenerator;
 import simu5g.x2.LteX2Manager;
 
 
@@ -43,6 +44,12 @@ module LteNicEnb extends LteNicBase
         pdcpDcMux: DcMux {
             @display("p=609,331;is=s");
         }
+
+        ulFbGen: LteUlFeedbackGenerator {
+            @display("p=493,389;is=s");
+            targetBler = parent.phy.targetBler;
+        }
+
 
         //#
         //# X2 manager
@@ -91,4 +98,3 @@ module LteNicEnb extends LteNicBase
             x2$o[i] <-- x2Manager.x2Out++;
         }
 }
-

@@ -39,6 +39,7 @@ simple LtePhyEnb extends LtePhyBase
         bool enableBeacons = default(enableHandover);
 
         double targetBler = default(0.001);
+        string ulFeedbackGeneratorModule = default("^.ulFbGen");
         bool useUeDlFeedbackComputation = default(false);
         double csiRsPeriod @unit(s) = default(0s);
 }

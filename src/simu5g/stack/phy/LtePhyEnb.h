@@ -13,14 +13,16 @@
 #ifndef _LTE_AIRPHYENB_H_
 #define _LTE_AIRPHYENB_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/phy/feedback/LteUlFeedbackGenerator.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 class LteFeedbackPkt;
-
 class LtePhyEnb : public LtePhyBase
 {
 
@@ -36,6 +38,7 @@ class LtePhyEnb : public LtePhyBase
     bool useUeDlFeedbackComputation_ = false;
 
     int randomChannelIndex_;
+    inet::ModuleRefByPar<LteUlFeedbackGenerator> ulFbGen_;
 
     void initialize(int stage) override;
 
@@ -55,6 +58,7 @@ class LtePhyEnb : public LtePhyBase
 
   public:
     ~LtePhyEnb() override;
+    CellInfo *getCellInfo() const { return cellInfo_.get(); }
 
 };
 
