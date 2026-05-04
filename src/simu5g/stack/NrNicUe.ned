@@ -91,6 +91,8 @@ module NrNicUe extends LteNicUeD2D
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=80,60,col;g=left");
             phyModule = "^.nrPhy";
+            useUeDlFeedbackComputation = parent.nrPhy.useUeDlFeedbackComputation;
+            targetBler = parent.nrPhy.targetBler;
         }
 
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {

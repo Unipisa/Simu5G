@@ -29,6 +29,9 @@ simple LtePhyUe extends LtePhyBase
 
         string handoverControllerModule = default("^.rrc.handoverController");
 
+        bool useUeDlFeedbackComputation = default(false);
+        double targetBler = default(0.001);
+
         @signal[distance];
         @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
 
@@ -38,4 +41,3 @@ simple LtePhyUe extends LtePhyBase
         @signal[averageCqiUl];
         @statistic[averageCqiUl](title="Average Cqi reported in UL"; unit="cqi"; source="averageCqiUl"; record=mean,count,vector);
 }
-
