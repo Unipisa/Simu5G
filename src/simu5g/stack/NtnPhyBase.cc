@@ -17,6 +17,8 @@
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
 #include "simu5g/stack/phy/packet/NtnAirFrame.h"
 
+#include <cmath>
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -34,6 +36,7 @@ void NtnPhyBase::initialize(int stage)
         referenceSystem_ = GeographicReferenceSystemAccess().get();
         ASSERT(referenceSystem_ != nullptr);
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
+        feederLinkFrequencyOffset_ = GHz(par("feederLinkFrequencyOffset"));
         cModule *node = getContainingNode(this);
         nodeId_ = MacNodeId(node->par("macNodeId").intValue());
         nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
@@ -48,13 +51,15 @@ void NtnPhyBase::initializeChannelModels()
     primaryChannelModel_.reference(this, "channelModelModule", true);
     primaryChannelModel_->setPhy(this);
     GHz carrierFreq = primaryChannelModel_->getCarrierFrequency();
-    channelModel_[carrierFreq] = primaryChannelModel_;
+    channelModel_[isFeederLink_ ? GHz(carrierFreq.get() + feederLinkFrequencyOffset_.get()) : carrierFreq] = primaryChannelModel_;
 
     int numChannelModels = primaryChannelModel_->getVectorSize();
     for (int index = 1; index < numChannelModels; index++) {
         LteChannelModel *chanModel = check_and_cast<LteChannelModel *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
         chanModel->setPhy(this);
         carrierFreq = chanModel->getCarrierFrequency();
+        if (isFeederLink_)
+            carrierFreq = shiftFrequencyBand(carrierFreq);
         channelModel_[carrierFreq] = chanModel;
     }
 }
@@ -65,13 +70,31 @@ LteChannelModel *NtnPhyBase::getChannelModel(GHz carrierFreq) const
     return (it == channelModel_.end()) ? nullptr : it->second;
 }
 
+GHz NtnPhyBase::shiftFrequencyBand(GHz carrierFreq) const
+{
+    if (std::isnan(carrierFreq.get()))
+        return carrierFreq;
+
+    double transmitFrequency = isFeederLink_
+        ? carrierFreq.get() + feederLinkFrequencyOffset_.get()
+        : carrierFreq.get() - feederLinkFrequencyOffset_.get();
+
+    if (transmitFrequency <= 0.0)
+        throw cRuntimeError("NtnPhyBase::shiftFrequencyBand - cannot translate %s-link carrier %gGHz with offset %gGHz",
+                isFeederLink_ ? "feeder" : "service", carrierFreq.get(), feederLinkFrequencyOffset_.get());
+    return GHz(transmitFrequency);
+}
+
 void NtnPhyBase::handleAirFrame(cMessage *msg)
 {
-    EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName() << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio" << endl;
     auto *frame = check_and_cast<LteAirFrame *>(msg);
     UserControlInfo lteInfo(frame->getAdditionalInfo());
+    EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName() << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio"
+            << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
+
     if (lteInfo.getFrameType() == DATAPKT) {
-        LteChannelModel *channelModel = getChannelModel(lteInfo.getCarrierFrequency());
+        GHz carrierFrequency = lteInfo.getCarrierFrequency();
+        LteChannelModel *channelModel = getChannelModel(carrierFrequency);
         if (channelModel != nullptr) {
             if (nodeType_ == SATELLITE_NODE) {
                 auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
@@ -94,13 +117,14 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
         }
         else {
             EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
-               << lteInfo.getCarrierFrequency() << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
+               << carrierFrequency << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
         }
     }
     else {
         // CONTROL packet
         EV << "NtnPhyBase::handleAirFrame - forward the control frame to " << ((nodeType_ == SATELLITE_NODE) ? (isFeederLink_ ? "the service link NIC for relaying" : "the feeder link NIC for relaying") : "the connected eNB/gNB") << endl;
     }
+
     send(msg, "upperLayerOut");
 }
 
@@ -111,6 +135,11 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         cModule *peerNode = resolvePeerNode();
         cGate *peerGate = resolvePeerGate();
         UserControlInfo lteInfo(frame->getAdditionalInfo());
+
+        EV_DEBUG << "NtnPhyBase::handleUpperMessage - shifting carrier frequency from " << lteInfo.getCarrierFrequency() ;
+        lteInfo.setCarrierFrequency(shiftFrequencyBand(lteInfo.getCarrierFrequency()));
+        EV_DEBUG << " to " << lteInfo.getCarrierFrequency() << endl;
+
         inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
         lteInfo.setRadioTransmitterId(nodeId_);
         lteInfo.setRadioTransmitterCoord(getRadioPosition());
@@ -118,18 +147,18 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
         lteInfo.setRadioTransmitterAntenna(antennaModel_);
         frame->setAdditionalInfo(lteInfo);
-        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
-           << " to peer node " << peerNode->getFullPath() << endl;
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to peer node " << peerNode->getFullPath()
+                << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
         sendDirect(frame, 0, frame->getDuration(), peerGate);
     }
     else {
         auto *frame = check_and_cast<LteAirFrame *>(msg);
         UserControlInfo lteInfo(frame->getAdditionalInfo());
+        lteInfo.setCarrierFrequency(shiftFrequencyBand(lteInfo.getCarrierFrequency()));
         MacNodeId destId = lteInfo.getDestId();
         cModule *receiver = binder_->getNodeModule(destId);
         if (receiver == nullptr) {
-            EV << "NtnPhyBase::handleUpperMessage - destination node " << destId
-               << " is not available. Delete frame " << frame->getName() << endl;
+            EV << "NtnPhyBase::handleUpperMessage - destination node " << destId << " is not available. Delete frame " << frame->getName() << endl;
             delete frame;
             return;
         }
@@ -140,8 +169,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(destId);
         frame->setAdditionalInfo(lteInfo);
-        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName()
-           << " to node " << destId << endl;
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to node " << destId << endl;
         sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
     }
 }

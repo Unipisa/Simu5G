@@ -15,6 +15,8 @@ simple NtnFronthaulNic
 {
     parameters:
         @display("i=block/ifcard;bgb=704,443;bgl=3");
+        double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
+        bool shiftFrequencyFromFeederLink = default(false);
     gates:
         input upperLayerIn;
         output upperLayerOut;
