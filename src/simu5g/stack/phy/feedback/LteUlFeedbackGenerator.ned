@@ -19,6 +19,7 @@ simple LteUlFeedbackGenerator
 {
     parameters:
         @display("i=block/cogwheel");
-        // TODO
+        double targetBler = default(0.001);
+        string binderModule = default("binder");
+        string phyModule = default("^.phy");
 }
-

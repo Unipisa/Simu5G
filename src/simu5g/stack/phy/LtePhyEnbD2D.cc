@@ -54,21 +54,18 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
     FeedbackRequest req = lteinfo->getFeedbackReq();
     // Feedback computation
     fb.clear();
-    // Get number of RU
-    int nRus = 0;
-    TxMode txmode = req.txMode;
-    FeedbackType type = req.type;
-    RbAllocationType rbtype = req.rbAllocationType;
-    std::map<Remote, int> antennaCws; // DAS functionality removed
-    antennaCws[MACRO] = 1; // Default single antenna
-    unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
-    // For each RU the computation feedback function is called
-    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-            antennaCws, numPreferredBand, nRus, snr,
-            lteinfo->getSourceId());
+    fb = ulFbGen_->computeUlFeedback(req, snr, lteinfo->getSourceId());
     header->setLteFeedbackDoubleVectorUl(fb);
 
     if (!req.dlFeedbackFromUe) {
+        int nRus = 0;
+        TxMode txmode = req.txMode;
+        FeedbackType type = req.type;
+        RbAllocationType rbtype = req.rbAllocationType;
+        std::map<Remote, int> antennaCws; // DAS functionality removed
+        antennaCws[MACRO] = 1; // Default single antenna
+        unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
+
         // Prepare parameters for DL SNR computation.
         lteinfo->setTxPower(txPower_);
         lteinfo->setDirection(DL);
@@ -99,9 +96,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
                         throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
 
                     // Compute the feedback for this link
-                    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-                            antennaCws, numPreferredBand, nRus, snr,
-                            lteinfo->getSourceId());
+                    fb = ulFbGen_->computeD2DFeedback(req, snr, lteinfo->getSourceId());
 
                     header->setLteFeedbackDoubleVectorD2D(peerId, fb);
                 }

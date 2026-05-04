@@ -23,6 +23,7 @@ simple LtePhyEnb extends LtePhyBase
     @class("LtePhyEnb");
 
     double targetBler = default(0.001);
+    string ulFeedbackGeneratorModule = default("^.ulFbGen");
     bool useUeDlFeedbackComputation = default(false);
     double csiRsPeriod @unit(s) = default(0s);
 }

@@ -12,6 +12,7 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 
 #include "simu5g/stack/phy/LtePhyEnb.h"
+#include "simu5g/stack/phy/feedback/LteUlFeedbackGenerator.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -52,6 +53,7 @@ void LtePhyEnb::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         initializeFeedbackComputation();
+        ulFbGen_.reference(this, "ulFeedbackGeneratorModule", true);
         useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
         csiRsPeriod_ = par("csiRsPeriod");
 
@@ -242,22 +244,16 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
     FeedbackRequest req = lteinfo->getFeedbackReq();
     //Feedback computation
     fb.clear();
-    // DAS removed - single antenna (remote 0) only
-    int nRus = 0;
-    TxMode txmode = req.txMode;
-    FeedbackType type = req.type;
-    RbAllocationType rbtype = req.rbAllocationType;
-    std::map<Remote, int> antennaCws;
-    antennaCws[MACRO] = 1;
-    unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
-
-    // MIMO/DAS support removed. We only support MACRO and treat it as IDEAL for now.
-    fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-            antennaCws, numPreferredBand, nRus, snr,
-            lteinfo->getSourceId());
+    fb = ulFbGen_->computeUlFeedback(req, snr, lteinfo->getSourceId());
     header->setLteFeedbackDoubleVectorUl(fb);
 
     if (!req.dlFeedbackFromUe) {
+        // DAS removed - single antenna (remote 0) only
+        int nRus = 0;
+        std::map<Remote, int> antennaCws;
+        antennaCws[MACRO] = 1;
+        unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
+
         // Prepare parameters for DL SNR computation.
         lteinfo->setTxPower(txPower_);
         lteinfo->setDirection(DL);
@@ -267,7 +263,7 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
         else
             throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is a null pointer");
 
-        fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
+        fb = lteFeedbackComputation_->computeFeedback(req.type, req.rbAllocationType, req.txMode,
                 antennaCws, numPreferredBand, nRus, snr,
                 lteinfo->getSourceId());
         header->setLteFeedbackDoubleVectorDl(fb);

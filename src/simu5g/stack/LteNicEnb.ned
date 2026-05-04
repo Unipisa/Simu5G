@@ -16,6 +16,7 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.handoverManager.LteHandoverManager;
+import simu5g.stack.phy.feedback.LteUlFeedbackGenerator;
 import simu5g.x2.LteX2Manager;
 
 
@@ -38,6 +39,10 @@ module LteNicEnb extends LteNicBase
         *.handoverManagerModule = "^.handoverManager";
 
     submodules:
+        ulFbGen: LteUlFeedbackGenerator {
+            @display("p=493,389;is=s");
+            targetBler = parent.phy.targetBler;
+        }
         //#
         //# X2 manager
         //#
@@ -81,4 +86,3 @@ module LteNicEnb extends LteNicBase
             x2$o[i] <-- x2Manager.x2$o++;
         }
 }
-
