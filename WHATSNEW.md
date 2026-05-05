@@ -1,5 +1,65 @@
 # What's New in Simu5G
 
+## v1.4.0-rlcam (2026-05-06)
+
+This release incorporates the changes from v1.3.1-rlcam, rebased onto v1.4.0.
+
+## v1.3.1-rlcam (2026-03-31)
+
+This is a specialized topic release on top of v1.3.1, integrating contributions
+by Esteban Egea Lopez (Universidad Politécnica de Cartagena). The main highlights
+are the addition of NR RLC-AM (Acknowledged Mode) and the refactoring of
+NR RLC-UM (Unacknowledged Mode) to be closer to the 3GPP specifications.
+Integration work (splitting up, organizing, and fingerprint testing the original
+patches) was done by Andras Varga (OMNeT++ Core Team).
+
+NR RLC Acknowledged Mode (RLC-AM):
+
+- Added NR RLC-AM implementation: NrRlcAm module with NrAmTxQueue and NrAmRxQueue
+  entities, sliding window TX/RX buffers, retransmission buffer, and AM
+  data/status PDUs. Implements the core ARQ procedures of 3GPP TS 38.322.
+- RLC-AM infrastructure: made LteRlcAm methods virtual, added ILteRlcAm interface
+  NED type, made AM/UM submodules pluggable via NED typename, added
+  NackInfo/StatusPduData structs, fixed AM header size.
+
+NR RLC Unacknowledged Mode (RLC-UM) refactoring:
+
+- Extracted buffer management from NrUmTxEntity/NrUmRxEntity into dedicated
+  RlcUmTransmitterBuffer and RlcUmReceptionBuffer classes, implementing proper
+  3GPP TS 38.322 Section 5.2.2 procedures for UM transmission and reception.
+- RlcUmReceptionBuffer: fixed reassembly window check, split timer management
+  into separate start/stop methods, added proper memory management for buffered
+  packets, return SDU completion status from handleSegment().
+- RlcUmTransmitterBuffer: SDU segmentation based on MAC grants with byte-level
+  interval tracking, SN assignment on last-byte transmission, BSR reporting
+  support.
+- Changed NR RLC-UM default t_Reassembly from 80ms to 50ms.
+
+Radio Link Failure (RLF):
+
+- Added Radio Link Failure detection and handling: RadioLinkFailure tag,
+  MAC/PDCP/HARQ RLF queue cleanup (deleteQueuesRadioLinkFailure in MAC,
+  handleRadioLinkFailure in PDCP).
+
+MAC improvements:
+
+- Made HARQ process count configurable via NED parameter (replaced hardcoded
+  ENB_TX/RX_HARQ_PROCESSES, UE_TX/RX_HARQ_PROCESSES constants), changed NR
+  default to 5.
+- Made RAC/BSR timer configuration into NED parameters in LteMacUe, set sensible
+  defaults (maxRacAttempts=10, racBackoffMax=20), adjusted defaults for NR.
+
+Other changes:
+
+- Added new statistics signals across channel model, MAC, and RLC layers (RSRP,
+  interference, fading, throughput samples, grantedBlocks, bsrSize).
+- Added X2HandoverDataMsgSerializer for proper X2 handover data serialization.
+- PHY: added RLC-AM module reference for handover buffer cleanup.
+- Added example simulation configs for NR RLC-AM testing (VoIP-DL-AM,
+  VoIP-DL-AM-Lossy, VoIP-UL-AM).
+- Misc small fixes: BackgroundScheduler init order, LtePhyBase channelModel_ type,
+  Binder.h include guard, LtePhyEnb debug flag, LcgScheduler TODO.
+
 ## v1.4.0 (2025-09-18)
 
 Compatible with **OMNeT++ 6.2.0** and **INET 4.5.4**.
