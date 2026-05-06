@@ -165,7 +165,8 @@ enum LtePhyFrameType
     RACPKT = 6;
     D2DMODESWITCHPKT = 7;
     CSIRSPKT = 8;
-    UNKNOWN_TYPE = 9;
+    SRSPKT = 9;
+    UNKNOWN_TYPE = 10;
 };
 
 // Node types on the Radio Access Network. Note that the LTE vs 5G (NR)

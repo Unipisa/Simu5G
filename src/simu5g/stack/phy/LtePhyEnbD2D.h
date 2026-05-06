@@ -27,6 +27,7 @@ class LtePhyEnbD2D : public LtePhyEnb
 
     void initialize(int stage) override;
     void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame) override;
+    void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame) override;
     void handleAirFrame(cMessage *msg) override;
 };
 

@@ -40,8 +40,10 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
     LteFeedbackDoubleVector fb;
     FeedbackRequest req = lteinfo->getFeedbackReq();
     fb.clear();
-    fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
-    header->setLteFeedbackDoubleVectorUl(fb);
+    if (!useSrsUlFeedbackComputation_) {
+        fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
+        header->setLteFeedbackDoubleVectorUl(fb);
+    }
 
     if (!req.dlFeedbackFromUe) {
         LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
@@ -68,7 +70,7 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
 
     }
 
-    if (enableD2DCqiReporting_) {
+    if (!useSrsUlFeedbackComputation_ && enableD2DCqiReporting_) {
         for (const auto& ueInfo : binder_->getUeList()) {
             MacNodeId peerId = ueInfo->id;
             if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
@@ -85,6 +87,48 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
     pktAux->insertAtFront(header);
     delete lteinfo;
     send(pktAux, upperGateOut_);
+}
+
+void LtePhyEnbD2D::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)
+{
+    EV << "LtePhyEnbD2D::handleSrsReferenceSignal - received SRS frame with ID " << frame->getId() << endl;
+
+    if (!useSrsUlFeedbackComputation_) {
+        delete lteinfo;
+        delete frame;
+        return;
+    }
+
+    LteFeedbackDoubleVector ulFeedback = ulFbGen_->computeUlFeedback(lteinfo, frame);
+    std::map<MacNodeId, LteFeedbackDoubleVector> d2dFeedback;
+    if (enableD2DCqiReporting_) {
+        for (const auto& ueInfo : binder_->getUeList()) {
+            MacNodeId peerId = ueInfo->id;
+            if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
+                Coord peerCoord = ueInfo->phy->getCoord();
+                d2dFeedback[peerId] = ulFbGen_->computeD2DFeedback(lteinfo, frame, peerId, peerCoord);
+            }
+        }
+    }
+
+    // create feedback packet for MAC layer
+    // TODO make this an indication
+    auto header = makeShared<LteFeedbackPkt>();
+    header->setSourceNodeId(lteinfo->getSourceId());
+    header->setLteFeedbackDoubleVectorUl(ulFeedback);
+    for (const auto& [peerId, feedback] : d2dFeedback)
+        header->setLteFeedbackDoubleVectorD2D(peerId, feedback);
+
+    auto pkt = new Packet("feedback_pkt");
+    pkt->insertAtFront(header);
+
+    auto tag = pkt->addTagIfAbsent<UserControlInfo>();
+    *tag = *lteinfo;
+    tag->setFrameType(FEEDBACKPKT);
+
+    delete lteinfo;
+    delete frame;
+    send(pkt, upperGateOut_);
 }
 
 void LtePhyEnbD2D::handleAirFrame(cMessage *msg)

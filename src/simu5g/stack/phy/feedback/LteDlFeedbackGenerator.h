@@ -138,6 +138,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
      */
     void setTxMode(TxMode newTxMode);
     void handleCsiReferenceSignal(LteAirFrame *frame, UserControlInfo *lteInfo);
+    FeedbackRequest getFeedbackRequest() const;
 
     /*
      * Perform handover-related operations

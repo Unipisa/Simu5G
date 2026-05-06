@@ -214,6 +214,17 @@ void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
         return;
     }
 
+    FeedbackRequest feedbackReq = getFeedbackRequest();
+
+    LteFeedbackDoubleVector feedbackDl = useUeDlFeedbackComputation_ ? fb : LteFeedbackDoubleVector();
+    LteFeedbackDoubleVector feedbackUl;
+
+    //use PHY function to send feedback
+    phy_->sendFeedback(feedbackDl, feedbackUl, feedbackReq);
+}
+
+FeedbackRequest LteDlFeedbackGenerator::getFeedbackRequest() const
+{
     FeedbackRequest feedbackReq;
     feedbackReq.request = true;
     feedbackReq.type = fbType_;
@@ -221,12 +232,7 @@ void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
     feedbackReq.dasAware = false;
     feedbackReq.rbAllocationType = rbAllocationType_;
     feedbackReq.dlFeedbackFromUe = useUeDlFeedbackComputation_;
-
-    LteFeedbackDoubleVector feedbackDl = useUeDlFeedbackComputation_ ? fb : LteFeedbackDoubleVector();
-    LteFeedbackDoubleVector feedbackUl;
-
-    //use PHY function to send feedback
-    phy_->sendFeedback(feedbackDl, feedbackUl, feedbackReq);
+    return feedbackReq;
 }
 
 // TODO adjust default value

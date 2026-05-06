@@ -26,6 +26,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteDlFeedbackGenerator;
+class LtePhyEnb;
 
 class LtePhyUe : public LtePhyBase
 {
@@ -47,6 +48,7 @@ class LtePhyUe : public LtePhyBase
 
     /** Self message to start the handover procedure */
     cMessage *handoverTrigger_ = nullptr;
+    cMessage *srsStarter_ = nullptr;
 
     /** RSSI received from the current serving node */
     double currentMasterRssi_;
@@ -102,6 +104,8 @@ class LtePhyUe : public LtePhyBase
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
     simtime_t lastFeedback_ = 0;
+    bool useSrsUlFeedbackComputation_ = false;
+    simtime_t srsPeriod_ = 0;
 
     // Support to print average CQI at the end of the simulation
     std::vector<short int> cqiDlSamples_;
@@ -136,6 +140,10 @@ class LtePhyUe : public LtePhyBase
     virtual void doHandover();
 
     virtual void findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandidateMasterRssi);
+    void updateSrsConfiguration();
+    LtePhyEnb *getServingEnbPhy() const;
+    virtual LteAirFrame *createSrsReferenceSignalFrame(inet::GHz carrierFrequency);
+    virtual void sendSrsReferenceSignalFrame();
 
   public:
     ~LtePhyUe() override;

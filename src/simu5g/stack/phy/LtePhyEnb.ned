@@ -26,4 +26,6 @@ simple LtePhyEnb extends LtePhyBase
     string ulFeedbackGeneratorModule = default("^.ulFbGen");
     bool useUeDlFeedbackComputation = default(false);
     double csiRsPeriod @unit(s) = default(0s);
+    bool useSrsUlFeedbackComputation = default(false);
+    double srsPeriod @unit(s) = default(0s);
 }

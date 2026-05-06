@@ -34,7 +34,9 @@ class LtePhyEnb : public LtePhyBase
     cMessage *csiRsStarter_ = nullptr;
 
     double csiRsPeriod_ = 0;
+    double srsPeriod_ = 0;
     bool useUeDlFeedbackComputation_ = false;
+    bool useSrsUlFeedbackComputation_ = false;
 
     int randomChannelIndex_;
     inet::ModuleRefByPar<LteUlFeedbackGenerator> ulFbGen_;
@@ -45,6 +47,7 @@ class LtePhyEnb : public LtePhyBase
     void handleAirFrame(cMessage *msg) override;
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
+    virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
     // Feedback computation for PisaPhy

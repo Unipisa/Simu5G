@@ -56,6 +56,8 @@ void LtePhyEnb::initialize(int stage)
         ulFbGen_.reference(this, "ulFeedbackGeneratorModule", true);
         useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
         csiRsPeriod_ = par("csiRsPeriod");
+        useSrsUlFeedbackComputation_ = par("useSrsUlFeedbackComputation");
+        srsPeriod_ = par("srsPeriod");
 
         //check eNb type and set TX power
         if (cellInfo_->getEnbType() == MICRO_ENB)
@@ -132,6 +134,10 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
     if (lteinfo->getFrameType() == FEEDBACKPKT) {
         handleFeedbackPkt(lteinfo, frame);
         delete frame;
+        return true;
+    }
+    if (lteinfo->getFrameType() == SRSPKT) {
+        handleSrsReferenceSignal(lteinfo, frame);
         return true;
     }
     return false;
@@ -257,6 +263,36 @@ void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
     delete frame;
 }
 
+void LtePhyEnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)
+{
+    EV << "LtePhyEnb::handleSrsReferenceSignal - received SRS frame with ID " << frame->getId() << endl;
+
+    if (!useSrsUlFeedbackComputation_) {
+        delete lteinfo;
+        delete frame;
+        return;
+    }
+
+    LteFeedbackDoubleVector ulFeedback = ulFbGen_->computeUlFeedback(lteinfo, frame);
+
+    // create feedback packet for MAC layer
+    // TODO make this an indication
+    auto header = makeShared<LteFeedbackPkt>();
+    header->setSourceNodeId(lteinfo->getSourceId());
+    header->setLteFeedbackDoubleVectorUl(ulFeedback);
+
+    auto pkt = new Packet("feedback_pkt");
+    pkt->insertAtFront(header);
+
+    auto tag = pkt->addTagIfAbsent<UserControlInfo>();
+    *tag = *lteinfo;
+    tag->setFrameType(FEEDBACKPKT);
+
+    delete lteinfo;
+    delete frame;
+    send(pkt, upperGateOut_);
+}
+
 void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,
         LteAirFrame *frame)
 {
@@ -271,8 +307,10 @@ void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,
         LteFeedbackDoubleVector fb;
         FeedbackRequest req = lteinfo->getFeedbackReq();
 
-        fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
-        header->setLteFeedbackDoubleVectorUl(fb);
+        if (!useSrsUlFeedbackComputation_) {
+            fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
+            header->setLteFeedbackDoubleVectorUl(fb);
+        }
 
         if (!req.dlFeedbackFromUe) {
             LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());

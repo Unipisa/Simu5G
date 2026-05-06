@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
@@ -31,6 +32,7 @@ LtePhyUe::~LtePhyUe()
 {
     cancelAndDelete(handoverStarter_);
     cancelAndDelete(handoverTrigger_);
+    cancelAndDelete(srsStarter_);
 }
 
 void LtePhyUe::initialize(int stage)
@@ -70,6 +72,7 @@ void LtePhyUe::initialize(int stage)
         txPower_ = ueTxPower_;
 
         handoverStarter_ = new cMessage("handoverStarter");
+        srsStarter_ = new cMessage("srsStarter");
 
         // get the reference to the MAC module
         mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
@@ -107,6 +110,7 @@ void LtePhyUe::initialize(int stage)
         }
 
         EV << "LtePhyUe::initialize - Attaching to eNodeB " << masterId_ << endl;
+        updateSrsConfiguration();
 
         emit(servingCellSignal_, (long)masterId_);
 
@@ -183,6 +187,68 @@ void LtePhyUe::handleSelfMessage(cMessage *msg)
         doHandover();
         delete msg;
         handoverTrigger_ = nullptr;
+    }
+    else if (msg->isName("srsStarter")) {
+        sendSrsReferenceSignalFrame();
+        if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0)
+            scheduleAt(NOW + srsPeriod_, msg);
+    }
+}
+
+LtePhyEnb *LtePhyUe::getServingEnbPhy() const
+{
+    if (masterId_ == NODEID_NONE)
+        return nullptr;
+
+    cModule *servingNode = binder_->getNodeModule(masterId_);
+    if (servingNode == nullptr)
+        return nullptr;
+
+    return check_and_cast_nullable<LtePhyEnb *>(servingNode->getSubmodule("cellularNic")->getSubmodule("phy"));
+}
+
+void LtePhyUe::updateSrsConfiguration()
+{
+    LtePhyEnb *servingPhy = getServingEnbPhy();
+    bool newUseSrs = servingPhy != nullptr && servingPhy->par("useSrsUlFeedbackComputation").boolValue();
+    simtime_t newSrsPeriod = servingPhy != nullptr ? simtime_t(servingPhy->par("srsPeriod").doubleValue()) : simtime_t::ZERO;
+
+    useSrsUlFeedbackComputation_ = newUseSrs;
+    srsPeriod_ = newSrsPeriod;
+
+    cancelEvent(srsStarter_);
+    if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0 && masterId_ != NODEID_NONE)
+        scheduleAt(NOW, srsStarter_);
+}
+
+LteAirFrame *LtePhyUe::createSrsReferenceSignalFrame(GHz carrierFrequency)
+{
+    LteAirFrame *srsAirFrame = new LteAirFrame("SrsReferenceSignal");
+    UserControlInfo *cInfo = new UserControlInfo();
+    cInfo->setSourceId(nodeId_);
+    cInfo->setDestId(masterId_);
+    cInfo->setFrameType(SRSPKT);
+    cInfo->setDirection(UL);
+    cInfo->setTxPower(txPower_);
+    cInfo->setCarrierFrequency(carrierFrequency);
+    cInfo->setIsNr(isNr_);
+    cInfo->setCoord(getRadioPosition());
+    cInfo->setFeedbackReq(fbGen_->getFeedbackRequest());
+    srsAirFrame->setControlInfo(cInfo);
+    srsAirFrame->setDuration(TTI);
+    srsAirFrame->setSchedulingPriority(airFramePriority_);
+    return srsAirFrame;
+}
+
+void LtePhyUe::sendSrsReferenceSignalFrame()
+{
+    if (!useSrsUlFeedbackComputation_ || masterId_ == NODEID_NONE)
+        return;
+
+    for (const auto& [carrierFrequency, channelModel] : channelModel_) {
+        EV << "LtePhyUe::sendSrsReferenceSignalFrame - UE "  << nodeId_ << " sends SRS to its serving cell, carrier freq[" << carrierFrequency << "]" << simTime() << endl;
+        LteAirFrame *frame = createSrsReferenceSignalFrame(carrierFrequency);
+        sendUnicast(frame);
     }
 }
 
@@ -374,6 +440,7 @@ void LtePhyUe::doHandover()
 
     // update DL feedback generator
     fbGen_->handleHandover(masterId_);
+    updateSrsConfiguration();
 
     // collect stat
     emit(servingCellSignal_, (long)masterId_);

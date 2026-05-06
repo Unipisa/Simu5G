@@ -665,7 +665,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     }
 
     // emit SINR statistic
-    if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0) {
+    if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT || lteInfo->getFrameType() == SRSPKT) && usedRBs > 0) {
         // we are on the BS, so we need to retrieve the channel model of the sender
         // XXX I know, there might be a faster way...
         LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
