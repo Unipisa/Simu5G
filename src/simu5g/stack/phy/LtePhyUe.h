@@ -23,6 +23,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class LteDlFeedbackGenerator;
+class LtePhyEnb;
+
 class LtePhyUe : public LtePhyBase
 {
   protected:
@@ -37,7 +40,14 @@ class LtePhyUe : public LtePhyBase
 
     inet::ModuleRefByPar<HandoverController> handoverController_;
 
+    /** Self message to trigger the periodic transmission of SRS frames */
+    cMessage *srsStarter_ = nullptr;
+
+    inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
+
     simtime_t lastFeedback_ = 0;
+    bool useSrsUlFeedbackComputation_ = false;
+    simtime_t srsPeriod_ = 0;
 
     // Support to print average CQI at the end of the simulation
     std::vector<short int> cqiDlSamples_;
@@ -56,6 +66,11 @@ class LtePhyUe : public LtePhyBase
     void handleUpperMessage(cMessage *msg) override;
 
     void emitMobilityStats() override;
+
+    void updateSrsConfiguration();
+    LtePhyEnb *getServingEnbPhy() const;
+    virtual LteAirFrame *createSrsReferenceSignalFrame(inet::GHz carrierFrequency);
+    virtual void sendSrsReferenceSignalFrame();
 
   public:
     ~LtePhyUe() override;

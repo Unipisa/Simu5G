@@ -77,7 +77,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
     }
 
     if (lteInfo->getFrameType() == CSIRSPKT) {
-        if (lteInfo->getSourceId() == masterId_) {
+        if (lteInfo->getSourceId() == servingNodeId_) {
             lteInfo->setDestId(nodeId_);
             fbGen_->handleCsiReferenceSignal(frame, lteInfo);
             return;

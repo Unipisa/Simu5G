@@ -28,6 +28,7 @@ simple LtePhyUe extends LtePhyBase
         bool isNr = default(false);            // true for the NR leg (set by NrNicUe on the nrPhy submodule)
 
         string handoverControllerModule = default("^.rrc.handoverController");
+        string feedbackGeneratorModule = default("^.dlFbGen"); // or "^.nrDlFbGen"
 
         bool useUeDlFeedbackComputation = default(false);
         double targetBler = default(0.001);

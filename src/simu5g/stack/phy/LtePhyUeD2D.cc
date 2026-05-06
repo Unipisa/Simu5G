@@ -15,6 +15,7 @@
 
 #include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/stack/rrc/D2dModeSelectionBase.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 

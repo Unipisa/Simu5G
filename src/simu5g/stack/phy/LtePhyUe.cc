@@ -16,6 +16,7 @@
 #include "../ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -31,6 +32,7 @@ simsignal_t LtePhyUe::distanceSignal_ = registerSignal("distance");
 
 LtePhyUe::~LtePhyUe()
 {
+    cancelAndDelete(srsStarter_);
 }
 
 void LtePhyUe::initialize(int stage)
@@ -51,6 +53,9 @@ void LtePhyUe::initialize(int stage)
 
         handoverController_.reference(this, "handoverControllerModule", true);
         handoverController_->setPhy(this);
+
+        fbGen_.reference(this, "feedbackGeneratorModule", true);
+        srsStarter_ = new cMessage("srsStarter");
 
         isNr_ = par("isNr").boolValue();
 
@@ -118,7 +123,68 @@ void LtePhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCand
 
 void LtePhyUe::handleSelfMessage(cMessage *msg)
 {
-    // no local timers
+    if (msg->isName("srsStarter")) {
+        sendSrsReferenceSignalFrame();
+        if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0)
+            scheduleAt(NOW + srsPeriod_, msg);
+    }
+}
+
+LtePhyEnb *LtePhyUe::getServingEnbPhy() const
+{
+    if (servingNodeId_ == NODEID_NONE)
+        return nullptr;
+
+    cModule *servingNode = binder_->getNodeModule(servingNodeId_);
+    if (servingNode == nullptr)
+        return nullptr;
+
+    return check_and_cast_nullable<LtePhyEnb *>(servingNode->getSubmodule("cellularNic")->getSubmodule("phy"));
+}
+
+void LtePhyUe::updateSrsConfiguration()
+{
+    LtePhyEnb *servingPhy = getServingEnbPhy();
+    bool newUseSrs = servingPhy != nullptr && servingPhy->par("useSrsUlFeedbackComputation").boolValue();
+    simtime_t newSrsPeriod = servingPhy != nullptr ? simtime_t(servingPhy->par("srsPeriod").doubleValue()) : simtime_t::ZERO;
+
+    useSrsUlFeedbackComputation_ = newUseSrs;
+    srsPeriod_ = newSrsPeriod;
+
+    cancelEvent(srsStarter_);
+    if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0 && servingNodeId_ != NODEID_NONE)
+        scheduleAt(NOW, srsStarter_);
+}
+
+LteAirFrame *LtePhyUe::createSrsReferenceSignalFrame(GHz carrierFrequency)
+{
+    LteAirFrame *srsAirFrame = new LteAirFrame("SrsReferenceSignal");
+    UserControlInfo *cInfo = new UserControlInfo();
+    cInfo->setSourceId(nodeId_);
+    cInfo->setDestId(servingNodeId_);
+    cInfo->setFrameType(SRSPKT);
+    cInfo->setDirection(UL);
+    cInfo->setTxPower(txPower_);
+    cInfo->setCarrierFrequency(carrierFrequency);
+    cInfo->setIsNr(isNr_);
+    cInfo->setCoord(getRadioPosition());
+    cInfo->setFeedbackReq(fbGen_->getFeedbackRequest());
+    srsAirFrame->setControlInfo(cInfo);
+    srsAirFrame->setDuration(TTI);
+    srsAirFrame->setSchedulingPriority(airFramePriority_);
+    return srsAirFrame;
+}
+
+void LtePhyUe::sendSrsReferenceSignalFrame()
+{
+    if (!useSrsUlFeedbackComputation_ || servingNodeId_ == NODEID_NONE)
+        return;
+
+    for (const auto& [carrierFrequency, channelModel] : channelModel_) {
+        EV << "LtePhyUe::sendSrsReferenceSignalFrame - UE "  << nodeId_ << " sends SRS to its serving cell, carrier freq[" << carrierFrequency << "]" << simTime() << endl;
+        LteAirFrame *frame = createSrsReferenceSignalFrame(carrierFrequency);
+        sendUnicast(frame);
+    }
 }
 
 void LtePhyUe::changeServingNode(MacNodeId servingNodeId)
@@ -144,6 +210,8 @@ void LtePhyUe::changeServingNode(MacNodeId servingNodeId)
         cellInfo_->attachUser(nodeId_);
     }
 
+    // the serving cell may use a different SRS configuration
+    updateSrsConfiguration();
 }
 
 double LtePhyUe::computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo)
@@ -195,7 +263,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     }
 
     if (lteInfo->getFrameType() == CSIRSPKT) {
-        if (lteInfo->getSourceId() == masterId_) {
+        if (lteInfo->getSourceId() == servingNodeId_) {
             lteInfo->setDestId(nodeId_);
             fbGen_->handleCsiReferenceSignal(frame, lteInfo);
             return;
