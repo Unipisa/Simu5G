@@ -55,9 +55,9 @@ void LtePhyEnb::initialize(int stage)
         initializeFeedbackComputation();
         ulFbGen_.reference(this, "ulFeedbackGeneratorModule", true);
         useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
-        csiRsPeriod_ = par("csiRsPeriod");
+        csiRsPeriod_ = simtime_t(int(par("csiRsPeriod")) * TTI);
         useSrsUlFeedbackComputation_ = par("useSrsUlFeedbackComputation");
-        srsPeriod_ = par("srsPeriod");
+        srsPeriod_ = simtime_t(int(par("srsPeriod")) * TTI);
 
         //check eNb type and set TX power
         if (cellInfo_->getEnbType() == MICRO_ENB)

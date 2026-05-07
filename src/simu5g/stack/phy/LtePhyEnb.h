@@ -33,8 +33,8 @@ class LtePhyEnb : public LtePhyBase
     cMessage *bdcStarter_ = nullptr;
     cMessage *csiRsStarter_ = nullptr;
 
-    double csiRsPeriod_ = 0;
-    double srsPeriod_ = 0;
+    simtime_t csiRsPeriod_ = 0;
+    simtime_t srsPeriod_ = 0;
     bool useUeDlFeedbackComputation_ = false;
     bool useSrsUlFeedbackComputation_ = false;
 

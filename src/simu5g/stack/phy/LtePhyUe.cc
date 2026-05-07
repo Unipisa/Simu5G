@@ -211,7 +211,7 @@ void LtePhyUe::updateSrsConfiguration()
 {
     LtePhyEnb *servingPhy = getServingEnbPhy();
     bool newUseSrs = servingPhy != nullptr && servingPhy->par("useSrsUlFeedbackComputation").boolValue();
-    simtime_t newSrsPeriod = servingPhy != nullptr ? simtime_t(servingPhy->par("srsPeriod").doubleValue()) : simtime_t::ZERO;
+    simtime_t newSrsPeriod = servingPhy != nullptr ? simtime_t(int(servingPhy->par("srsPeriod")) * TTI) : simtime_t::ZERO;
 
     useSrsUlFeedbackComputation_ = newUseSrs;
     srsPeriod_ = newSrsPeriod;
