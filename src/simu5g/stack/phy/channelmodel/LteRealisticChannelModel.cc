@@ -2454,7 +2454,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                     if (occ)
                         bgUe = bgScheduler->getBandInterferingUe(i);
                 }
-                else if (rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
+                else if (!rbmap.empty() && rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
                     occ = bgScheduler->getPrevBandStatus(i, UL);
                     if (occ)
                         bgUe = bgScheduler->getPrevBandInterferingUe(i);
