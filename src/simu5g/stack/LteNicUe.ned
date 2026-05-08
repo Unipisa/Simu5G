@@ -33,7 +33,5 @@ module LteNicUe extends LteNicBase
         // Feedback generator submodule
         dlFbGen: LteDlFeedbackGenerator {
             @display("p=47,51;is=s");
-            useUeDlFeedbackComputation = parent.phy.useUeDlFeedbackComputation;
-            targetBler = parent.phy.targetBler;
         }
 }

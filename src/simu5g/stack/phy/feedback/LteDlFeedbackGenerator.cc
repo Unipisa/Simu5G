@@ -41,7 +41,8 @@ void LteDlFeedbackGenerator::initialize(int stage)
         rbAllocationType_ = getRbAllocationType(par("rbAllocationType").stringValue());
         usePeriodic_ = par("usePeriodic");
         currentTxMode_ = aToTxMode(par("initialTxMode"));
-        useUeDlFeedbackComputation_ = par("useUeDlFeedbackComputation");
+
+        computeCsiLocally_ = par("computeCsiLocally");
         targetBler_ = par("targetBler");
 
         cModule *networkNode = getContainingNode(this);
@@ -57,13 +58,14 @@ void LteDlFeedbackGenerator::initialize(int stage)
 
         tAperiodicTx_ = new TTimer(this);
         tAperiodicTx_->setTimerId(APERIODIC_TX);
-        feedbackComputationPisa_ = !useUeDlFeedbackComputation_;
+
         WATCH(fbType_);
         WATCH(rbAllocationType_);
         WATCH(fbPeriod_);
         WATCH(fbDelay_);
         WATCH(usePeriodic_);
         WATCH(currentTxMode_);
+        WATCH(computeCsiLocally_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         masterId_ = binder_->getServingNode(nodeId_);
@@ -77,18 +79,16 @@ void LteDlFeedbackGenerator::initialize(int stage)
 
         phy_.reference(this, "phyModule", true);
 
-        EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
-           << " phyUe taken" << endl;
-        EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
-           << " phyUe used" << endl;
-        if (useUeDlFeedbackComputation_)
+        EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_ << " phyUe taken" << endl;
+        EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_ << " phyUe used" << endl;
+        if (computeCsiLocally_)
             initializeFeedbackComputation();
 
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " feedback computation initialize" << endl;
         WATCH(numBands_);
         WATCH(numPreferredBands_);
-        if (masterId_ != NODEID_NONE && usePeriodic_ && !useUeDlFeedbackComputation_) {
+        if (masterId_ != NODEID_NONE && usePeriodic_ && !computeCsiLocally_) {
             tPeriodicSensing_->start(0);
         }
     }
@@ -186,15 +186,6 @@ void LteDlFeedbackGenerator::aperiodicRequest()
 {
     Enter_Method("aperiodicRequest()");
     EV << NOW << " Aperiodic request" << endl;
-    if (useUeDlFeedbackComputation_ && aperiodicFeedback.empty()) {
-        EV << NOW << " Aperiodic request ignored: no CSI-RS-based feedback available yet" << endl;
-        return;
-    }
-
-    if (useUeDlFeedbackComputation_) {
-        sendFeedback(aperiodicFeedback, APERIODIC);
-        return;
-    }
     sensing(APERIODIC);
 }
 
@@ -204,47 +195,31 @@ void LteDlFeedbackGenerator::setTxMode(TxMode newTxMode)
     currentTxMode_ = newTxMode;
 }
 
-void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
-        FbPeriodicity per)
+void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb, FbPeriodicity per, bool isRequest)
 {
-    EV << "LteDlFeedbackGenerator::sendFeedback - sending " << periodicityToA(per) << " CSI feedback, nodeId: " << nodeId_ << endl;
+    EV << "LteDlFeedbackGenerator::sendFeedback - sending " << periodicityToA(per) << " CSI feedback " << (isRequest ? "request" : "") << ", nodeId: " << nodeId_ << endl;
 
-    if (useUeDlFeedbackComputation_ && fb.empty()) {
-        EV << NOW << " Feedback transmission skipped: no cached DL feedback available" << endl;
-        return;
-    }
-
-    FeedbackRequest feedbackReq = getFeedbackRequest();
-
-    LteFeedbackDoubleVector feedbackDl = useUeDlFeedbackComputation_ ? fb : LteFeedbackDoubleVector();
+    LteFeedbackDoubleVector feedbackDl;
     LteFeedbackDoubleVector feedbackUl;
+
+    FeedbackRequest feedbackReq;
+    feedbackReq.request = isRequest;
+    if (isRequest)
+    {
+        // Feedback will be computed at the e/gNodeB side
+        feedbackReq.type = fbType_;
+        feedbackReq.txMode = currentTxMode_;
+        feedbackReq.dasAware = false;
+        feedbackReq.rbAllocationType = rbAllocationType_;
+    }
+    else
+    {
+        // use feedback computed locally
+        feedbackDl = fb;
+    }
 
     //use PHY function to send feedback
     phy_->sendFeedback(feedbackDl, feedbackUl, feedbackReq);
-}
-
-FeedbackRequest LteDlFeedbackGenerator::getFeedbackRequest() const
-{
-    FeedbackRequest feedbackReq;
-    feedbackReq.request = true;
-    feedbackReq.type = fbType_;
-    feedbackReq.txMode = currentTxMode_;
-    feedbackReq.dasAware = false;
-    feedbackReq.rbAllocationType = rbAllocationType_;
-    feedbackReq.dlFeedbackFromUe = useUeDlFeedbackComputation_;
-    return feedbackReq;
-}
-
-// TODO adjust default value
-LteFeedbackComputation *LteDlFeedbackGenerator::getFeedbackComputationFromName(std::string name, ParameterMap& params)
-{
-    ParameterMap::iterator it;
-    if (name == "REAL") {
-        feedbackComputationPisa_ = true;
-        return nullptr;
-    }
-    else
-        return nullptr;
 }
 
 void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
@@ -255,10 +230,10 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
     aperiodicFeedback.clear();
     if (masterId_ != NODEID_NONE) {
         initCellInfo();
-        if (useUeDlFeedbackComputation_)
+        if (computeCsiLocally_)
             initializeFeedbackComputation();
         EV << NOW << " LteDlFeedbackGenerator::handleHandover - Master ID updated to " << masterId_ << endl;
-        if (!useUeDlFeedbackComputation_ && usePeriodic_ && tPeriodicSensing_->idle())                                         // resume feedback
+        if (!computeCsiLocally_ && usePeriodic_ && tPeriodicSensing_->idle())                                         // resume feedback
             tPeriodicSensing_->start(0);
     }
     else {
@@ -275,11 +250,14 @@ void LteDlFeedbackGenerator::handleCsiReferenceSignal(LteAirFrame *frame, UserCo
 {
     Enter_Method("handleCsiReferenceSignal()");
 
-    if (!useUeDlFeedbackComputation_) {
+    if (!computeCsiLocally_) {
+        EV_WARN << "LteDlFeedbackGenerator::handleCsiReferenceSignal - Received CSI RS, but UE not configured to compute CSI locally. Ignore." << endl;
         delete lteInfo;
         delete frame;
         return;
     }
+
+    EV_INFO << "LteDlFeedbackGenerator::handleCsiReferenceSignal - Received CSI RS, computing CSI feedback" << endl;
 
     LteChannelModel *channelModel = phy_->getChannelModel(lteInfo->getCarrierFrequency());
     if (channelModel == nullptr)
@@ -291,16 +269,16 @@ void LteDlFeedbackGenerator::handleCsiReferenceSignal(LteAirFrame *frame, UserCo
 
     std::map<Remote, int> antennaCws;
     antennaCws[MACRO] = 1;
-    periodicFeedback = lteFeedbackComputation_->computeFeedback(
-            fbType_, rbAllocationType_, currentTxMode_, antennaCws,
-            numPreferredBands_, 0, snr, nodeId_);
+    periodicFeedback = lteFeedbackComputation_->computeFeedback(fbType_, rbAllocationType_, currentTxMode_, antennaCws,
+                                                                  numPreferredBands_, 0, snr, nodeId_);
     aperiodicFeedback = periodicFeedback;
 
     EV << NOW << " LteDlFeedbackGenerator::handleCsiReferenceSignal - Computed CSI feedback for DL direction" << endl;
 
     delete frame;
 
-    sendFeedback(periodicFeedback, PERIODIC);
+    bool isRequest = false;
+    sendFeedback(periodicFeedback, PERIODIC, isRequest);
 }
 
 } //namespace

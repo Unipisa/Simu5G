@@ -19,6 +19,10 @@ class LteUlFeedbackGenerator : public cSimpleModule
     inet::ModuleRefByPar<LtePhyEnb> phy_;
     opp_component_ptr<CellInfo> cellInfo_;
 
+    FeedbackType fbType_;               /// feedback type (ALLBANDS, PREFERRED, WIDEBAND)
+    RbAllocationType rbAllocationType_; /// resource allocation type
+    TxMode currentTxMode_;              /// transmission mode to use in feedback generation
+
     LteFeedbackComputation *lteFeedbackComputation_ = nullptr;
     double targetBler_ = 0.001;
     int numBands_ = 0;

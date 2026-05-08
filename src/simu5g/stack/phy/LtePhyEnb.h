@@ -35,8 +35,6 @@ class LtePhyEnb : public LtePhyBase
 
     simtime_t csiRsPeriod_ = 0;
     simtime_t srsPeriod_ = 0;
-    bool useUeDlFeedbackComputation_ = false;
-    bool useSrsUlFeedbackComputation_ = false;
 
     int randomChannelIndex_;
     inet::ModuleRefByPar<LteUlFeedbackGenerator> ulFbGen_;
@@ -50,8 +48,6 @@ class LtePhyEnb : public LtePhyBase
     virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
-    // Feedback computation for PisaPhy
-    LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
     void initializeFeedbackComputation();
 
     virtual void emitDistanceFromMaster() {}
@@ -59,6 +55,7 @@ class LtePhyEnb : public LtePhyBase
   public:
     ~LtePhyEnb() override;
     CellInfo *getCellInfo() const { return cellInfo_.get(); }
+    simtime_t getSrsPeriod() const { return srsPeriod_; }
 
 };
 

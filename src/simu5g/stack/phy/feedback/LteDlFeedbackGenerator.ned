@@ -22,6 +22,14 @@ simple LteDlFeedbackGenerator
     parameters:
         @display("i=block/cogwheel");
 
+        // if true, compute feedback upon reception of CSI Reference Signal frames from the serving base station
+        // (by default, the base station DOES NOT send CSI RS frames) and send it into a Feedback Packet. If false,
+        // send an empty Feedback Packet to the serving base station, to make it compute feedback at the base station side
+        bool computeCsiLocally = default(false);
+
+        // target BLock Error Rate, used when CSI is computed locally
+        double targetBler = default(0.001);
+
         // can be ALLBANDS, PREFERRED, WIDEBAND
         string feedbackType @enum(ALLBANDS,PREFERRED,WIDEBAND) = default("ALLBANDS");
 
@@ -39,9 +47,6 @@ simple LteDlFeedbackGenerator
 
         // initial txMode (see LteCommon.h)
         string initialTxMode @enum(SINGLE_ANTENNA_PORT0,TRANSMIT_DIVERSITY) = default("SINGLE_ANTENNA_PORT0");
-
-        bool useUeDlFeedbackComputation = default(false);
-        double targetBler = default(0.001);
 
         // Feedback Computation (warning: this should be compatible with
         // the analogue model and Decider.

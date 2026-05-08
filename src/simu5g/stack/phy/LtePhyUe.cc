@@ -190,7 +190,7 @@ void LtePhyUe::handleSelfMessage(cMessage *msg)
     }
     else if (msg->isName("srsStarter")) {
         sendSrsReferenceSignalFrame();
-        if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0)
+        if (srsPeriod_ > 0)
             scheduleAt(NOW + srsPeriod_, msg);
     }
 }
@@ -210,45 +210,36 @@ LtePhyEnb *LtePhyUe::getServingEnbPhy() const
 void LtePhyUe::updateSrsConfiguration()
 {
     LtePhyEnb *servingPhy = getServingEnbPhy();
-    bool newUseSrs = servingPhy != nullptr && servingPhy->par("useSrsUlFeedbackComputation").boolValue();
-    simtime_t newSrsPeriod = servingPhy != nullptr ? simtime_t(int(servingPhy->par("srsPeriod")) * TTI) : simtime_t::ZERO;
 
-    useSrsUlFeedbackComputation_ = newUseSrs;
-    srsPeriod_ = newSrsPeriod;
+    // get SRS period of the new serving cell
+    srsPeriod_ = servingPhy != nullptr ? servingPhy->getSrsPeriod() : simtime_t::ZERO;
 
     cancelEvent(srsStarter_);
-    if (useSrsUlFeedbackComputation_ && srsPeriod_ > 0 && masterId_ != NODEID_NONE)
+    if (srsPeriod_ > 0 && masterId_ != NODEID_NONE)
         scheduleAt(NOW, srsStarter_);
-}
-
-LteAirFrame *LtePhyUe::createSrsReferenceSignalFrame(GHz carrierFrequency)
-{
-    LteAirFrame *srsAirFrame = new LteAirFrame("SrsReferenceSignal");
-    UserControlInfo *cInfo = new UserControlInfo();
-    cInfo->setSourceId(nodeId_);
-    cInfo->setDestId(masterId_);
-    cInfo->setFrameType(SRSPKT);
-    cInfo->setDirection(UL);
-    cInfo->setTxPower(txPower_);
-    cInfo->setCarrierFrequency(carrierFrequency);
-    cInfo->setIsNr(isNr_);
-    cInfo->setCoord(getRadioPosition());
-    cInfo->setFeedbackReq(fbGen_->getFeedbackRequest());
-    srsAirFrame->setControlInfo(cInfo);
-    srsAirFrame->setDuration(TTI);
-    srsAirFrame->setSchedulingPriority(airFramePriority_);
-    return srsAirFrame;
 }
 
 void LtePhyUe::sendSrsReferenceSignalFrame()
 {
-    if (!useSrsUlFeedbackComputation_ || masterId_ == NODEID_NONE)
+    if (masterId_ == NODEID_NONE)
         return;
 
     for (const auto& [carrierFrequency, channelModel] : channelModel_) {
         EV << "LtePhyUe::sendSrsReferenceSignalFrame - UE "  << nodeId_ << " sends SRS to its serving cell, carrier freq[" << carrierFrequency << "]" << simTime() << endl;
-        LteAirFrame *frame = createSrsReferenceSignalFrame(carrierFrequency);
-        sendUnicast(frame);
+        LteAirFrame *srsAirFrame = new LteAirFrame("SrsReferenceSignal");
+        UserControlInfo *cInfo = new UserControlInfo();
+        cInfo->setSourceId(nodeId_);
+        cInfo->setDestId(masterId_);
+        cInfo->setFrameType(SRSPKT);
+        cInfo->setDirection(UL);
+        cInfo->setTxPower(txPower_);
+        cInfo->setCarrierFrequency(carrierFrequency);
+        cInfo->setIsNr(isNr_);
+        cInfo->setCoord(getRadioPosition());
+        srsAirFrame->setControlInfo(cInfo);
+        srsAirFrame->setDuration(TTI);
+        srsAirFrame->setSchedulingPriority(airFramePriority_);
+        sendUnicast(srsAirFrame);
     }
 }
 

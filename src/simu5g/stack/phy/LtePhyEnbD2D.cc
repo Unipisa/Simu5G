@@ -38,20 +38,25 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
     *(pktAux->addTagIfAbsent<UserControlInfo>()) = *lteinfo;
 
     LteFeedbackDoubleVector fb;
-    FeedbackRequest req = lteinfo->getFeedbackReq();
-    fb.clear();
-    if (!useSrsUlFeedbackComputation_) {
+
+    // if feedback was generated elsewhere we can send up to mac, othewise nodeb should generate the feedback here
+    if (lteinfo->getFeedbackReq().request) {
+
+        EV_DEBUG << "LtePhyEnbD2D::handleFeedbackPkt - received feedback computation request from node " << lteinfo->getSourceId() << endl;
+
+        EV_INFO << "LtePhyEnbD2D::handleFeedbackPkt - computing UL CSI for node " << lteinfo->getSourceId() << endl;
         fb = ulFbGen_->computeUlFeedback(lteinfo, frame);
         header->setLteFeedbackDoubleVectorUl(fb);
-    }
 
-    if (!req.dlFeedbackFromUe) {
+        // compute DL CSI feedback at the e/gNodeB side
+        EV_INFO << "LtePhyEnbD2D::handleFeedbackPkt - computing DL CSI for node " << lteinfo->getSourceId() << endl;
+
         LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
         if (channelModel == nullptr)
             throw cRuntimeError("LtePhyEnbD2D::handleFeedbackPkt - channelModel is null pointer");
 
-        EV_DEBUG << "LtePhyEnbD2D::handleFeedbackPkt - computing DL CSI" << endl;
         int nRus = 0;
+        FeedbackRequest req = lteinfo->getFeedbackReq();
         TxMode txmode = req.txMode;
         FeedbackType type = req.type;
         RbAllocationType rbtype = req.rbAllocationType;
@@ -64,13 +69,11 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
         std::vector<double> snr = channelModel->getSINR(frame, lteinfo);
 
         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-                antennaCws, numPreferredBand, nRus, snr,
-                lteinfo->getSourceId());
+                antennaCws, numPreferredBand, nRus, snr, lteinfo->getSourceId());
         header->setLteFeedbackDoubleVectorDl(fb);
-
     }
 
-    if (!useSrsUlFeedbackComputation_ && enableD2DCqiReporting_) {
+    if (enableD2DCqiReporting_) {
         for (const auto& ueInfo : binder_->getUeList()) {
             MacNodeId peerId = ueInfo->id;
             if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
@@ -92,12 +95,6 @@ void LtePhyEnbD2D::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *fram
 void LtePhyEnbD2D::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
     EV << "LtePhyEnbD2D::handleSrsReferenceSignal - received SRS frame with ID " << frame->getId() << endl;
-
-    if (!useSrsUlFeedbackComputation_) {
-        delete lteinfo;
-        delete frame;
-        return;
-    }
 
     LteFeedbackDoubleVector ulFeedback = ulFbGen_->computeUlFeedback(lteinfo, frame);
     std::map<MacNodeId, LteFeedbackDoubleVector> d2dFeedback;

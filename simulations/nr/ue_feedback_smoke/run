@@ -2,7 +2,7 @@
 # make sure you run '. setenv' in the Simu5G root directory before running this script
 
 if [ "$#" -eq 0 ]; then
-    exec simu5g -f omnetpp.ini -c UeDlFeedbackSmoke
+    exec simu5g -f omnetpp.ini -c RsBasedFeedbackSmoke
 fi
 
 exec simu5g -f omnetpp.ini "$@"

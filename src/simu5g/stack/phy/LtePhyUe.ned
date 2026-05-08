@@ -31,8 +31,6 @@ simple LtePhyUe extends LtePhyBase
         string pdcpModule = default("^.pdcp");
         string ip2nicModule = default("^.ip2nic");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
-        bool useUeDlFeedbackComputation = default(false);
-        double targetBler = default(0.001);
 
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);

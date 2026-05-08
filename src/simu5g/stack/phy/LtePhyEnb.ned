@@ -24,8 +24,6 @@ simple LtePhyEnb extends LtePhyBase
 
     double targetBler = default(0.001);
     string ulFeedbackGeneratorModule = default("^.ulFbGen");
-    bool useUeDlFeedbackComputation = default(false);
-    int csiRsPeriod @unit(tti) = default(0tti);
-    bool useSrsUlFeedbackComputation = default(false);
-    int srsPeriod @unit(tti) = default(0tti);
+    int csiRsPeriod @unit(tti) = default(0tti);   // period for CSI Reference Signal (if 0, CSI RS is disabled)
+    int srsPeriod @unit(tti) = default(0tti);     // period for UL Sounding Reference Signal (if 0, SRS is disabled)
 }
