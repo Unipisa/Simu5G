@@ -95,7 +95,6 @@ struct FeedbackRequest
     TxMode txMode;
     bool dasAware;
     RbAllocationType rbAllocationType;
-    bool dlFeedbackFromUe = false;
 };
 
 //

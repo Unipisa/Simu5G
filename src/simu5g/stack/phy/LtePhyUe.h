@@ -46,7 +46,6 @@ class LtePhyUe : public LtePhyBase
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
     simtime_t lastFeedback_ = 0;
-    bool useSrsUlFeedbackComputation_ = false;
     simtime_t srsPeriod_ = 0;
 
     // Support to print average CQI at the end of the simulation
@@ -69,7 +68,6 @@ class LtePhyUe : public LtePhyBase
 
     void updateSrsConfiguration();
     LtePhyEnb *getServingEnbPhy() const;
-    virtual LteAirFrame *createSrsReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendSrsReferenceSignalFrame();
 
   public:

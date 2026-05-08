@@ -79,8 +79,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
     MacNodeId masterId_;
     MacNodeId nodeId_;
 
-    bool feedbackComputationPisa_;
-    bool useUeDlFeedbackComputation_ = false;
+    bool computeCsiLocally_ = false;
     double targetBler_ = 0.001;
 
   private:
@@ -88,13 +87,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
     // initialize cell information
     void initCellInfo();
     void initializeFeedbackComputation();
-
-    /**
-     * DUMMY: should be provided by PHY
-     */
-    void sendFeedback(LteFeedbackDoubleVector fb, FbPeriodicity per);
-
-    LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
+    void sendFeedback(LteFeedbackDoubleVector fb, FbPeriodicity per, bool isRequest = true);
 
   protected:
 
@@ -136,8 +129,11 @@ class LteDlFeedbackGenerator : public cSimpleModule
      * @param newTxMode new transmission mode
      */
     void setTxMode(TxMode newTxMode);
+
+    /**
+     * Handler for CSI Reference Signal frames received from the serving base station
+     */
     void handleCsiReferenceSignal(LteAirFrame *frame, UserControlInfo *lteInfo);
-    FeedbackRequest getFeedbackRequest() const;
 
     /*
      * Perform handover-related operations

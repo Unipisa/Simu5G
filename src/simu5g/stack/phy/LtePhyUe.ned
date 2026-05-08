@@ -30,8 +30,6 @@ simple LtePhyUe extends LtePhyBase
         string handoverControllerModule = default("^.rrc.handoverController");
         string feedbackGeneratorModule = default("^.dlFbGen"); // or "^.nrDlFbGen"
 
-        bool useUeDlFeedbackComputation = default(false);
-        double targetBler = default(0.001);
 
         @signal[distance];
         @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
