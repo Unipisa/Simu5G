@@ -86,6 +86,7 @@ class LtePhyUe : public LtePhyBase
      * Send feedback, called by feedback generator in DL
      */
     virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
+    virtual LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo);
 
     virtual double computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo);
 

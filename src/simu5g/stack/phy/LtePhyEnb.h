@@ -65,6 +65,7 @@ class LtePhyEnb : public LtePhyBase
     virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
+    virtual void sendCsiReferenceSignalFrameToNtnAttachedUes(LteAirFrame *frame);
     void initializeFeedbackComputation();
     LteAirFrame *createBeaconMessage();
 
