@@ -84,21 +84,26 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
     double dbp = 0;
 
     // compute base path loss
-    double attenuation = computePathLoss(distance, dbp, los);
+    double basePL = computePathLoss(distance, dbp, los);
     // add O2I penetration loss
-    attenuation += computeBuildingPenetrationLoss(nodeId);
+    double o2iLoss = computeBuildingPenetrationLoss(nodeId);
     // add atmospheric loss
-    attenuation += computeAtmosphericLoss();
+    double atmLoss = computeAtmosphericLoss();
     // add scintillation loss
-    attenuation += computeScintillationLoss();
+    double scintLoss = computeScintillationLoss();
     // add shadowing
+    double shadowing = 0.0;
     if (num(nodeId) < BGUE_MIN_ID && shadowing_)
-        attenuation += computeShadowing(distance, nodeId, speed, cqiDl);
+        shadowing = computeShadowing(distance, nodeId, speed, cqiDl);
 
+    // compute attenuation
+    double attenuation = basePL + o2iLoss + atmLoss + scintLoss + shadowing;
     updatePositionHistory(nodeId, lastTerrestrialEndpointCoord_);
     updateCorrelationDistance(nodeId, lastTerrestrialEndpointCoord_);
 
-    EV << "NtnChannelModel::getAttenuation - computed attenuation at distance " << distance << " is " << attenuation << endl;
+    EV_DEBUG << "NtnChannelModel::getAttenuation - path loss[" << basePL << "dB], o2iLoss[" << o2iLoss << "dB] "
+                << "atmLoss[" << atmLoss << "dB], scintLoss[" << scintLoss << "dB], shadowing[" << shadowing << "dB]" << endl;
+    EV_INFO << "NtnChannelModel::getAttenuation - computed attenuation at distance " << distance << " is " << attenuation << endl;
 
     return attenuation;
 }
@@ -130,7 +135,7 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
 
     double clutterLoss = carrierFrequency_.get() < 13.0 ? kSbandClutterLoss[angleIndex] : kKabandClutterLoss[angleIndex];
 
-    EV_DEBUG << " NtnChannelModel::computePathLoss - path loss[" << pathLoss << "dB] clutter loss[" << clutterLoss << "dB] "
+    EV_DEBUG << "NtnChannelModel::computePathLoss - path loss[" << pathLoss << "dB] clutter loss[" << clutterLoss << "dB] "
             << "total[" << pathLoss + clutterLoss << "dB]" << endl;
 
     return pathLoss + clutterLoss;
@@ -535,7 +540,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     // TODO if satellite is moving, you need to compute speed differently
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
-    double frequency = lteInfo->getCarrierFrequency().get();
+    double frequency = Hz(lteInfo->getCarrierFrequency()).get();
 
     double txAngle = 0.0;  // TODO compute angle
     double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
@@ -550,7 +555,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
 
     EV_DEBUG << " NtnChannelModel::getSINR - recvPower[" << recvPower
        << "dBm] antenna gain tx["  << antennaGainTx << "dB] antenna gain rx[" << antennaGainRx
-       << "dB] tx antenna loss   " << antennaLossTx << "dB] rx antenna loss [" << antennaLossRx
+       << "dB] tx antenna loss[" << antennaLossTx << "dB] rx antenna loss [" << antennaLossRx
        << "dB] attenuation " << attenuation << endl;
 
     std::vector<double> snrVector(numBands_, 0.0);
@@ -612,7 +617,7 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
     lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
-    double frequency = lteInfo->getCarrierFrequency().get();
+    double frequency = Hz(lteInfo->getCarrierFrequency()).get();
 
     double txAngle = 0.0;  // TODO compute angle
     double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
