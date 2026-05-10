@@ -18,7 +18,7 @@ module NtnFeederLinkNic
 {
     parameters:
         @display("i=block/ifcard;bgb=529,443;bgl=3");
-        string channelModelType = default("NrChannelModel_3GPP38_901");
+        string channelModelType = default("NtnChannelModel");
         string antennaModelType;
         int numCarriers = default(1);
         double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);

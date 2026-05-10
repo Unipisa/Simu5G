@@ -322,7 +322,9 @@ void LtePhyEnb::sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInf
 
 LteAirFrame *LtePhyEnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 {
-    LteAirFrame *csiAirFrame = new LteAirFrame("CsiReferenceSignal");
+    LteAirFrame *csiAirFrame = useTransparentNtn_
+        ? static_cast<LteAirFrame *>(new NtnAirFrame("CsiReferenceSignal"))
+        : new LteAirFrame("CsiReferenceSignal");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(CSIRSPKT);
@@ -339,6 +341,11 @@ LteAirFrame *LtePhyEnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 
 void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
 {
+    if (useTransparentNtn_) {
+        sendCsiReferenceSignalFrameToNtnAttachedUes(frame);
+        return;
+    }
+
     UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
     frame->setAdditionalInfo(*ci);
     delete frame->removeControlInfo();
@@ -356,6 +363,31 @@ void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
     }
 
     delete frame;
+}
+
+void LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes(LteAirFrame *frame)
+{
+    if (ntnOutGate_ == nullptr || !ntnOutGate_->isConnected())
+        throw cRuntimeError("LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - NTN fronthaul gate is not connected for %s", getFullPath().c_str());
+
+    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+    if (ntnFrame == nullptr)
+        throw cRuntimeError("LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - CSI-RS frame %s is not an NtnAirFrame", frame->getFullName());
+
+    UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
+    frame->setAdditionalInfo(*ci);
+    delete frame->removeControlInfo();
+
+    std::vector<MacNodeId> attachedUes;
+    for (MacNodeId ueId : cellInfo_->getAttachedUes()) {
+        if (isNrUe(ueId) == isNr_)
+            attachedUes.push_back(ueId);
+    }
+
+    ntnFrame->setAttachedUesVector(attachedUes);
+    EV << "LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - sending CSI-RS frame with "
+       << attachedUes.size() << " attached UE target(s) via transparent NTN" << endl;
+    send(frame, ntnOutGate_);
 }
 
 void LtePhyEnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)

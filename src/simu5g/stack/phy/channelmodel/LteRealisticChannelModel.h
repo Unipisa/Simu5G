@@ -306,6 +306,8 @@ class LteRealisticChannelModel : public LteChannelModel
      */
     bool isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteI) override;
 
+    std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
@@ -450,8 +452,6 @@ class LteRealisticChannelModel : public LteChannelModel
      * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction
      */
     bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
-
-    virtual std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     /*
      * Evaluates total interference from external cells seen from the spot given by coord

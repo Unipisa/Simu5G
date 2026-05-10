@@ -32,7 +32,6 @@ class NrPhyUe : public LtePhyUeD2D
 
     void initialize(int stage) override;
     void initializeChannelModels();
-    LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo);
     void handleAirFrame(cMessage *msg) override;
     void triggerHandover() override;
     void doHandover() override;
@@ -40,6 +39,9 @@ class NrPhyUe : public LtePhyUeD2D
     // force handover to the given target node (0 means forcing detachment)
     virtual void forceHandover(MacNodeId targetMasterNode = NODEID_NONE, double targetMasterRssi = 0.0);
     void deleteOldBuffers(MacNodeId masterId);
+
+  public:
+    LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo) override;
 };
 
 } //namespace

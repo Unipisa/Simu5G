@@ -112,6 +112,14 @@ class LteChannelModel : public cSimpleModule
      */
     virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
+     * Compute the SINR used for reception decisions. This may differ from getSINR()
+     * for relay paths that combine multiple radio hops.
+     *
+     * @param frame pointer to the packet
+     * @param lteInfo pointer to the user control info
+     */
+    virtual std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
+    /*
      * Compute SINR for each band for a background UE according to path loss
      *
      * @param frame pointer to the packet

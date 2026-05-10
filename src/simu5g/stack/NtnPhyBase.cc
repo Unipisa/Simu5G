@@ -92,14 +92,16 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
     EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName() << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio"
             << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
 
-    if (lteInfo.getFrameType() == DATAPKT) {
+    if (lteInfo.getFrameType() == DATAPKT ||
+            (nodeType_ == SATELLITE_NODE && isFeederLink_ && lteInfo.getFrameType() == CSIRSPKT) )
+    {
         GHz carrierFrequency = lteInfo.getCarrierFrequency();
         LteChannelModel *channelModel = getChannelModel(carrierFrequency);
         if (channelModel != nullptr) {
             if (nodeType_ == SATELLITE_NODE) {
                 auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
                 if (ntnFrame == nullptr)
-                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN data frame %s is not an NtnAirFrame", frame->getFullName());
+                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN frame %s is not an NtnAirFrame", frame->getFullName());
                 std::vector<double> sinrVector = channelModel->getSINR(frame, &lteInfo);
                 ntnFrame->setRelayHopSinrVector(sinrVector);
                 EV << "NtnPhyBase::handleAirFrame - forward the frame to the " << (isFeederLink_ ? "service" : "feeder") << " NIC for relaying" << endl;
@@ -109,9 +111,11 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
                 if (ntnFrame == nullptr)
                     throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN data frame %s is not an NtnAirFrame", frame->getFullName());
 
-                bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
-                ntnFrame->setGatewayReceptionResultInfo(result);
-                EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
+                if (lteInfo.getFrameType() == DATAPKT) {
+                    bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
+                    ntnFrame->setGatewayReceptionResultInfo(result);
+                    EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
+                }
                 EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
             }
         }
@@ -155,6 +159,38 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         auto *frame = check_and_cast<LteAirFrame *>(msg);
         UserControlInfo lteInfo(frame->getAdditionalInfo());
         lteInfo.setCarrierFrequency(shiftFrequencyBand(lteInfo.getCarrierFrequency()));
+        auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+
+        if (lteInfo.getFrameType() == CSIRSPKT && ntnFrame != nullptr && ntnFrame->hasAttachedUes()) {
+            inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
+            lteInfo.setRadioTransmitterId(nodeId_);
+            lteInfo.setRadioTransmitterCoord(getRadioPosition());
+            lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
+            lteInfo.setRadioTransmitterAntenna(antennaModel_);
+
+            std::vector<MacNodeId> attachedUes = ntnFrame->getAttachedUesVector();
+            EV << "NtnPhyBase::handleUpperMessage - forwarding CSI-RS frame " << frame->getName()
+               << " to " << attachedUes.size() << " attached UE target(s)" << endl;
+
+            for (MacNodeId ueId : attachedUes) {
+                cModule *receiver = binder_->getNodeModule(ueId);
+                if (receiver == nullptr) {
+                    EV << "NtnPhyBase::handleUpperMessage - attached UE " << ueId << " is not available. Skip CSI-RS copy." << endl;
+                    continue;
+                }
+
+                LteAirFrame *frameToSend = frame->dup();
+                UserControlInfo ueInfo(lteInfo);
+                ueInfo.setDestId(ueId);
+                ueInfo.setRadioReceiverId(ueId);
+                frameToSend->setAdditionalInfo(ueInfo);
+                sendDirect(frameToSend, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(ueId)));
+            }
+
+            delete frame;
+            return;
+        }
+
         MacNodeId destId = lteInfo.getDestId();
         cModule *receiver = binder_->getNodeModule(destId);
         if (receiver == nullptr) {

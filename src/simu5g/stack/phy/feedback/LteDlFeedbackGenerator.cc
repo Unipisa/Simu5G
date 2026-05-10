@@ -259,13 +259,13 @@ void LteDlFeedbackGenerator::handleCsiReferenceSignal(LteAirFrame *frame, UserCo
 
     EV_INFO << "LteDlFeedbackGenerator::handleCsiReferenceSignal - Received CSI RS, computing CSI feedback" << endl;
 
-    LteChannelModel *channelModel = phy_->getChannelModel(lteInfo->getCarrierFrequency());
+    LteChannelModel *channelModel = phy_->getReceptionChannelModel(lteInfo);
     if (channelModel == nullptr)
         throw cRuntimeError("LteDlFeedbackGenerator::handleCsiReferenceSignal - channelModel is NULL pointer");
 
     take(frame);
     frame->setControlInfo(lteInfo);
-    std::vector<double> snr = channelModel->getSINR(frame, lteInfo);
+    std::vector<double> snr = channelModel->computeReceptionSinr(frame, lteInfo);
 
     std::map<Remote, int> antennaCws;
     antennaCws[MACRO] = 1;

@@ -65,6 +65,7 @@ class LteDummyChannelModel : public LteChannelModel
      * @param lteInfo pointer to the user control info
      */
     std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo) override;
     /*
      * Compute fake received useful signal for each band for user nodeId according to path loss, shadowing (optional) and multipath fading
      *
@@ -110,4 +111,3 @@ class LteDummyChannelModel : public LteChannelModel
 } //namespace
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEDUMMYCHANNELMODEL_H_ */
-

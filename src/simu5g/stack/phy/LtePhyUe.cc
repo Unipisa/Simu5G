@@ -186,6 +186,11 @@ LteAirFrame *LtePhyUe::createAirFrame(const char *name, const UserControlInfo& l
     return shouldSendViaTransparentNtn(lteInfo.getDestId()) ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
 }
 
+LteChannelModel *LtePhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
+{
+    return getChannelModel(lteInfo->getCarrierFrequency());
+}
+
 void LtePhyUe::handleSelfMessage(cMessage *msg)
 {
     if (msg->isName("handoverStarter"))

@@ -159,6 +159,7 @@ class LtePhyUe : public LtePhyBase
      * Send feedback, called by feedback generator in DL
      */
     virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
+    virtual LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo);
     MacNodeId getMasterId() const
     {
         return masterId_;

@@ -35,6 +35,11 @@ std::vector<double> LteDummyChannelModel::getSINR(LteAirFrame *frame, UserContro
     return tmp;
 }
 
+std::vector<double> LteDummyChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    return getSINR(frame, lteInfo);
+}
+
 std::vector<double> LteDummyChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     std::vector<double> tmp;
@@ -145,4 +150,3 @@ bool LteDummyChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, UserCon
 }
 
 } //namespace
-
