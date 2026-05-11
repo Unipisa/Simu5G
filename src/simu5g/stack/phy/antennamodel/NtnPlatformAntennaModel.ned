@@ -35,6 +35,7 @@ simple GeoNtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 7.376dB : 5.876dB);
+    double temperature @unit(K) = default(290K);
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
@@ -55,6 +56,7 @@ simple Leo1200NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
+    double temperature @unit(K) = default(290K);
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
@@ -75,5 +77,6 @@ simple Leo600NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxFeederLoss @unit(dB) = default(0dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
+    double temperature @unit(K) = default(290K);
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }

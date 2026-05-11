@@ -14,5 +14,6 @@ simple GatewayAntennaModel like IAntennaModel
     double rxFeederLoss @unit(dB) = default(0.5dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(13.928dB);  // derived considering G/T = 42dB/K at 27GHz with 0.5dB RX feeder loss.
+    double temperature @unit(K) = default(290K);
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }

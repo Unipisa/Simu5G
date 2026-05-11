@@ -16,6 +16,7 @@ void ParabolicAntennaModel::initialize()
     rxFeederLoss_ = par("rxFeederLoss");
     rxLumpedLoss_ = par("rxLumpedLoss");
     noiseFigure_ = par("noiseFigure");
+    temperature_ = par("temperature");
     antennaPolarization_ = antennaPolarizationFromString(par("antennaPolarization").stringValue());
 }
 
