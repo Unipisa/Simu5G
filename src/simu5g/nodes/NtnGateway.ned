@@ -34,7 +34,7 @@ module NtnGateway
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         gnbNic.feederLinkFrequencyOffset = default(this.feederLinkFrequencyOffset);
         gnbNic.shiftFrequencyFromFeederLink = default(true);
-        feederNic.antennaModelType = default("IsotropicAntennaModel");  // TODO to be updated with specific gateway antenna
+        feederNic.antennaModelType = default("GatewayAntennaModel");
         feederNic.feederLinkFrequencyOffset = default(this.feederLinkFrequencyOffset);
 
     gates:

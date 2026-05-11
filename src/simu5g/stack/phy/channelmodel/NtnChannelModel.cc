@@ -61,7 +61,10 @@ std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, Us
         double localLinear = dBToLinear(localHopSinr[i]);
         double combinedSinrLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
         combinedSinr[i] = linearToDb(combinedSinrLinear);
+        EV_DEBUG << "NtnChannelModel::computeReceptionSinr - band[" << i << "] 1st-hop SINR[" << relayHopSinr[i] << "dB] 2nd-hop SINR[" << localHopSinr[i]
+                    << "dB] combined[" << combinedSinr[i] << "]" << endl;
     }
+
     return combinedSinr;
 }
 
@@ -576,9 +579,8 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         double den = linearToDBm(totN);
         snrVector[i] -= den;
 
-        EV_INFO << " NtnChannelModel::getSINR - band[" << i << "]";
-        EV_DEBUG << " noise figure[" << noiseFigure << "dB]" << " thermal noise[" << thermalNoise_ << "dB]";
-        EV_INFO << " snr[" << snrVector[i] << "dB]" << endl;
+        EV_INFO << " NtnChannelModel::getSINR - band[" << i << "]" << " noise figure[" << noiseFigure << "dB]" << " thermal noise[" << thermalNoise_ << "dB]"
+                << " snr[" << snrVector[i] << "dB]" << endl;
     }
 
     updatePositionHistory(terrestrialEndpointId, terrestrialEndpointCoord);
