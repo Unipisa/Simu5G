@@ -1,13 +1,13 @@
-#include "simu5g/stack/phy/antennamodel/VSATAntennaModel.h"
+#include "simu5g/stack/phy/antennamodel/ParabolicAntennaModel.h"
 #include "inet/common/INETMath.h"
 
 #include <cmath>
 
 namespace simu5g {
 
-Define_Module(VSATAntennaModel);
+Define_Module(ParabolicAntennaModel);
 
-void VSATAntennaModel::initialize()
+void ParabolicAntennaModel::initialize()
 {
     txPower_ = par("txPower");
     efficiency_ = par("efficiency");
@@ -19,12 +19,12 @@ void VSATAntennaModel::initialize()
     antennaPolarization_ = antennaPolarizationFromString(par("antennaPolarization").stringValue());
 }
 
-double VSATAntennaModel::computeGain(double angle, double frequency) const
+double ParabolicAntennaModel::computeGain(double angle, double frequency) const
 {
     if (frequency <= 0.0)
-        throw omnetpp::cRuntimeError("VSATAntennaModel::computeGain - frequency must be positive");
+        throw omnetpp::cRuntimeError("ParabolicAntennaModel::computeGain - frequency must be positive");
     if (angle < 0.0 || angle > 90.0)
-        throw omnetpp::cRuntimeError("VSATAntennaModel::computeGain - angle must be in the [0, 90] degree range");
+        throw omnetpp::cRuntimeError("ParabolicAntennaModel::computeGain - angle must be in the [0, 90] degree range");
 
     double lambda = SPEED_OF_LIGHT / frequency;
     double v = M_PI * (diameter_ / lambda);

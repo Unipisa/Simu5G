@@ -6,6 +6,7 @@ package simu5g.stack.phy.antennamodel;
 simple VSATAntennaModel like IAntennaModel
 {
     @display("i=device/antennatower");
+    @class(ParabolicAntennaModel);
     double txPower @unit(dBm) = default(33dBm);
     double efficiency = default(0.6);
     double diameter @unit(m) = default(0.6m);

@@ -1,13 +1,13 @@
-#ifndef __SIMU5G_VSATANTENNAMODEL_H_
-#define __SIMU5G_VSATANTENNAMODEL_H_
+#ifndef __SIMU5G_PARABOLICANTENNAMODEL_H_
+#define __SIMU5G_PARABOLICANTENNAMODEL_H_
 
 #include "simu5g/stack/phy/antennamodel/IAntennaModel.h"
 
 namespace simu5g {
 //
-// Model for an VSAT antenna
+// Model for a parabolic aperture antenna.
 //
-class VSATAntennaModel : public omnetpp::cSimpleModule, public IAntennaModel
+class ParabolicAntennaModel : public omnetpp::cSimpleModule, public IAntennaModel
 {
 
   protected:
