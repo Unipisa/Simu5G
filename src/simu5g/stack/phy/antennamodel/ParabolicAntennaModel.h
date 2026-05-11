@@ -14,6 +14,7 @@ class ParabolicAntennaModel : public omnetpp::cSimpleModule, public IAntennaMode
 
     double efficiency_;
     double diameter_;
+    double boresightElevation_ = 90.0; // in degrees
 
     virtual void initialize() override;
 
@@ -26,6 +27,8 @@ class ParabolicAntennaModel : public omnetpp::cSimpleModule, public IAntennaMode
 
     // returns the receiving antenna gain (in dBi)
     virtual double computeRxGain(double angle = -1.0, double frequency = -1.0) const override  { return computeGain(angle, frequency); }
+
+    virtual double getBoresightElevation() const override { return boresightElevation_; }
 };
 
 }

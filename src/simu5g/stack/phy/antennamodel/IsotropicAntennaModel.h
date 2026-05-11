@@ -12,6 +12,8 @@ class IsotropicAntennaModel : public omnetpp::cSimpleModule, public IAntennaMode
 
   protected:
 
+    double boresightElevation_ = 90.0; // in degrees
+
     virtual void initialize() override;
 
   public:
@@ -21,6 +23,8 @@ class IsotropicAntennaModel : public omnetpp::cSimpleModule, public IAntennaMode
 
     // returns the receiving antenna gain (in dBi)
     virtual double computeRxGain(double angle = -1.0, double frequency = -1.0) const override { return 0.0; }
+
+    virtual double getBoresightElevation() const override { return boresightElevation_; }
 };
 
 }

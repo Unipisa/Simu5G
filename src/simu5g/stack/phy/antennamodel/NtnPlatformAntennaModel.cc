@@ -19,6 +19,9 @@ void NtnPlatformAntennaModel::initialize()
     rxLumpedLoss_ = par("rxLumpedLoss");
     noiseFigure_ = par("noiseFigure");
     temperature_ = par("temperature");
+    pointingMode_ = antennaPointingModeFromString(par("pointingMode").stringValue());
+    offNadirAngle_ = par("offNadirAngle");
+    boresightAzimuth_ = par("boresightAzimuth");
     antennaPolarization_ = antennaPolarizationFromString(par("antennaPolarization").stringValue());
 }
 
@@ -37,11 +40,17 @@ double NtnPlatformAntennaModel::computeGain(double angle, double frequency, doub
     double theta = inet::math::deg2rad(angle);
     double x = ka * std::sin(theta);
 
+    EV_DEBUG << "NtnPlatformAntennaModel::computeGain - angle[" << angle << "deg, " << theta << "rad], ka[" << ka << "], x[" << x << "]" << std::endl;
+
     if (std::abs(x) < 1e-9)
+    {
+        EV_DEBUG << "NtnPlatformAntennaModel::computeGain - maxgain[" << maxGain << "]" << std::endl;
         return maxGain;
+    }
 
     double j = ::j1(x) / x;
     double normalizedGain = 4.0 * j * j;
+    EV_DEBUG << "NtnPlatformAntennaModel::computeGain - maxgain[" << maxGain << "] gain[" << inet::math::fraction2dB(normalizedGain) << "]" << std::endl;
     return maxGain + inet::math::fraction2dB(normalizedGain);
 }
 

@@ -12,6 +12,9 @@ void IsotropicAntennaModel::initialize()
     rxLumpedLoss_ = par("rxLumpedLoss");
     noiseFigure_ = par("noiseFigure");
     temperature_ = par("temperature");
+    pointingMode_ = antennaPointingModeFromString(par("pointingMode").stringValue());
+    boresightAzimuth_ = par("boresightAzimuth");
+    boresightElevation_ = par("boresightElevation");
     antennaPolarization_ = antennaPolarizationFromString(par("antennaPolarization").stringValue());
 }
 

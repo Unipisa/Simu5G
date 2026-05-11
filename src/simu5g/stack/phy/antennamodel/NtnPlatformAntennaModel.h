@@ -16,6 +16,7 @@ class NtnPlatformAntennaModel : public omnetpp::cSimpleModule, public IAntennaMo
     double rxEfficiency_;
     double txDiameter_;        // in m
     double rxDiameter_;        // in m
+    double offNadirAngle_ = 0.0; // in degrees
 
     virtual void initialize() override;
 
@@ -28,6 +29,8 @@ class NtnPlatformAntennaModel : public omnetpp::cSimpleModule, public IAntennaMo
 
     // returns the receiving antenna gain (in dBi)
     virtual double computeRxGain(double angle = -1.0, double frequency = -1.0) const override { return computeGain(angle, frequency, rxDiameter_, rxEfficiency_); }
+
+    virtual double getOffNadirAngle() const override { return offNadirAngle_; }
 };
 
 }
