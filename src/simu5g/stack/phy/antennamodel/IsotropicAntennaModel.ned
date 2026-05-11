@@ -13,5 +13,8 @@ simple IsotropicAntennaModel like IAntennaModel
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(9dB);
     double temperature @unit(K) = default(290K);
+    string pointingMode @enum(TRACK_PEER,FIXED) = default("TRACK_PEER");  // TRACK_PEER keeps boresight aligned with the current peer; FIXED uses the configured pointing angles.
+    double boresightAzimuth @unit(deg) = default(0deg);                   // Ground-frame azimuth of the antenna boresight, clockwise from north.
+    double boresightElevation @unit(deg) = default(90deg);                // Ground-frame elevation of the antenna boresight above the local horizon.
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("LINEAR");
 }

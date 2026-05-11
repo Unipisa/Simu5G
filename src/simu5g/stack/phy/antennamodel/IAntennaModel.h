@@ -14,6 +14,11 @@ enum class AntennaPolarization {
     CIRCULAR
 };
 
+enum class AntennaPointingMode {
+    TRACK_PEER,
+    FIXED
+};
+
 inline AntennaPolarization antennaPolarizationFromString(const char *polarization)
 {
     if (!strcmp(polarization, "NONE"))
@@ -23,6 +28,15 @@ inline AntennaPolarization antennaPolarizationFromString(const char *polarizatio
     if (!strcmp(polarization, "CIRCULAR"))
         return AntennaPolarization::CIRCULAR;
     throw omnetpp::cRuntimeError("Unknown antenna polarization '%s'", polarization);
+}
+
+inline AntennaPointingMode antennaPointingModeFromString(const char *pointingMode)
+{
+    if (!strcmp(pointingMode, "TRACK_PEER"))
+        return AntennaPointingMode::TRACK_PEER;
+    if (!strcmp(pointingMode, "FIXED"))
+        return AntennaPointingMode::FIXED;
+    throw omnetpp::cRuntimeError("Unknown antenna pointing mode '%s'", pointingMode);
 }
 
 //
@@ -38,6 +52,8 @@ class IAntennaModel
     double noiseFigure_;       // in dB
     double temperature_;        // in K
     AntennaPolarization antennaPolarization_ = AntennaPolarization::NONE;
+    AntennaPointingMode pointingMode_ = AntennaPointingMode::TRACK_PEER;
+    double boresightAzimuth_ = 0.0;    // in degrees
 
   public:
 
@@ -73,6 +89,16 @@ class IAntennaModel
     virtual double computeRxGain(double angle = -1.0, double frequency= -1.0) const = 0;
 
     virtual AntennaPolarization getAntennaPolarization() const { return antennaPolarization_; }
+    virtual AntennaPointingMode getPointingMode() const { return pointingMode_; }
+    virtual double getBoresightAzimuth() const { return boresightAzimuth_; }
+    virtual double getBoresightElevation() const
+    {
+        throw omnetpp::cRuntimeError("Antenna model '%s' does not define a ground-frame boresight elevation", omnetpp::opp_typename(typeid(*this)));
+    }
+    virtual double getOffNadirAngle() const
+    {
+        throw omnetpp::cRuntimeError("Antenna model '%s' does not define a satellite-frame off-nadir angle", omnetpp::opp_typename(typeid(*this)));
+    }
 };
 
 }

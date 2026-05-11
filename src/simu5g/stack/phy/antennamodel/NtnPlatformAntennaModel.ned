@@ -16,6 +16,10 @@ moduleinterface NtnPlatformAntennaModel extends IAntennaModel
     double rxFeederLoss;
     double rxLumpedLoss;
     double noiseFigure;
+    double temperature @unit(K);
+    string pointingMode @enum(TRACK_PEER,FIXED);
+    double offNadirAngle @unit(deg);
+    double boresightAzimuth @unit(deg);
 }
 
 //
@@ -36,6 +40,9 @@ simple GeoNtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 7.376dB : 5.876dB);
     double temperature @unit(K) = default(290K);
+    string pointingMode @enum(TRACK_PEER,FIXED) = default("TRACK_PEER");   // TRACK_PEER keeps boresight aligned with the current peer; FIXED uses the configured pointing angles.
+    double offNadirAngle @unit(deg) = default(0deg);                       // Satellite-frame boresight tilt away from nadir.
+    double boresightAzimuth @unit(deg) = default(0deg);                    // Satellite-frame boresight azimuth around the nadir axis.
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
@@ -57,6 +64,9 @@ simple Leo1200NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
     double temperature @unit(K) = default(290K);
+    string pointingMode @enum(TRACK_PEER,FIXED) = default("TRACK_PEER");   // TRACK_PEER keeps boresight aligned with the current peer; FIXED uses the configured pointing angles.
+    double offNadirAngle @unit(deg) = default(0deg);                       // Satellite-frame boresight tilt away from nadir.
+    double boresightAzimuth @unit(deg) = default(0deg);                    // Satellite-frame boresight azimuth around the nadir axis.
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
 
@@ -78,5 +88,8 @@ simple Leo600NtnPlatformAntennaModel like NtnPlatformAntennaModel
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(frequencyBand == "S" ? 4.276dB : 0.876dB);
     double temperature @unit(K) = default(290K);
+    string pointingMode @enum(TRACK_PEER,FIXED) = default("TRACK_PEER");   // TRACK_PEER keeps boresight aligned with the current peer; FIXED uses the configured pointing angles.
+    double offNadirAngle @unit(deg) = default(0deg);                       // Satellite-frame boresight tilt away from nadir.
+    double boresightAzimuth @unit(deg) = default(0deg);                    // Satellite-frame boresight azimuth around the nadir axis.
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }
