@@ -14,5 +14,6 @@ simple VSATAntennaModel like IAntennaModel
     double rxFeederLoss @unit(dB) = default(0.5dB);
     double rxLumpedLoss @unit(dB) = default(0dB);
     double noiseFigure @unit(dB) = default(1.2dB);
+    double temperature @unit(K) = default(290K);
     string antennaPolarization @enum(NONE,LINEAR,CIRCULAR) = default("CIRCULAR");
 }

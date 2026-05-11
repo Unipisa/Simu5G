@@ -2,6 +2,7 @@
 #define __SIMU5G_IANTENNAMODEL_H_
 
 #include <cstring>
+#include <cmath>
 
 #include <omnetpp.h>
 
@@ -35,6 +36,7 @@ class IAntennaModel
     double rxFeederLoss_;      // in dB
     double rxLumpedLoss_;      // in dB
     double noiseFigure_;       // in dB
+    double temperature_;        // in K
     AntennaPolarization antennaPolarization_ = AntennaPolarization::NONE;
 
   public:
@@ -50,6 +52,20 @@ class IAntennaModel
     virtual double getRxLumpedLoss() const { return rxLumpedLoss_; }
     // return the noise figure (in dB)
     virtual double getNoiseFigure() const { return noiseFigure_; }
+
+    // return thermal noise over the specified bandwidth (in dBm)
+    virtual double getThermalNoise(double bandwidth) const
+    {
+        if (temperature_ <= 0.0)
+            throw omnetpp::cRuntimeError("IAntennaModel::getThermalNoise - temperature must be positive");
+        if (bandwidth <= 0.0)
+            throw omnetpp::cRuntimeError("IAntennaModel::getThermalNoise - bandwidth must be positive");
+
+        constexpr double boltzmann = 1.380649e-23; // J/K
+        constexpr double wattsToMilliwatts = 1000.0;
+        double noiseMilliwatts = boltzmann * temperature_ * bandwidth * wattsToMilliwatts;
+        return 10.0 * std::log10(noiseMilliwatts);
+    }
 
     virtual double computeTxGain(double angle = -1.0, double frequency = -1.0)  const = 0;
 

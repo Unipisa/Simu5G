@@ -568,18 +568,20 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         EV_DEBUG << " NtnChannelModel::getSINR - band[" << i << "] fast fading[" << fadingAttenuation[i] << "dB] rx power[" << snrVector[i] << "dBm]" << endl;
     }
 
-    // compute noise
-    double noiseFigure = receiverType == antennaModel_->getNoiseFigure();
+    // compute noise over one RB
+    constexpr double rbBandwidth = 180000.0;
+    double noiseFigure = antennaModel_->getNoiseFigure();
+    double thermalNoise = antennaModel_->getThermalNoise(rbBandwidth);
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
-    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
+    double totN = dBmToLinear(thermalNoise + noiseFigure);
     for (unsigned int i = 0; i < numBands_; i++) {
         if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
             continue;
         double den = linearToDBm(totN);
         snrVector[i] -= den;
 
-        EV_INFO << " NtnChannelModel::getSINR - band[" << i << "]" << " noise figure[" << noiseFigure << "dB]" << " thermal noise[" << thermalNoise_ << "dB]"
+        EV_INFO << " NtnChannelModel::getSINR - band[" << i << "]" << " noise figure[" << noiseFigure << "dB]" << " thermal noise[" << thermalNoise << "dB]"
                 << " snr[" << snrVector[i] << "dB]" << endl;
     }
 
