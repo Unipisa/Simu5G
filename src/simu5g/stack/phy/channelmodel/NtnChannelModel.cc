@@ -24,6 +24,34 @@ namespace simu5g {
 
 Define_Module(NtnChannelModel);
 
+namespace {
+
+double clampCosine(double value)
+{
+    return std::max(-1.0, std::min(1.0, value));
+}
+
+double clampAntennaAngle(double angle)
+{
+    return std::max(0.0, std::min(90.0, angle));
+}
+
+void computeGroundEnuBasis(const inet::GeoCoord& wgs84, inet::Coord& east, inet::Coord& north, inet::Coord& up)
+{
+    double latitudeRad = math::deg2rad(wgs84.latitude.get());
+    double longitudeRad = math::deg2rad(wgs84.longitude.get());
+
+    east = inet::Coord(-std::sin(longitudeRad), std::cos(longitudeRad), 0.0);
+    north = inet::Coord(-std::sin(latitudeRad) * std::cos(longitudeRad),
+            -std::sin(latitudeRad) * std::sin(longitudeRad),
+            std::cos(latitudeRad));
+    up = inet::Coord(std::cos(latitudeRad) * std::cos(longitudeRad),
+            std::cos(latitudeRad) * std::sin(longitudeRad),
+            std::sin(latitudeRad));
+}
+
+} // namespace
+
 void NtnChannelModel::initialize(int stage)
 {
     LteRealisticChannelModel::initialize(stage);
@@ -37,6 +65,100 @@ void NtnChannelModel::initialize(int stage)
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         antennaModel_.reference(this, "antennaModelModule", true);
     }
+}
+
+double NtnChannelModel::computeAntennaOffAxisAngle(const IAntennaModel *antenna, RanNodeType endpointType, const inet::Coord& endpointEcef,
+        const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const
+{
+    if (antenna == nullptr)
+        throw cRuntimeError("NtnChannelModel::computeAntennaOffAxisAngle - missing antenna model");
+
+    if (antenna->getPointingMode() == AntennaPointingMode::TRACK_PEER)
+        return 0.0;
+
+    if (endpointType == SATELLITE_NODE)
+        return computeSatelliteAntennaOffAxisAngle(antenna, endpointEcef, peerEcef);
+    else
+        return computeGroundAntennaOffAxisAngle(antenna, endpointEcef, endpointWgs84, peerEcef);
+}
+
+double NtnChannelModel::computeGroundAntennaOffAxisAngle(const IAntennaModel *antenna, const inet::Coord& endpointEcef,
+        const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const
+{
+    // Convert the configured ground azimuth/elevation into an ECEF boresight
+    // vector using the local ENU frame, then compare it with the ECEF LOS vector.
+    inet::Coord east;
+    inet::Coord north;
+    inet::Coord up;
+    computeGroundEnuBasis(endpointWgs84, east, north, up);
+
+    inet::Coord los = peerEcef - endpointEcef;
+    double losLength = los.length();
+    if (losLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeGroundAntennaOffAxisAngle - cannot normalize zero-length LOS vector");
+    los /= losLength;
+
+    double azimuthRad = math::deg2rad(antenna->getBoresightAzimuth());
+    double elevationRad = math::deg2rad(antenna->getBoresightElevation());
+    inet::Coord boresight = east * (std::cos(elevationRad) * std::sin(azimuthRad)) +
+            north * (std::cos(elevationRad) * std::cos(azimuthRad)) +
+            up * std::sin(elevationRad);
+
+    double boresightLength = boresight.length();
+    if (boresightLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeGroundAntennaOffAxisAngle - cannot normalize zero-length boresight vector");
+    inet::Coord boresightUnit = boresight / boresightLength;
+
+    double boresightToLosCosine = boresightUnit * los;
+    double angle = math::rad2deg(std::acos(clampCosine(boresightToLosCosine)));
+    return clampAntennaAngle(angle);
+}
+
+double NtnChannelModel::computeSatelliteAntennaOffAxisAngle(const IAntennaModel *antenna, const inet::Coord& endpointEcef, const inet::Coord& peerEcef) const
+{
+    // Build a satellite local frame from the ECEF radial direction: nadir is
+    // toward Earth center, while east/north span the plane orthogonal to nadir.
+    // The configured off-nadir/azimuth angles define the boresight in that frame.
+    inet::Coord radialUp = endpointEcef;
+    double radialUpLength = radialUp.length();
+    if (radialUpLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeSatelliteAntennaOffAxisAngle - cannot normalize zero-length radial vector");
+    radialUp /= radialUpLength;
+
+    inet::Coord nadir = -radialUp;
+    inet::Coord east = inet::Coord::Z_AXIS % radialUp;
+    if (east.length() <= 1e-9)
+        east = inet::Coord::Y_AXIS % radialUp;
+
+    double eastLength = east.length();
+    if (eastLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeSatelliteAntennaOffAxisAngle - cannot normalize zero-length east vector");
+    east /= eastLength;
+
+    inet::Coord north = radialUp % east;
+    double northLength = north.length();
+    if (northLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeSatelliteAntennaOffAxisAngle - cannot normalize zero-length north vector");
+    north /= northLength;
+
+    double offNadirRad = math::deg2rad(antenna->getOffNadirAngle());
+    double azimuthRad = math::deg2rad(antenna->getBoresightAzimuth());
+    inet::Coord azimuthDirection = north * std::cos(azimuthRad) + east * std::sin(azimuthRad);
+    inet::Coord boresight = nadir * std::cos(offNadirRad) + azimuthDirection * std::sin(offNadirRad);
+    inet::Coord los = peerEcef - endpointEcef;
+    double losLength = los.length();
+    if (losLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeSatelliteAntennaOffAxisAngle - cannot normalize zero-length LOS vector");
+    los /= losLength;
+
+    double boresightLength = boresight.length();
+    if (boresightLength <= 1e-9)
+        throw cRuntimeError("NtnChannelModel::computeSatelliteAntennaOffAxisAngle - cannot normalize zero-length boresight vector");
+    inet::Coord boresightUnit = boresight / boresightLength;
+
+    double boresightToLosCosine = boresightUnit * los;
+    double angle = math::rad2deg(std::acos(clampCosine(boresightToLosCosine)));
+    return clampAntennaAngle(angle);
 }
 
 std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)
@@ -508,8 +630,10 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     Coord receiverCoord = phy_->getRadioPosition();
     RanNodeType transmitterType = getNodeTypeById(transmitterId);
     RanNodeType receiverType = getNodeTypeById(receiverId);
-    Coord transmitterEcef = lteInfo->getRadioTransmitterEcefCoord();
+    inet::GeoCoord transmitterWgs84 = referenceSystem->wgs84FromOmnet(transmitterCoord);
     inet::GeoCoord receiverWgs84 = referenceSystem->wgs84FromOmnet(receiverCoord);
+    Coord transmitterEcef = transmitterType == SATELLITE_NODE ? lteInfo->getRadioTransmitterEcefCoord() : ecefFromWgs84(transmitterWgs84);
+    Coord receiverEcef = ecefFromWgs84(receiverWgs84);
 
     if (transmitterType != SATELLITE_NODE && receiverType != SATELLITE_NODE)
         throw cRuntimeError("NtnChannelModel::getSINR - one hop endpoint must be the satellite");
@@ -530,8 +654,8 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         terrestrialEndpointId = transmitterId;
         terrestrialEndpointCoord = transmitterCoord;
         satelliteEndpointCoord = receiverCoord;
-        terrestrialEndpointWgs84 = referenceSystem->wgs84FromOmnet(transmitterCoord);
-        satelliteEndpointEcefCoord = ecefFromWgs84(receiverWgs84);
+        terrestrialEndpointWgs84 = transmitterWgs84;
+        satelliteEndpointEcefCoord = receiverEcef;
     }
 
     bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
@@ -540,16 +664,25 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
     lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
+    Coord terrestrialEndpointEcef = ecefFromWgs84(terrestrialEndpointWgs84);
+    double elevation = computeElevationFromEcefEndpoints(terrestrialEndpointWgs84, terrestrialEndpointEcef, satelliteEndpointEcefCoord);
+    if (elevation < 0.0) {
+        EV_DEBUG << "NtnChannelModel::getSINR - satellite below local horizon, elevation[" << elevation
+                 << " deg], returning no-signal SINR" << endl;
+        updatePositionHistory(terrestrialEndpointId, terrestrialEndpointCoord);
+        return std::vector<double>(numBands_, -INFINITY);
+    }
+
     // TODO if satellite is moving, you need to compute speed differently
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
     double frequency = Hz(lteInfo->getCarrierFrequency()).get();
 
-    double txAngle = 0.0;  // TODO compute angle
+    double txAngle = computeAntennaOffAxisAngle(txAntenna, transmitterType, transmitterEcef, transmitterWgs84, receiverEcef);
     double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
     double antennaLossTx = txAntenna->getTxFeederLoss();
 
-    double rxAngle = 0.0;  // TODO compute angle
+    double rxAngle = computeAntennaOffAxisAngle(antennaModel_, receiverType, receiverEcef, receiverWgs84, transmitterEcef);
     double antennaGainRx = antennaModel_->computeRxGain(rxAngle, frequency);
     double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
 
@@ -603,8 +736,10 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     Coord receiverCoord = phy_->getRadioPosition();
     RanNodeType transmitterType = getNodeTypeById(transmitterId);
     RanNodeType receiverType = getNodeTypeById(receiverId);
-    Coord transmitterEcef = lteInfo->getRadioTransmitterEcefCoord();
+    inet::GeoCoord transmitterWgs84 = referenceSystem->wgs84FromOmnet(transmitterCoord);
     inet::GeoCoord receiverWgs84 = referenceSystem->wgs84FromOmnet(receiverCoord);
+    Coord transmitterEcef = transmitterType == SATELLITE_NODE ? lteInfo->getRadioTransmitterEcefCoord() : ecefFromWgs84(transmitterWgs84);
+    Coord receiverEcef = ecefFromWgs84(receiverWgs84);
 
     if (transmitterType != SATELLITE_NODE && receiverType != SATELLITE_NODE)
         throw cRuntimeError("NtnChannelModel::getRSRP - one hop endpoint must be the satellite");
@@ -613,21 +748,29 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     bool cqiDl = (lteInfo->getDirection() == DL && lteInfo->getFrameType() == FEEDBACKPKT);
     Coord terrestrialEndpointCoord = transmitterType == SATELLITE_NODE ? receiverCoord : transmitterCoord;
     Coord satelliteEndpointCoord = transmitterType == SATELLITE_NODE ? transmitterCoord : receiverCoord;
-    inet::GeoCoord terrestrialEndpointWgs84 = transmitterType == SATELLITE_NODE ? receiverWgs84 : referenceSystem->wgs84FromOmnet(transmitterCoord);
-    Coord satelliteEndpointEcefCoord = transmitterType == SATELLITE_NODE ? transmitterEcef : ecefFromWgs84(receiverWgs84);
+    inet::GeoCoord terrestrialEndpointWgs84 = transmitterType == SATELLITE_NODE ? receiverWgs84 : transmitterWgs84;
+    Coord satelliteEndpointEcefCoord = transmitterType == SATELLITE_NODE ? transmitterEcef : receiverEcef;
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
     lastTerrestrialEndpointCoord_ = terrestrialEndpointCoord;
     lastSatelliteEndpointCoord_ = satelliteEndpointCoord;
     lastTerrestrialEndpointWgs84_ = terrestrialEndpointWgs84;
     lastSatelliteEndpointEcefCoord_ = satelliteEndpointEcefCoord;
 
+    Coord terrestrialEndpointEcef = ecefFromWgs84(terrestrialEndpointWgs84);
+    double elevation = computeElevationFromEcefEndpoints(terrestrialEndpointWgs84, terrestrialEndpointEcef, satelliteEndpointEcefCoord);
+    if (elevation < 0.0) {
+        EV_DEBUG << "NtnChannelModel::getRSRP - satellite below local horizon, elevation[" << elevation
+                 << " deg], returning no-signal RSRP" << endl;
+        return std::vector<double>(numBands_, -INFINITY);
+    }
+
     double frequency = Hz(lteInfo->getCarrierFrequency()).get();
 
-    double txAngle = 0.0;  // TODO compute angle
+    double txAngle = computeAntennaOffAxisAngle(txAntenna, transmitterType, transmitterEcef, transmitterWgs84, receiverEcef);
     double antennaGainTx = txAntenna->computeTxGain(txAngle, frequency);
     double antennaLossTx = txAntenna->getTxFeederLoss();
 
-    double rxAngle = 0.0;  // TODO compute angle
+    double rxAngle = computeAntennaOffAxisAngle(antennaModel_, receiverType, receiverEcef, receiverWgs84, transmitterEcef);
     double antennaGainRx = antennaModel_->computeRxGain(rxAngle, frequency);
     double antennaLossRx = antennaModel_->getRxFeederLoss() + antennaModel_->getRxLumpedLoss();
 

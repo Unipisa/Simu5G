@@ -85,6 +85,15 @@ class NtnChannelModel : public LteRealisticChannelModel
     double getFadingRefreshDistance(bool los) const;
     std::vector<double> getBandCenterFrequenciesHz() const;
 
+    // Returns the off-axis angle between an antenna boresight and the line of sight to its peer.
+    double computeAntennaOffAxisAngle(const IAntennaModel *antenna, RanNodeType endpointType, const inet::Coord& endpointEcef, const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const;
+
+    // Computes the off-axis angle for a ground antenna using local azimuth/elevation pointing.
+    double computeGroundAntennaOffAxisAngle(const IAntennaModel *antenna, const inet::Coord& endpointEcef, const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const;
+
+    // Computes the off-axis angle for a satellite antenna using off-nadir pointing.
+    double computeSatelliteAntennaOffAxisAngle(const IAntennaModel *antenna, const inet::Coord& endpointEcef, const inet::Coord& peerEcef) const;
+
   public:
     void initialize(int stage) override;
 
