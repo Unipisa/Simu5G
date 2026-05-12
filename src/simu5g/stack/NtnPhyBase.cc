@@ -204,6 +204,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioTransmitterCoord(getRadioPosition());
         lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(destId);
+        lteInfo.setRadioTransmitterAntenna(antennaModel_);
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to node " << destId << endl;
         sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
