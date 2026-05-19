@@ -68,6 +68,24 @@ void VoipSender::handleMessage(cMessage *msg)
         else
             initTraffic();
     }
+    else {
+        socket.processMessage(msg);
+    }
+}
+
+void VoipSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    delete packet;
+}
+
+void VoipSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void VoipSender::socketClosed(UdpSocket *socket)
+{
 }
 
 void VoipSender::initTraffic()
@@ -87,6 +105,7 @@ void VoipSender::initTraffic()
 
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort_);
+        socket.setCallback(this);
 
         int tos = par("tos");
         if (tos != -1)

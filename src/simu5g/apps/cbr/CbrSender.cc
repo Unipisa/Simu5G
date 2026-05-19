@@ -68,6 +68,24 @@ void CbrSender::handleMessage(cMessage *msg)
         else
             initTraffic();
     }
+    else {
+        socket.processMessage(msg);
+    }
+}
+
+void CbrSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    delete packet;
+}
+
+void CbrSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void CbrSender::socketClosed(UdpSocket *socket)
+{
 }
 
 void CbrSender::initTraffic()
@@ -88,6 +106,7 @@ void CbrSender::initTraffic()
         destAddress_ = inet::L3AddressResolver().resolve(par("destAddress").stringValue());
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort_);
+        socket.setCallback(this);
 
         int tos = par("tos");
         if (tos != -1)

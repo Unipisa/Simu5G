@@ -25,7 +25,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class AlertReceiver : public cSimpleModule
+class AlertReceiver : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     inet::UdpSocket socket;
 
@@ -40,6 +40,11 @@ class AlertReceiver : public cSimpleModule
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 
     // utility: show current statistics above the icon
     void refreshDisplay() const override;

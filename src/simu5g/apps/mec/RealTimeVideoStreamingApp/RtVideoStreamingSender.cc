@@ -75,6 +75,7 @@ void RtVideoStreamingSender::initialize(int stage)
     // binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
+    socket.setCallback(this);
 
     int tos = par("tos");
     if (tos != -1)
@@ -171,62 +172,76 @@ void RtVideoStreamingSender::handleMessage(cMessage *msg)
     }
     // Receiver Side
     else {
-        inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-        inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-
-        /*
-         * From Device app
-         * device app usually runs in the UE (loopback), but it could also run in other places
-         */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
-            auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-            if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) {
-                handleAckStartMecApp(msg);
-            }
-            else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) {
-                handleAckStopMecApp(msg);
-            }
-            else {
-                throw cRuntimeError("RtVideoStreamingSender::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
-            }
-        }
-        // From MEC application
-        else {
-            auto mePkt = packet->peekAtFront<RealTimeVideoStreamingAppPacket>();
-            EV << "RtVideoStreamingSender::handleMessage - message from MEC app of type: " << mePkt->getType() << endl;
-            if (mePkt->getType() == RTVIDEOSTREAMING_COMMAND) {
-                handleInfoMecApp(msg);
-            }
-            else if (mePkt->getType() == START_RTVIDEOSTREAMING_NACK) {
-                handleStartNack(msg);
-            }
-            else if (mePkt->getType() == START_RTVIDEOSTREAMING_ACK) {
-                handleStartAck(msg);
-            }
-            else if (mePkt->getType() == START_RTVIDEOSTREAMING_SESSION_ACK) {
-                handleStartSessionAck(msg);
-            }
-            else if (mePkt->getType() == START_RTVIDEOSTREAMING_SESSION_NACK) {
-                handleStartSessionNack(msg);
-            }
-            else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_ACK) {
-                handleStopAck(msg);
-            }
-            else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_NACK) {
-                handleStopNack(msg);
-            }
-            else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_SESSION_ACK) {
-                handleStopSessionAck(msg);
-            }
-            else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_SESSION_NACK) {
-                handleStopSessionNack(msg);
-            }
-            else {
-                throw cRuntimeError("RtVideoStreamingSender::handleMessage - \tFATAL! Error, WarningAppPacket type %d not recognized", mePkt->getType());
-            }
-        }
-        delete msg;
+        socket.processMessage(msg);
     }
+}
+
+void RtVideoStreamingSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
+
+    /*
+     * From Device app
+     * device app usually runs in the UE (loopback), but it could also run in other places
+     */
+    if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
+        auto mePkt = packet->peekAtFront<DeviceAppPacket>();
+        if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) {
+            handleAckStartMecApp(packet);
+        }
+        else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) {
+            handleAckStopMecApp(packet);
+        }
+        else {
+            throw cRuntimeError("RtVideoStreamingSender::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
+        }
+    }
+    // From MEC application
+    else {
+        auto mePkt = packet->peekAtFront<RealTimeVideoStreamingAppPacket>();
+        EV << "RtVideoStreamingSender::handleMessage - message from MEC app of type: " << mePkt->getType() << endl;
+        if (mePkt->getType() == RTVIDEOSTREAMING_COMMAND) {
+            handleInfoMecApp(packet);
+        }
+        else if (mePkt->getType() == START_RTVIDEOSTREAMING_NACK) {
+            handleStartNack(packet);
+        }
+        else if (mePkt->getType() == START_RTVIDEOSTREAMING_ACK) {
+            handleStartAck(packet);
+        }
+        else if (mePkt->getType() == START_RTVIDEOSTREAMING_SESSION_ACK) {
+            handleStartSessionAck(packet);
+        }
+        else if (mePkt->getType() == START_RTVIDEOSTREAMING_SESSION_NACK) {
+            handleStartSessionNack(packet);
+        }
+        else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_ACK) {
+            handleStopAck(packet);
+        }
+        else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_NACK) {
+            handleStopNack(packet);
+        }
+        else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_SESSION_ACK) {
+            handleStopSessionAck(packet);
+        }
+        else if (mePkt->getType() == STOP_RTVIDEOSTREAMING_SESSION_NACK) {
+            handleStopSessionNack(packet);
+        }
+        else {
+            throw cRuntimeError("RtVideoStreamingSender::handleMessage - \tFATAL! Error, WarningAppPacket type %d not recognized", mePkt->getType());
+        }
+    }
+    delete packet;
+}
+
+void RtVideoStreamingSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void RtVideoStreamingSender::socketClosed(UdpSocket *socket)
+{
 }
 
 /*
@@ -546,9 +561,8 @@ void RtVideoStreamingSender::sendMessage() {
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void RtVideoStreamingSender::handleAckStartMecApp(cMessage *msg)
+void RtVideoStreamingSender::handleAckStartMecApp(inet::Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
     if (pkt->getResult() == true) {
@@ -573,13 +587,12 @@ void RtVideoStreamingSender::handleAckStartMecApp(cMessage *msg)
     }
 }
 
-void RtVideoStreamingSender::handleInfoMecApp(cMessage *msg)
+void RtVideoStreamingSender::handleInfoMecApp(inet::Packet *packet)
 {
 }
 
-void RtVideoStreamingSender::handleAckStopMecApp(cMessage *msg)
+void RtVideoStreamingSender::handleAckStopMecApp(inet::Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
     EV << "RtVideoStreamingSender::handleAckStopMecApp - Received " << pkt->getType() << " type RtVideoStreamingSender with result: " << pkt->getResult() << endl;
@@ -589,21 +602,21 @@ void RtVideoStreamingSender::handleAckStopMecApp(cMessage *msg)
     cancelEvent(selfMecAppStop_);
 }
 
-void RtVideoStreamingSender::handleStartNack(cMessage *msg)
+void RtVideoStreamingSender::handleStartNack(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStartNack - MEC app did not start correctly, trying to start again" << endl;
 }
 
-void RtVideoStreamingSender::handleStartAck(cMessage *msg)
+void RtVideoStreamingSender::handleStartAck(inet::Packet *packet)
 {
 }
 
-void RtVideoStreamingSender::handleStopNack(cMessage *msg)
+void RtVideoStreamingSender::handleStopNack(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStopNack - MEC app did not stop correctly, trying to stop again" << endl;
 }
 
-void RtVideoStreamingSender::handleStopAck(cMessage *msg)
+void RtVideoStreamingSender::handleStopAck(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStopAck" << endl;
     // send stop MEC app to device app
@@ -614,7 +627,7 @@ void RtVideoStreamingSender::handleStopAck(cMessage *msg)
     cancelEvent(_nextFrame);
 }
 
-void RtVideoStreamingSender::handleStartSessionAck(cMessage *msg)
+void RtVideoStreamingSender::handleStartSessionAck(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStartSessionAck" << endl;
     cancelEvent(selfSessionStart_);
@@ -628,12 +641,12 @@ void RtVideoStreamingSender::handleStartSessionAck(cMessage *msg)
     }
 }
 
-void RtVideoStreamingSender::handleStartSessionNack(cMessage *msg)
+void RtVideoStreamingSender::handleStartSessionNack(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStartSessionNack" << endl;
 }
 
-void RtVideoStreamingSender::handleStopSessionAck(cMessage *msg)
+void RtVideoStreamingSender::handleStopSessionAck(inet::Packet *packet)
 {
     EV << "RtVideoStreamingSender::handleStopSessionAck" << endl;
     cancelEvent(selfSessionStop_);
@@ -649,7 +662,7 @@ void RtVideoStreamingSender::handleStopSessionAck(cMessage *msg)
     }
 }
 
-void RtVideoStreamingSender::handleStopSessionNack(cMessage *msg)
+void RtVideoStreamingSender::handleStopSessionNack(inet::Packet *packet)
 {}
 
 void RtVideoStreamingSender::openFileStream()

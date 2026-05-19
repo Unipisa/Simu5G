@@ -33,6 +33,7 @@ void AlertReceiver::initialize(int stage)
     if (port != -1) {
         socket.setOutputGate(gate("socketOut"));
         socket.bind(port);
+        socket.setCallback(this);
 
         // for multicast support
         inet::IInterfaceTable *ift = inet::getModuleFromPar<inet::IInterfaceTable>(par("interfaceTableModule"), this);
@@ -58,10 +59,13 @@ void AlertReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet *pPacket = check_and_cast<Packet *>(msg);
+    socket.processMessage(msg);
+}
 
+void AlertReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
     // read Alert header
-    auto alert = pPacket->popAtFront<AlertPacket>();
+    auto alert = packet->popAtFront<AlertPacket>();
 
     // emit statistics
     simtime_t delay = simTime() - alert->getPayloadTimestamp();
@@ -72,7 +76,17 @@ void AlertReceiver::handleMessage(cMessage *msg)
 
     EV << "AlertReceiver::handleMessage - Packet received: SeqNo[" << alert->getSno() << "] Delay[" << delay << "]" << endl;
 
-    delete msg;
+    delete packet;
+}
+
+void AlertReceiver::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void AlertReceiver::socketClosed(UdpSocket *socket)
+{
 }
 
 void AlertReceiver::refreshDisplay() const

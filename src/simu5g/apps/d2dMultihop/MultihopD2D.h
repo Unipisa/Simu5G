@@ -32,7 +32,7 @@ using namespace omnetpp;
 
 class EventGenerator;
 
-class MultihopD2D : public cSimpleModule
+class MultihopD2D : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     static uint16_t numMultihopD2DApps;  // counter of apps (used for assigning the ids)
 
@@ -106,6 +106,11 @@ class MultihopD2D : public cSimpleModule
     ~MultihopD2D() override;
 
     virtual void handleEvent(unsigned int eventId);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

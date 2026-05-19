@@ -47,7 +47,7 @@ struct FragmentedFrameStatus {
  * @author Alessandro Noferi
  */
 
-class RtVideoStreamingSender : public cSimpleModule
+class RtVideoStreamingSender : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     //communication to device app and MEC app
     inet::UdpSocket socket;
@@ -152,21 +152,26 @@ class RtVideoStreamingSender : public cSimpleModule
     void sendSessionStartMessage();
 
     // handlers
-    void handleStartAck(cMessage *msg);
-    void handleStartNack(cMessage *msg);
+    void handleStartAck(inet::Packet *packet);
+    void handleStartNack(inet::Packet *packet);
 
-    void handleStopAck(cMessage *msg);
-    void handleStopNack(cMessage *msg);
+    void handleStopAck(inet::Packet *packet);
+    void handleStopNack(inet::Packet *packet);
 
-    void handleStartSessionAck(cMessage *msg);
-    void handleStartSessionNack(cMessage *msg);
+    void handleStartSessionAck(inet::Packet *packet);
+    void handleStartSessionNack(inet::Packet *packet);
 
-    void handleStopSessionAck(cMessage *msg);
-    void handleStopSessionNack(cMessage *msg);
+    void handleStopSessionAck(inet::Packet *packet);
+    void handleStopSessionNack(inet::Packet *packet);
 
-    void handleAckStartMecApp(cMessage *msg);
-    void handleInfoMecApp(cMessage *msg);
-    void handleAckStopMecApp(cMessage *msg);
+    void handleAckStartMecApp(inet::Packet *packet);
+    void handleInfoMecApp(inet::Packet *packet);
+    void handleAckStopMecApp(inet::Packet *packet);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 
     void openFileStream();
     void initializeVideoStream();

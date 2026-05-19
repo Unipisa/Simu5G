@@ -58,6 +58,24 @@ void BurstSender::handleMessage(cMessage *msg)
         else
             initTraffic();
     }
+    else {
+        socket.processMessage(msg);
+    }
+}
+
+void BurstSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    delete packet;
+}
+
+void BurstSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void BurstSender::socketClosed(UdpSocket *socket)
+{
 }
 
 void BurstSender::initTraffic()
@@ -78,6 +96,7 @@ void BurstSender::initTraffic()
         destAddress_ = inet::L3AddressResolver().resolve(par("destAddress").stringValue());
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort_);
+        socket.setCallback(this);
 
         int tos = par("tos");
         if (tos != -1)

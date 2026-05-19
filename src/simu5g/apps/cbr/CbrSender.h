@@ -26,7 +26,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class CbrSender : public cSimpleModule
+class CbrSender : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     inet::UdpSocket socket;
 
@@ -63,6 +63,11 @@ class CbrSender : public cSimpleModule
     void initialize(int stage) override;
     void finish() override;
     void handleMessage(cMessage *msg) override;
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

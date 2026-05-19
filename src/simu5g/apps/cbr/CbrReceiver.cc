@@ -34,6 +34,7 @@ void CbrReceiver::initialize(int stage)
         if (port != -1) {
             socket.setOutputGate(gate("socketOut"));
             socket.bind(port);
+            socket.setCallback(this);
         }
     }
 }
@@ -42,8 +43,12 @@ void CbrReceiver::handleMessage(cMessage *msg)
 {
     ASSERT(!msg->isSelfMessage());
 
-    Packet *pPacket = check_and_cast<Packet *>(msg);
-    auto cbrHeader = pPacket->popAtFront<CbrPacket>();
+    socket.processMessage(msg);
+}
+
+void CbrReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    auto cbrHeader = packet->popAtFront<CbrPacket>();
 
     numReceived_++;
     totFrames_ = cbrHeader->getNumFrames(); // XXX this value can be written just once
@@ -62,7 +67,17 @@ void CbrReceiver::handleMessage(cMessage *msg)
 
     emit(cbrRcvdPktSignal_, (long)cbrHeader->getFrameId());
 
-    delete msg;
+    delete packet;
+}
+
+void CbrReceiver::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void CbrReceiver::socketClosed(UdpSocket *socket)
+{
 }
 
 void CbrReceiver::finish()

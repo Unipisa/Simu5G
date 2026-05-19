@@ -60,6 +60,7 @@ void VoipReceiver::initialize(int stage)
     if (port != -1) {
         socket.setOutputGate(gate("socketOut"));
         socket.bind(port);
+        socket.setCallback(this);
     }
 
     warmUpPer_ = getSimulation()->getWarmupPeriod();
@@ -70,10 +71,13 @@ void VoipReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet *pPacket = check_and_cast<Packet *>(msg);
+    socket.processMessage(msg);
+}
 
+void VoipReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
     // read VoIP header
-    auto voipHeader = pPacket->popAtFront<VoipPacket>();
+    auto voipHeader = packet->popAtFront<VoipPacket>();
 
     if (mInit_) {
         mCurrentTalkspurt_ = voipHeader->getIDtalk();
@@ -104,7 +108,17 @@ void VoipReceiver::handleMessage(cMessage *msg)
     packetToBeQueued->setArrivalTime(arrivalTime);
     mPacketsList_.push_back(packetToBeQueued);
 
-    delete pPacket;
+    delete packet;
+}
+
+void VoipReceiver::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void VoipReceiver::socketClosed(UdpSocket *socket)
+{
 }
 
 void VoipReceiver::playout(bool finish)

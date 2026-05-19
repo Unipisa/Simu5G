@@ -85,6 +85,7 @@ void MultihopD2D::initialize(int stage)
         EV << "MultihopD2D::initialize - binding to port: local:" << localPort_ << " , dest:" << destPort_ << endl;
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort_);
+        socket.setCallback(this);
 
         int tos = par("tos");
         if (tos != -1)
@@ -136,11 +137,26 @@ void MultihopD2D::handleMessage(cMessage *msg)
         }
     }
     else {
-        if (!strcmp(msg->getName(), "MultihopD2DPacket"))
-            handleRcvdPacket(msg);
-        else
-            throw cRuntimeError("Unrecognized  message");
+        socket.processMessage(msg);
     }
+}
+
+void MultihopD2D::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    if (!strcmp(packet->getName(), "MultihopD2DPacket"))
+        handleRcvdPacket(packet);
+    else
+        throw cRuntimeError("Unrecognized message");
+}
+
+void MultihopD2D::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void MultihopD2D::socketClosed(UdpSocket *socket)
+{
 }
 
 void MultihopD2D::handleEvent(unsigned int eventId)

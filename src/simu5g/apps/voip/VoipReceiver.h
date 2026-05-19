@@ -26,7 +26,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class VoipReceiver : public cSimpleModule
+class VoipReceiver : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     inet::UdpSocket socket;
 
@@ -68,6 +68,11 @@ class VoipReceiver : public cSimpleModule
     void handleMessage(cMessage *msg) override;
     double eModel(simtime_t delay, double loss);
     void playout(bool finish);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

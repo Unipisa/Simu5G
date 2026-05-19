@@ -40,6 +40,7 @@ void VodUdpServer::initialize(int stage)
     // set up Udp socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(serverPort);
+    socket.setCallback(this);
     int tos = par("tos");
     if (tos != -1)
         socket.setTos(tos);
@@ -119,7 +120,22 @@ void VodUdpServer::handleMessage(cMessage *msg)
             handleSVCMessage(msg);
     }
     else
-        delete msg;
+        socket.processMessage(msg);
+}
+
+void VodUdpServer::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    delete packet;
+}
+
+void VodUdpServer::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void VodUdpServer::socketClosed(UdpSocket *socket)
+{
 }
 
 void VodUdpServer::handleSVCMessage(cMessage *msg)

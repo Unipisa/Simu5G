@@ -27,7 +27,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class VodUdpClient : public cSimpleModule
+class VodUdpClient : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     inet::UdpSocket socket;
     std::fstream outfile;
@@ -50,6 +50,11 @@ class VodUdpClient : public cSimpleModule
     void finish() override;
     void handleMessage(cMessage *msg) override;
     virtual void receiveStream(const VoDPacket *msg);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

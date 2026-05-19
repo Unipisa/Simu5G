@@ -133,17 +133,33 @@ void VodUdpClient::handleMessage(cMessage *msg)
         int localPort = par("localPort");
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort);
+        socket.setCallback(this);
         int tos = par("tos");
         if (tos != -1)
             socket.setTos(tos);
         delete msg;
     }
-    else if (opp_stringbeginswith(msg->getName(), "VoDPacket")) {
-        receiveStream(check_and_cast<inet::Packet *>(msg)->peekAtFront<VoDPacket>().get());
-        delete msg;
+    else {
+        socket.processMessage(msg);
     }
-    else
-        delete msg;
+}
+
+void VodUdpClient::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    if (opp_stringbeginswith(packet->getName(), "VoDPacket")) {
+        receiveStream(packet->peekAtFront<VoDPacket>().get());
+    }
+    delete packet;
+}
+
+void VodUdpClient::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void VodUdpClient::socketClosed(UdpSocket *socket)
+{
 }
 
 void VodUdpClient::receiveStream(const VoDPacket *msg)

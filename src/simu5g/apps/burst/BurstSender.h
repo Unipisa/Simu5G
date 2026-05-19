@@ -25,7 +25,7 @@ namespace simu5g {
 
 using namespace inet;
 
-class BurstSender : public cSimpleModule
+class BurstSender : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     UdpSocket socket;
 
@@ -65,6 +65,11 @@ class BurstSender : public cSimpleModule
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

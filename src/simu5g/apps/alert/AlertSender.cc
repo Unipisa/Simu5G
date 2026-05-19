@@ -49,6 +49,7 @@ void AlertSender::initialize(int stage)
 
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
+    socket.setCallback(this);
 
     int tos = par("tos");
     if (tos != -1)
@@ -92,6 +93,24 @@ void AlertSender::handleMessage(cMessage *msg)
         else
             throw cRuntimeError("AlertSender::handleMessage - Unrecognized self message");
     }
+    else {
+        socket.processMessage(msg);
+    }
+}
+
+void AlertSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    delete packet;
+}
+
+void AlertSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void AlertSender::socketClosed(UdpSocket *socket)
+{
 }
 
 void AlertSender::sendAlertPacket()

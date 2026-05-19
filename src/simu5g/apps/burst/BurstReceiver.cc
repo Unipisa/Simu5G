@@ -29,6 +29,7 @@ void BurstReceiver::initialize(int stage)
         if (port != -1) {
             socket.setOutputGate(gate("socketOut"));
             socket.bind(port);
+            socket.setCallback(this);
         }
     }
 }
@@ -38,8 +39,12 @@ void BurstReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet *pPacket = check_and_cast<Packet *>(msg);
-    auto burstHeader = pPacket->popAtFront<BurstPacket>();
+    socket.processMessage(msg);
+}
+
+void BurstReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    auto burstHeader = packet->popAtFront<BurstPacket>();
 
     numReceived_++;
 
@@ -49,7 +54,17 @@ void BurstReceiver::handleMessage(cMessage *msg)
     emit(burstPktDelaySignal_, delay);
     emit(burstRcvdPktSignal_, (long)burstHeader->getMsgId());
 
-    delete msg;
+    delete packet;
+}
+
+void BurstReceiver::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void BurstReceiver::socketClosed(UdpSocket *socket)
+{
 }
 
 } //namespace
