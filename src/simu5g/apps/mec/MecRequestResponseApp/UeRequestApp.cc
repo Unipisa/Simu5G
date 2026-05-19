@@ -68,6 +68,7 @@ void UeRequestApp::initialize(int stage)
     //binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
+    socket.setCallback(this);
 
     int tos = par("tos");
     if (tos != -1)
@@ -112,33 +113,48 @@ void UeRequestApp::handleMessage(cMessage *msg)
     }
     // Receiver Side
     else {
-        inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-        inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-
-        /*
-         * From Device app
-         * device app usually runs in the UE (loopback), but it could also run in other places
-         */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
-            auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-            if (!strcmp(mePkt->getType(), ACK_START_MECAPP))
-                handleAckStartMecRequestApp(msg);
-            else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP))
-                handleAckStopMecRequestApp(msg);
-            else
-                throw cRuntimeError("UeRequestApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
-        }
-        // From MEC application
-        else {
-            auto mePkt = packet->peekAtFront<RequestResponseAppPacket>();
-            if (mePkt->getType() == MECAPP_RESPONSE)
-                recvResponse(msg);
-            else if (mePkt->getType() == UEAPP_ACK_STOP)
-                handleStopApp(msg);
-            else
-                throw cRuntimeError("UeRequestApp::handleMessage - \tFATAL! Error, RequestAppPacket type %d not recognized", mePkt->getType());
-        }
+        socket.processMessage(msg);
     }
+}
+
+void UeRequestApp::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
+
+    /*
+     * From Device app
+     * device app usually runs in the UE (loopback), but it could also run in other places
+     */
+    if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
+        auto mePkt = packet->peekAtFront<DeviceAppPacket>();
+        if (!strcmp(mePkt->getType(), ACK_START_MECAPP))
+            handleAckStartMecRequestApp(packet);
+        else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP))
+            handleAckStopMecRequestApp(packet);
+        else
+            throw cRuntimeError("UeRequestApp::socketDataArrived - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
+    }
+    // From MEC application
+    else {
+        auto mePkt = packet->peekAtFront<RequestResponseAppPacket>();
+        if (mePkt->getType() == MECAPP_RESPONSE)
+            recvResponse(packet);
+        else if (mePkt->getType() == UEAPP_ACK_STOP)
+            handleStopApp(packet);
+        else
+            throw cRuntimeError("UeRequestApp::socketDataArrived - \tFATAL! Error, RequestAppPacket type %d not recognized", mePkt->getType());
+    }
+    delete packet;
+}
+
+void UeRequestApp::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void UeRequestApp::socketClosed(UdpSocket *socket)
+{
 }
 
 void UeRequestApp::sendStartMecRequestApp()
@@ -186,10 +202,9 @@ void UeRequestApp::sendStopMecRequestApp()
     scheduleAt(simTime() + 0.5, selfStop_);
 }
 
-void UeRequestApp::handleAckStartMecRequestApp(cMessage *msg)
+void UeRequestApp::handleAckStartMecRequestApp(Packet *packet)
 {
     EV << "UeRequestApp::handleAckStartMecRequestApp - Received Start ACK packet" << endl;
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
     if (pkt->getResult() == true) {
@@ -214,14 +229,11 @@ void UeRequestApp::handleAckStartMecRequestApp(cMessage *msg)
             scheduleAt(simTime() + startTime, selfStart_);
     }
 
-    delete packet;
 }
 
-void UeRequestApp::handleAckStopMecRequestApp(cMessage *msg)
+void UeRequestApp::handleAckStopMecRequestApp(Packet *packet)
 {
     EV << "UeRequestApp::handleAckStopMecRequestApp - Received Stop ACK packet" << endl;
-
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
     EV << "UeRequestApp::handleAckStopMecRequestApp - Received " << pkt->getType() << " type RequestPacket with result: " << pkt->getResult() << endl;
@@ -248,10 +260,9 @@ void UeRequestApp::sendRequest()
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
 }
 
-void UeRequestApp::handleStopApp(cMessage *msg)
+void UeRequestApp::handleStopApp(Packet *packet)
 {
     EV << "UeRequestApp::handleStopApp" << endl;
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
     sendStopMecRequestApp();
@@ -270,10 +281,9 @@ void UeRequestApp::sendStopApp()
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
 }
 
-void UeRequestApp::recvResponse(cMessage *msg)
+void UeRequestApp::recvResponse(Packet *packet)
 {
     EV << "UeRequestApp::recvResponse" << endl;
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
     simtime_t upLinkDelay = res->getRequestArrivedTimestamp() - res->getRequestSentTimestamp();
@@ -293,8 +303,6 @@ void UeRequestApp::recvResponse(cMessage *msg)
     emit(processingTimeSignal_, res->getProcessingTime());
     emit(serviceResponseTimeSignal_, res->getServiceResponseTime());
     emit(responseTimeSignal_, respTime);
-
-    delete packet;
 
     if (unBlockingMsg_->isScheduled())
         cancelEvent(unBlockingMsg_);

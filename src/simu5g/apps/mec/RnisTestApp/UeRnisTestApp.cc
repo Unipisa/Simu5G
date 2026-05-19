@@ -58,6 +58,7 @@ void UeRnisTestApp::initialize(int stage)
     //binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort);
+    socket.setCallback(this);
 
     int tos = par("tos");
     if (tos != -1)
@@ -103,44 +104,54 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
     }
     // Receiver Side
     else {
-        inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-
-        inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-        // int port = packet->getTag<L4PortInd>()->getSrcPort();
-
-        /*
-         * From Device app
-         * The device app usually runs in the UE (loopback), but it could also run in other places
-         */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
-            auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-            if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(msg);
-
-            else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMecApp(msg);
-
-            else {
-                throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
-            }
-        }
-        // From MEC application
-        else {
-            auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
-            if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(msg);
-            else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK)) {
-                EV << "UeRnisTestApp::handleMessage - MEC app did not start correctly, trying to start again" << endl;
-            }
-            else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_ACK)) {
-                EV << "UeRnisTestApp::handleMessage - MEC app started correctly" << endl;
-                if (selfMecAppStart_->isScheduled()) {
-                    cancelEvent(selfMecAppStart_);
-                }
-            }
-            else {
-                throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error, RnisTestAppPacket type %s not recognized", mePkt->getType());
-            }
-        }
-        delete msg;
+        socket.processMessage(msg);
     }
+}
+
+void UeRnisTestApp::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
+
+    /*
+     * From Device app
+     * The device app usually runs in the UE (loopback), but it could also run in other places
+     */
+    if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
+        auto mePkt = packet->peekAtFront<DeviceAppPacket>();
+        if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(packet);
+        else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMecApp(packet);
+        else {
+            throw cRuntimeError("UeRnisTestApp::socketDataArrived - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
+        }
+    }
+    // From MEC application
+    else {
+        auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
+        if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(packet);
+        else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK)) {
+            EV << "UeRnisTestApp::socketDataArrived - MEC app did not start correctly, trying to start again" << endl;
+        }
+        else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_ACK)) {
+            EV << "UeRnisTestApp::socketDataArrived - MEC app started correctly" << endl;
+            if (selfMecAppStart_->isScheduled()) {
+                cancelEvent(selfMecAppStart_);
+            }
+        }
+        else {
+            throw cRuntimeError("UeRnisTestApp::socketDataArrived - \tFATAL! Error, RnisTestAppPacket type %s not recognized", mePkt->getType());
+        }
+    }
+    delete packet;
+}
+
+void UeRnisTestApp::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void UeRnisTestApp::socketClosed(UdpSocket *socket)
+{
 }
 
 /*
@@ -208,9 +219,8 @@ void UeRnisTestApp::sendStopMecApp()
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void UeRnisTestApp::handleAckStartMecApp(cMessage *msg)
+void UeRnisTestApp::handleAckStartMecApp(Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
     if (pkt->getResult() == true) {
@@ -259,9 +269,8 @@ void UeRnisTestApp::sendMessageToMecApp() {
     EV << "UeRnisTestApp::sendMessageToMecApp() - start Message sent to the MEC app" << endl;
 }
 
-void UeRnisTestApp::handleInfoMecApp(cMessage *msg)
+void UeRnisTestApp::handleInfoMecApp(Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto rnisInfo = packet->peekAtFront<RnisTestAppInfoPacket>();
 
     EV << "UeRnisTestApp::handleInfoMecApp - Received " << rnisInfo->getType() << " from MEC app:" << endl;
@@ -281,9 +290,8 @@ void UeRnisTestApp::handleInfoMecApp(cMessage *msg)
     }
 }
 
-void UeRnisTestApp::handleAckStopMecApp(cMessage *msg)
+void UeRnisTestApp::handleAckStopMecApp(Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
     EV << "UeRnisTestApp::handleAckStopMecApp - Received " << pkt->getType() << " with result: " << pkt->getResult() << endl;

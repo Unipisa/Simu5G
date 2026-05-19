@@ -63,6 +63,7 @@ void UeWarningAlertApp::initialize(int stage)
     //binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
+    socket.setCallback(this);
 
     int tos = par("tos");
     if (tos != -1)
@@ -111,42 +112,54 @@ void UeWarningAlertApp::handleMessage(cMessage *msg)
     }
     // Receiver Side
     else {
-        inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-
-        inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-        // int port = packet->getTag<L4PortInd>()->getSrcPort();
-
-        /*
-         * From Device app
-         * device app usually runs in the UE (loopback), but it could also run in other places
-         */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
-            auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-            if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMEWarningAlertApp(msg);
-            else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMEWarningAlertApp(msg);
-            else {
-                throw cRuntimeError("UeWarningAlertApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
-            }
-        }
-        // From MEC application
-        else {
-            auto mePkt = packet->peekAtFront<WarningAppPacket>();
-            if (!strcmp(mePkt->getType(), WARNING_ALERT)) handleInfoMEWarningAlertApp(msg);
-            else if (!strcmp(mePkt->getType(), START_NACK)) {
-                EV << "UeWarningAlertApp::handleMessage - MEC app did not start correctly, trying to start again" << endl;
-            }
-            else if (!strcmp(mePkt->getType(), START_ACK)) {
-                EV << "UeWarningAlertApp::handleMessage - MEC app started correctly" << endl;
-                if (selfMecAppStart_->isScheduled()) {
-                    cancelEvent(selfMecAppStart_);
-                }
-            }
-            else {
-                throw cRuntimeError("UeWarningAlertApp::handleMessage - \tFATAL! Error, WarningAppPacket type %s not recognized", mePkt->getType());
-            }
-        }
-        delete msg;
+        socket.processMessage(msg);
     }
+}
+
+void UeWarningAlertApp::socketDataArrived(UdpSocket *socket, Packet *packet)
+{
+    inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
+
+    /*
+     * From Device app
+     * device app usually runs in the UE (loopback), but it could also run in other places
+     */
+    if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
+        auto mePkt = packet->peekAtFront<DeviceAppPacket>();
+        if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMEWarningAlertApp(packet);
+        else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMEWarningAlertApp(packet);
+        else {
+            throw cRuntimeError("UeWarningAlertApp::socketDataArrived - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
+        }
+    }
+    // From MEC application
+    else {
+        auto mePkt = packet->peekAtFront<WarningAppPacket>();
+        if (!strcmp(mePkt->getType(), WARNING_ALERT)) handleInfoMEWarningAlertApp(packet);
+        else if (!strcmp(mePkt->getType(), START_NACK)) {
+            EV << "UeWarningAlertApp::socketDataArrived - MEC app did not start correctly, trying to start again" << endl;
+        }
+        else if (!strcmp(mePkt->getType(), START_ACK)) {
+            EV << "UeWarningAlertApp::socketDataArrived - MEC app started correctly" << endl;
+            if (selfMecAppStart_->isScheduled()) {
+                cancelEvent(selfMecAppStart_);
+            }
+        }
+        else {
+            throw cRuntimeError("UeWarningAlertApp::socketDataArrived - \tFATAL! Error, WarningAppPacket type %s not recognized", mePkt->getType());
+        }
+    }
+    delete packet;
+}
+
+void UeWarningAlertApp::socketErrorArrived(UdpSocket *socket, Indication *indication)
+{
+    EV_WARN << "Ignoring UDP error report " << indication->getName() << endl;
+    delete indication;
+}
+
+void UeWarningAlertApp::socketClosed(UdpSocket *socket)
+{
 }
 
 /*
@@ -216,9 +229,8 @@ void UeWarningAlertApp::sendStopMEWarningAlertApp()
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void UeWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage *msg)
+void UeWarningAlertApp::handleAckStartMEWarningAlertApp(Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
     if (pkt->getResult() == true) {
@@ -268,9 +280,8 @@ void UeWarningAlertApp::sendMessageToMecApp() {
     EV << "UeWarningAlertApp::sendMessageToMecApp() - Start message sent to the MEC app" << endl;
 }
 
-void UeWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)
+void UeWarningAlertApp::handleInfoMEWarningAlertApp(Packet *packet)
 {
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<WarningAlertPacket>();
 
     EV << "UeWarningAlertApp::handleInfoMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket" << endl;
@@ -304,10 +315,8 @@ void UeWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)
     }
 }
 
-void UeWarningAlertApp::handleAckStopMEWarningAlertApp(cMessage *msg)
+void UeWarningAlertApp::handleAckStopMEWarningAlertApp(Packet *packet)
 {
-
-    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
     EV << "UeWarningAlertApp::handleAckStopMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket with result: " << pkt->getResult() << endl;

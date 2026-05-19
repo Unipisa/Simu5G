@@ -33,7 +33,7 @@ using namespace omnetpp;
 // that in the Qtenv log (set the logger parameter to dump the output to a file).
 // If the period is set to 0, then only one query is requested.
 //
-class UeRnisTestApp : public cSimpleModule
+class UeRnisTestApp : public cSimpleModule, public inet::UdpSocket::ICallback
 {
 
     // Communication to device app and MEC app
@@ -77,9 +77,14 @@ class UeRnisTestApp : public cSimpleModule
     void sendMessageToMecApp();
     void sendStopMecApp();
 
-    void handleAckStartMecApp(cMessage *msg);
-    void handleInfoMecApp(cMessage *msg);
-    void handleAckStopMecApp(cMessage *msg);
+    void handleAckStartMecApp(inet::Packet *packet);
+    void handleInfoMecApp(inet::Packet *packet);
+    void handleAckStopMecApp(inet::Packet *packet);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

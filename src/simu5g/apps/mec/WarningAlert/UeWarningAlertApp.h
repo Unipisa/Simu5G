@@ -43,7 +43,7 @@ using namespace omnetpp;
  * 4) send delete MEC app to the Device App
  */
 
-class UeWarningAlertApp : public cSimpleModule
+class UeWarningAlertApp : public cSimpleModule, public inet::UdpSocket::ICallback
 {
 
     //communication to device app and mec app
@@ -94,9 +94,14 @@ class UeWarningAlertApp : public cSimpleModule
     void sendMessageToMecApp();
     void sendStopMEWarningAlertApp();
 
-    void handleAckStartMEWarningAlertApp(cMessage *msg);
-    void handleInfoMEWarningAlertApp(cMessage *msg);
-    void handleAckStopMEWarningAlertApp(cMessage *msg);
+    void handleAckStartMEWarningAlertApp(inet::Packet *packet);
+    void handleInfoMEWarningAlertApp(inet::Packet *packet);
+    void handleAckStopMEWarningAlertApp(inet::Packet *packet);
+
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace

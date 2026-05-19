@@ -30,7 +30,7 @@ enum {
     UEAPP_ACK_STOP  = 3,
 };
 
-class UeRequestApp : public cSimpleModule
+class UeRequestApp : public cSimpleModule, public inet::UdpSocket::ICallback
 {
     //communication to device app and mec app
     inet::UdpSocket socket;
@@ -86,16 +86,20 @@ class UeRequestApp : public cSimpleModule
     // --- Functions to interact with the DeviceApp --- //
     void sendStartMecRequestApp();
     void sendStopMecRequestApp();
-    void handleStopApp(cMessage *msg);
     void sendStopApp();
 
-    void handleAckStartMecRequestApp(cMessage *msg);
-    void handleAckStopMecRequestApp(cMessage *msg);
+    void handleAckStartMecRequestApp(inet::Packet *packet);
+    void handleAckStopMecRequestApp(inet::Packet *packet);
+    void handleStopApp(inet::Packet *packet);
 
     // --- Functions to interact with the MecPlatooningApp --- //
     void sendRequest();
-    void recvResponse(cMessage *msg);
+    void recvResponse(inet::Packet *packet);
 
+    // UdpSocket::ICallback methods
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 };
 
 } //namespace
