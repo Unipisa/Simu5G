@@ -846,7 +846,8 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 if (switchPkt->getClearRlcBuffer()) {
                     EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - erasing buffered data" << endl;
 
-                    deleteOutgoingConnection(cid);
+                    // Clear buffers but keep the connection alive for potential mode switch back
+                    clearOutgoingConnectionBuffers(cid);
                 }
 
                 if (switchPkt->getInterruptHarq()) {
@@ -884,19 +885,6 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
             *(pktDup->addTagIfAbsent<FlowControlInfo>()) = connInfo;
             sendUpperPackets(pktDup);
 
-            if (oldDirection != newDirection && switchPkt->getClearRlcBuffer()) {
-                EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - clearing LCG map" << endl;
-
-                // Remove entry from lcgMap
-                for (auto lt = lcgMap_.begin(); lt != lcgMap_.end(); ) {
-                    if (lt->second.first == cid) {
-                        lt = lcgMap_.erase(lt);
-                    }
-                    else {
-                        ++lt;
-                    }
-                }
-            }
             EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - send switch signal to the RLC TX entity corresponding to the old mode, cid " << cid << endl;
         }
 

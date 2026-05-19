@@ -234,6 +234,23 @@ void LteMacBase::deleteOutgoingConnection(MacCid cid)
     connDescOut_.erase(it);
 }
 
+void LteMacBase::clearOutgoingConnectionBuffers(MacCid cid)
+{
+    auto it = connDescOut_.find(cid);
+    if (it == connDescOut_.end())
+        throw cRuntimeError("LteMacBase::clearOutgoingConnectionBuffers - Connection %s not found", cid.str().c_str());
+
+    OutgoingConnectionInfo& connInfo = it->second;
+
+    // Empty the real buffer (drop all packets)
+    while (!connInfo.queue->isEmpty())
+        delete connInfo.queue->popFront();
+
+    // Empty the virtual buffer
+    while (!connInfo.buffer->isEmpty())
+        connInfo.buffer->popFront();
+}
+
 void LteMacBase::createIncomingConnection(MacCid cid, const FlowDescriptor& connInfo)
 {
     Enter_Method("createIncomingConnection(%s)", cid.str().c_str());

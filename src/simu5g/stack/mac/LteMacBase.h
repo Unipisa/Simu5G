@@ -429,6 +429,13 @@ class LteMacBase : public cSimpleModule
     virtual void deleteOutgoingConnection(MacCid cid);
 
     /**
+     * clearOutgoingConnectionBuffers() empties the MAC queues and virtual buffers
+     * for a given CID without destroying the connection. Used during D2D mode switch
+     * to preserve the connection for potential mode switch back.
+     */
+    virtual void clearOutgoingConnectionBuffers(MacCid cid);
+
+    /**
      * createIncomingConnection() registers an incoming connection for a given CID
      * if it doesn't already exist
      */
