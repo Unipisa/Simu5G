@@ -89,6 +89,8 @@ class MecWarningAlertApp : public MecAppBase
 
     void established(int connId) override;
 
+    void finish() override;
+
   public:
     ~MecWarningAlertApp() override;
 

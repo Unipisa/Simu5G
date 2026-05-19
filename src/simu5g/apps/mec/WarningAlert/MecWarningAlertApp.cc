@@ -32,6 +32,11 @@ Define_Module(MecWarningAlertApp);
 using namespace inet;
 using namespace omnetpp;
 
+void MecWarningAlertApp::finish()
+{
+    ueSocket.destroy();
+}
+
 MecWarningAlertApp::~MecWarningAlertApp()
 {
     if (circle != nullptr) {

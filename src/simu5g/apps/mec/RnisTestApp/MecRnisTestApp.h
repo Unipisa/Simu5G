@@ -63,6 +63,8 @@ class MecRnisTestApp : public MecAppBase
     void handleSelfMessage(cMessage *msg) override;
 
     void established(int connId) override;
+
+    void finish() override;
 };
 
 } //namespace

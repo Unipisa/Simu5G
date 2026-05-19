@@ -44,6 +44,11 @@ simsignal_t MecRTVideoStreamingReceiver::frameDisplayedSignal_ = registerSignal(
 simsignal_t MecRTVideoStreamingReceiver::startSessionSignal_ = registerSignal("rtVideoStreamingStartSession");
 simsignal_t MecRTVideoStreamingReceiver::stopSessionSignal_ = registerSignal("rtVideoStreamingStopSession");
 
+void MecRTVideoStreamingReceiver::finish()
+{
+    ueSocket.destroy();
+}
+
 MecRTVideoStreamingReceiver::~MecRTVideoStreamingReceiver()
 {
     cancelAndDelete(displayFrame);

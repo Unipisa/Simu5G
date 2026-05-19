@@ -92,6 +92,8 @@ class MecResponseApp : public MecAppBase
     void established(int connId) override;
     void socketClosed(inet::TcpSocket *socket) override;
 
+    void finish() override;
+
   public:
     ~MecResponseApp() override;
 };

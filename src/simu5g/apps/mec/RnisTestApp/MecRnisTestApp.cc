@@ -33,6 +33,11 @@ Define_Module(MecRnisTestApp);
 using namespace inet;
 using namespace omnetpp;
 
+void MecRnisTestApp::finish()
+{
+    ueSocket.destroy();
+}
+
 void MecRnisTestApp::initialize(int stage)
 {
     MecAppBase::initialize(stage);

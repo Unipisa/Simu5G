@@ -31,6 +31,11 @@ Define_Module(MecResponseApp);
 using namespace inet;
 using namespace omnetpp;
 
+void MecResponseApp::finish()
+{
+    ueAppSocket_.destroy();
+}
+
 MecResponseApp::~MecResponseApp()
 {
     delete currentRequestfMsg_;

@@ -532,6 +532,7 @@ void DeviceApp::socketFailure(inet::TcpSocket *socket, int code) {}
 
 void DeviceApp::finish()
 {
+    ueAppSocket_.destroy();
     if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED)
         ualcmpSocket_.close();
 }

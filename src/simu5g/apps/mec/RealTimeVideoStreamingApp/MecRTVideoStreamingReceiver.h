@@ -102,6 +102,8 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     double playoutFrame();
     void processPacket(inet::Packet *packet);
 
+    void finish() override;
+
   public:
     ~MecRTVideoStreamingReceiver() override;
 };
