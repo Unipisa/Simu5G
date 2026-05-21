@@ -63,6 +63,7 @@ module NrNicUe extends LteNicUeD2D
         rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.ntnChannelModelModule = hasNtnSupport ? "^.ntnChannelModel[0]" : "";
+        nrPhy.ntnAntennaModelModule = hasNtnSupport ? "^.ntnAntennaModel" : "";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.rrc.nrHandoverController";
         rrc.nrHandoverController.macModule = "^.^.nrMac";

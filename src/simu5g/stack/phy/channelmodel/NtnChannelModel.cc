@@ -176,9 +176,13 @@ std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, Us
                 static_cast<unsigned long>(relayHopSinr.size()), static_cast<unsigned long>(localHopSinr.size()));
     }
 
+    RbMap rbmap = lteInfo->getGrantedBlocks();
+
     // use harmonic formula to combine service and feeder link SINRs (see Maral-Bousequets, chap 5)
     std::vector<double> combinedSinr(localHopSinr.size(), 0.0);
     for (size_t i = 0; i < combinedSinr.size(); i++) {
+        if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
+            continue;
         double relayLinear = dBToLinear(relayHopSinr[i]);
         double localLinear = dBToLinear(localHopSinr[i]);
         double combinedSinrLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
@@ -673,6 +677,8 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
         return std::vector<double>(numBands_, -INFINITY);
     }
 
+    RbMap rbmap = lteInfo->getGrantedBlocks();
+
     // TODO if satellite is moving, you need to compute speed differently
     double speed = computeSpeed(terrestrialEndpointId, terrestrialEndpointCoord);
 
@@ -697,6 +703,8 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     std::vector<double> snrVector(numBands_, 0.0);
     std::vector<double> fadingAttenuation = computeFrequencySelectiveFading(terrestrialEndpointId, speed);
     for (unsigned int i = 0; i < numBands_; i++) {
+        if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
+            continue;
         snrVector[i] = recvPower + fadingAttenuation[i];
         EV_DEBUG << " NtnChannelModel::getSINR - band[" << i << "] fast fading[" << fadingAttenuation[i] << "dB] rx power[" << snrVector[i] << "dBm]" << endl;
     }
@@ -706,7 +714,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
     double noiseFigure = antennaModel_->getNoiseFigure();
     double thermalNoise = antennaModel_->getThermalNoise(rbBandwidth);
 
-    RbMap rbmap = lteInfo->getGrantedBlocks();
+
     double totN = dBmToLinear(thermalNoise + noiseFigure);
     for (unsigned int i = 0; i < numBands_; i++) {
         if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
