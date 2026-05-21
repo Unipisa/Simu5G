@@ -13,6 +13,7 @@ package simu5g.stack;
 
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.antennamodel.IAntennaModel;
+import simu5g.stack.phy.NtnPhyBase;
 
 module NtnServiceLinkNic
 {
