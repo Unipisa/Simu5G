@@ -48,6 +48,15 @@ void collectLeoSatMobilityModules(cModule *module, std::vector<LeoSatMobility *>
         collectLeoSatMobilityModules(*it, result);
 }
 
+void callInitializeStageRecursively(cModule *module, int stage)
+{
+    if (module == nullptr)
+        return;
+    module->callInitialize(stage);
+    for (cModule::SubmoduleIterator it(module); !it.end(); ++it)
+        callInitializeStageRecursively(*it, stage);
+}
+
 } // namespace
 
 void SatelliteInserter::initialize(int stage)
@@ -163,7 +172,8 @@ void SatelliteInserter::createSatellite(TLE tle, unsigned int satNum, unsigned i
         mobility->preInitialize(tle, wall_clock_sim_start_time_utc);
     }
     mod->scheduleStart(simTime());
-    mod->callInitialize();
+    for (int stage = 0; stage < inet::NUM_INIT_STAGES; stage++)
+        callInitializeStageRecursively(mod, stage);
 }
 
 void SatelliteInserter::instantiateSatellite(TLE tle)

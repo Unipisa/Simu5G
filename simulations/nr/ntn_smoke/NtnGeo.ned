@@ -20,10 +20,10 @@ import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.mobility.georeference.GeographicReferenceSystem;
 import simu5g.nodes.NtnGateway;
+import simu5g.nodes.NtnGNodeB;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.GeoSatellite;
 import simu5g.nodes.Upf;
-import simu5g.nodes.gNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 //
@@ -67,7 +67,7 @@ network NtnGeo
         iUpf: Upf {
             @display("p=580,120");
         }
-        gnb: gNodeB {
+        gnb: NtnGNodeB {
             @display("p=720,250");
         }
         ntnGateway: NtnGateway {

@@ -39,10 +39,6 @@ module LteNicEnb extends LteNicBase like ICellularNicEnb
         bool compEnabled = default(false);
         *.handoverX2ForwarderModule = "^.handoverX2Forwarder";
 
-    gates:
-        input ntnIn @loose;
-        output ntnOut @loose;
-
     submodules:
         pdcpDcMux: DcMux {
             @display("p=609,331;is=s");
@@ -100,7 +96,4 @@ module LteNicEnb extends LteNicBase like ICellularNicEnb
             x2$i[i] --> x2Manager.x2In++;
             x2$o[i] <-- x2Manager.x2Out++;
         }
-
-        ntnIn --> phy.ntnIn;
-        phy.ntnOut --> ntnOut;
 }

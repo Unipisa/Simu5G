@@ -31,7 +31,6 @@ class NrPhyUe : public LtePhyUeD2D
 
     void initialize(int stage) override;
     void initializeChannelModels();
-    LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
     void handleAirFrame(cMessage *msg) override;
     void sendUnicast(LteAirFrame *airFrame) override;
     bool sendUnicastViaNtn(LteAirFrame *airFrame) override;
