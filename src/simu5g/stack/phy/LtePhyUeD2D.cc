@@ -288,13 +288,10 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
     EV << NOW << " LtePhyUeD2D::handleUpperMessage - message from stack" << endl;
     LteAirFrame *frame = nullptr;
 
-    if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT) {
-        frame = new LteAirFrame("harqFeedback-grant");
-    }
-    else {
-        // Create LteAirFrame and encapsulate the received packet.
-        frame = new LteAirFrame("airframe");
-    }
+    if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT)
+        frame = createAirFrame("harqFeedback-grant", *lteInfo);
+    else
+        frame = createAirFrame("airframe", *lteInfo);
 
     frame->encapsulate(check_and_cast<cPacket *>(msg));
 

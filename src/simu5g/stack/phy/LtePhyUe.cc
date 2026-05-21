@@ -18,7 +18,6 @@
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
-#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -179,11 +178,6 @@ void LtePhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCand
     }
     delete cInfo;
     delete frame;
-}
-
-LteAirFrame *LtePhyUe::createAirFrame(const char *name, const UserControlInfo& lteInfo)
-{
-    return shouldSendViaTransparentNtn(lteInfo.getDestId()) ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
 }
 
 LteChannelModel *LtePhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
@@ -618,14 +612,6 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     }
 
     LtePhyBase::handleUpperMessage(msg);
-}
-
-void LtePhyUe::sendUnicast(LteAirFrame *airFrame)
-{
-    if (sendUnicastViaNtn(airFrame))
-        return;
-
-    LtePhyBase::sendUnicast(airFrame);
 }
 
 bool LtePhyUe::shouldSendViaTransparentNtn(MacNodeId destId) const

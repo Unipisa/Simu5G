@@ -13,6 +13,7 @@
 
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 
 namespace simu5g {
@@ -53,6 +54,19 @@ void NrPhyUe::initializeChannelModels()
         carrierFreq = chanModel->getCarrierFrequency();
         ntnChannelModel_[carrierFreq] = chanModel;
     }
+}
+
+LteAirFrame *NrPhyUe::createAirFrame(const char *name, const UserControlInfo& lteInfo)
+{
+    return shouldSendViaTransparentNtn(lteInfo.getDestId()) ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
+}
+
+void NrPhyUe::sendUnicast(LteAirFrame *airFrame)
+{
+    if (sendUnicastViaNtn(airFrame))
+        return;
+
+    LtePhyBase::sendUnicast(airFrame);
 }
 
 LteChannelModel *NrPhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
