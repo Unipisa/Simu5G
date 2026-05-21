@@ -16,8 +16,6 @@ moduleinterface NtnPlatformAntennaModel extends IAntennaModel
     double rxFeederLoss;
     double rxLumpedLoss;
     double noiseFigure;
-    double temperature @unit(K);
-    string pointingMode @enum(TRACK_PEER,FIXED);
     double offNadirAngle @unit(deg);
     double boresightAzimuth @unit(deg);
 }

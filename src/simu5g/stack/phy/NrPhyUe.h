@@ -17,6 +17,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
+#include "simu5g/stack/phy/antennamodel/IAntennaModel.h"
 
 namespace simu5g {
 
@@ -26,6 +27,7 @@ class NrPhyUe : public LtePhyUeD2D
   protected:
     std::map<GHz, opp_component_ptr<LteChannelModel>> ntnChannelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryNtnChannelModel_;
+    inet::ModuleRefByPar<IAntennaModel> ntnAntennaModel_;
 
     // reference to the parallel PHY layer
     inet::ModuleRefByPar<NrPhyUe> otherPhy_;
@@ -35,6 +37,7 @@ class NrPhyUe : public LtePhyUeD2D
     LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
     void handleAirFrame(cMessage *msg) override;
     void sendUnicast(LteAirFrame *airFrame) override;
+    bool sendUnicastViaNtn(LteAirFrame *airFrame) override;
     void triggerHandover() override;
     void doHandover() override;
 

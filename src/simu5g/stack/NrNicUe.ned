@@ -51,6 +51,7 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.ntnChannelModelModule = hasNtnSupport ? "^.ntnChannelModel[0]" : "";
+        nrPhy.ntnAntennaModelModule = hasNtnSupport ? "^.ntnAntennaModel" : "";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrMac.packetFlowObserverModule = hasRniSupport ? "^.nrPacketFlowObserver" : "";
         phy.otherPhyModule = "^.nrPhy";
