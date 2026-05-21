@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/NtnPhyBase.h"
+#include "simu5g/stack/phy/NtnPhyBase.h"
 
 #include <inet/common/ModuleAccess.h>
 

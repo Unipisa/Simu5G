@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack;
+package simu5g.stack.phy;
 
 simple NtnPhyBase
 {
