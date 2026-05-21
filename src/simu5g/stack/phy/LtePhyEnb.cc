@@ -15,7 +15,6 @@
 #include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/phy/feedback/LteUlFeedbackGenerator.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
-#include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -41,9 +40,6 @@ void LtePhyEnb::initialize(int stage)
         // get local id
         nodeId_ = MacNodeId(hostModule->par("macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
-        useTransparentNtn_ = hostModule->hasPar("useTransparentNtn") && hostModule->par("useTransparentNtn").boolValue();
-        ntnInGate_ = gate("ntnIn");
-        ntnOutGate_ = gate("ntnOut");
         isNr_ = (std::string(getContainingNicModule(this)->getComponentType()->getName()) == "NrNicEnb");
 
         randomChannelIndex_ = intuniform(1, binder_->phyPisaData.maxChannel2()); // NOTE: moving this to the next stage (where it is used will change random number stream and CHANGE FINGERPRINTS!
@@ -91,21 +87,6 @@ void LtePhyEnb::initialize(int stage)
     }
 }
 
-LteAirFrame *LtePhyEnb::createAirFrame(const char *name, const UserControlInfo& lteInfo)
-{
-    (void)lteInfo;
-    return useTransparentNtn_ ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
-}
-
-void LtePhyEnb::handleMessage(cMessage *msg)
-{
-    if (ntnInGate_ != nullptr && msg->getArrivalGate() == ntnInGate_) {
-        handleNtnAirFrame(msg);
-        return;
-    }
-    LtePhyBase::handleMessage(msg);
-}
-
 void LtePhyEnb::handleSelfMessage(cMessage *msg)
 {
     if (msg->isName("bdcStarter")) {
@@ -124,36 +105,6 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
     else {
         delete msg;
     }
-}
-
-void LtePhyEnb::sendNtn(LteAirFrame *airFrame)
-{
-    if (ntnOutGate_ == nullptr || !ntnOutGate_->isConnected())
-        throw cRuntimeError("LtePhyEnb::sendNtn - NTN fronthaul gate is not connected for %s", getFullPath().c_str());
-
-    if (airFrame->getControlInfo() != nullptr) {
-        UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
-        airFrame->setAdditionalInfo(*userControlInfo);
-        delete userControlInfo;
-    }
-
-    send(airFrame, ntnOutGate_);
-}
-
-void LtePhyEnb::sendBroadcast(LteAirFrame *airFrame)
-{
-    if (useTransparentNtn_)
-        sendNtn(airFrame);
-    else
-        LtePhyBase::sendBroadcast(airFrame);
-}
-
-void LtePhyEnb::sendUnicast(LteAirFrame *airFrame)
-{
-    if (useTransparentNtn_)
-        sendNtn(airFrame);
-    else
-        LtePhyBase::sendUnicast(airFrame);
 }
 
 bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
@@ -248,50 +199,6 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
     sendDecodedDataFrame(frame, lteInfo, result);
 }
 
-void LtePhyEnb::handleNtnAirFrame(cMessage *msg)
-{
-    LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
-    UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
-
-    EV << "LtePhyEnb::handleNtnAirFrame - received new LteAirFrame with ID " << frame->getId() << " from NTN gateway" << endl;
-
-    if (lteInfo->getFrameType() == HANDOVERPKT) {
-        EV << "LtePhyEnb::handleNtnAirFrame - received handover packet from NTN gateway. Ignore it." << endl;
-        delete lteInfo;
-        delete frame;
-        return;
-    }
-
-    MacNodeId sourceId = lteInfo->getSourceId();
-    if (binder_->getNextHop(sourceId) != nodeId_) {
-        EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
-        EV << "Source MacNodeId: " << sourceId << endl;
-        EV << "Master MacNodeId: " << nodeId_ << endl;
-        delete lteInfo;
-        delete frame;
-        return;
-    }
-
-    if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
-        delete lteInfo;
-        delete frame;
-        return;
-    }
-
-    if (handleControlPkt(lteInfo, frame))
-        return;
-
-    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
-    if (ntnFrame == nullptr)
-        throw cRuntimeError("LtePhyEnb::handleNtnAirFrame - frame %s from NTN gateway is not an NtnAirFrame", frame->getFullName());
-    if (!ntnFrame->hasGatewayReceptionResult())
-        throw cRuntimeError("LtePhyEnb::handleNtnAirFrame - NtnAirFrame %s from NTN gateway has no gateway reception result", frame->getFullName());
-
-    // decision has already been made by the gateway, do not recompute SINR
-    bool result = ntnFrame->getGatewayReceptionResult();
-    sendDecodedDataFrame(frame, lteInfo, result);
-}
-
 void LtePhyEnb::sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInfo, bool result)
 {
     if (result)
@@ -322,9 +229,7 @@ void LtePhyEnb::sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInf
 
 LteAirFrame *LtePhyEnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 {
-    LteAirFrame *csiAirFrame = useTransparentNtn_
-        ? static_cast<LteAirFrame *>(new NtnAirFrame("CsiReferenceSignal"))
-        : new LteAirFrame("CsiReferenceSignal");
+    LteAirFrame *csiAirFrame = new LteAirFrame("CsiReferenceSignal");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(CSIRSPKT);
@@ -341,11 +246,6 @@ LteAirFrame *LtePhyEnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 
 void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
 {
-    if (useTransparentNtn_) {
-        sendCsiReferenceSignalFrameToNtnAttachedUes(frame);
-        return;
-    }
-
     UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
     frame->setAdditionalInfo(*ci);
     delete frame->removeControlInfo();
@@ -363,31 +263,6 @@ void LtePhyEnb::sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame)
     }
 
     delete frame;
-}
-
-void LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes(LteAirFrame *frame)
-{
-    if (ntnOutGate_ == nullptr || !ntnOutGate_->isConnected())
-        throw cRuntimeError("LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - NTN fronthaul gate is not connected for %s", getFullPath().c_str());
-
-    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
-    if (ntnFrame == nullptr)
-        throw cRuntimeError("LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - CSI-RS frame %s is not an NtnAirFrame", frame->getFullName());
-
-    UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());
-    frame->setAdditionalInfo(*ci);
-    delete frame->removeControlInfo();
-
-    std::vector<MacNodeId> attachedUes;
-    for (MacNodeId ueId : cellInfo_->getAttachedUes()) {
-        if (isNrUe(ueId) == isNr_)
-            attachedUes.push_back(ueId);
-    }
-
-    ntnFrame->setAttachedUesVector(attachedUes);
-    EV << "LtePhyEnb::sendCsiReferenceSignalFrameToNtnAttachedUes - sending CSI-RS frame with "
-       << attachedUes.size() << " attached UE target(s) via transparent NTN" << endl;
-    send(frame, ntnOutGate_);
 }
 
 void LtePhyEnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)

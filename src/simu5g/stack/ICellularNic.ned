@@ -30,13 +30,10 @@ moduleinterface ICellularNic extends IWirelessInterface
 }
 
 //
-// Interface for eNodeB/gNodeB cellular NICs that also expose X2 and the
-// optional wired NTN backhaul used in transparent NTN configurations.
+// Interface for eNodeB/gNodeB cellular NICs that expose X2.
 //
 moduleinterface ICellularNicEnb extends ICellularNic
 {
     gates:
         inout x2[] @loose;     // optional x2 manager
-        input ntnIn @loose;    // optional NTN backhaul ingress
-        output ntnOut @loose;  // optional NTN backhaul egress
 }

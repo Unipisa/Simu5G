@@ -728,7 +728,7 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
     uinfo->setDestId(masterId_);
     uinfo->setFrameType(FEEDBACKPKT);
     // create LteAirFrame and encapsulate a feedback packet
-    LteAirFrame *frame = createAirFrame("feedback_pkt", *uinfo);
+    LteAirFrame *frame = createAirFrame("feedback_pkt");
     frame->encapsulate(check_and_cast<cPacket *>(pkt));
     uinfo->setFeedbackReq(req);
     uinfo->setDirection(UL);

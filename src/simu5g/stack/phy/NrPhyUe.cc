@@ -60,11 +60,6 @@ void NrPhyUe::initializeChannelModels()
     }
 }
 
-LteAirFrame *NrPhyUe::createAirFrame(const char *name, const UserControlInfo& lteInfo)
-{
-    return shouldSendViaTransparentNtn(lteInfo.getDestId()) ? static_cast<LteAirFrame *>(new NtnAirFrame(name)) : LtePhyBase::createAirFrame(name, lteInfo);
-}
-
 void NrPhyUe::sendUnicast(LteAirFrame *airFrame)
 {
     if (sendUnicastViaNtn(airFrame))
@@ -79,6 +74,19 @@ bool NrPhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
     MacNodeId destId = ci->getDestId();
     if (!shouldSendViaTransparentNtn(destId))
         return false;
+
+    auto *ntnAirFrame = dynamic_cast<NtnAirFrame *>(airFrame);
+    if (ntnAirFrame == nullptr) {
+        ntnAirFrame = new NtnAirFrame(airFrame->getName());
+        ntnAirFrame->setKind(airFrame->getKind());
+        ntnAirFrame->setDuration(airFrame->getDuration());
+        ntnAirFrame->setSchedulingPriority(airFrame->getSchedulingPriority());
+        if (airFrame->getControlInfo() != nullptr)
+            ntnAirFrame->setControlInfo(airFrame->removeControlInfo());
+        ntnAirFrame->encapsulate(airFrame->decapsulate());
+        delete airFrame;
+        airFrame = ntnAirFrame;
+    }
 
     const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
     SatelliteInfo *satelliteInfo = binder_->getSatelliteInfo(association->satelliteId);

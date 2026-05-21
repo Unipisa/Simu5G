@@ -289,9 +289,9 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
     LteAirFrame *frame = nullptr;
 
     if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT)
-        frame = createAirFrame("harqFeedback-grant", *lteInfo);
+        frame = createAirFrame("harqFeedback-grant");
     else
-        frame = createAirFrame("airframe", *lteInfo);
+        frame = createAirFrame("airframe");
 
     frame->encapsulate(check_and_cast<cPacket *>(msg));
 

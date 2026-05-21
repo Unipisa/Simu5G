@@ -37,10 +37,6 @@ module LteNicEnb extends LteNicBase like ICellularNicEnb
         bool compEnabled = default(false);
         *.handoverManagerModule = "^.handoverManager";
 
-    gates:
-        input ntnIn @loose;
-        output ntnOut @loose;
-
     submodules:
         ulFbGen: LteUlFeedbackGenerator {
             @display("p=493,389;is=s");
@@ -88,7 +84,4 @@ module LteNicEnb extends LteNicBase like ICellularNicEnb
             x2$i[i] --> x2Manager.x2$i++;
             x2$o[i] <-- x2Manager.x2$o++;
         }
-
-        ntnIn --> phy.ntnIn;
-        phy.ntnOut --> ntnOut;
 }

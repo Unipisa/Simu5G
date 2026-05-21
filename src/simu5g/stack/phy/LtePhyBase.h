@@ -219,7 +219,7 @@ class LtePhyBase : public ChannelAccess
     /**
      * Create a new LteAirFrame with the given name
      */
-    virtual LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo);
+    virtual LteAirFrame *createAirFrame(const char *name);
 
     /**
      * Sends a frame to all NICs in range.

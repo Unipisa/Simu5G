@@ -25,7 +25,6 @@ import simu5g.corenetwork.statsCollector.IStatsCollector;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.stack.ICellularNic;
 import simu5g.stack.ICellularNicEnb;
-import simu5g.stack.NtnFronthaulNic;
 import simu5g.x2.LteX2App;
 
 //
@@ -67,9 +66,6 @@ module eNodeB
         int masterId = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity
         int macNodeId = default(1+simu5g_seq("eNodeB_macNodeId"));
         int macCellId = default(macNodeId);
-        int ntnGatewayId = default(0);
-        int satelliteId = default(0);
-        bool useTransparentNtn = default(false);
         double txPower @unit(mw) = default(100mw);
 
         //# Network Layer specs
@@ -104,7 +100,6 @@ module eNodeB
 
     gates:
         inout ppp @loose;         // connection to the Core Network
-        inout ntn @loose; // optional NTN backhaul toward the NTN gateway
         input radioIn @directIn;  // connection to the radio interface
         inout x2[];               // connection to the X2 interface
 
@@ -141,11 +136,6 @@ module eNodeB
         pppIf: PppInterface {
             parameters:
                 @display("p=824,519");
-        }
-
-        ntnIf: NtnFronthaulNic if useTransparentNtn {
-            parameters:
-                @display("p=281,518");
         }
 
         x2ppp[sizeof(x2)]: PppInterface {
@@ -248,10 +238,6 @@ module eNodeB
         pppIf.phys <--> ppp;
         pppIf.upperLayerOut --> nl.in++;
         pppIf.upperLayerIn <-- nl.out++;
-
-        ntnIf.phys <--> ntn if useTransparentNtn;
-        ntnIf.upperLayerOut --> cellularNic.ntnIn if useTransparentNtn;
-        ntnIf.upperLayerIn <-- cellularNic.ntnOut if useTransparentNtn;
 
         //#
         //# X2 interface to network layer connections

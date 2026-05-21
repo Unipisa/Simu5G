@@ -26,10 +26,6 @@ class LtePhyEnb : public LtePhyBase
 {
 
   protected:
-    bool useTransparentNtn_ = false;
-    cGate* ntnInGate_ = nullptr;
-    cGate* ntnOutGate_ = nullptr;
-
     /** Broadcast message interval (equal to updatePos interval for mobility) */
     double bdcUpdateInterval_;
 
@@ -44,27 +40,16 @@ class LtePhyEnb : public LtePhyBase
     inet::ModuleRefByPar<LteUlFeedbackGenerator> ulFbGen_;
 
     void initialize(int stage) override;
-    void handleMessage(cMessage *msg) override;
 
     void handleSelfMessage(cMessage *msg) override;
 
-    /**
-     * Create a new LteAirFrame with the given name. If the frame should be sent via a transparent NTN node, create an NtnAirFrame object
-     */
-    LteAirFrame *createAirFrame(const char *name, const UserControlInfo& lteInfo) override;
-
     void handleAirFrame(cMessage *msg) override;
-    void handleNtnAirFrame(cMessage *msg);
     void sendDecodedDataFrame(LteAirFrame *frame, UserControlInfo *lteInfo, bool result);
-    void sendBroadcast(LteAirFrame *airFrame) override;
-    void sendUnicast(LteAirFrame *airFrame) override;
-    void sendNtn(LteAirFrame *airFrame);
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
-    virtual void sendCsiReferenceSignalFrameToNtnAttachedUes(LteAirFrame *frame);
     void initializeFeedbackComputation();
 
     virtual void emitDistanceFromMaster() {}
