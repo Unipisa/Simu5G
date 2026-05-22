@@ -211,7 +211,7 @@ void LtePhyBase::sendMulticast(LteAirFrame *frame)
     // get the group Id
     MacNodeId groupId = ci->getPacketMulticastGroupId();
     if (groupId == NODEID_NONE)
-        throw cRuntimeError("LtePhyBase::sendMulticast - Error. Group ID %d is not valid.", groupId);
+        throw cRuntimeError("LtePhyBase::sendMulticast - Error. Group ID %d is not valid.", num(groupId));
 
     // transfer control info into airframe fields
     frame->setAdditionalInfo(*ci);

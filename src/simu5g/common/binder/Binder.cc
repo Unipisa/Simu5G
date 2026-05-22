@@ -145,7 +145,7 @@ void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType typ
 
     // validate input
     if (nodeInfoMap_.find(nodeId) != nodeInfoMap_.end())
-        throw cRuntimeError("Cannot register node %s in Binder: macNodeId %d already occupied", nodeModule->getFullPath().c_str(), nodeId);
+        throw cRuntimeError("Cannot register node %s in Binder: macNodeId %d already occupied", nodeModule->getFullPath().c_str(), num(nodeId));
 
     if (type == NODEB) {
         if (getNodeTypeById(nodeId) != NODEB)

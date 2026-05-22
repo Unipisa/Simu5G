@@ -68,20 +68,20 @@ void Ip2Nic::initialize(int stage)
             binder_->registerNode(nodeId_, bs, nodeType_, isNr);
 
             // display node ID above node icon
-            bs->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
+            bs->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", num(nodeId_)).c_str());
         }
         else if (nodeType_ == UE) {
             cModule *ue = getContainingNode(this);
             servingNodeId_ = MacNodeId(ue->par("servingNodeId").intValue());
             nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
             binder_->registerNode(nodeId_, ue, nodeType_, false);
-            ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
+            ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", num(nodeId_)).c_str());
 
             if (ue->hasPar("nrServingNodeId") && ue->par("nrServingNodeId").intValue() != 0) { // register also the NR MacNodeId
                 nrServingNodeId_ = MacNodeId(ue->par("nrServingNodeId").intValue());
                 nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
                 binder_->registerNode(nrNodeId_, ue, nodeType_, true);
-                ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d/%d", nodeId_, nrNodeId_).c_str());
+                ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d/%d", num(nodeId_), num(nrNodeId_)).c_str());
             }
         }
 

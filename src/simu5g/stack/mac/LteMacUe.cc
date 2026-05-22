@@ -73,7 +73,7 @@ void LteMacUe::initialize(int stage)
     else if (stage == inet::INITSTAGE_NETWORK_LAYER) {
 
         // display node ID above module icon
-        getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
+        getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", num(nodeId_)).c_str());
 
         // Insert UeInfo in the Binder
         UeInfo *info = new UeInfo();
