@@ -272,6 +272,9 @@ void Ip2Nic::fromIpBs(Packet *pkt)
 
     // handle "forwarding" of packets during handover
     MacNodeId destId = binder_->getMacNodeId(destAddr);
+    if (destId == NODEID_NONE)
+        destId = binder_->getNrMacNodeId(destAddr);
+
     if (hoForwarding_.find(destId) != hoForwarding_.end()) {
         // data packet must be forwarded (via X2) to another eNB
         MacNodeId targetEnb = hoForwarding_.at(destId);
@@ -494,6 +497,8 @@ void Ip2Nic::receiveTunneledPacketOnHandover(Packet *datagram, MacNodeId sourceE
     const auto& hdr = datagram->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = hdr->getDestAddress();
     MacNodeId destId = binder_->getMacNodeId(destAddr);
+    if (destId == NODEID_NONE)
+        destId = binder_->getNrMacNodeId(destAddr);
     if (hoFromX2_.find(destId) == hoFromX2_.end()) {
         IpDatagramQueue queue;
         hoFromX2_[destId] = queue;
