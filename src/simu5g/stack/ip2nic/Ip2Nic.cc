@@ -294,6 +294,14 @@ void Ip2Nic::fromIpBs(Packet *pkt)
         return;
     }
 
+    // if UE has moved to another gNB (e.g. late packet after handover), forward via X2
+    MacNodeId servingNode = binder_->getServingNodeOrSelf(destId);
+    if (servingNode != NODEID_NONE && servingNode != nodeId_) {
+        EV << "Ip2Nic::fromIpBs - UE " << destId << " is served by gNB " << servingNode << ", forwarding via X2" << endl;
+        sendTunneledPacketOnHandover(pkt, servingNode);
+        return;
+    }
+
     toStackBs(pkt);
 }
 
