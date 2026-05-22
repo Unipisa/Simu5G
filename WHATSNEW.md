@@ -1,5 +1,86 @@
 # What's New in Simu5G
 
+## v1.4.4 (2026-05-24)
+
+This release contains bug fixes and improvements, including more realistic MAC
+layer modeling and several MEC fixes.
+
+Tested with INET-4.5.4 and OMNeT++ 6.3, compatible with INET-4.6.0 and OMNeT++
+6.1 through 6.4.
+
+### MAC improvements
+
+- **RACH preamble collision modeling**: UEs now pick a random preamble index
+  when sending Random Access Channel (RAC) requests. The eNB detects collisions
+  when multiple UEs choose the same preamble in a TTI, causing all colliding
+  requests to fail. Failed UEs exercise the existing backoff/retry path. A new
+  NED parameter `numPreambles` (default 64) controls the preamble pool size.
+  While this is an abstraction of the real multi-step RACH procedure, it
+  faithfully captures preamble contention (the primary source of access
+  failures) with minimal additional model complexity.
+
+- **NR MAC timer defaults adjusted**: `raResponseWindow` changed from 3 to 20,
+  `retxBsrTimer` from 40 to 320. The original values were the LTE defaults, too
+  aggressive for NR's finer timing granularity. Also adjusted `maxRacAttempts`
+  (10) and `racBackoffMax` (20) for both LTE and NR.
+
+- **Default HARQ processes for NR changed to 5** (from 8), reflecting the
+  asynchronous nature of NR HARQ.
+
+- **RAC/BSR timer parameters are now configurable from NED** (previously
+  hardcoded).
+
+### Bug fixes
+
+- **Ip2Nic**: Fixed issue #302 -- packets arriving at the old gNB just after a
+  handover are now forwarded to the new gNB over X2, instead of causing an error.
+
+- **Ip2Nic**: Fixed fallback to NR node ID when a UE has no LTE ID, which is
+  necessary for handling NR-only UEs.
+
+- **MAC**: Fixed ASSERT failure on D2D mode switching (`SinglePair-modeSwitching`
+  scenario). When switching from DM to IM mode, the MAC connection structure is
+  now preserved with empty buffers instead of being destroyed, so that switching
+  back to DM mode works correctly.
+
+- **GtpUserX2**: Fixed `GtpUserMsg` chunk length to 8B, consistent with `GtpUser`.
+
+- **MecOrchestrator**: Fixed `contextIdCounter` never being incremented, causing
+  every MEC app to overwrite the previous map entry at key 0.
+
+- **MecOrchestrator**: Fixed missing return after a failure path that caused an
+  end-iterator dereference.
+
+- **MecAppBase**: Fixed undisposed `HttpMessageStatus` objects on destruction.
+
+- **MecResponseApp, MecRTVideoStreamingReceiver**: Fixed missing `localUePort`
+  parameter that was inadvertently removed during earlier refactoring.
+
+- **RniService**: Fixed incomplete CamelCase renaming that caused the service to
+  not be found in the registry.
+
+- **MEC**: Fixed uninitialized variables that caused non-deterministic fingerprint
+  failures in debug builds.
+
+### Other changes
+
+- **Binder**: `getNextHop()` renamed to `getServingNodeOrSelf()` for clarity.
+
+- **UDP error handling**: Refactored several application modules (including
+  UeWarningAlertApp, UeRnisTestApp, UeRequestApp, and others) to use
+  `UdpSocket::ICallback`, fixing errors when receiving ICMP "destination
+  unreachable" indications. MEC apps now also properly close their UDP sockets.
+
+- **Copyright headers adjusted**: Replaced generic "Authors" lines with precise
+  copyright lines and added SimuLTE copyright attribution to files derived from
+  SimuLTE.
+
+- **INET 4.6 compatibility**: Added `checksumMode` parameter to emulation
+  examples alongside the existing `crcMode` for backward compatibility.
+
+- **TrafficLightController**: Made backward compatible with OMNeT++ 6.1.
+
+
 ## v1.4.3 (2026-02-18)
 
 This release represents a major milestone in the complete overhaul of the Simu5G
