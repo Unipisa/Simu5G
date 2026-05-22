@@ -41,16 +41,16 @@ AmcPilot *LteAmc::getAmcPilot(const cPar& p)
     throw cRuntimeError("AMC Pilot not recognized");
 }
 
-MacNodeId LteAmc::getNextHop(MacNodeId dst)
+MacNodeId LteAmc::getServingNodeOrSelf(MacNodeId dst)
 {
-    MacNodeId nh = binder_->getNextHop(dst);
+    MacNodeId nh = binder_->getServingNodeOrSelf(dst);
 
     if (nh == nodeId_) {
         // I'm the master for this slave (it is directly connected)
         return dst;
     }
 
-    EV << "LteAmc::getNextHop Node Id dst : " << dst << endl;
+    EV << "LteAmc::getServingNodeOrSelf Node Id dst : " << dst << endl;
 
     return nh;
 }
@@ -434,7 +434,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, GHz
 
 const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, GHz carrierFrequency)
 {
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
     if (id != nh)
         EV << NOW << " LteAmc::getFeedback detected " << nh << " as next hop for " << id << "\n";
     id = nh;
@@ -450,7 +450,7 @@ const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMo
 
 const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, GHz carrierFrequency)
 {
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
 
     if (id != nh)
         EV << NOW << " LteAmc::getFeedbackD2D detected " << nh << " as next hop for " << id << "\n";
@@ -481,7 +481,7 @@ const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, T
 
 bool LteAmc::existTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency)
 {
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
     if (id != nh)
         EV << NOW << " LteAmc::existTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
@@ -497,7 +497,7 @@ bool LteAmc::existTxParams(MacNodeId id, const Direction dir, GHz carrierFrequen
 
 const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserTxParams& info, GHz carrierFrequency)
 {
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
     if (id != nh)
         EV << NOW << " LteAmc::setTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
@@ -540,7 +540,7 @@ const UserTxParams& LteAmc::computeTxParams(MacNodeId id, const Direction dir, G
     EV << NOW << " LteAmc::computeTxParams RB allocation type: " << allocationTypeToA(allocationType_) << "\n";
     EV << NOW << " LteAmc::computeTxParams - - - - - - - - - - - - - - - - - - - - -\n";
 
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
     if (id != nh)
         EV << NOW << " LteAmc::computeTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
@@ -818,7 +818,7 @@ unsigned int LteAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
 
 const UserTxParams& LteAmc::getTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency)
 {
-    MacNodeId nh = getNextHop(id);
+    MacNodeId nh = getServingNodeOrSelf(id);
     if (id != nh)
         EV << NOW << " LteAmc::getTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;

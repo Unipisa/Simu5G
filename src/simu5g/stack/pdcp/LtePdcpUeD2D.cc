@@ -30,7 +30,7 @@ MacNodeId LtePdcpUeD2D::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR
     // check if the destination is inside the LTE network
     if (destId == NODEID_NONE || getDirection(destId) == UL) { // if not, the packet is destined to the eNB
         // UE is subject to handovers: master may change
-        return binder_->getNextHop(sourceId);
+        return binder_->getServingNodeOrSelf(sourceId);
     }
 
     return destId;

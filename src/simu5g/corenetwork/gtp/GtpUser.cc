@@ -256,7 +256,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
     else if (ownerType_ == PGW || ownerType_ == UPF) {
         MacNodeId destId = binder_->getMacNodeId(destAddr);
         if (destId != NODEID_NONE) { // final destination is a UE
-            MacNodeId destMaster = binder_->getNextHop(destId);
+            MacNodeId destMaster = binder_->getServingNodeOrSelf(destId);
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)
             std::string gwFullPath = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();

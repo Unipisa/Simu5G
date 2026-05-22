@@ -1749,7 +1749,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
     if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
         MacNodeId destId = lteInfo->getDestId();
         Coord destCoord = phy_->getCoord();
-        MacNodeId enbId = binder_->getNextHop(lteInfo->getSourceId());
+        MacNodeId enbId = binder_->getServingNodeOrSelf(lteInfo->getSourceId());
         snrV = getSINR_D2D(frame, lteInfo, destId, destCoord, enbId);
     }
     else {

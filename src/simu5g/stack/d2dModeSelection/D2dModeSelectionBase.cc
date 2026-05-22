@@ -85,7 +85,7 @@ void D2dModeSelectionBase::doModeSwitchAtHandover(MacNodeId nodeId, bool handove
 
             // check if the two peers are under the same cell
             // if not, do not perform the switch
-            if (newMode == DM && binder_->getNextHop(srcId) != binder_->getNextHop(dstId))
+            if (newMode == DM && binder_->getServingNodeOrSelf(srcId) != binder_->getServingNodeOrSelf(dstId))
                 continue;
 
             // add this flow to the list of flows to be switched

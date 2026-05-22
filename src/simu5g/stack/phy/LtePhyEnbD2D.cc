@@ -89,7 +89,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
                 // Compute D2D feedback for all possible peering UEs
                 for (const auto& ueInfo : binder_->getUeList()) {
                     MacNodeId peerId = ueInfo->id;
-                    if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
+                    if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getServingNodeOrSelf(peerId) == nodeId_) {
                         // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
 
                         // Retrieve the position of the peer
@@ -174,7 +174,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage *msg)
      *                     TTI x+0.1: UE changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (binder_->getNextHop(lteInfo->getSourceId()) != nodeId_) {
+    if (binder_->getServingNodeOrSelf(lteInfo->getSourceId()) != nodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
         EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
         EV << "Master MacNodeId: " << nodeId_ << endl;

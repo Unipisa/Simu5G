@@ -237,7 +237,7 @@ UsableBands *AmcPilotAuto::getUsableBands(MacNodeId id)
         // usable bands for this id not found
         if (getNodeTypeById(id) == UE) {
             // if it is a UE, look for its serving cell
-            MacNodeId cellId = binder_->getNextHop(id);
+            MacNodeId cellId = binder_->getServingNodeOrSelf(id);
             it = usableBandsList_.find(cellId);
             if (it != usableBandsList_.end())
                 found = true;

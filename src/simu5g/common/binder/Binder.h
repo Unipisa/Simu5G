@@ -296,9 +296,9 @@ class Binder : public cSimpleModule
     virtual LteMacBase *getMacFromMacNodeId(MacNodeId id);
 
     /**
-     * For an UE, returns the serving eNodeB/gNodeB; for an eNodeB/gNodeB, returns the nodeId (the arg).
+     * For a UE, returns the serving eNodeB/gNodeB; for an eNodeB/gNodeB or NODEID_NONE, returns the nodeId itself.
      */
-    virtual MacNodeId getNextHop(MacNodeId nodeId);
+    virtual MacNodeId getServingNodeOrSelf(MacNodeId nodeId);
 
     /**
      * In a Dual Connectivity / Split Bearer setup, returns the Master Node (MeNB, MN)
@@ -325,7 +325,7 @@ class Binder : public cSimpleModule
         MacNodeId nodeId = ipAddressToMacNodeId_[address];
 
         // if the UE is disconnected (its master node is 0), check the NR node Id
-        if (getNextHop(nodeId) == NODEID_NONE)
+        if (getServingNodeOrSelf(nodeId) == NODEID_NONE)
             return getNrMacNodeId(address);
         return nodeId;
     }

@@ -397,8 +397,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
     if (nodeType_ == NODEB) {
         MacNodeId ueId = binder_->getMacNodeId(dstAddr);
         MacNodeId nrUeId = binder_->getNrMacNodeId(dstAddr);
-        bool ueLteStack = (binder_->getNextHop(ueId) != NODEID_NONE);
-        bool ueNrStack = (binder_->getNextHop(nrUeId) != NODEID_NONE);
+        bool ueLteStack = (binder_->getServingNodeOrSelf(ueId) != NODEID_NONE);
+        bool ueNrStack = (binder_->getServingNodeOrSelf(nrUeId) != NODEID_NONE);
 
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && typeOfService >= 20) { // use split bearer TODO fix threshold
             // even packets go through the LTE eNodeB
@@ -430,8 +430,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
     }
 
     if (nodeType_ == UE) {
-        bool ueLteStack = (binder_->getNextHop(nodeId_) != NODEID_NONE);
-        bool ueNrStack = (binder_->getNextHop(nrNodeId_) != NODEID_NONE);
+        bool ueLteStack = (binder_->getServingNodeOrSelf(nodeId_) != NODEID_NONE);
+        bool ueNrStack = (binder_->getServingNodeOrSelf(nrNodeId_) != NODEID_NONE);
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && typeOfService >= 20) { // use split bearer TODO fix threshold
             int sentPackets;
             if ((sentPackets = sbTable_->find_entry(srcAddr.getInt(), dstAddr.getInt(), typeOfService)) < 0)

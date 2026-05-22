@@ -393,7 +393,7 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
     return it->second.macModule;
 }
 
-MacNodeId Binder::getNextHop(MacNodeId nodeId)
+MacNodeId Binder::getServingNodeOrSelf(MacNodeId nodeId)
 {
     return getNodeTypeById(nodeId) == UE ? getServingNode(nodeId) : nodeId;
 }
@@ -871,8 +871,8 @@ bool Binder::isGNodeB(MacNodeId enbId)
 CellInfo *Binder::getCellInfoByNodeId(MacNodeId nodeId)
 {
     // Check if it is an eNodeB
-    // function GetNextHop returns nodeId
-    MacNodeId id = getNextHop(nodeId);
+    // function getServingNodeOrSelf returns nodeId
+    MacNodeId id = getServingNodeOrSelf(nodeId);
     cModule *module = getNodeModule(id);
     return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
 }

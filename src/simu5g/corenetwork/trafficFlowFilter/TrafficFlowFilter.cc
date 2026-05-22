@@ -175,7 +175,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         }
     }
 
-    MacNodeId destBS = binder_->getNextHop(destId);
+    MacNodeId destBS = binder_->getServingNodeOrSelf(destId);
     if (destBS == NODEID_NONE) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
         return TFT_REMOVED_DESTINATION;   // the destination UE is not attached to any nodeB
@@ -184,7 +184,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     // the serving node for the UE might be a secondary node in case of NR Dual Connectivity
     // obtains the master node, if any (the function returns destEnb if it is a master already)
     MacNodeId destMaster = binder_->getMasterNodeOrSelf(destBS);
-    MacNodeId srcMaster = binder_->getNextHop(binder_->getMacNodeId(srcAddress.toIpv4()));
+    MacNodeId srcMaster = binder_->getServingNodeOrSelf(binder_->getMacNodeId(srcAddress.toIpv4()));
 
     if (isBaseStation(ownerType_)) {
         if (fastForwarding_ && srcMaster == destMaster)

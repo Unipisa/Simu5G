@@ -52,7 +52,7 @@ MacNodeId NrPdcpUe::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, Ma
         // if not, the packet is destined to the eNB
 
         // UE is subject to handovers: master may change
-        return binder_->getNextHop(sourceId);
+        return binder_->getServingNodeOrSelf(sourceId);
     }
 
     return destId;

@@ -36,7 +36,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
         MacNodeId srcId = it.first;
 
         // consider only UEs within this cell
-        if (binder_->getNextHop(srcId) != mac_->getMacCellId())
+        if (binder_->getServingNodeOrSelf(srcId) != mac_->getMacCellId())
             continue;
 
         for (auto& jt : it.second) {
@@ -44,7 +44,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
                                            // the mode will be the same for all destinations
 
             // consider only UEs within this cell
-            if (binder_->getNextHop(dstId) != mac_->getMacCellId())
+            if (binder_->getServingNodeOrSelf(dstId) != mac_->getMacCellId())
                 continue;
 
             // skip UEs that are performing handover

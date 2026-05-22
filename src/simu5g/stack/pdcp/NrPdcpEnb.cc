@@ -111,7 +111,7 @@ MacNodeId NrPdcpEnb::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, M
         destId = binder_->getMacNodeId(destAddr);
 
     // master of this UE
-    MacNodeId master = binder_->getNextHop(destId);
+    MacNodeId master = binder_->getServingNodeOrSelf(destId);
     if (master != nodeId_) {
         destId = master;
     }
