@@ -395,7 +395,7 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 
 MacNodeId Binder::getNextHop(MacNodeId nodeId)
 {
-    return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) == NODEB) ? nodeId : getServingNode(nodeId);
+    return getNodeTypeById(nodeId) == UE ? getServingNode(nodeId) : nodeId;
 }
 
 MacNodeId Binder::getMasterNodeOrSelf(MacNodeId secondaryEnbId)
