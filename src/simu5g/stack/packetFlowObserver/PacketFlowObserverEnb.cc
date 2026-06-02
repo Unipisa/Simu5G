@@ -675,7 +675,8 @@ void PacketFlowObserverEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grant
             ++it;
         }
     }
-    throw cRuntimeError("%s::ulMacPduArrived - grant [%d] for nodeId [%hu] not present", pfmType.c_str(), grantId, num(nodeId));
+    // this may occur after a handover, when the grant was tracked by the old gNB
+    EV_WARN << NOW << " " << pfmType << "::ulMacPduArrived - grant [" << grantId << "] for nodeId [" << nodeId << "] not present (possibly after handover)" << endl;
 }
 
 double PacketFlowObserverEnb::getDelayStatsPerUe(MacNodeId id)
