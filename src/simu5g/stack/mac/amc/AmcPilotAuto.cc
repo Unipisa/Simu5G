@@ -20,6 +20,9 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
 {
     EV << NOW << " AmcPilot" << getName() << "::computeTxParams for UE " << id << ", direction " << dirToA(dir) << endl;
 
+    if (dir != DL && dir != UL)
+        throw omnetpp::cRuntimeError("AmcPilotAuto::computeTxParams called with unsupported direction %d", (int)dir);
+
     // Check if user transmission parameters have been already allocated
     if (amc_->existTxParams(id, dir, carrierFrequency)) {
         EV << NOW << " AmcPilot" << getName() << "::computeTxParams The information for this user has already been assigned \n";
