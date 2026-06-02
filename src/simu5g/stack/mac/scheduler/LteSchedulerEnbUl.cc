@@ -134,8 +134,25 @@ bool LteSchedulerEnbUl::racschedule(GHz carrierFrequency, BandLimitVector *bandL
 
             bool allocation = false;
 
+            // Minimum RAC grant size: enough for a short BSR + MAC header. Ensures a UE
+            // with a poor UL channel still gets a usable Msg3-style grant (see below).
+            const unsigned int minRacBytes = 56;
+
+            // Number of RBs actually granted for the RAC (recorded for the schedule list).
+            unsigned int grantedBlocks = 0;
+            unsigned int grantedBytes = 0;
+
             unsigned int size = bandLim->size();
-            for (Band b = 0; b < size; ++b) {
+            // Allocate RBs across bands until the RAC grant is large enough to carry at
+            // least a short BSR + MAC header. Each logical band holds a single RB, so we
+            // spread the allocation over multiple bands. The grant size the UE receives is
+            // recomputed in LteMacEnb*::sendGrants() as (allocated blocks x bytes-per-block),
+            // so the allocation must be widened in *RBs* here -- inflating a byte count has
+            // no effect. Without this, a UE far from the gNB with a poor UL channel gets a
+            // useless few-byte grant (e.g. 1 RB = 4 B), can never send a BSR or even a
+            // 3-byte RLC-AM STATUS PDU, and stalls forever: STATUS PDUs are generated but
+            // never transmitted.
+            for (Band b = 0; b < size && grantedBytes < minRacBytes; ++b) {
                 // if the limit flag is set to skip, jump off
                 int limit = bandLim->at(b).limit_.at(cw);
                 if (limit == -2) {
@@ -143,27 +160,50 @@ bool LteSchedulerEnbUl::racschedule(GHz carrierFrequency, BandLimitVector *bandL
                     continue;
                 }
 
-                if (allocator_->availableBlocks(nodeId, MACRO, b) > 0) {
-                    unsigned int bytes = mac_->getAmc()->computeBytesOnNRbs(nodeId, b, cw, blocks, UL, carrierFrequency);
-                    if (bytes > 0) {
+                if (allocator_->availableBlocks(nodeId, MACRO, b) == 0)
+                    continue;
 
-                        allocator_->addBlocks(MACRO, b, nodeId, 1, bytes);
-                        racAllocatedBlocks++;
+                // bytes this band's RB carries at the UE's current UL CQI/MCS
+                unsigned int bytes = mac_->getAmc()->computeBytesOnNRbs(nodeId, b, cw, blocks, UL, carrierFrequency);
+                if (bytes == 0)
+                    continue; // RB cannot carry data at the current CQI -- try another band
 
-                        EV << NOW << "LteSchedulerEnbUl::racschedule UE: " << nodeId << "Handled RAC on band: " << b << endl;
+                allocator_->addBlocks(MACRO, b, nodeId, blocks, bytes);
+                racAllocatedBlocks += blocks;
+                grantedBlocks += blocks;
+                grantedBytes += bytes;
+                allocation = true;
+            }
 
+            if (allocation) {
+                EV << NOW << " LteSchedulerEnbUl::racschedule UE: " << nodeId << " Handled RAC ("
+                   << grantedBlocks << " RBs, " << grantedBytes << " B)" << endl;
+            }
+
+            // Fallback: if no band can carry data at the current UL CQI (CQI=0), still
+            // allocate a minimum grant on the first available band. This mimics real NR
+            // Msg3 grants which use a predefined robust low MCS.
+            if (!allocation) {
+                for (Band b = 0; b < size; ++b) {
+                    int limit = bandLim->at(b).limit_.at(cw);
+                    if (limit == -2)
+                        continue;
+                    if (allocator_->availableBlocks(nodeId, MACRO, b) > 0) {
+                        grantedBlocks = blocks;
+                        allocator_->addBlocks(MACRO, b, nodeId, grantedBlocks, minRacBytes);
+                        racAllocatedBlocks += grantedBlocks;
+                        EV << NOW << "LteSchedulerEnbUl::racschedule UE: " << nodeId << " Handled RAC (fallback) on band: " << b << endl;
                         allocation = true;
                         break;
                     }
                 }
             }
-
             if (allocation) {
                 // create scList id for current cid/codeword
                 MacCid cid = MacCid(nodeId, SHORT_BSR);  // build the cid. Since this grant will be used for a BSR,
                                                              // we use the LCID corresponding to the SHORT_BSR
                 std::pair<MacCid, Codeword> scListId = {cid, cw};
-                scheduleList_[carrierFrequency][scListId] = blocks;
+                scheduleList_[carrierFrequency][scListId] = grantedBlocks;
             }
         }
 
