@@ -135,7 +135,7 @@ Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet:
 Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
 {
     int newsnr = floor(sinr + 0.5);
-    if (newsnr < phyPisaData_->minSnr())
+    if (newsnr <= phyPisaData_->minSnr())
         return 0;
     if (newsnr > phyPisaData_->maxSnr())
         return 15;
