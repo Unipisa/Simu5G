@@ -1778,8 +1778,10 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
                 continue;
 
             // Get the Bler
-            if (cqi == 0 || cqi > 15)
-                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, transmissionAttempt);
+            if (cqi == 0)
+                return false; // CQI 0 means channel below usable quality (e.g. after handover) — loss
+            if (cqi > 15)
+                throw cRuntimeError("A packet has been transmitted with a cqi greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, transmissionAttempt);
 
             // for statistical purposes
             sumSnr += snrV[band];
@@ -1927,8 +1929,10 @@ bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, Use
             if (allocation == 0) continue;
 
             // Get the Bler
-            if (cqi == 0 || cqi > 15)
-                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, nTx);
+            if (cqi == 0)
+                return false; // CQI 0 means channel below usable quality (e.g. after handover) — loss
+            if (cqi > 15)
+                throw cRuntimeError("A packet has been transmitted with a cqi greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, nTx);
 
             // for statistical purposes
             sumSnr += snrV[band];
