@@ -23,7 +23,7 @@ using namespace omnetpp;
 
 LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(Binder *binder, double targetBler, unsigned int numBands) : targetBler_(targetBler), numBands_(numBands), phyPisaData_(&(binder->phyPisaData))
 {
-    baseMin_.resize(phyPisaData_->nMcs(), 2);
+    baseMin_.resize(phyPisaData_->nCqi(), 2);
 }
 
 
@@ -93,8 +93,8 @@ Cqi LteFeedbackComputationRealistic::getCqi(TxMode txmode, double snr)
     double low = 2;
 
     min = baseMin_;
-    for (int i = 0; i < phyPisaData_->nMcs(); i++) {
-        double tmp = phyPisaData_->getBler(txm, i, newsnr);
+    for (int i = 0; i < phyPisaData_->nCqi(); i++) {
+        double tmp = phyPisaData_->getBler(txm, i + 1, newsnr);
         double diff = targetBler_ - tmp;
         min[i] = (diff > 0) ? diff : (diff * -1);
         if (low >= min[i]) {

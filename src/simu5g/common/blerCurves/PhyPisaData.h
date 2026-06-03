@@ -35,14 +35,13 @@ class PhyPisaData
 
     double getLambda(int i, int j) { return lambdaTable_[i][j]; }
     int nTxMode() { return 3; }
-    int nMcs() { return 15; }
+    int nCqi() { return 15; }
 
     int maxChannel() { return 10000; }
     int maxChannel2() { return 1000; }
 
-    // getBler gets the following parameters: (txMode , CQI, SINR)
-    //double getBler(int i, int j, int k){if (j==0) return 1; else return blerCurves_[i][j][k-1+blerShift_];}
-    double getBler(int i, int j, int k) { return GetBLER_TU(k + blerShift_, j); };
+    // getBler parameters: txMode (0-2), cqi (1-15, per 3GPP), sinr
+    double getBler(int txMode, int cqi, int sinr) { return GetBLER_TU(sinr + blerShift_, cqi); };
     int minSnr() { return -14 - blerShift_; }//SINR_15_CQI_TU [0] [0];}
     int maxSnr() { return 40 - blerShift_; }//SINR_15_CQI_TU [14] [15];}
 
