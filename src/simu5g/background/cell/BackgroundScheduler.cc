@@ -56,13 +56,6 @@ void BackgroundScheduler::initialize(int stage)
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         binder_.reference(this, "binderModule", true);
 
-        // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
-        // Start TTI tick
-        ttiTick_ = new cMessage("ttiTick_");
-        ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
-        ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex_);
-        scheduleAt(NOW + ttiPeriod_, ttiTick_);
-
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
 
@@ -74,6 +67,13 @@ void BackgroundScheduler::initialize(int stage)
 
         bgChannelModel_.reference(this, "channelModelModule", true);
         bgChannelModel_->setCarrierFrequency(carrierFrequency_);
+        // moved here to let binder_ be initialized in previous stage
+        // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
+        // Start TTI tick
+        ttiTick_ = new cMessage("ttiTick_");
+        ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
+        ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex_);
+        scheduleAt(NOW + ttiPeriod_, ttiTick_);
     }
 }
 

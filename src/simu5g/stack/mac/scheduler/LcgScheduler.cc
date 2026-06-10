@@ -191,6 +191,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes " << endl;
             EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes " << endl;
 
+            // TODO: check those values, it is using constant RLC Headers, but we have defined different sizes
             int minBytes = firstSdu ? MAC_HEADER + RLC_HEADER_UM : RLC_HEADER_UM;
 
             // If priority service: (availableBytes>0) && (desc->buffer_.occupancy() > 0) && (desc->parameters_.bucket_ > 0)
