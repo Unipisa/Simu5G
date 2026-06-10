@@ -394,7 +394,7 @@ void PacketFlowObserverEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
     int macPduId = macPdu->getId();
     int len = macPdu->getSduArraySize();
     if (len == 0)
-        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen", pfmType.c_str());
+        return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
         int lcid = macPdu->getLcid(i);
@@ -444,7 +444,7 @@ void PacketFlowObserverEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
     int macPduId = macPdu->getId();
     int len = macPdu->getSduArraySize();
     if (len == 0)
-        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen", pfmType.c_str());
+        return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
         int lcid = macPdu->getLcid(i);
@@ -549,7 +549,7 @@ void PacketFlowObserverEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPd
     int macPduId = macPdu->getId();
     int len = macPdu->getSduArraySize();
     if (len == 0)
-        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen", pfmType.c_str());
+        return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
         auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
