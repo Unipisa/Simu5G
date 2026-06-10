@@ -124,42 +124,42 @@ static double SINR_15_CQI_TU[15][16] = {
 
 };
 
-static double GetBLER_TU(double SINR, int MCS)
+static double GetBLER_TU(double SINR, int cqi)
 {
+    int row = cqi - 1; // 0-based row index into the 15-row BLER/SINR tables
     int index = -1;
     double BLER = 0.0;
-    int CQI = MCS;
     double R = 0.0;
 
-    if (SINR <= SINR_15_CQI_TU[CQI - 1][0]) {
+    if (SINR <= SINR_15_CQI_TU[row][0]) {
         BLER = 1.0;
     }
-    else if (SINR >= SINR_15_CQI_TU[CQI - 1][15]) {
+    else if (SINR >= SINR_15_CQI_TU[row][15]) {
         BLER = 0.0;
     }
     else {
         for (int i = 0; i < 15; i++) {
-            if (SINR >= SINR_15_CQI_TU[CQI - 1][i] && SINR < SINR_15_CQI_TU[CQI - 1][i + 1]) {
+            if (SINR >= SINR_15_CQI_TU[row][i] && SINR < SINR_15_CQI_TU[row][i + 1]) {
                 index = i;
-                //std::cout << SINR_15_CQI_TU [CQI-1] [i] << " - " << SINR_15_CQI_TU [CQI-1] [i+1] << std::endl;
+                //std::cout << SINR_15_CQI_TU [row] [i] << " - " << SINR_15_CQI_TU [row] [i+1] << std::endl;
             }
         }
     }
 
     if (index != -1) {
-        R = (SINR - SINR_15_CQI_TU[CQI - 1][index]) / (SINR_15_CQI_TU[CQI - 1][index + 1] - SINR_15_CQI_TU[CQI - 1][index]);
+        R = (SINR - SINR_15_CQI_TU[row][index]) / (SINR_15_CQI_TU[row][index + 1] - SINR_15_CQI_TU[row][index]);
 
-        BLER = BLER_15_CQI_TU[CQI - 1][index] + R * (BLER_15_CQI_TU[CQI - 1][index + 1] - BLER_15_CQI_TU[CQI - 1][index]);
+        BLER = BLER_15_CQI_TU[row][index] + R * (BLER_15_CQI_TU[row][index + 1] - BLER_15_CQI_TU[row][index]);
     }
 
     if (BLER >= 0.1) {
 #ifdef BLER_DEBUG
         std::cout << "SINR " << SINR << " "
-                  << "CQI " << CQI << " "
-                  << "SINRprec " << SINR_15_CQI_TU[CQI - 1][index] << " "
-                  << "SINRsucc " << SINR_15_CQI_TU[CQI - 1][index + 1] << " "
-                  << "BLERprec " << BLER_15_CQI_TU[CQI - 1][index] << " "
-                  << "BLERsucc " << BLER_15_CQI_TU[CQI - 1][index + 1] << " "
+                  << "CQI " << cqi << " "
+                  << "SINRprec " << SINR_15_CQI_TU[row][index] << " "
+                  << "SINRsucc " << SINR_15_CQI_TU[row][index + 1] << " "
+                  << "BLERprec " << BLER_15_CQI_TU[row][index] << " "
+                  << "BLERsucc " << BLER_15_CQI_TU[row][index + 1] << " "
                   << "R " << R << " "
                   << "BLER " << BLER << " "
                   << std::endl;

@@ -146,12 +146,12 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
     double low = 2;
 
     // TODO do this once in the initialize
-    min.resize(phyPisaData_->nMcs(), 2);
+    min.resize(phyPisaData_->nCqi(), 2);
 
     double targetBler = 0.01; // TODO get this from parameters
 
-    for (int i = 0; i < phyPisaData_->nMcs(); i++) {
-        double tmp = phyPisaData_->getBler(txm, i, newsnr);
+    for (int i = 0; i < phyPisaData_->nCqi(); i++) {
+        double tmp = phyPisaData_->getBler(txm, i + 1, newsnr);
         double diff = targetBler - tmp;
         min[i] = (diff > 0) ? diff : (diff * -1);
         if (low >= min[i]) {

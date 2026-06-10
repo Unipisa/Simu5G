@@ -1791,9 +1791,9 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
             else if (snr > binder_->phyPisaData.maxSnr())
                 blockErrorRate = 0.0;
             else
-                blockErrorRate = binder_->phyPisaData.getBler(itxmode, cqi - 1, snr);
+                blockErrorRate = binder_->phyPisaData.getBler(itxmode, cqi, snr);
 
-            EV << "\t bler computation: [itxMode=" << itxmode << "] - [cqi-1=" << cqi - 1
+            EV << "\t bler computation: [itxMode=" << itxmode << "] - [cqi=" << cqi
                << "] - [snr=" << snr << "]" << endl;
 
             double blockSuccessRate = 1.0 - blockErrorRate;
@@ -1940,9 +1940,9 @@ bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, Use
             else if (snr > binder_->phyPisaData.maxSnr())
                 bler = 0;
             else
-                bler = binder_->phyPisaData.getBler(itxmode, cqi - 1, snr);
+                bler = binder_->phyPisaData.getBler(itxmode, cqi, snr);
 
-            EV << "\t bler computation: [itxMode=" << itxmode << "] - [cqi-1=" << cqi - 1
+            EV << "\t bler computation: [itxMode=" << itxmode << "] - [cqi=" << cqi
                << "] - [snr=" << snr << "]" << endl;
 
             double success = 1 - bler;
