@@ -19,7 +19,6 @@
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
-#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 
@@ -85,6 +84,8 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
+void LteRlcAm::handleRadioLinkFailure(FlowControlInfo* lteInfo) {
+}
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
@@ -135,7 +136,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 
     drop(pkt);
 
-    EV << NOW << " LteRlcAm : handleUpperMessage sending to AM TX Queue sn=" << lteInfo->getSequenceNumber() << endl;
+    EV << NOW << " LteRlcAm : handleUpperMessage sending to AM TX Queue sn=" << sequenceNumber << endl;
     // Fragment Packet
     txbuf->enque(pkt);
 }
@@ -251,19 +252,24 @@ void LteRlcAm::indicateNewDataToMac(cPacket *pktAux) {
 
     auto newData = new Packet("AM-NewData");
 
-    // Extract sequence number from PDCP header
-    auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
-    unsigned int sequenceNumber = pdcpHeader->getSequenceNumber();
+    // Copy FlowControlInfo and other tags from the original packet first
+    newData->copyTags(*pkt);
 
-    // Add PDCP tracking information
-    auto pdcpTag = newData->addTag<PdcpTrackingTag>();
-    pdcpTag->setPdcpSequenceNumber(sequenceNumber);
-    pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+    // Use PdcpTrackingTag if already present on the packet (set by NrRlcAm::handleUpperMessage),
+    // otherwise extract info from the PDCP header. The tag may be absent for notification
+    // packets created internally by NrAmTxQueue::sendPdus (which carry RLC PDU chunks, not PDCP).
+    auto existingPdcpTag = pkt->findTag<PdcpTrackingTag>();
+    auto pdcpTag = newData->addTagIfAbsent<PdcpTrackingTag>();
+    if (existingPdcpTag) {
+        pdcpTag->setPdcpSequenceNumber(existingPdcpTag->getPdcpSequenceNumber());
+        pdcpTag->setOriginalPacketLength(existingPdcpTag->getOriginalPacketLength());
+    }
+    else {
+        pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+    }
 
     // add tag to indicate new data availability to MAC
-    newData->addTag<LteRlcNewDataTag>();
-
-    newData->copyTags(*pkt);
+    newData->addTagIfAbsent<LteRlcNewDataTag>();
 
     EV << "LteRlcAm::sendNewDataPkt - Sending message " << newData->getName() << " to port AM_Sap_down$o\n";
     send(newData, downOutGate_);

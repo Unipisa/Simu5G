@@ -159,6 +159,8 @@ class LteRlcAm : public cSimpleModule
      * @param nodeId Id of the node whose queues are deleted
      */
     virtual void deleteQueues(MacNodeId nodeId);
+    // add handleRadioLinkFailure to process radio link failure
+    virtual void handleRadioLinkFailure(FlowControlInfo* lteInfo);
     /**
      * handler for control messages coming
      * from receiver AM entities
