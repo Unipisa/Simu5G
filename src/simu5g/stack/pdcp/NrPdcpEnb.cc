@@ -17,6 +17,7 @@
 #include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
+#include "simu5g/stack/rlc/LteRlcDefs_m.h"
 
 namespace simu5g {
 
@@ -88,6 +89,12 @@ void NrPdcpEnb::analyzePacket(inet::Packet *pkt)
 void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
+    //TODO: at the moment just remove entities
+    auto tag=pkt->findTag<RadioLinkFailure>();
+    if (tag) {
+        handleRadioLinkFailure(pkt);
+        return;
+    }
     pkt->trim();
 
     // if dual connectivity is enabled and this is a secondary node,
@@ -156,6 +163,10 @@ void NrPdcpEnb::activeUeUL(std::set<MacNodeId> *ueSet)
         if (!(rxEntity->isEmpty()))
             ueSet->insert(nodeId);
     }
+}
+void NrPdcpEnb::handleRadioLinkFailure(Packet* pkt) {
+    LtePdcpEnb::handleRadioLinkFailure( pkt);
+
 }
 
 } //namespace

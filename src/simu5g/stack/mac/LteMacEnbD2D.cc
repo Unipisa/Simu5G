@@ -146,6 +146,18 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
         MacNodeId senderId = userInfo->getSourceId();
         LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
+
+        // For RLC-AM, status reports arrive in the reverse direction and may not
+        // have an incoming connection. Create one from the outgoing connection.
+        if (connDescIn_.find(cid) == connDescIn_.end()) {
+            if (connDescOut_.find(cid) != connDescOut_.end()) {
+                FlowDescriptor desc = connDescOut_.at(cid).flowInfo;
+                desc.setSourceId(senderId);
+                desc.setDestId(getMacNodeId());
+                desc.setDirection(UL);
+                createIncomingConnection(cid, desc);
+            }
+        }
         ASSERT(connDescIn_.find(cid) != connDescIn_.end());
         upPkt->removeTag<FlowControlInfo>();
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();

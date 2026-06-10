@@ -385,7 +385,7 @@ void NrMacUe::macPduMake(MacCid cid)
                     continue;
 
                 if (macPduList_.find(carrierFreq) == macPduList_.end()) {
-                    MacPduList newList;
+                    MacPduList newList;;
                     macPduList_[carrierFreq] = newList;
                 }
                 MacPduList::iterator pit = macPduList_[carrierFreq].find(pktId);
@@ -498,7 +498,7 @@ void NrMacUe::macPduMake(MacCid cid)
 
             // search for an empty unit within the first available process
             UnitList txList = (macPkt->getTag<UserControlInfo>()->getDirection() == D2D_MULTI) ? txBuf->getEmptyUnits(currentHarq_) : txBuf->firstAvailable();
-            EV << "NrMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "]" << endl;
+            EV << "NrMacUe::macPduMake() " << (unsigned int)currentHarq_ << "- [Used Acid=" << (unsigned int)txList.first << "]" << endl;
 
             // BSR related operations
 
@@ -588,6 +588,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 bsrRtxTimer_ = 0;
 
             macPkt->insertAtFront(macPdu);
+
 
             EV << "NrMacUe: pduMaker created PDU: " << macPkt->str() << endl;
 

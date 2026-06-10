@@ -77,6 +77,7 @@ class NrPdcpUe : public LtePdcpUeD2D
   public:
 
     void deleteEntities(MacNodeId nodeId) override;
+    virtual void handleRadioLinkFailure(Packet* pkt) override;
 };
 
 } //namespace

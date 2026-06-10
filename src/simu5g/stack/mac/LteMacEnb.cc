@@ -126,6 +126,36 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
     enbSchedulerUl_->removePendingRac(nodeId);
 }
 
+void LteMacEnb::deleteQueuesRadioLinkFailure(MacNodeId nodeId)
+{
+    Enter_Method_Silent();
+    EV<<NOW<<"LteMacEnb::deleteQueuesRadioLinkFailure( interrupting HARQ processes"<<endl;
+    for (auto& mit : harqRxBuffers_) {
+        HarqRxBuffers::iterator hit = mit.second.find(nodeId);
+        if (hit != mit.second.end()) {
+            for (unsigned int proc = 0; proc < (unsigned int)harqProcesses_; proc++) {
+                unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
+                for (unsigned int i = 0; i < numUnits; i++) {
+                    hit->second->getProcess(proc)->purgeCorruptedPdu(i); // delete contained PDU
+                    hit->second->getProcess(proc)->resetCodeword(i);     // reset unit
+                }
+            }
+        }
+    }
+
+    // notify that this UE is switching during this TTI
+    resetHarq_[nodeId] = NOW;
+    deleteQueues(nodeId);
+
+
+
+}
+void LteMacEnb::informRadioLinkFailure(MacNodeId nodeId) {
+    pendingRLFNode=nodeId;
+    radioLinkFailurePending=true;
+
+}
+
 void LteMacEnb::initialize(int stage)
 {
     LteMacBase::initialize(stage);
@@ -237,7 +267,20 @@ void LteMacEnb::handleMessage(cMessage *msg)
             return;
         }
     }
+    //Now we  clear the queues again, before handling packets from RLC or after handling packets from PHY since a pending packet may have been received in this TTI
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == upInGate_ && radioLinkFailurePending) {
+        deleteQueuesRadioLinkFailure(pendingRLFNode);
+        radioLinkFailurePending=false;
+    }
+
     LteMacBase::handleMessage(msg);
+
+
+    if (incoming == downInGate_ && radioLinkFailurePending) {
+        deleteQueuesRadioLinkFailure(pendingRLFNode);
+        radioLinkFailurePending=false;
+    }
 }
 
 void LteMacEnb::macSduRequest()
@@ -688,6 +731,18 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
         MacNodeId senderId = userInfo->getSourceId();
         LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
+
+        // For RLC-AM, status reports arrive in the reverse direction and may not
+        // have an incoming connection. Create one from the outgoing connection.
+        if (connDescIn_.find(cid) == connDescIn_.end()) {
+            if (connDescOut_.find(cid) != connDescOut_.end()) {
+                FlowDescriptor desc = connDescOut_.at(cid).flowInfo;
+                desc.setSourceId(senderId);
+                desc.setDestId(getMacNodeId());
+                desc.setDirection(UL);
+                createIncomingConnection(cid, desc);
+            }
+        }
         ASSERT(connDescIn_.find(cid) != connDescIn_.end());
         upPkt->removeTag<FlowControlInfo>();
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
@@ -715,18 +770,20 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
 {
     auto pkt = check_and_cast<Packet *>(cpkt);
 
-    if (pkt->getBitLength() <= 1) { // no data in this packet
-        delete cpkt;
-        return false;
-    }
-
     pkt->setTimestamp();        // Add timestamp with current time to packet
 
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     // obtain the cid from the packet information
     MacCid cid = ctrlInfoToMacCid(lteInfo.get());
-    ASSERT(connDescOut_.find(cid) != connDescOut_.end());
+
+    // For RLC-AM, status reports may arrive in the reverse direction before
+    // the outgoing connection is explicitly created (e.g., UL-only AM flow needs
+    // DL outgoing connection for status reports). Create it on demand.
+    if (connDescOut_.find(cid) == connDescOut_.end()) {
+        FlowDescriptor desc = FlowDescriptor::fromFlowControlInfo(*lteInfo);
+        createOutgoingConnection(cid, desc);
+    }
 
     OutgoingConnectionInfo& connInfo = connDescOut_.at(cid);
     LteMacQueue *queue = connInfo.queue;
@@ -744,6 +801,11 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
 
         delete pkt;
         return true; // this is only a new packet indication - only buffered in virtual queue
+    }
+
+    if (pkt->getBitLength() <= 1) { // no data in this packet
+        delete cpkt;
+        return false;
     }
 
     // this is a MAC SDU, buffer it in the MAC buffer
