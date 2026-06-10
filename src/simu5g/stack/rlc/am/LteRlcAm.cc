@@ -27,6 +27,12 @@ Define_Module(LteRlcAm);
 
 using namespace omnetpp;
 
+simsignal_t LteRlcAm::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteRlcAm::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteRlcAm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteRlcAm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteRlcAm::radioLinkFailureSignal = registerSignal("radioLinkFailure");
+
 AmTxQueue *LteRlcAm::lookupTxBuffer(MacCid cid)
 {
     auto it = txBuffers_.find(cid);
@@ -76,6 +82,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
     EV << NOW << " LteRlcAm : Sending packet " << pkt->getName()
        << " to port AM_Sap_up$o\n";
     send(pkt, upOutGate_);
+    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
@@ -102,10 +109,12 @@ void LteRlcAm::sendFragmented(cPacket *pktAux)
        << pkt->getByteLength() << "  to port AM_Sap_down$o\n";
 
     send(pkt, downOutGate_);
+    emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
 void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     MacCid cid = ctrlInfoToMacCid(lteInfo.get());
@@ -126,7 +135,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 
     drop(pkt);
 
-    EV << NOW << " LteRlcAm : handleUpperMessage sending to AM TX Queue" << endl;
+    EV << NOW << " LteRlcAm : handleUpperMessage sending to AM TX Queue sn=" << lteInfo->getSequenceNumber() << endl;
     // Fragment Packet
     txbuf->enque(pkt);
 }
@@ -144,13 +153,15 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
     if (txbuf == nullptr)
         txbuf = createTxBuffer(cid);
 
-    txbuf->handleControlPacket(pkt);
+    // remove tag before handleControlPacket to avoid use-after-free (handleControlPacket may delete pkt)
     lteInfo = pkt->removeTag<FlowControlInfo>();
+    txbuf->handleControlPacket(pkt);
 }
 
 void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
+
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     auto chunk = pkt->peekAtFront<inet::Chunk>();
 
@@ -177,6 +188,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
     else {
         // process AM PDU
         auto pdu = pkt->peekAtFront<LteRlcAmPdu>();
+        emit(receivedPacketFromLowerLayerSignal_, pkt);
         if ((pdu->getAmType() == ACK) || (pdu->getAmType() == MRW_ACK)) {
             EV << NOW << " LteRlcAm::handleLowerMessage Received ACK message" << endl;
 
@@ -203,7 +215,8 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
 {
     for (auto tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
         if (tit->first.getNodeId() == nodeId) {
-            delete tit->second; // Delete Queue
+            // cannot directly delete the module
+            tit->second->deleteModule(); // Delete Entity
             tit = txBuffers_.erase(tit); // Delete Element
         }
         else {
@@ -212,7 +225,8 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
     }
     for (auto rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
         if (rit->first.getNodeId() == nodeId) {
-            delete rit->second; // Delete Queue
+            // cannot directly delete the module
+            rit->second->deleteModule(); // Delete Entity
             rit = rxBuffers_.erase(rit); // Delete Element
         }
         else {

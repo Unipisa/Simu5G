@@ -27,7 +27,7 @@ package simu5g.stack.rlc.am;
 // unacknowledged RLC PDUs at the transmitting side and provide guaranteed delivery
 // at the receiving side.
 //
-simple LteRlcAm
+simple LteRlcAm like ILteRlcAm
 {
     parameters:
         @display("i=block/wheelbarrow");
@@ -69,6 +69,46 @@ simple LteRlcAm
         @statistic[rlcPduPacketLossUl](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossUl"; record=mean);
         @signal[rlcPduPacketLossDl];
         @statistic[rlcPduPacketLossDl](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossDl"; record=mean);
+
+        // TODO: simu5g_rateavg instead of mean
+        @signal[rlcThroughputSampleDl];
+        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc AM layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
+        @signal[rlcThroughputSampleUl];
+        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc AM layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
+        @signal[rlcCellThroughputSampleDl];
+        @statistic[rlcCellThroughputSampleDl](title="Instant Throughput at the GNB rlc AM layer DL"; unit="Bps"; source="rlcCellThroughputSampleDl"; record=mean,vector);
+        @signal[rlcCellThroughputSampleUl];
+        @statistic[rlcCellThroughputSampleUl](title="Instant Throughput at the GNB rlc AM layer UL"; unit="Bps"; source="rlcCellThroughputSampleUl"; record=mean,vector);
+        // wasted bytes due to NR MAC not asking for several PDUs
+        @signal[wastedGrantedBytes];
+        @statistic[wastedGrantedBytes](title="Bytes granted by MAC that are not used because the buffer is empty"; unit="B"; source="wastedGrantedBytes"; record=sum);
+     
+        @signal[enqueuedSduSize];
+        @statistic[enqueuedSduSize](title="Size of SDU enqueued by RLC AM"; unit="B"; source="enqueuedSduSize"; record=vector);
+        @signal[enqueuedSduRate];
+        @statistic[enqueuedSduRate](title="Rate of SDUs enqueued by RLC AM"; unit="Bps"; source="enqueuedSduRate"; record=mean,vector);
+        @signal[requestedPduSize];
+        @statistic[requestedPduSize](title="Size of SDUs requested by Mac"; unit="B"; source="requestedPduSize"; record=mean,vector);
+        @signal[txWindowOccupation];
+        @statistic[txWindowOccupation](title="Number of packets in tx window"; unit=""; source="txWindowOccupation"; record=mean,vector);
+        @signal[txWindowFull];
+        @statistic[txWindowFull](title="tx full when transmitting"; unit=""; source="txWindowFull"; record=vector);
+        @signal[rxWindowOccupation];
+        @statistic[rxWindowOccupation](title="Number of packets in rx window"; unit=""; source="rxWindowOccupation"; record=mean,vector);
+        @signal[rxWindowFull];
+        @statistic[rxWindowFull](title="rx full when transmitting"; unit=""; source="rxWindowFull"; record=vector);
+        @signal[retransmissionPdu];
+        @statistic[retransmissionPdu](title="retransmission signal"; unit=""; source="retransmissionPdu"; record=vector);
+        @signal[radioLinkFailure];
+        @statistic[radioLinkFailure](title="radioLinkFailure signal"; unit=""; source="radioLinkFailure"; record=vector);
+        @signal[receivedPacketFromUpperLayer];
+        @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @signal[receivedPacketFromLowerLayer];
+        @statistic[receivedPacketFromLowerLayer](source="receivedPacketFromLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @signal[sentPacketToUpperLayer];
+        @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        @signal[sentPacketToLowerLayer];
+        @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
 
     gates:
         //#

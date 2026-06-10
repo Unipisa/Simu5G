@@ -14,7 +14,8 @@
 #define _LTE_LTERLCAM_H_
 
 #include "simu5g/common/LteCommon.h"
-
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/rlc/LteRlcDefs_m.h"
 namespace simu5g {
 
 using namespace omnetpp;
@@ -38,6 +39,12 @@ class LteRlcAm : public cSimpleModule
     // parameters
     cModuleType *txEntityModuleType_;
     cModuleType *rxEntityModuleType_;
+
+    static simsignal_t radioLinkFailureSignal;
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
 
     /*
      * Data structures
@@ -65,21 +72,15 @@ class LteRlcAm : public cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    void handleMessage(cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
-    void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    void finish() override
+    virtual void initialize(int stage) override;
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void finish() override
     {
     }
 
-    /**
-     * deleteQueues() must be called on handover
-     * to delete queues for a given user
-     *
-     * @param nodeId Id of the node whose queues are deleted
-     */
-    void deleteQueues(MacNodeId nodeId);
+
 
     /**
      * lookupTxBuffer() searches for an existing TXBuffer for the given CID.
@@ -130,7 +131,7 @@ class LteRlcAm : public cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleUpperMessage(cPacket *pkt);
+    virtual void handleUpperMessage(cPacket *pkt);
 
     /**
      * Am Mode
@@ -147,9 +148,17 @@ class LteRlcAm : public cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleLowerMessage(cPacket *pkt);
+    virtual void handleLowerMessage(cPacket *pkt);
 
   public:
+    // add deleteQueues here to be able to delete during handover
+    /**
+     * deleteQueues() must be called on handover
+     * to delete queues for a given user
+     *
+     * @param nodeId Id of the node whose queues are deleted
+     */
+    virtual void deleteQueues(MacNodeId nodeId);
     /**
      * handler for control messages coming
      * from receiver AM entities
@@ -160,7 +169,7 @@ class LteRlcAm : public cSimpleModule
      *
      * @param pkt packet to process
      */
-    void routeControlMessage(cPacket *pkt);
+    virtual void routeControlMessage(cPacket *pkt);
 
     /**
      * sendFragmented() is invoked by the TXBuffer as a direct method
@@ -178,7 +187,7 @@ class LteRlcAm : public cSimpleModule
      *
      * @param pkt packet to buffer
      */
-    void bufferControlPdu(cPacket *pkt);
+    virtual void bufferControlPdu(cPacket *pkt);
 
     /**
      * sendDefragmented() is invoked by the RXBuffer as a direct method
