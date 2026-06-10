@@ -1,0 +1,249 @@
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see http://www.gnu.org/licenses/.
+//
+
+#ifndef __SIMU5G_NRRLCUM_H_
+#define __SIMU5G_NRRLCUM_H_
+
+
+#include <omnetpp.h>
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/rlc/um/NrUmTxEntity.h"
+#include "simu5g/stack/rlc/um/NrUmRxEntity.h"
+#include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/mec/utils/MecCommon.h"
+#include "LteRlcUm.h"
+
+
+using namespace omnetpp;
+
+namespace simu5g {
+
+class NrUmTxEntity;
+class NrUmRxEntity;
+
+/**
+ * @class LteRlcUm
+ * @brief UM Module
+ *
+ * This is the UM Module of RLC.
+ * It implements the unacknowledged mode (UM):
+ *
+ * - Unacknowledged mode (UM):
+ *   This mode is used for data traffic. Packets arriving on
+ *   this port have already been assigned a CID.
+ *   UM implements fragmentation and reassembly of packets.
+ *   To perform this task there is a TxEntity module for
+ *   every CID = <NODE_ID,LCID>. RLC PDUs are created by the
+ *   sender and reassembly is performed at the receiver by
+ *   simply returning the original packet to him.
+ *   Traffic on this port is then forwarded on ports
+ *
+ *   UM mode attaches a header to the packet. The size
+ *   of this header is fixed at 2 bytes.
+ *
+ */
+class NrRlcUm : public LteRlcUm
+{
+public:
+
+    /**
+     * sendFragmented() is invoked by the TXBuffer as a direct method
+     * call and is used to forward fragments to lower layers. This is needed
+     * since the TXBuffer itself has no output gates
+     *
+     * @param pkt packet to forward
+     */
+    void sendFragmented(cPacket *pkt);
+
+    /**
+     * sendDefragmented() is invoked by the RXBuffer as a direct method
+     * call and is used to forward fragments to upper layers. This is needed
+     * since the RXBuffer itself has no output gates
+     *
+     * @param pkt packet to forward
+     */
+    void sendDefragmented(cPacket *pkt) ;
+
+    /**
+     * deleteQueues() must be called on handover
+     * to delete queues for a given user
+     *
+     * @param nodeId Id of the node whose queues are deleted
+     */
+    virtual void deleteQueues(MacNodeId nodeId) override;
+
+    /**
+     * sendToLowerLayer() is invoked by the TXEntity as a direct method
+     * call and is used to forward fragments to lower layers. This is needed
+     * since the TXBuffer itself has no output gates
+     *
+     * @param pkt packet to forward
+     */
+    virtual void sendToLowerLayer(cPacket *pkt) override;
+
+    /**
+     * dropBufferOverflow() is invoked by the TXEntity as a direct method
+     * call and is used to drop fragments if the queue is full.
+     *
+     * @param pkt packet to be dropped
+     */
+    virtual void dropBufferOverflow(cPacket *pkt);
+
+    virtual void resumeDownstreamInPackets(MacNodeId peerId) override {}
+
+    virtual bool isEmptyingTxBuffer(MacNodeId peerId) override { return false; }
+
+    /**
+     * @author Alessandro Noferi
+     * It fills the ueSet argument with the MacNodeIds that have
+     * RLC data in the entities
+     *
+     */
+    void activeUeUL(std::set<MacNodeId> *ueSet);
+
+    /**
+     * @author Alessandro Noferi
+     * Methods used by RlcEntity and EnodeBCollector respectively
+     * in order to manage UL throughput stats.
+     */
+
+    void addUeThroughput(MacNodeId nodeId, Throughput throughput);
+    double getUeThroughput(MacNodeId nodeId);
+    void resetThroughputStats(MacNodeId nodeId);
+
+    void indicateNewDataToMac(cPacket* pktAux);
+
+  protected:
+
+    cGate *upInGate_ = nullptr;
+    cGate *upOutGate_ = nullptr;
+    cGate *downInGate_ = nullptr;
+    cGate *downOutGate_ = nullptr;
+
+    RanNodeType nodeType;
+
+    // statistics
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
+    static simsignal_t rlcPacketLossDlSignal_;
+    static simsignal_t rlcPacketLossUlSignal_;
+
+    /**
+     * Initialize watches
+     */
+    void initialize(int stage) override;
+
+    void finish() override
+    {
+    }
+
+    /**
+     * Analyze the gate of the incoming packet
+     * and call the proper handler
+     */
+    void handleMessage(cMessage *msg) override;
+
+    // parameters
+    bool mapAllLcidsToSingleBearer_;
+
+    /**
+     * getTxBuffer() is used by the sender to gather the TXBuffer
+     * for that CID. If the TXBuffer was already present, a reference
+     * is returned, otherwise a new TXBuffer is created,
+     * added to the tx_buffers map and a reference is returned as well.
+     *
+     * @param lteInfo flow-related info
+     * @return pointer to the TXBuffer for the CID of the flow
+     *
+     */
+    virtual NrUmTxEntity *getNrTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+
+    /**
+     * getRxBuffer() is used by the receiver to gather the RXBuffer
+     * for that CID. If the RXBuffer was already present, a reference
+     * is returned, otherwise a new RXBuffer is created,
+     * added to the rx_buffers map and a reference is returned as well.
+     *
+     * @param lteInfo flow-related info
+     * @return pointer to the RXBuffer for that CID
+     *
+     */
+    virtual NrUmRxEntity *getNrRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+
+    /**
+     * handler for traffic coming
+     * from the upper layer (PDCP)
+     *
+     * handleUpperMessage() performs the following tasks:
+     * - Adds the RLC-UM header to the packet, containing
+     *   the CID, the Traffic Type and the Sequence Number
+     *   of the packet (extracted from the IP Datagram)
+     * - Searches (or adds) the proper TXBuffer, depending
+     *   on the packet CID
+     * - Calls the TXBuffer, which from now on takes
+     *   care of the packet
+     *
+     * @param pkt packet to process
+     */
+    virtual void handleUpperMessage(cPacket *pkt) override;
+
+    /**
+     * UM Mode
+     *
+     * handler for traffic coming from
+     * the lower layer (DTCH, MTCH, MCCH).
+     *
+     * handleLowerMessage() performs the following task:
+     *
+     * - Searches (or adds) the proper RXBuffer, depending
+     *   on the packet CID
+     * - Calls the RXBuffer, which from now on takes
+     *   care of the packet
+     *
+     * @param pkt packet to process
+     */
+    virtual void handleLowerMessage(cPacket *pkt) override;
+
+    /*
+     * Data structures
+     */
+
+    /**
+     * The entities map associates each CID with
+     * a TX/RX Entity , identified by its ID
+     */
+    typedef std::map<MacCid, NrUmTxEntity *> NrUmTxEntities;
+    typedef std::map<MacCid, NrUmRxEntity *> NrUmRxEntities;
+    NrUmTxEntities nrtxEntities_;
+    NrUmRxEntities nrrxEntities_;
+
+    /**
+     * @author Alessandro Noferi
+     * Holds the throughput stats for each UE
+     * identified by the srcId of the
+     * FlowControlInfo in each entity
+     *
+     */
+    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
+    ULThroughputPerUE ulThroughput_;
+};
+
+} //namespace
+
+#endif
