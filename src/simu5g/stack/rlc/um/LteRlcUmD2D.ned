@@ -40,5 +40,11 @@ simple LteRlcUmD2D extends LteRlcUm
         @statistic[rlcPduDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcPduDelayD2D"; record=mean,vector);
         @signal[rlcPduThroughputD2D];
         @statistic[rlcPduThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcPduThroughputD2D"; record=simu5g_rateavg,vector);
+
+        // TODO: simu5g_rateavg instead of mean
+        @signal[rlcThroughputSampleDl];
+        @statistic[rlcThroughputSampleDl](title="Instant Throughput at the rlc UM layer DL"; unit="Bps"; source="rlcThroughputSampleDl"; record=mean,vector);
+        @signal[rlcThroughputSampleUl];
+        @statistic[rlcThroughputSampleUl](title="Instant Throughput at the rlc UM layer UL"; unit="Bps"; source="rlcThroughputSampleUl"; record=mean,vector);
 }
 

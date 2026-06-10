@@ -89,5 +89,9 @@ simple LteMacEnb extends LteMacBase
         @statistic[avgServedBlocksDl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksDl"; record=mean,vector);
         @signal[avgServedBlocksUl];
         @statistic[avgServedBlocksUl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksUl"; record=mean,vector);
+        @signal[grantedBlocks];
+        @statistic[grantedBlocks](title="Granted blocks"; unit="blocks"; source="grantedBlocks"; record=vector);
+        @signal[bsrSize];
+        @statistic[bsrSize](title="Current size of BSR buffers"; unit="B"; source="bsrSize"; record=vector);
 }
 

@@ -31,6 +31,8 @@ simsignal_t UmRxEntity::rlcThroughputSignal_[2] = { cComponent::registerSignal("
 simsignal_t UmRxEntity::rlcPduDelaySignal_[2] = { cComponent::registerSignal("rlcPduDelayDl"), cComponent::registerSignal("rlcPduDelayUl") };
 simsignal_t UmRxEntity::rlcPduThroughputSignal_[2] = { cComponent::registerSignal("rlcPduThroughputDl"), cComponent::registerSignal("rlcPduThroughputUl") };
 simsignal_t UmRxEntity::rlcCellThroughputSignal_[2] = { cComponent::registerSignal("rlcCellThroughputDl"), cComponent::registerSignal("rlcCellThroughputUl") };
+simsignal_t UmRxEntity::rlcThroughputSampleSignal_[2] ={cComponent::registerSignal("rlcThroughputSampleDl"), cComponent::registerSignal("rlcThroughputSampleUl")};
+
 
 // D2D signals - only valid statistics (throughput and delay, no packet loss)
 simsignal_t UmRxEntity::rlcDelayD2DSignal_ = registerSignal("rlcDelayD2D");
@@ -278,11 +280,20 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     totalRcvdBytes_ += length;
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
+    double interval=(NOW-lastTputSample).dbl();
+    tpsample  +=length;
 
     if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcThroughputSignal_[dir_], tputSample);
             ue->emit(rlcDelaySignal_[dir_], (NOW - ts).dbl());
+            if (interval>=1) {
+                double tput = (double) tpsample/(interval);
+                ue->emit(rlcThroughputSampleSignal_[dir_],tput);
+                tpsample=0;
+                lastTputSample=NOW;
+            }
+
         }
         else {
             ue->emit(rlcThroughputD2DSignal_, tputSample);
@@ -648,6 +659,8 @@ void UmRxEntity::initialize(int stage)
         // store the node id of the owner module (useful for statistics)
         ownerNodeId_ = mac->getMacNodeId();
 
+        tpsample=0;
+        lastTputSample=NOW;
         WATCH(timeout_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {

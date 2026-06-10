@@ -27,6 +27,7 @@ using namespace inet;
 simsignal_t LteHarqBufferRx::macCellThroughputSignal_[2] = { cComponent::registerSignal("macCellThroughputDl"), cComponent::registerSignal("macCellThroughputUl") };
 simsignal_t LteHarqBufferRx::macDelaySignal_[2] = { cComponent::registerSignal("macDelayDl"), cComponent::registerSignal("macDelayUl") };
 simsignal_t LteHarqBufferRx::macThroughputSignal_[2] = { cComponent::registerSignal("macThroughputDl"), cComponent::registerSignal("macThroughputUl") };
+simsignal_t LteHarqBufferRx::macThroughputSampleSignal_[2] = { cComponent::registerSignal("macThroughputSampleDl"), cComponent::registerSignal("macThroughputSampleUl") };
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId)
     : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), processes_(num, nullptr), isMulticast_(false)
@@ -122,6 +123,8 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
     this->sendFeedback();
     std::list<Packet *> ret;
     unsigned char acid = 0;
+    double interval=(NOW-lastTputSample).dbl();
+
     for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
             if (processes_[i]->isCorrect(cw)) {
@@ -137,6 +140,7 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 // Calculate Throughput by sending the number of bits for this packet
                 totalCellRcvdBytes_ += size;
                 totalRcvdBytes_ += size;
+                tSample += size;
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 // emit throughput statistics
@@ -159,6 +163,11 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
         }
     }
 
+    if (interval>=1) {
+        macUe_emit(macThroughputSampleSignal_[dir], (tSample/interval));
+        tSample=0;
+        lastTputSample=NOW;
+    }
     return ret;
 }
 
