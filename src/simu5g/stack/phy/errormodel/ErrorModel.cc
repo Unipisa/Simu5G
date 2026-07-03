@@ -90,6 +90,8 @@ double ErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *l
 
 bool ErrorModel::isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, bool useD2DMulticastThreshold)
 {
+    Enter_Method_Silent("ErrorModel::isReceptionSuccessful");
+
     EV << "ErrorModel::isReceptionSuccessful" << endl;
 
     ReceptionParams params = extractReceptionParams(lteInfo);
