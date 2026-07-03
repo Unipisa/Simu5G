@@ -16,7 +16,7 @@ namespace simu5g {
 
 Define_Module(IndependentResourceBlockErrorModel);
 
-double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, double& sumSnr, int& usedRBs) const
+double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const
 {
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
@@ -37,10 +37,13 @@ double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *f
             usedRBs++;
 
             int snr = snrVector[band];
-            blockErrorRate = getBler(params.txModeIndex, params.cqi, snr);
-
-            if (blockErrorRate >= 1.0 && snr < binder_->phyPisaData.minSnr())
+            int minSnr = useD2DMulticastThreshold ? 1 : binder_->phyPisaData.minSnr();
+            if (snr < minSnr) {
+                forcedFailure = true;
                 return 1.0;
+            }
+
+            blockErrorRate = getBler(params.txModeIndex, params.cqi, snr);
 
             EV << "\t bler computation: [itxMode=" << params.txModeIndex << "] - [cqi-1=" << params.cqi - 1
                << "] - [snr=" << snr << "]" << endl;
@@ -61,4 +64,3 @@ double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *f
 }
 
 } //namespace
-

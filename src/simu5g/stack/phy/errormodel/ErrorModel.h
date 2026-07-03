@@ -59,10 +59,10 @@ class ErrorModel : public cSimpleModule
     bool drawReceptionResult(double packetErrorRate, const ReceptionParams& params) const;
     void emitSinrStatistics(LteChannelModel *channelModel, UserControlInfo *lteInfo, const ReceptionParams& params, double sumSnr, int usedRBs);
 
-    virtual double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, double& sumSnr, int& usedRBs) const;
+    virtual double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const;
 
   public:
-    virtual bool isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel);
+    virtual bool isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, bool useD2DMulticastThreshold = false);
 };
 
 } //namespace

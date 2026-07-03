@@ -472,7 +472,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
         recordCqi(cqi, DL);
     }
     // apply decider to received packet (DAS removed - single antenna only)
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    bool result = isReceptionSuccessful(channelModel, frame, lteInfo);
 
     // update statistics
     if (result)

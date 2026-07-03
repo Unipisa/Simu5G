@@ -20,10 +20,9 @@ namespace simu5g {
 class IndependentResourceBlockErrorModel : public ErrorModel
 {
   protected:
-    double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, double& sumSnr, int& usedRBs) const override;
+    double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const override;
 };
 
 } //namespace
 
 #endif
-

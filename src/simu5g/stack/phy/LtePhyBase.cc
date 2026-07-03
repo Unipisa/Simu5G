@@ -174,6 +174,32 @@ void LtePhyBase::initializeErrorModel()
     errorModel_.reference(this, "errorModelModule", true);
 }
 
+bool LtePhyBase::isReceptionSuccessful(LteChannelModel *channelModel, LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double> *rsrpVector)
+{
+    std::vector<double> snrVector;
+    bool useD2DMulticastThreshold = false;
+
+    if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
+        MacNodeId peerId = lteInfo->getDestId();
+        Coord peerCoord = getCoord();
+        MacNodeId enbId = binder_->getServingNodeOrSelf(lteInfo->getSourceId());
+
+        if (lteInfo->getDirection() == D2D_MULTI && rsrpVector != nullptr) {
+            enbId = MacNodeId(1); // preserve the legacy D2D multicast decoding path
+            useD2DMulticastThreshold = true;
+            snrVector = channelModel->getSINR_D2D(frame, lteInfo, peerId, peerCoord, enbId, *rsrpVector);
+        }
+        else {
+            snrVector = channelModel->getSINR_D2D(frame, lteInfo, peerId, peerCoord, enbId);
+        }
+    }
+    else {
+        snrVector = channelModel->getSINR(frame, lteInfo);
+    }
+
+    return errorModel_->isReceptionSuccessful(frame, lteInfo, snrVector, channelModel, useD2DMulticastThreshold);
+}
+
 void LtePhyBase::updateDisplayString()
 {
     char buf[80] = "";

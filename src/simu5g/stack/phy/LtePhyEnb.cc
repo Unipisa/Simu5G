@@ -177,7 +177,7 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
         return; // If frame contains a control packet no further action is needed
 
     // DAS removed - single antenna only
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    bool result = isReceptionSuccessful(channelModel, frame, lteInfo);
     if (result)
         numAirFrameReceived_++;
     else

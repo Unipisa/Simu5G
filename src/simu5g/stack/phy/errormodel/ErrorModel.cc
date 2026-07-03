@@ -103,12 +103,12 @@ void ErrorModel::emitSinrStatistics(LteChannelModel *channelModel, UserControlIn
     }
 }
 
-double ErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, double& sumSnr, int& usedRBs) const
+double ErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const
 {
     throw cRuntimeError("ErrorModel::computePacketErrorRate - missing concrete error model implementation");
 }
 
-bool ErrorModel::isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel)
+bool ErrorModel::isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, bool useD2DMulticastThreshold)
 {
     EV << "ErrorModel::isReceptionSuccessful" << endl;
 
@@ -116,7 +116,11 @@ bool ErrorModel::isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteI
 
     double sumSnr = 0.0;
     int usedRBs = 0;
-    double packetErrorRate = computePacketErrorRate(frame, lteInfo, snrVector, channelModel, params, sumSnr, usedRBs);
+    bool forcedFailure = false;
+    double packetErrorRate = computePacketErrorRate(frame, lteInfo, snrVector, channelModel, params, useD2DMulticastThreshold, sumSnr, usedRBs, forcedFailure);
+
+    if (forcedFailure)
+        return false;
 
     emitSinrStatistics(channelModel, lteInfo, params, sumSnr, usedRBs);
     return drawReceptionResult(packetErrorRate, params);

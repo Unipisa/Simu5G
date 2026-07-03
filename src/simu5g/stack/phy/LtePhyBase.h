@@ -306,6 +306,7 @@ class LtePhyBase : public ChannelAccess
 
     void initializeChannelModel();
     void initializeErrorModel();
+    bool isReceptionSuccessful(LteChannelModel *channelModel, LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double> *rsrpVector = nullptr);
 
     /**
      * Utility.

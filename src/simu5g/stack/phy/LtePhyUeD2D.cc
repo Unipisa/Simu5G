@@ -191,7 +191,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     }
 
     // Apply decider to received packet.
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    bool result = isReceptionSuccessful(channelModel, frame, lteInfo);
 
     // Update statistics.
     if (result)
@@ -433,9 +433,9 @@ void LtePhyUeD2D::decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo)
     // Apply decider to received packet
     bool result;
     if (lteInfo->getDirection() == D2D_MULTI)
-        result = channelModel->isReceptionSuccessful_D2D(frame, lteInfo, bestRsrpVector_);
+        result = isReceptionSuccessful(channelModel, frame, lteInfo, &bestRsrpVector_);
     else
-        result = channelModel->isReceptionSuccessful(frame, lteInfo);
+        result = isReceptionSuccessful(channelModel, frame, lteInfo);
 
     // Update statistics
     if (result)
