@@ -45,7 +45,7 @@ double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInf
     if (beta <= 0.0)
         throw cRuntimeError("EesmErrorModel::computePacketErrorRate - beta must be positive");
 
-    double exponentialSum = 0.0;
+    std::vector<double> exponentialTerms;
     int totalAllocation = 0;
     for (const auto& [remoteUnit, rbList] : lteInfo->getGrantedBlocks()) {
         for (const auto& [band, allocation] : rbList) {
@@ -63,7 +63,8 @@ double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInf
             }
 
             double linearSnr = pow(10.0, snr / 10.0);
-            exponentialSum += allocation * exp(-linearSnr / beta);
+            for (unsigned int i = 0; i < allocation; i++)
+                exponentialTerms.push_back(-linearSnr / beta);
             totalAllocation += allocation;
 
             EV << " EesmErrorModel::error direction " << dirToA(params.direction)
@@ -76,7 +77,13 @@ double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInf
     if (totalAllocation == 0)
         return 0.0;
 
-    double effectiveLinearSnr = std::max(-beta * log(exponentialSum / totalAllocation), 1e-12);
+    double maxTerm = *std::max_element(exponentialTerms.begin(), exponentialTerms.end());
+    double shiftedExponentialSum = 0.0;
+    for (double term : exponentialTerms)
+        shiftedExponentialSum += exp(term - maxTerm);
+
+    double logMeanExponential = maxTerm + log(shiftedExponentialSum / totalAllocation);
+    double effectiveLinearSnr = std::max(-beta * logMeanExponential, 1e-12);
     int effectiveSnr = (int)round(10.0 * log10(effectiveLinearSnr));
     double blockErrorRate = getBler(params.txModeIndex, params.cqi, effectiveSnr);
 
