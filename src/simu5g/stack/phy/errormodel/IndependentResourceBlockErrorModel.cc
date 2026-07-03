@@ -18,15 +18,12 @@ namespace simu5g {
 
 Define_Module(IndependentResourceBlockErrorModel);
 
-double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const
+double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, bool& forcedFailure) const
 {
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
     double blockErrorRate = 0.0;
     double cumulativeSuccessProbability = 1.0;
-    sumSnr = 0.0;
-    usedRBs = 0;
-
     for (const auto& [remoteUnit, rbList] : rbmap) {
         for (const auto& [band, allocation] : rbList) {
             if (allocation == 0)
@@ -34,9 +31,6 @@ double IndependentResourceBlockErrorModel::computePacketErrorRate(LteAirFrame *f
 
             if (params.cqi == 0 || params.cqi > 15)
                 throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", params.cqi, lteInfo->getTxMode(), params.direction, band, params.codeword, params.transmissionAttempt);
-
-            sumSnr += snrVector[band];
-            usedRBs++;
 
             int snr = snrVector[band];
             int minSnr = useD2DMulticastThreshold ? 1 : binder_->phyPisaData.minSnr();

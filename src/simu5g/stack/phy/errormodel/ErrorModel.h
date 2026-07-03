@@ -46,10 +46,6 @@ class ErrorModel : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
     double harqReduction_ = NAN;
 
-    static simsignal_t rcvdSinrDlSignal_;
-    static simsignal_t rcvdSinrUlSignal_;
-    static simsignal_t rcvdSinrD2DSignal_;
-
   protected:
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -57,9 +53,8 @@ class ErrorModel : public cSimpleModule
     ReceptionParams extractReceptionParams(UserControlInfo *lteInfo) const;
     double getBler(unsigned int txModeIndex, Cqi cqi, int snr) const;
     bool drawReceptionResult(double packetErrorRate, const ReceptionParams& params) const;
-    void emitSinrStatistics(LteChannelModel *channelModel, UserControlInfo *lteInfo, const ReceptionParams& params, double sumSnr, int usedRBs);
 
-    virtual double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const;
+    virtual double computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, bool& forcedFailure) const;
 
   public:
     virtual bool isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, bool useD2DMulticastThreshold = false);

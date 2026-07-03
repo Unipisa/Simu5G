@@ -75,7 +75,7 @@ class LteChannelModel : public cSimpleModule
 
     virtual void setPhy(LtePhyBase *phy) { phy_ = phy; }
 
-    virtual bool collectSinrStatistics() const { return false; }
+    virtual void emitReceptionSinrStatistics(UserControlInfo *lteInfo, const std::vector<double>& snrVector) {}
 
     /*
      * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power

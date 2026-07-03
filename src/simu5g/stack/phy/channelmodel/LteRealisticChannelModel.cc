@@ -1987,6 +1987,40 @@ bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, Use
     return true;
 }
 
+void LteRealisticChannelModel::emitReceptionSinrStatistics(UserControlInfo *lteInfo, const std::vector<double>& snrVector)
+{
+    if (!collectSinrStatistics_)
+        return;
+
+    Direction dir = (Direction)lteInfo->getDirection();
+    MacNodeId id = (dir == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
+
+    double sumSnr = 0.0;
+    int usedRBs = 0;
+
+    for (const auto& [remoteUnit, rbList] : lteInfo->getGrantedBlocks()) {
+        for (const auto& [band, allocation] : rbList) {
+            if (allocation == 0)
+                continue;
+
+            sumSnr += snrVector[band];
+            usedRBs++;
+        }
+    }
+
+    if (usedRBs == 0)
+        return;
+
+    if (dir == DL)
+        emit(rcvdSinrDlSignal_, sumSnr / usedRBs);
+    else if (dir == D2D || dir == D2D_MULTI)
+        emit(rcvdSinrD2DSignal_, sumSnr / usedRBs);
+    else {
+        LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
+        ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
+    }
+}
+
 void LteRealisticChannelModel::computeLosProbability(double d,
         MacNodeId nodeId)
 {

@@ -14,16 +14,11 @@
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/mac/amc/UserTxParams.h"
-#include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
 
 namespace simu5g {
 
 Define_Module(ErrorModel);
-
-simsignal_t ErrorModel::rcvdSinrDlSignal_ = registerSignal("rcvdSinrDl");
-simsignal_t ErrorModel::rcvdSinrUlSignal_ = registerSignal("rcvdSinrUl");
-simsignal_t ErrorModel::rcvdSinrD2DSignal_ = registerSignal("rcvdSinrD2D");
 
 void ErrorModel::initialize(int stage)
 {
@@ -88,22 +83,7 @@ bool ErrorModel::drawReceptionResult(double packetErrorRate, const ReceptionPara
     return true;
 }
 
-void ErrorModel::emitSinrStatistics(LteChannelModel *channelModel, UserControlInfo *lteInfo, const ReceptionParams& params, double sumSnr, int usedRBs)
-{
-    if (!channelModel->collectSinrStatistics() || usedRBs == 0)
-        return;
-
-    if (params.direction == DL)
-        channelModel->emit(rcvdSinrDlSignal_, sumSnr / usedRBs);
-    else if (params.direction == D2D || params.direction == D2D_MULTI)
-        channelModel->emit(rcvdSinrD2DSignal_, sumSnr / usedRBs);
-    else {
-        LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(params.nodeId))->getChannelModel(lteInfo->getCarrierFrequency());
-        ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
-    }
-}
-
-double ErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const
+double ErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, bool& forcedFailure) const
 {
     throw cRuntimeError("ErrorModel::computePacketErrorRate - missing concrete error model implementation");
 }
@@ -114,15 +94,13 @@ bool ErrorModel::isReceptionSuccessful(LteAirFrame *frame, UserControlInfo *lteI
 
     ReceptionParams params = extractReceptionParams(lteInfo);
 
-    double sumSnr = 0.0;
-    int usedRBs = 0;
     bool forcedFailure = false;
-    double packetErrorRate = computePacketErrorRate(frame, lteInfo, snrVector, channelModel, params, useD2DMulticastThreshold, sumSnr, usedRBs, forcedFailure);
+    double packetErrorRate = computePacketErrorRate(frame, lteInfo, snrVector, channelModel, params, useD2DMulticastThreshold, forcedFailure);
 
     if (forcedFailure)
         return false;
 
-    emitSinrStatistics(channelModel, lteInfo, params, sumSnr, usedRBs);
+    channelModel->emitReceptionSinrStatistics(lteInfo, snrVector);
     return drawReceptionResult(packetErrorRate, params);
 }
 

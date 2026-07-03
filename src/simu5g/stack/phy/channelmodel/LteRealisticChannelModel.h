@@ -184,7 +184,7 @@ class LteRealisticChannelModel : public LteChannelModel
   public:
     void initialize(int stage) override;
 
-    bool collectSinrStatistics() const override { return collectSinrStatistics_; }
+    void emitReceptionSinrStatistics(UserControlInfo *lteInfo, const std::vector<double>& snrVector) override;
 
     /*
      * Compute Attenuation caused by pathloss and shadowing (optional)

@@ -30,7 +30,7 @@ void EesmErrorModel::initialize(int stage)
     }
 }
 
-double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, double& sumSnr, int& usedRBs, bool& forcedFailure) const
+double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& snrVector, LteChannelModel *channelModel, const ReceptionParams& params, bool useD2DMulticastThreshold, bool& forcedFailure) const
 {
     if (params.cqi == 0 || params.cqi > 15)
         throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d cw:%d rtx:%d", params.cqi, lteInfo->getTxMode(), params.direction, params.codeword, params.transmissionAttempt);
@@ -47,9 +47,6 @@ double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInf
 
     double exponentialSum = 0.0;
     int totalAllocation = 0;
-    sumSnr = 0.0;
-    usedRBs = 0;
-
     for (const auto& [remoteUnit, rbList] : lteInfo->getGrantedBlocks()) {
         for (const auto& [band, allocation] : rbList) {
             if (allocation == 0)
@@ -68,8 +65,6 @@ double EesmErrorModel::computePacketErrorRate(LteAirFrame *frame, UserControlInf
             double linearSnr = pow(10.0, snr / 10.0);
             exponentialSum += allocation * exp(-linearSnr / beta);
             totalAllocation += allocation;
-            sumSnr += snrVector[band];
-            usedRBs++;
 
             EV << " EesmErrorModel::error direction " << dirToA(params.direction)
                << " node " << params.nodeId << " remote unit " << dasToA(remoteUnit)
