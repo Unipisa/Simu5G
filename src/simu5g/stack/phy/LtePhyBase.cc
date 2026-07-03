@@ -51,6 +51,7 @@ void LtePhyBase::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
         initializeChannelModel();
+        initializeErrorModel();
     }
 }
 
@@ -166,6 +167,11 @@ void LtePhyBase::initializeChannelModel()
         if (nodeType_ == UE)
             binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
     }
+}
+
+void LtePhyBase::initializeErrorModel()
+{
+    errorModel_.reference(this, "errorModelModule", true);
 }
 
 void LtePhyBase::updateDisplayString()

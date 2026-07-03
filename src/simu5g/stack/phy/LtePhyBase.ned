@@ -42,10 +42,10 @@ simple LtePhyBase like ILtePhy
         double multicastD2DRange @unit(m) = default(1000m);
         string binderModule = default("binder");
         string channelModelModule = default("^.channelModel[0]"); // or "nrChannelModel[0]"
+        string errorModelModule = default("^.errorModel");
 
     gates:
         input upperGateIn;       // from upper layer
         output upperGateOut;    // to upper layer
         input radioIn;           // gate to receive message via sendDirect
 }
-

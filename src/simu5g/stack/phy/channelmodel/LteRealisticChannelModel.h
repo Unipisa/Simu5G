@@ -184,6 +184,8 @@ class LteRealisticChannelModel : public LteChannelModel
   public:
     void initialize(int stage) override;
 
+    bool collectSinrStatistics() const override { return collectSinrStatistics_; }
+
     /*
      * Compute Attenuation caused by pathloss and shadowing (optional)
      *
@@ -487,4 +489,3 @@ class LteRealisticChannelModel : public LteChannelModel
 } //namespace
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */
-

@@ -27,6 +27,7 @@
 #include "simu5g/stack/phy/packet/LteAirFrame.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
+#include "simu5g/stack/phy/errormodel/ErrorModel.h"
 #include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
 
 namespace simu5g {
@@ -73,6 +74,7 @@ class LtePhyBase : public ChannelAccess
     /** channel models to use.*/
     std::map<GHz, opp_component_ptr<LteChannelModel>> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
+    inet::ModuleRefByPar<ErrorModel> errorModel_;
 
     /** The id of the in-data gate from the Stack */
     int upperGateIn_ = -1;
@@ -303,6 +305,7 @@ class LtePhyBase : public ChannelAccess
     virtual void handleControlMsg(LteAirFrame *frame, UserControlInfo *userInfo);
 
     void initializeChannelModel();
+    void initializeErrorModel();
 
     /**
      * Utility.

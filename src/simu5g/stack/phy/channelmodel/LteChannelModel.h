@@ -75,6 +75,8 @@ class LteChannelModel : public cSimpleModule
 
     virtual void setPhy(LtePhyBase *phy) { phy_ = phy; }
 
+    virtual bool collectSinrStatistics() const { return false; }
+
     /*
      * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
      * After that, it generates a random number to check if this packet will be corrupted or not
@@ -163,4 +165,3 @@ class LteChannelModel : public cSimpleModule
 } //namespace
 
 #endif
-

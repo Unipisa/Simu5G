@@ -22,6 +22,7 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.rrc.IRrc;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
+import simu5g.stack.phy.errormodel.IErrorModel;
 
 //
 // The LteNicBase module serves as the foundational building block for LTE networking
@@ -46,6 +47,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         double processingDelayOut @unit(s) = default(0s);   // additional processing delay for outgoing ip packets
 
         string lteChannelModelType = default("LteRealisticChannelModel");
+        string errorModelType = default("IndependentResourceBlockErrorModel");
 
         bool d2dCapable;            // inherit the value from the parent module
 
@@ -102,6 +104,10 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=100,389");
         }
 
+        errorModel: <errorModelType> like IErrorModel {
+            @display("p=100,314");
+        }
+
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
@@ -136,4 +142,3 @@ module LteNicBase extends NetworkInterface like ICellularNic
         ip2nic.upperLayerOut --> {  delay = parent.processingDelayOut; } --> upperLayerOut;
         upperLayerIn --> {  delay = parent.processingDelayIn; } --> ip2nic.upperLayerIn;
 }
-
