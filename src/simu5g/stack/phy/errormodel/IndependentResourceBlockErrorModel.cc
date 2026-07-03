@@ -12,6 +12,8 @@
 
 #include "simu5g/stack/phy/errormodel/IndependentResourceBlockErrorModel.h"
 
+#include "simu5g/common/binder/Binder.h"
+
 namespace simu5g {
 
 Define_Module(IndependentResourceBlockErrorModel);
