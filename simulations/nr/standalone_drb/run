@@ -1,0 +1,4 @@
+#!/bin/sh
+# make sure you run '. setenv' in the Simu5G root directory before running this script
+ 
+simu5g $*
