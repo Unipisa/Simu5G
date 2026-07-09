@@ -1,5 +1,50 @@
 # What's New in Simu5G
 
+## v1.4.5 (2026-07-09)
+
+This release is a collection of bug fixes to the physical-layer error model
+(CQI and BLER computation), the MAC layer, and the uplink scheduler. Several of
+these fixes change simulation results for the affected configurations.
+
+Tested with INET-4.5.4 and OMNeT++ 6.3, compatible with INET-4.6.0 and OMNeT++
+6.1 through 6.4.
+
+### PHY error model fixes
+
+- **BLER table indexing**: `GetBLER_TU()`/`GetBLER_AWGN()` indexed the CQI/BLER
+  tables one row too low, making throughput results slightly optimistic.
+
+- **CQI boundary condition**: An SNR exactly at the minimum (`minSnr`, -14 dB)
+  wrongly yielded the maximum CQI 15 instead of CQI 0, scheduling a noise-floor
+  UE at the highest MCS.
+
+- **CQI 0 handling**: `LteRealisticChannelModel::error()` no longer treats CQI 0
+  (a valid "channel unusable" value, e.g. just after handover) as a fatal error;
+  the packet is simply dropped.
+
+### MAC and scheduler fixes
+
+- **HARQ process count**: The `harqProcesses` NED parameter (whose NR default is
+  5) was ignored by the C++ code, which used a hardcoded value of 8. The code now
+  honors the parameter, so NR uses 5 HARQ processes as v1.4.4 already intended.
+  Contributed by Esteban Egea Lopez (Universidad Politécnica de Cartagena).
+
+- **RAC grant sizing**: A UE completing RACH on a poor uplink channel could get a
+  grant too small to even carry a Buffer Status Report, leaving it unable to
+  report its buffer and re-RACHing forever. Grants are now sized to at least 56 B.
+
+### Other fixes
+
+- **PacketFlowObserverEnb**: An unknown grant ID on an uplink MAC PDU (normal
+  during handover) now logs a warning instead of throwing a fatal error.
+
+- **PacketFlowObserver**: BSR-only MAC PDUs (no RLC SDUs) are now tolerated
+  instead of triggering a fatal error.
+
+- **AmcPilotAuto**: Using it with a D2D direction now fails with a clear error
+  message; scenarios with D2D should set `amcMode="D2D"`.
+
+
 ## v1.4.4 (2026-05-24)
 
 This release contains bug fixes and improvements, including more realistic MAC
