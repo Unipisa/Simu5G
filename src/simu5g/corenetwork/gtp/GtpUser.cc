@@ -235,9 +235,11 @@ void GtpUser::handleFromUdp(Packet *pkt)
     originalPacket->insertAtBack(pkt->peekData());
     originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
-    // Restore QFI from GTP-U header so SDAP can use it for QFI-to-DRB mapping
-    if (gtpUserMsg->getQfi() != QFI_NONE)
-        originalPacket->addTagIfAbsent<QfiReq>()->setQfi(gtpUserMsg->getQfi());
+    // Restore QFI from GTP-U header so SDAP can use it for QFI-to-DRB mapping.
+    // Always set the tag, even for QFI 0 (unmarked/default-flow traffic): SDAP
+    // relies on QfiReq being present on the gNB DL path, and maps QFI 0 to the
+    // default DRB.
+    originalPacket->addTagIfAbsent<QfiReq>()->setQfi(gtpUserMsg->getQfi());
     // remove any pending socket indications
     auto sockInd = pkt->removeTagIfPresent<SocketInd>();
 
