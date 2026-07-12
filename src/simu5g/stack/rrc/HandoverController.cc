@@ -139,6 +139,16 @@ void HandoverController::handleMessage(cMessage *msg)
         delete msg;
         handoverTrigger_ = nullptr;
     }
+    else if (msg->isName("doModeSwitchAtHandover")) {
+        // Handover completed: ask the new serving cell's mode selection module whether
+        // D2D connections of this UE can switch (back) to Direct Mode
+        cModule *enb = binder_->getNodeModule(servingNodeId_);
+        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("rrc")->getSubmodule("d2dModeSelection"));
+        d2dModeSelection->doModeSwitchAtHandover(nodeId_, true);
+        delete msg;
+    }
+    else
+        throw cRuntimeError("HandoverController::handleMessage: unknown self-message '%s'", msg->getName());
 }
 
 void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo)
