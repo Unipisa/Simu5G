@@ -498,6 +498,12 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     BearerManagement *masterBm = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(pdcpNodeId)->getSubmodule("bearerManagement"));
     masterBm->deleteLocalPdcpEntities(nodeId_);
 
+    // If the old serving node is a DC secondary, also delete the per-UE bypass PDCP entities
+    // residing on the secondary itself (keyed by this UE's id there) -- the master-side call
+    // above does not reach them
+    if (pdcpNodeId != servingNodeId)
+        servingBm->deleteLocalPdcpEntities(nodeId_);
+
     // delete PDCP entities for serving node at this UE
     bearerManagement_->deleteLocalPdcpEntities(servingNodeId_);
 }

@@ -430,13 +430,21 @@ void BearerManagement::deleteLocalRlcQueues(MacNodeId nodeId, bool nrStack)
 {
     Enter_Method_Silent("deleteLocalRlcQueues()");
 
+    bool isEnb = (registration_->getNodeType() == NODEB);
+
+    // At a NODEB, entities are always stored in the default (LTE) maps regardless of which
+    // leg the caller serves: createIncoming/OutgoingConnection() computes isNr as
+    // (nodeType==UE && ...), which is always false here, and gNB NICs have no nrRlcMux.
+    // Honoring the caller's nrStack flag would make this a silent no-op, leaking the UE's
+    // entities and crashing on re-establishment after a later handover.
+    if (isEnb)
+        nrStack = false;
+
     auto &txMap = nrStack ? nrRlcTxEntities_ : rlcTxEntities_;
     auto &rxMap = nrStack ? nrRlcRxEntities_ : rlcRxEntities_;
     RlcMux *rlcMux = nrStack ? (nrRlcMuxModule ? nrRlcMuxModule.get() : nullptr) : rlcMuxModule.get();
     if (!rlcMux)
         return;
-
-    bool isEnb = (registration_->getNodeType() == NODEB);
 
     // Delete RLC TX entities
     for (auto it = txMap.begin(); it != txMap.end(); ) {
