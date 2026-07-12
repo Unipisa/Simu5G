@@ -51,7 +51,12 @@ void UpperMux::fromDataPort(cPacket *pktAux)
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
        << " ---> " << id << std::endl;
 
-    ASSERT2(entity != nullptr, "TX entity not found -- connection should have been established by Ip2Nic");
+    // A missing entity must never be dereferenced -- ASSERT is compiled out in release
+    // builds, so fail with a real throw. Ip2Nic/SDAP establish the connection for every
+    // packet whose TX entity does not exist yet, so a miss here is a dispatch bug.
+    if (entity == nullptr)
+        throw cRuntimeError("UpperMux::fromDataPort: no PDCP TX entity for %s -- the connection "
+                            "should have been established by Ip2Nic or SDAP", id.str().c_str());
 
     send(pkt, entity->gate("in")->getPreviousGate());
 }

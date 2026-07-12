@@ -3,8 +3,9 @@ package simu5g.stack.pdcp;
 //
 // Upper-layer PDCP packet dispatcher.
 //
-// Receives IP datagrams from the upper layer, looks up (or triggers creation of)
-// the appropriate TX PDCP entity by DrbKey, and dispatches the packet to it.
+// Receives IP datagrams from the upper layer, looks up the appropriate TX PDCP
+// entity by DrbKey, and dispatches the packet to it. Purely a dispatcher: TX
+// entities are established by Ip2Nic/SDAP and registered by BearerManagement.
 // Collects processed SDUs from RX entities and sends them to the upper layer.
 //
 simple UpperMux

@@ -20,6 +20,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/pdcp/UpperMux.h"
 
 namespace simu5g {
 
@@ -38,6 +39,9 @@ class Ip2Nic : public cSimpleModule
 
     // reference to the binder
     inet::ModuleRefByPar<Binder> binder_;
+
+    // reference to the local PDCP dispatcher, the authoritative registry of PDCP TX entities
+    inet::ModuleRefByPar<UpperMux> pdcpMux_;
 
     // LTE MAC node id of this node
     MacNodeId nodeId_ = NODEID_NONE;
@@ -84,11 +88,6 @@ class Ip2Nic : public cSimpleModule
     // DRB ID counter and table (for DRB ID assignment)
     unsigned short drbId_ = 1;
     std::unordered_map<ConnectionKey, DrbId, ConnectionKeyHash> drbIdTable_;
-
-    // Tracks (drbId, destId) pairs for which connections have been established.
-    // A new entry triggers establishUnidirectionalDataConnection(); this also
-    // handles re-establishment after handover (same drbId, different destId).
-    std::set<std::pair<DrbId, MacNodeId>> establishedConnections_;
 
     cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
     cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer

@@ -29,6 +29,7 @@ Define_Module(NrSdap);
 void NrSdap::initialize()
 {
     binder_.reference(this, "binderModule", true);
+    pdcpMux_.reference(this, "pdcpMuxModule", true);
 
     // Load QFI-to-DRB mapping from drbConfig parameter
     const cValueArray *arr = check_and_cast_nullable<const cValueArray *>(par("drbConfig").objectValue());
@@ -184,8 +185,10 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
     lteInfo->setDrbId(drb->drbId);
     lteInfo->setRlcType(drb->rlcType);
 
-    // Establish connection if not yet done for this (drbId, destId) pair
-    if (establishedConnections_.insert({drb->drbId, lteInfo->getDestId()}).second)
+    // Establish the connection unless its PDCP TX entity already exists. The entity
+    // registry is authoritative: entities deleted at handover or D2D mode switch get
+    // re-established by the next packet, even for an already-seen (drbId, destId) pair.
+    if (pdcpMux_->lookupTxEntity(DrbKey(lteInfo->getDestId(), drb->drbId)) == nullptr)
         binder_->establishUnidirectionalDataConnection(lteInfo.get());
 
     // Set protocol tag for outgoing frame to PDCP layer

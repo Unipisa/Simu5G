@@ -58,6 +58,7 @@ simple NrSdap like INrSdap
     parameters:
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         string binderModule = default("binder");
+        string pdcpMuxModule = default("^.pdcpMux");
         object drbConfig = default([]);  // JSON array: [{drb, ue, qfiList, rlcType, pduSessionType, upperProtocol, isDefault}, ...]; see banner comment for details
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool useReflectiveQos = default(false); // UE only

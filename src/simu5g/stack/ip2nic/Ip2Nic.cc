@@ -36,6 +36,7 @@ void Ip2Nic::initialize(int stage)
         nodeType_ = aToNodeType(par("nodeType").stdstringValue());
 
         binder_.reference(this, "binderModule", true);
+        pdcpMux_.reference(this, "pdcpMuxModule", true);
 
         networkIf = getContainingNicModule(this);
         dualConnectivityEnabled_ = networkIf->par("dualConnectivityEnabled").boolValue();
@@ -283,7 +284,10 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
             DrbId drbId = lookupOrAssignDrbId(key);
             lteInfo->setDrbId(drbId);
 
-            if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+            // Establish the connection unless its PDCP TX entity already exists. The entity
+            // registry is authoritative: entities deleted at handover or D2D mode switch get
+            // re-established by the next packet, even for an already-seen (drbId, destId) pair.
+            if (pdcpMux_->lookupTxEntity(DrbKey(lteInfo->getDestId(), drbId)) == nullptr)
                 binder_->establishUnidirectionalDataConnection(lteInfo.get());
         }
         return;
@@ -384,7 +388,8 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
         DrbId drbId = lookupOrAssignDrbId(key);
         lteInfo->setDrbId(drbId);
 
-        if (establishedConnections_.insert({drbId, lteInfo->getDestId()}).second)
+        // Establish unless the PDCP TX entity already exists (authoritative check, see above)
+        if (pdcpMux_->lookupTxEntity(DrbKey(lteInfo->getDestId(), drbId)) == nullptr)
             binder_->establishUnidirectionalDataConnection(lteInfo.get());
 
         // Debug logging (UE subclasses only)

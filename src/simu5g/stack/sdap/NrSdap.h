@@ -17,6 +17,7 @@
 #include "simu5g/stack/sdap/common/DrbTable.h"
 #include "simu5g/stack/sdap/common/ReflectiveQosTable.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/pdcp/UpperMux.h"
 #include <inet/common/ModuleRefByPar.h>
 
 using namespace omnetpp;
@@ -47,10 +48,11 @@ class NrSdap : public cSimpleModule
     DrbTable drbTable_;
     inet::ModuleRefByPar<ReflectiveQosTable> reflectiveQosTable;
     inet::ModuleRefByPar<Binder> binder_;
-    bool isUe = true;  // Node role: true for UE, false for gNB
 
-    // Tracks (drbId, destId) pairs for which connections have been established
-    std::set<std::pair<DrbId, MacNodeId>> establishedConnections_;
+    // reference to the local PDCP dispatcher, the authoritative registry of PDCP TX entities
+    inet::ModuleRefByPar<UpperMux> pdcpMux_;
+
+    bool isUe = true;  // Node role: true for UE, false for gNB
 
   protected:
     bool requiresSdapHeader(const DrbConfig *drb);
