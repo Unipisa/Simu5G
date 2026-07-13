@@ -390,9 +390,17 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 
     bool isEnb = (registration_->getNodeType() == NODEB);
 
+    // Per-node (keyed) deletion at eNBs/gNBs and at NR-capable UEs; wipe-all only at plain
+    // LTE UEs. This mirrors the pre-flattening per-class behavior (LtePdcpEnb and NrPdcpUe
+    // deleted entities keyed by node, LtePdcpUe deleted all). At an NR UE this single module
+    // holds the PDCP entities of BOTH legs (keyed by the peer node): a one-leg detach must
+    // not delete the other leg's entities, otherwise that leg's RLC RX entities are left
+    // forwarding to a dangling gate, and later re-establishment collides with its leftovers.
+    bool keyed = isEnb || registration_->getNrNodeId() != NODEID_NONE;
+
     // Delete PDCP TX entities
     for (auto it = pdcpTxEntities_.begin(); it != pdcpTxEntities_.end(); ) {
-        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+        if (!keyed || it->first.getNodeId() == nodeId) {
             pdcpMux->unregisterTxEntity(it->first);
             it->second->deleteModule();
             it = pdcpTxEntities_.erase(it);
@@ -401,7 +409,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 
     // Delete PDCP RX entities
     for (auto it = pdcpRxEntities_.begin(); it != pdcpRxEntities_.end(); ) {
-        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+        if (!keyed || it->first.getNodeId() == nodeId) {
             it->second->deleteModule();
             it = pdcpRxEntities_.erase(it);
         } else ++it;
@@ -410,7 +418,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
     // Delete bypass TX entities (eNB-only)
     ASSERT(pdcpBypassTxEntities_.empty() || pdcpDcMux != nullptr);
     for (auto it = pdcpBypassTxEntities_.begin(); it != pdcpBypassTxEntities_.end(); ) {
-        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+        if (!keyed || it->first.getNodeId() == nodeId) {
             pdcpDcMux->unregisterBypassTxEntity(it->first);
             it->second->deleteModule();
             it = pdcpBypassTxEntities_.erase(it);
@@ -419,7 +427,7 @@ void BearerManagement::deleteLocalPdcpEntities(MacNodeId nodeId)
 
     // Delete bypass RX entities
     for (auto it = pdcpBypassRxEntities_.begin(); it != pdcpBypassRxEntities_.end(); ) {
-        if (isEnb ? it->first.getNodeId() == nodeId : true) {
+        if (!keyed || it->first.getNodeId() == nodeId) {
             it->second->deleteModule();
             it = pdcpBypassRxEntities_.erase(it);
         } else ++it;

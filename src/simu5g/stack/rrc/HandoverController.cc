@@ -490,7 +490,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     servingNodeMac->deleteQueues(nodeId_);
 
     // delete queues for serving node at this UE
-    mac_->deleteQueues(servingNodeId_);
+    mac_->deleteQueues(servingNodeId);
 
     // Delete RLC UM Buffers
 
@@ -515,7 +515,19 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
         servingBm->deleteLocalPdcpEntities(nodeId_);
 
     // delete PDCP entities for serving node at this UE
-    bearerManagement_->deleteLocalPdcpEntities(servingNodeId_);
+    bearerManagement_->deleteLocalPdcpEntities(servingNodeId);
+
+    // Flow establishment (Binder::establishUnidirectionalDataConnection) provisions NR-leg
+    // entities for this UE at the serving node's DC secondary regardless of whether the UE's
+    // NR leg is attached to it. If the NR leg is attached, its own (forced) detachment cleans
+    // them up; if it is detached now, remove them together with the master-side state --
+    // otherwise they are orphaned here, and a later re-establishment collides with them when
+    // the UE returns to this master (duplicate MAC CID assert / duplicate module errors).
+    if (otherHandoverController_ != nullptr && otherHandoverController_->getServingNodeId() == NODEID_NONE) {
+        MacNodeId secondaryNodeId = binder_->getSecondaryNode(servingNodeId);
+        if (secondaryNodeId != NODEID_NONE)
+            otherHandoverController_->deleteOldBuffers(secondaryNodeId);
+    }
 }
 
 LteAmc *HandoverController::getAmcModule(MacNodeId nodeId)
