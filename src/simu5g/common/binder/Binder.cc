@@ -171,7 +171,9 @@ void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType typ
 }
 
 void Binder::unregisterNode(MacNodeId id)
-{
+{    
+    if (id == NODEID_NONE) return;
+
     EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
 
     for (auto it = ipAddressToMacNodeId_.begin(); it != ipAddressToMacNodeId_.end(); ) {
