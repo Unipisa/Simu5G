@@ -20,4 +20,6 @@ simple NtnPhyUe extends NrPhyUe
 {
     parameters:
         @class("NtnPhyUe");
+        string ntnChannelModelModule = default("^.ntnChannelModel[0]");
+        string ntnAntennaModelModule = default("^.ntnAntennaModel");
 }

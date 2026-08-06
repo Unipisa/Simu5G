@@ -374,15 +374,6 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     LtePhyBase::handleUpperMessage(msg);
 }
 
-bool LtePhyUe::shouldSendViaTransparentNtn(MacNodeId destId) const
-{
-    if (masterId_ == NODEID_NONE || destId != masterId_)
-        return false;
-
-    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
-    return association != nullptr && association->isTransparent;
-}
-
 void LtePhyUe::emitMobilityStats()
 {
     if (servingNodeMobility_) {

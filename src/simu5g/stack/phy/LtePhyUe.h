@@ -71,8 +71,6 @@ class LtePhyUe : public LtePhyBase
     LtePhyEnb *getServingEnbPhy() const;
     virtual void sendSrsReferenceSignalFrame();
 
-    bool shouldSendViaTransparentNtn(MacNodeId destId) const;
-
   public:
     ~LtePhyUe() override;
     /**
