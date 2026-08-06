@@ -11,7 +11,6 @@
 //
 
 #include <assert.h>
-#include "simu5g/common/GeoUtils.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 
 #include "../ip2nic/HandoverPacketHolderUe.h"
@@ -19,7 +18,6 @@
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/phy/LtePhyEnb.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
-#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -383,41 +381,6 @@ bool LtePhyUe::shouldSendViaTransparentNtn(MacNodeId destId) const
 
     const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
     return association != nullptr && association->isTransparent;
-}
-
-bool LtePhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
-{
-    auto *ci = check_and_cast<UserControlInfo *>(airFrame->getControlInfo());
-    MacNodeId destId = ci->getDestId();
-    if (!shouldSendViaTransparentNtn(destId))
-        return false;
-
-    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(masterId_);
-    SatelliteInfo *satelliteInfo = binder_->getSatelliteInfo(association->satelliteId);
-    if (satelliteInfo == nullptr || satelliteInfo->satelliteModule == nullptr)
-        throw cRuntimeError("LtePhyUe::sendUnicastViaNtn - satellite %hu for serving node %hu is not registered", num(association->satelliteId), num(masterId_));
-
-    cGate *serviceLinkGate = satelliteInfo->satelliteModule->gate("serviceLinkRadioIn");
-    if (serviceLinkGate == nullptr)
-        throw cRuntimeError("LtePhyUe::sendUnicastViaNtn - satellite %s has no serviceLinkRadioIn gate", satelliteInfo->satelliteModule->getFullPath().c_str());
-
-    if (airFrame->getControlInfo() != nullptr) {
-        UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
-        GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
-        ASSERT(referenceSystem != nullptr);
-        inet::GeoCoord txWgs84 = referenceSystem->wgs84FromOmnet(getRadioPosition());
-        userControlInfo->setRadioTransmitterId(nodeId_);
-        userControlInfo->setRadioTransmitterCoord(getRadioPosition());
-        userControlInfo->setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
-        userControlInfo->setRadioReceiverId(association->satelliteId);
-        airFrame->setAdditionalInfo(*userControlInfo);
-        delete userControlInfo;
-    }
-
-    EV << NOW << " LtePhyUe::sendUnicastViaNtn - forwarding frame for serving node "
-       << destId << " to satellite " << association->satelliteId << endl;
-    sendDirect(airFrame, 0, airFrame->getDuration(), serviceLinkGate);
-    return true;
 }
 
 void LtePhyUe::emitMobilityStats()

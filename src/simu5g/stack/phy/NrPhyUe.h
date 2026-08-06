@@ -33,7 +33,7 @@ class NrPhyUe : public LtePhyUeD2D
     void initializeChannelModels();
     void handleAirFrame(cMessage *msg) override;
     void sendUnicast(LteAirFrame *airFrame) override;
-    bool sendUnicastViaNtn(LteAirFrame *airFrame) override;
+    virtual bool sendUnicastViaNtn(LteAirFrame *airFrame);
 
   public:
     LteChannelModel *getReceptionChannelModel(const UserControlInfo *lteInfo) override;

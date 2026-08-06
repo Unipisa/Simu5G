@@ -72,7 +72,6 @@ class LtePhyUe : public LtePhyBase
     virtual void sendSrsReferenceSignalFrame();
 
     bool shouldSendViaTransparentNtn(MacNodeId destId) const;
-    virtual bool sendUnicastViaNtn(LteAirFrame *airFrame);
 
   public:
     ~LtePhyUe() override;
