@@ -30,13 +30,6 @@ void NtnPhyUe::initialize(int stage)
 
 void NtnPhyUe::initializeChannelModels()
 {
-    if (!getParentModule()->par("hasNtnSupport").boolValue())
-        return;
-
-    const char *ntnChannelModelModule = par("ntnChannelModelModule").stringValue();
-    if (ntnChannelModelModule == nullptr || !*ntnChannelModelModule)
-        return;
-
     ntnAntennaModel_.reference(this, "ntnAntennaModelModule", true);
 
     primaryNtnChannelModel_.reference(this, "ntnChannelModelModule", true);
@@ -122,8 +115,6 @@ bool NtnPhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
 LteChannelModel *NtnPhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
 {
     GHz carrierFreq = lteInfo->getCarrierFrequency();
-    if (!getParentModule()->par("hasNtnSupport").boolValue())
-        return NrPhyUe::getReceptionChannelModel(lteInfo);
 
     // Transparent NTN relaying currently preserves the serving gNB as sourceId.
     // Because of that, we infer "satellite-originated" reception from the source

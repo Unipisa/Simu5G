@@ -15,7 +15,6 @@ package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
-import simu5g.stack.phy.antennamodel.IAntennaModel;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
@@ -38,15 +37,11 @@ module NrNicUe extends LteNicUeD2D
         sdap.nodeRole = default("UE");
         sdap.useReflectiveQos = default(this.useReflectiveQos);
         sdap.reflectiveQosTableModule = default(this.useReflectiveQos ? "^.reflectiveQosTable" : "");
-        bool hasNtnSupport = default(false);
         string nrChannelModelType = default("NrChannelModel_3GPP38_901");
-        string ntnChannelModelType = default("NtnChannelModel");
-        string ntnAntennaModelType = default("IsotropicAntennaModel");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
         int numNrCarriers = default(1);
-        int numNtnCarriers = default(1);
 
         ip2nic.isNr = default(true);
         rrc.bearerManagement.pdcpEntityModuleType = default("simu5g.stack.pdcp.NrPdcpEntity");
@@ -90,15 +85,6 @@ module NrNicUe extends LteNicUeD2D
         // NR Channel Model
         nrChannelModel[numNrCarriers]: <nrChannelModelType> like ILteChannelModel {
             @display("p=80,60,col;g=left");
-        }
-        // NTN Channel Model
-        ntnChannelModel[numNtnCarriers]: <ntnChannelModelType> like ILteChannelModel if hasNtnSupport {
-            @display("p=620,314");
-            antennaModelModule = "^.ntnAntennaModel";
-        }
-        // NTN Antenna Model
-        ntnAntennaModel: <ntnAntennaModelType> like IAntennaModel if hasNtnSupport {
-            @display("p=620,226");
         }
 
         // Feedback generator submodule
