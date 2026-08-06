@@ -21,7 +21,7 @@ import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.mobility.georeference.GeographicReferenceSystem;
 import simu5g.nodes.NtnGateway;
 import simu5g.nodes.NtnGNodeB;
-import simu5g.nodes.NrUe;
+import simu5g.nodes.NtnNrUe;
 import simu5g.nodes.GeoSatellite;
 import simu5g.nodes.Upf;
 import simu5g.world.radio.LteChannelControl;
@@ -76,7 +76,7 @@ network NtnGeo
         satellite: GeoSatellite {
             @display("p=900,390");
         }
-        ue[numUe]: NrUe {
+        ue[numUe]: NtnNrUe {
             @display("p=720,510");
         }
     connections:

@@ -23,7 +23,7 @@ import simu5g.mobility.georeference.GeographicReferenceSystem;
 import simu5g.mobility.satellite.SatelliteInserter.SatelliteInserter;
 import simu5g.nodes.NtnGateway;
 import simu5g.nodes.NtnGNodeB;
-import simu5g.nodes.NrUe;
+import simu5g.nodes.NtnNrUe;
 import simu5g.nodes.Upf;
 import simu5g.world.radio.LteChannelControl;
 
@@ -102,7 +102,7 @@ network NtnLeo
         leoSPACEBEENZ[0]: <default(satelliteType)> like INetworkNode {
             @display("p=900,510");
         }
-        ue[numUe]: NrUe {
+        ue[numUe]: NtnNrUe {
             @display("p=720,510");
         }
     connections:
