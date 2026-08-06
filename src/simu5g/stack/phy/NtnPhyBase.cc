@@ -150,6 +150,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
         lteInfo.setRadioTransmitterAntenna(antennaModel_);
+        lteInfo.setTxPower(antennaModel_->getTxPower());
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to peer node " << peerNode->getFullPath()
                 << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
@@ -167,6 +168,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
             lteInfo.setRadioTransmitterCoord(getRadioPosition());
             lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
             lteInfo.setRadioTransmitterAntenna(antennaModel_);
+            lteInfo.setTxPower(antennaModel_->getTxPower());
 
             std::vector<MacNodeId> attachedUes = ntnFrame->getAttachedUesVector();
             EV << "NtnPhyBase::handleUpperMessage - forwarding CSI-RS frame " << frame->getName()
@@ -205,6 +207,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
         lteInfo.setRadioReceiverId(destId);
         lteInfo.setRadioTransmitterAntenna(antennaModel_);
+        lteInfo.setTxPower(antennaModel_->getTxPower());
         frame->setAdditionalInfo(lteInfo);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to node " << destId << endl;
         sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
