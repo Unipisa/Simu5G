@@ -1,0 +1,403 @@
+# Simu5G NTN Implementation
+
+This document describes the partial non-terrestrial network (NTN) implementation on the `ntn` branch. It was derived from the code and branch history and reviewed through commit `03f8158a` (`Use actual transmitter power for NTN relay hops`), after rebasing onto `cqi-computation` (itself rebased onto `master`). Treat the source files cited below as authoritative if the branch evolves.
+
+## Scope and Status
+
+The branch implements a prototype transparent, frequency-translating satellite path:
+
+```text
+downlink: gNB -> wired fronthaul -> gateway -> feeder radio -> satellite -> service radio -> UE
+uplink:   UE -> service radio -> satellite -> feeder radio -> gateway -> wired fronthaul -> gNB
+```
+
+The satellite and gateway relay PHY airframes. They do not terminate the NR stack or UE procedures; scheduling, HARQ, CSI processing, and protocol termination remain at the terrestrial gNB and UE, although the gateway computes the final uplink radio-reception result. This is the intended architecture of a bent-pipe payload, but the current physical and protocol behavior is incomplete.
+
+The `ntn` branch adds 62 commits (after squashing from 92) on top of `cqi-computation` (`d9c2b126`). It depends on that branch's CSI-RS/SRS-based local feedback work. `cqi-computation` has been rebased onto `master`, so NTN is now positioned downstream of the latest master history.
+
+Available now:
+
+- Dedicated NTN gNB, gateway, satellite, relay, fronthaul, feeder-link, and service-link modules.
+- Static Binder associations among one gNB, one gateway, and one satellite.
+- Bidirectional forwarding of data and control airframes over the transparent path.
+- Per-hop data-channel evaluation and harmonic combination of two-hop data SINR.
+- Current-hop transmit power selected from the antenna model of the UE, gateway, or satellite that actually radiates the frame.
+- GEO placement and TLE/SGP4-based LEO position updates.
+- WGS84, ECEF, and local OMNeT++ coordinate conversion through GeographicLib.
+- Satellite, gateway, isotropic terminal, and VSAT antenna models.
+- A channel model based partly on 3GPP TR 38.811 tables and TR 38.821 antenna parameters.
+- Minimal GEO and LEO bidirectional CBR smoke scenarios.
+
+Not available as a complete model:
+
+- Geometry-derived propagation delay and NTN-aware protocol timers.
+- An input-dependent bent-pipe transponder model with payload gain, added noise, bandwidth limits, output backoff, and saturation.
+- Consistent feeder/service carrier frequencies in all channel calculations.
+- Satellite-relative Doppler, compensation, and residual frequency error.
+- Interference, beams, coverage management, satellite selection, and handover.
+- Automated NTN tests or a current trusted result baseline.
+
+## Architecture
+
+### Nodes and NICs
+
+`src/simu5g/nodes/NtnGNodeB.ned` extends `gNodeB` and replaces its cellular NIC with `NtnNrNic`. Its `NtnPhyGnb` sends all broadcast and unicast airframes through a wired `NtnFronthaulNic` toward the configured gateway. The parameters `ntnGatewayId` and `satelliteId` identify a fixed path.
+
+`src/simu5g/nodes/NtnGateway.ned` contains:
+
+- `gnbNic: NtnFronthaulNic` for the wired gNB-facing side;
+- `feederNic: NtnFeederLinkNic` for the satellite radio side;
+- `relay: NtnRelay` between the two NICs;
+- stationary mobility and a `GatewayAntennaModel` by default.
+
+`src/simu5g/nodes/Satellite.ned` contains:
+
+- `serviceNic: NtnServiceLinkNic` for UE-facing radio traffic;
+- `feederNic: NtnFeederLinkNic` for gateway-facing radio traffic;
+- `relay: NtnRelay` between the two NICs;
+- one mobility module shared by both radio sides.
+
+`GeoSatellite`, `Leo600Satellite`, and `Leo1200Satellite` select mobility and platform antenna defaults. These variants differ in position/orbit and antenna parameters, not in relay behavior.
+
+`src/simu5g/nodes/NtnRelay.{ned,cc,h}` forwards every message between its left and right NIC gates with `sendDelayed()`. `relayDelay` defaults to zero and represents processing delay only. It is not slant-range propagation delay.
+
+`src/simu5g/stack/NtnFeederLinkNic.ned` and `NtnServiceLinkNic.ned` each contain an `NtnPhyBase`, one or more `NtnChannelModel` modules, and an antenna model. The same C++ PHY class handles both sides according to its `linkType` parameter.
+
+Gateway-to-satellite (feeder) and UE-to-satellite (service) links have no static NED wireless connection at all: `feederLinkRadioIn`/`serviceLinkRadioIn` are `@directIn` gates, and `NtnPhyBase::handleUpperMessage()`/`NtnPhyUe::sendUnicastViaNtn()` resolve the peer module through the Binder at runtime and deliver with `sendDirect()`. The only static NED radio-facing wiring is the gNB-to-gateway wired fronthaul (`gnb.ntn <--> ntnGateway.gnbLink`). Any beam/coverage/handover work (see item 5 below) changes Binder-driven peer resolution, not NED topology.
+
+### Node IDs and Binder Associations
+
+NTN node ID ranges are reserved in `src/simu5g/common/LteTypes.h`:
+
+- gateways: 16384 through 17407;
+- satellites: 17408 through 18431.
+
+`NtnRelay` registers gateway and satellite modules during `INITSTAGE_SIMU5G_REGISTRATIONS` and unregisters them in `finish()`.
+
+`NtnIp2Nic` registers a `GnbNtnAssociation` during `INITSTAGE_SIMU5G_NODE_RELATIONSHIPS`. It retries at simulation time zero because a satellite created by `SatelliteInserter` may finish registration after the gNB's normal relationship stage. All current associations set `isTransparent = true`.
+
+The Binder relation is:
+
+```cpp
+struct GnbNtnAssociation {
+    MacNodeId gnbId;
+    MacNodeId ntnGatewayId;
+    MacNodeId satelliteId;
+    bool isTransparent;
+};
+```
+
+Relevant APIs are in `src/simu5g/common/binder/Binder.{h,cc}`. Current lookup rules imply:
+
+- each gNB has one active NTN tuple;
+- multiple gNBs may share the same identical gateway/satellite tuple;
+- one gateway cannot map to different satellites;
+- one satellite cannot map to different gateways;
+- associations are static and have no beam, validity interval, coverage, or handover state.
+
+The one-gateway-to-one-satellite and one-satellite-to-one-gateway rules are enforced at runtime, not just by convention: `Binder::getAssociatedSatelliteForGateway()` and `getAssociatedGatewayForSatellite()` linear-scan all associations and `throw cRuntimeError` if they find more than one distinct peer. Any dynamic-association or handover work (item 5 below) must change these lookups, or they will abort the simulation the moment two gNBs briefly reference different satellites through the same gateway.
+
+The UE still attaches to the logical gNB using the ordinary serving-node relation. It discovers the satellite path by looking up the serving gNB's NTN association. The actual satellite is deliberately not exposed as the logical source of downlink frames.
+
+### NTN Airframe Metadata
+
+`src/simu5g/stack/phy/packet/NtnAirFrame.msg` extends `LteAirFrame` with:
+
+- `relayHopSinr[]`: first radio-hop SINR, one value per band;
+- `attachedUes[]`: CSI-RS fan-out targets;
+- `gatewayReceptionResultValid` and `gatewayReceptionResult`: uplink decoding decision made at the gateway.
+
+`UserControlInfo` in `src/simu5g/common/LteControlInfo.msg` carries actual current-hop metadata separately from logical source/destination IDs:
+
+- radio transmitter and receiver IDs;
+- transmitter local and ECEF coordinates;
+- transmitter antenna model;
+- current-hop transmit power in dBm.
+
+This separation is fundamental to the transparent design. `sourceId` remains the gNB or UE for stack semantics while `radioTransmitterId` identifies the gateway or satellite currently radiating the frame.
+
+Do not edit generated `*_m.cc` or `*_m.h` files. Change the `.msg` source and regenerate through the normal build.
+
+## Packet Flow
+
+### Downlink Data
+
+1. The normal gNB stack builds a MAC frame.
+2. `NtnPhyGnb::createAirFrame()` creates an `NtnAirFrame`.
+3. `NtnPhyGnb::sendBroadcast()` and `sendUnicast()` send it over the wired NTN gate rather than terrestrial radio.
+4. The gateway fronthaul NIC and relay pass the frame to the feeder PHY.
+5. Gateway `NtnPhyBase` adds the configured feeder frequency offset, records gateway radio metadata and feeder-antenna transmit power, and directly sends the frame to the associated satellite.
+6. Satellite feeder `NtnPhyBase` computes and stores feeder-hop SINR in the frame.
+7. The satellite relay sends the frame to the service PHY.
+8. Satellite service `NtnPhyBase` subtracts the offset, records satellite radio metadata and service-antenna transmit power, and directly sends the frame to the UE.
+9. `NtnPhyUe` selects its NTN channel model from the logical source gNB's Binder association. `NtnPhyUe::getReceptionChannelModel()` carries an explicit in-code review note: it infers "this frame arrived via satellite" from the *source gNB's* transparent association rather than the actual radio sender, because `sourceId` intentionally stays logical; the comment flags this as something to revisit if downlink frames ever expose the real satellite ID.
+10. `NtnChannelModel::computeReceptionSinr()` combines feeder and service SINR in linear units using `1 / (1/SINR1 + 1/SINR2)` before ordinary BLER evaluation.
+
+### Uplink Data
+
+1. `NtnPhyUe::sendUnicast()` checks whether the serving gNB has a transparent NTN association.
+2. If needed, it converts the ordinary `LteAirFrame` into `NtnAirFrame`, preserving duration, priority, control information, and payload.
+3. The UE records actual transmitter metadata and directly sends the frame to the associated satellite service-link input.
+4. Satellite service `NtnPhyBase` stores first-hop SINR.
+5. The satellite relay sends the frame to feeder `NtnPhyBase`, which shifts frequency, selects the satellite feeder-antenna transmit power, and directly sends it to the gateway.
+6. Gateway feeder `NtnPhyBase` combines both hops, calls `isReceptionSuccessful()`, and stores the Boolean result in the frame.
+7. The gateway fronthaul NIC translates the frequency back to the service carrier and forwards the frame to the gNB.
+8. `NtnPhyGnb` validates the frame and trusts the gateway's stored reception result instead of recomputing the radio channel. `NtnPhyGnb::handleNtnAirFrame()` throws `cRuntimeError` if a non-control (data) `NtnAirFrame` arrives without `gatewayReceptionResultValid` set — there is no fallback recomputation path.
+
+### CSI-RS, SRS, and Control Frames
+
+`NtnPhyGnb` creates CSI-RS as `NtnAirFrame` and records attached UE IDs. Satellite service `NtnPhyBase` duplicates one frame per attached UE. The first hop is evaluated, but `NtnChannelModel::getRSRP()` evaluates only the last hop and does not combine the stored relay-hop measurement. CQI therefore does not represent a complete two-hop received-power metric.
+
+Data packets and the special satellite feeder-side CSI-RS case receive explicit channel evaluation in `NtnPhyBase::handleAirFrame()`. Other control frames are relayed without a per-hop failure decision. This includes grants, HARQ feedback, random access, and most control traffic. SRS follows the routed frame path but does not have a complete NTN-specific two-hop measurement design.
+
+## Geographic and Orbital Model
+
+### Reference Frames
+
+`src/simu5g/mobility/georeference/GeographicReferenceSystem.{ned,cc,h}` anchors the simulation to WGS84 using GeographicLib. The local frame convention is:
+
+- OMNeT++ `x`: east;
+- OMNeT++ `y`: negative north;
+- OMNeT++ `z`: up.
+
+`src/simu5g/common/GeoUtils.{cc,h}` converts WGS84 to ECEF and computes elevation. `NtnChannelModel` uses ECEF endpoint distance, which correctly represents satellite slant range and Earth curvature. A negative local elevation produces `-INFINITY` SINR/RSRP.
+
+The model assumes one authoritative `GeographicReferenceSystem` in the network. Access searches recursively and does not disambiguate multiple instances.
+
+The root build links GeographicLib using the relative `GEOLIB` setting in `Makefile`; regenerate `src/Makefile` rather than relying on a machine-specific generated copy.
+
+### GEO Mobility
+
+`GeoSatMobility` extends INET `StationaryMobility`. It converts configured latitude, longitude, and altitude to the local frame once. The default altitude is 35,786 km. This is a fixed Earth-relative point, not an orbital or station-keeping model.
+
+### LEO Mobility
+
+`LeoSatMobility` extends `MovingMobilityBase`. It:
+
+1. parses a TLE;
+2. initializes the imported SGP4 implementation with WGS-72;
+3. propagates from the TLE epoch using the configured UTC simulation start;
+4. converts TEME position/velocity to ITRF;
+5. treats ITRF2008 and WGS84 as equivalent for simulation purposes;
+6. converts geodetic WGS84 position into the local OMNeT++ frame.
+
+The SGP4 velocity is currently discarded: `LeoSatMobility::move()` sets `lastVelocity` to zero. The channel model only derives speed from the terrestrial endpoint and contains a TODO for moving satellites. LEO satellite Doppler is therefore effectively absent.
+
+`SatelliteInserter` reads strict three-line TLE records and dynamically creates satellite vector entries. It recognizes STARLINK, IRIDIUM, ORBCOMM, SPACEBEE, SPACEBEENZ, ONEWEB, and GLOBALSTAR names. Unknown satellites use the catalog number as the vector index. The supplied unknown sample has catalog number 51472, so the LEO smoke configuration can expand a very large sparse vector to create one satellite. Parsing also lacks robust file-open, checksum, and delimiter validation.
+
+## Channel and Antenna Model
+
+### Implemented Effects
+
+`NtnChannelModel` extends `LteRealisticChannelModel` and reuses its BLER and channel-model infrastructure. `NtnChannelModelTables.h` contains values attributed to 3GPP TR 38.811 v15.4.0.
+
+Implemented effects include:
+
+- ECEF slant range and local-horizon rejection;
+- free-space path loss;
+- elevation-dependent LOS probability;
+- elevation/frequency-dependent clutter loss;
+- correlated shadow fading;
+- optional building penetration;
+- atmospheric absorption;
+- ionospheric or tropospheric scintillation;
+- simplified frequency-selective clustered fading;
+- conducted transmit power from the antenna model of the current radio transmitter;
+- off-axis transmit and receive antenna gain;
+- receiver feeder/lumped loss, thermal noise, and noise figure.
+
+Terrestrial scenario names are mapped to NTN table categories:
+
+- indoor hotspot and urban microcell: dense urban;
+- urban macrocell: urban;
+- suburban macrocell: suburban;
+- rural macrocell: rural.
+
+The fading implementation samples cluster delays, powers, phases, and Doppler projections, then computes a per-RB complex response. It is a system-level approximation, not a complete spatially consistent NTN model with rays, angular spreads, cross-polarization, cluster evolution, or correlated users.
+
+`NtnPlatformAntennaModel` provides GEO, LEO-600, and LEO-1200 parameter sets based on TR 38.821. `GatewayAntennaModel` and `VSATAntennaModel` use a parabolic circular-aperture pattern. Antennas may use:
+
+- `TRACK_PEER`, which always returns zero off-axis angle;
+- `FIXED`, which uses ground azimuth/elevation or satellite off-nadir/azimuth.
+
+The smoke scenario uses the UE's default isotropic NTN antenna, not `VSATAntennaModel`.
+
+### Known Physical Inconsistencies
+
+#### Feeder Frequency Is Only Partly Shifted
+
+The default component carrier is 2 GHz. `NtnPhyBase` uses 27 GHz as the feeder channel-map key and stores 27 GHz in `UserControlInfo`, so antenna gains see 27 GHz. However, each `NtnChannelModel` retains its original component-carrier fields. FSPL, clutter selection, building loss, atmosphere, scintillation, fading table selection, fading RB centers, and Doppler consequently still use 2 GHz unless the channel-model design is changed. A simple map-key offset is not sufficient.
+
+#### No Transparent-Payload Gain or Added Noise
+
+The gateway and satellite now replace `UserControlInfo::txPower` with the transmitting antenna model's configured `txPower` before each outgoing radio hop. The channel model treats this as conducted power before transmit antenna gain and feeder loss. This is a fixed-output approximation: output power does not depend on received input power. The relay still has no transponder gain, input/output noise, bandwidth, filtering, saturation, output backoff, or nonlinear distortion. `relayDelay` is the only payload parameter.
+
+#### `getSINR()` Is SNR
+
+The method calculates received power plus fading minus thermal noise and noise figure. It does not include allocations from other UEs, neighboring beams/cells, gateways, satellites, background cells, or external cells. Existing inherited interference toggles do not make this an interference-aware calculation.
+
+#### Noise Bandwidth Is Fixed
+
+Noise is always computed over 180 kHz. RB center frequencies account for numerology, but noise bandwidth does not. This is only consistent with 15 kHz subcarrier spacing.
+
+#### Polarization Loss Is Unused
+
+`polarizationMismatchLoss` is declared and read, and antenna polarization is configured, but the loss is never applied.
+
+#### Building High-Loss Parameter Is Missing
+
+When `insideBuilding` is true, `NtnChannelModel` reads `useBuildingPenetrationHighLossModel`, but that parameter is not declared by `NtnChannelModel` or its NED ancestors on this branch. This path can fail during initialization.
+
+## Smoke Scenarios and Verification State
+
+The only current examples are under `simulations/nr/ntn_smoke/`:
+
+- `NtnGeo.ned` and `[Config GeoSat]` create one fixed GEO satellite;
+- `NtnLeo.ned` and `[Config LeoSat]` dynamically insert one TLE-driven LEO satellite;
+- both use one gNB, gateway, UE, and remote server;
+- both run bidirectional CBR traffic for two seconds;
+- the UE is an `NtnNrUe`;
+- gNB/gateway/satellite IDs are fixed to 1/16384/17408;
+- local CSI-RS and SRS-based feedback are enabled.
+
+Run from the scenario directory after sourcing the required OMNeT++, INET, and Simu5G environments:
+
+```sh
+./run -u Cmdenv -c GeoSat
+./run -u Cmdenv -c LeoSat
+```
+
+There are no NTN entries in `tests/fingerprint`, no coordinate/orbit unit tests, and no channel/link-budget regression tests. Existing result files under the smoke scenario reference obsolete topology or parameters and must not be treated as validation of the current source.
+
+## Minimum Work for Credible Bent-Pipe NTN
+
+Complete these items before describing the implementation as a usable bent-pipe model.
+
+### 1. Correct Per-Hop Link State
+
+- Represent service and feeder carriers independently; every frequency-dependent channel calculation must use the current hop's actual frequency.
+- Preserve the current convention that antenna `txPower` is conducted power before antenna gain and feeder loss, and validate configured values against the intended EIRP.
+- Add an explicit transparent-payload model for transponder gain, noise figure/noise temperature, bandwidth, filtering, saturation, output backoff, and optional nonlinearity.
+- Define whether the two-hop success calculation models amplify-and-forward, frequency translation, or another transparent payload. Use a formula consistent with that choice.
+
+### 2. Add Propagation Delay
+
+- Compute each radio hop's current ECEF slant range divided by light speed.
+- Pass this as the propagation-delay argument to `sendDirect()` for UE-satellite and gateway-satellite transmissions.
+- Keep payload processing delay separate in `NtnRelay`.
+- Verify GEO and LEO round-trip times against geometry.
+- Adapt NR timers and scheduling assumptions that fail with long RTT; adding packet delay alone is not sufficient.
+
+### 3. Model Relative Motion and Doppler
+
+- Preserve the SGP4-derived Earth-fixed velocity in `LeoSatMobility`.
+- Compute radial relative velocity independently for service and feeder links.
+- Use current-hop carrier frequency for Doppler.
+- Add configured frequency pre-compensation and residual error rather than assuming perfect compensation implicitly.
+- Update fading state coherently as satellite geometry changes.
+
+### 4. Make Control and Measurement Paths Consistent
+
+- Apply channel success to relevant control traffic, not only data.
+- Define two-hop CSI-RS RSRP/SINR semantics and combine both hops where appropriate.
+- Verify SRS behavior and uplink channel estimation through the transparent path.
+- Review HARQ process counts/timing, random-access windows, scheduling requests, RLC timers, and other procedures against GEO/LEO RTT.
+- Model timing advance/common timing reference and NTN assistance data assumptions explicitly.
+
+### 5. Add Coverage, Beams, and Dynamic Associations
+
+- Represent spot beams, footprints, beam IDs, steering, frequency/polarization reuse, and beam-specific interference.
+- Select only visible satellites above a configurable minimum elevation.
+- Replace fixed gNB/gateway/satellite tuples with time-varying associations.
+- Support service-link satellite/beam handover and feeder-link gateway handover.
+- Remove the current one-gateway-to-one-satellite and one-satellite-to-one-gateway lookup restrictions where the target topology requires it.
+- Define behavior when no route is available instead of failing a Binder lookup.
+
+### 6. Complete Propagation Effects and Interference
+
+- Add co-channel interference from UEs, beams, satellites, and gateways.
+- Apply polarization mismatch once per hop.
+- Use actual feeder frequency for atmospheric and scintillation losses.
+- Add rain/cloud attenuation and configurable environmental assumptions if Ka-band feeder fidelity is required.
+- Make thermal-noise bandwidth numerology-aware.
+- Declare and test all NED parameters read by C++.
+
+### 7. Add Verification Before Extending Scope
+
+At minimum, add focused checks for:
+
+- WGS84/local/ECEF round trips;
+- reference SGP4 positions and velocities;
+- known GEO/LEO elevation, slant range, and propagation delay;
+- below-horizon suppression;
+- feeder/service frequency translation in every channel effect;
+- actual per-hop transmit power and antenna gain;
+- transparent-payload gain/noise and two-hop SINR;
+- numerology-dependent noise;
+- control-frame loss and long-RTT protocol behavior;
+- bidirectional CBR delivery for GEO and LEO;
+- dynamic association and loss of visibility;
+- deterministic NTN fingerprint scenarios after behavior is validated independently.
+
+Do not accept `.UPDATED` fingerprint files merely because physical-model changes alter event trajectories. Validate geometry, link budget, packet flow, and protocol behavior first.
+
+## Implementation Conventions
+
+Follow the surrounding Simu5G and OMNeT++ style when extending NTN:
+
+- Pair C++ behavior with NED declarations; every new `par()` access must have a corresponding NED parameter and scenario configuration where required.
+- Use staged `initialize(int stage)` for Binder references, registrations, relationships, PHY setup, and dynamically inserted modules. Do not move setup into constructors.
+- Keep logical stack identity (`sourceId`/`destId`) separate from current-hop radio identity unless intentionally redesigning the transparent architecture.
+- Use `ModuleRefByPar`/`opp_component_ptr` for OMNeT++ component references that may participate in module lifecycle changes.
+- Preserve message ownership: after `send()`, `sendDirect()`, or `sendDelayed()`, do not access the message; delete frames that cannot be forwarded; duplicate fan-out frames explicitly.
+- Keep satellite/gateway association state in Binder rather than introducing unrelated global registries.
+- Modify `.msg`, `.ned`, and source files, never generated `src/Makefile`, `features.h`, or `*_m.{cc,h}` outputs.
+- Keep imported SGP4/TEME code isolated from native Simu5G style and document upstream provenance when modifying it.
+- Prefer small NTN-specific subclasses over conditional branches in mature terrestrial paths, as done by `NtnGNodeB`, `NtnIp2Nic`, and `NtnPhyGnb`.
+- Preserve terrestrial behavior in non-NTN scenarios; a plain `NrUe` carries no NTN parameter or submodule, and NTN is opted into by module type (`NtnNrUe` -> `NtnNrNicUe` -> `NtnPhyUe`).
+
+## Key Files
+
+Topology and registration:
+
+- `src/simu5g/nodes/NtnGNodeB.ned`
+- `src/simu5g/nodes/NtnGateway.ned`
+- `src/simu5g/nodes/Satellite.ned`
+- `src/simu5g/nodes/NtnRelay.{ned,cc,h}`
+- `src/simu5g/stack/ip2nic/NtnIp2Nic.{ned,cc,h}`
+- `src/simu5g/common/binder/Binder.{cc,h}`
+- `src/simu5g/common/LteCommon.{msg,h,cc}`
+
+Frame routing and channel evaluation:
+
+- `src/simu5g/stack/NtnFronthaulNic.{ned,cc,h}`
+- `src/simu5g/stack/NtnFeederLinkNic.ned`
+- `src/simu5g/stack/NtnServiceLinkNic.ned`
+- `src/simu5g/stack/NtnNrNic.ned`
+- `src/simu5g/stack/NtnNrNicUe.ned`
+- `src/simu5g/nodes/NtnNrUe.ned`
+- `src/simu5g/stack/phy/NtnPhyBase.{ned,cc,h}`
+- `src/simu5g/stack/phy/NtnPhyGnb.{ned,cc,h}`
+- `src/simu5g/stack/phy/NtnPhyUe.{cc,h,ned}`
+- `src/simu5g/stack/phy/packet/NtnAirFrame.msg`
+- `src/simu5g/common/LteControlInfo.msg`
+- `src/simu5g/stack/phy/channelmodel/NtnChannelModel.{ned,cc,h}`
+- `src/simu5g/stack/phy/channelmodel/NtnChannelModelTables.h`
+
+Mobility, coordinates, and antennas:
+
+- `src/simu5g/mobility/georeference/GeographicReferenceSystem.{ned,cc,h}`
+- `src/simu5g/common/GeoUtils.{cc,h}`
+- `src/simu5g/mobility/satellite/GeoSatMobility.{ned,cc,h}`
+- `src/simu5g/mobility/satellite/LeoSatMobility.{ned,cc,h}`
+- `src/simu5g/mobility/satellite/SatelliteInserter/`
+- `src/simu5g/mobility/satellite/SGP4.{cc,h}`
+- `src/simu5g/mobility/satellite/TEME2ITRF.h`
+- `src/simu5g/stack/phy/antennamodel/`
+
+Scenarios:
+
+- `simulations/nr/ntn_smoke/NtnGeo.ned`
+- `simulations/nr/ntn_smoke/NtnLeo.ned`
+- `simulations/nr/ntn_smoke/omnetpp.ini`
+- `simulations/nr/ntn_smoke/space_Veins-1.txt`
