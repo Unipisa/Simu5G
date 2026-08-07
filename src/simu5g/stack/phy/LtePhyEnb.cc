@@ -299,6 +299,11 @@ void LtePhyEnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *
 
     LteFeedbackDoubleVector ulFeedback = ulFbGen_->computeUlFeedback(lteinfo, frame);
 
+    sendUlFeedbackToMac(lteinfo, frame, ulFeedback);
+}
+
+void LtePhyEnb::sendUlFeedbackToMac(UserControlInfo *lteinfo, LteAirFrame *frame, const LteFeedbackDoubleVector& ulFeedback)
+{
     // create feedback packet for MAC layer
     // TODO make this an indication
     auto header = makeShared<LteFeedbackPkt>();
@@ -315,7 +320,7 @@ void LtePhyEnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *
     delete lteinfo;
     delete frame;
 
-    EV_INFO << "LtePhyEnb::handleSrsReferenceSignal - forward Feedback Packet to MAC layer" << endl;
+    EV_INFO << "LtePhyEnb::sendUlFeedbackToMac - forward Feedback Packet to MAC layer" << endl;
     send(pkt, upperGateOut_);
 }
 

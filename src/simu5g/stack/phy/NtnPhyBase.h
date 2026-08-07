@@ -18,6 +18,19 @@ namespace simu5g {
 class NtnPhyBase : public ChannelAccess
 {
   protected:
+    //
+    // What this NIC must do with an incoming air frame before relaying it further.
+    // A transparent path evaluates the channel twice: the satellite stores the result
+    // of the first radio hop in the frame, and the last radio receiver combines it with
+    // its own hop.
+    //
+    enum class HopAction {
+        RELAY_ONLY,             // no per-hop evaluation, just forward
+        STORE_RELAY_HOP_SINR,   // first radio hop: measure and carry the result
+        STORE_END_TO_END_SINR,  // last radio hop: combine both hops into a CSI measurement
+        STORE_RECEPTION_RESULT, // last radio hop: combine both hops into a decoding decision
+    };
+
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<IAntennaModel> antennaModel_;
     GeographicReferenceSystem *referenceSystem_ = nullptr;
@@ -35,6 +48,7 @@ class NtnPhyBase : public ChannelAccess
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(omnetpp::cMessage *msg) override;
     void handleAirFrame(omnetpp::cMessage *msg);
+    HopAction getHopAction(const UserControlInfo& lteInfo) const;
     void handleUpperMessage(omnetpp::cMessage *msg);
 
     omnetpp::cGate *resolvePeerGate() const;

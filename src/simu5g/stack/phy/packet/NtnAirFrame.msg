@@ -29,6 +29,8 @@ packet NtnAirFrame extends LteAirFrame
     MacNodeId attachedUes[];
     bool gatewayReceptionResultValid = false;
     bool gatewayReceptionResult = false;
+    double endToEndSinr[];
+    bool endToEndSinrValid = false;
 }
 
 cplusplus(NtnAirFrame) {{
@@ -69,6 +71,30 @@ cplusplus(NtnAirFrame) {{
         for (size_t i = 0; i < ues.size(); i++)
             ues[i] = getAttachedUes(i);
         return ues;
+    }
+
+    bool hasEndToEndSinr() const { return getEndToEndSinrValid(); }
+
+    void clearEndToEndSinr()
+    {
+        setEndToEndSinrArraySize(0);
+        setEndToEndSinrValid(false);
+    }
+
+    void setEndToEndSinrVector(const std::vector<double>& sinr)
+    {
+        setEndToEndSinrArraySize(sinr.size());
+        for (size_t i = 0; i < sinr.size(); i++)
+            setEndToEndSinr(i, sinr[i]);
+        setEndToEndSinrValid(true);
+    }
+
+    std::vector<double> getEndToEndSinrVector() const
+    {
+        std::vector<double> sinr(getEndToEndSinrArraySize());
+        for (size_t i = 0; i < sinr.size(); i++)
+            sinr[i] = getEndToEndSinr(i);
+        return sinr;
     }
 
     bool hasGatewayReceptionResult() const { return getGatewayReceptionResultValid(); }

@@ -115,6 +115,39 @@ void NtnPhyGnb::handleNtnAirFrame(cMessage *msg)
     sendDecodedDataFrame(frame, lteInfo, result);
 }
 
+void NtnPhyGnb::handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame)
+{
+    // The gNB has no radio towards the UE, so it cannot measure the uplink itself. The
+    // gateway already combined the service and feeder hops and stored the result in the
+    // frame; use that instead of the terrestrial channel model, which would otherwise
+    // measure the (fictitious) direct gNB-UE geometry.
+    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+    if (ntnFrame == nullptr)
+        throw cRuntimeError("NtnPhyGnb::handleSrsReferenceSignal - SRS frame %s from NTN gateway is not an NtnAirFrame", frame->getFullName());
+    if (!ntnFrame->hasEndToEndSinr())
+        throw cRuntimeError("NtnPhyGnb::handleSrsReferenceSignal - SRS frame %s from NTN gateway has no end-to-end SINR measurement", frame->getFullName());
+
+    EV_INFO << "NtnPhyGnb::handleSrsReferenceSignal - computing UL CSI for node " << lteinfo->getSourceId()
+            << " from the SINR measured over the transparent NTN path" << endl;
+
+    LteFeedbackDoubleVector ulFeedback = ulFbGen_->computeUlFeedback(lteinfo, ntnFrame->getEndToEndSinrVector());
+
+    sendUlFeedbackToMac(lteinfo, frame, ulFeedback);
+}
+
+void NtnPhyGnb::handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
+{
+    // Computing CSI here would use the gNB's own channel model, which does not describe
+    // the satellite path at all. On a transparent NTN path the UE must derive DL CSI from
+    // the CSI-RS it receives, and UL CSI comes from the SRS measured by the gateway.
+    if (lteinfo->getFeedbackReq().request)
+        throw cRuntimeError("NtnPhyGnb::handleFeedbackPkt - gNodeB-side CSI computation is not supported on a "
+                "transparent NTN path, because the gNodeB cannot measure the satellite link. "
+                "Set *.ue[*].cellularNic.nrDlFbGen.computeCsiLocally = true");
+
+    LtePhyEnb::handleFeedbackPkt(lteinfo, frame);
+}
+
 LteAirFrame *NtnPhyGnb::createCsiReferenceSignalFrame(GHz carrierFrequency)
 {
     LteAirFrame *csiAirFrame = new NtnAirFrame("CsiReferenceSignal");

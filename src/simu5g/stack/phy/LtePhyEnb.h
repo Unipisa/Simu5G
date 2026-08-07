@@ -49,6 +49,9 @@ class LtePhyEnb : public LtePhyBase
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame);
+    // Wraps the UL feedback in an LteFeedbackPkt and sends it up; takes ownership of
+    // both lteinfo and frame. Split out so subclasses can obtain the feedback differently.
+    void sendUlFeedbackToMac(UserControlInfo *lteinfo, LteAirFrame *frame, const LteFeedbackDoubleVector& ulFeedback);
     virtual LteAirFrame *createCsiReferenceSignalFrame(inet::GHz carrierFrequency);
     virtual void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame);
     void initializeFeedbackComputation();

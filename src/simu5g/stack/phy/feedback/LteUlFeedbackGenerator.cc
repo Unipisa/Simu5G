@@ -51,11 +51,32 @@ LteFeedbackDoubleVector LteUlFeedbackGenerator::computeUlFeedback(UserControlInf
     if (channelModel == nullptr)
         throw cRuntimeError("LteUlFeedbackGenerator::computeUlFeedback - channelModel is NULL pointer");
 
-    Coord sendersPos = lteinfo->getCoord();
-    cellInfo_->setUePosition(lteinfo->getSourceId(), sendersPos);
-
     // compute SINR
     std::vector<double> snr = channelModel->getSINR(frame, lteinfo);
+
+    return computeFeedbackFromSinr(lteinfo, snr);
+}
+
+LteFeedbackDoubleVector LteUlFeedbackGenerator::computeUlFeedback(UserControlInfo *lteinfo, const std::vector<double>& snr)
+{
+    Enter_Method("computeUlFeedback()");
+    EV_INFO << "LteUlFeedbackGenerator::computeUlFeedback - computing UL CSI from an externally measured SINR" << endl;
+
+    // The vector crosses a module boundary here, so a wrong size means the caller is wired
+    // up incorrectly. Reject it rather than produce plausible-looking but meaningless CQI.
+    if (static_cast<int>(snr.size()) != numBands_)
+        throw cRuntimeError("LteUlFeedbackGenerator::computeUlFeedback - externally measured SINR vector has %d band(s), but feedback is computed over %d band(s)",
+                static_cast<int>(snr.size()), numBands_);
+
+    return computeFeedbackFromSinr(lteinfo, snr);
+}
+
+LteFeedbackDoubleVector LteUlFeedbackGenerator::computeFeedbackFromSinr(UserControlInfo *lteinfo, const std::vector<double>& snr)
+{
+    // The sender position is bookkeeping (MEC location services, D2D conflict graphs), not a
+    // channel measurement, so it stays valid on a transparent NTN path where the frame reaches
+    // us through the satellite.
+    cellInfo_->setUePosition(lteinfo->getSourceId(), lteinfo->getCoord());
 
     std::map<Remote, int> antennaCws;
     antennaCws[MACRO] = 1;

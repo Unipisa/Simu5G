@@ -29,6 +29,7 @@ class LteUlFeedbackGenerator : public cSimpleModule
     int numPreferredBands_ = 0;
 
     void initializeFeedbackComputation();
+    LteFeedbackDoubleVector computeFeedbackFromSinr(UserControlInfo *lteinfo, const std::vector<double>& snr);
 
   protected:
     void initialize(int stage) override;
@@ -38,6 +39,9 @@ class LteUlFeedbackGenerator : public cSimpleModule
     ~LteUlFeedbackGenerator() override;
 
     LteFeedbackDoubleVector computeUlFeedback(UserControlInfo *lteinfo, LteAirFrame *frame);
+    // Used when the SINR was measured elsewhere, e.g. by the gateway of a transparent NTN
+    // path, because the e/gNodeB cannot measure that channel itself.
+    LteFeedbackDoubleVector computeUlFeedback(UserControlInfo *lteinfo, const std::vector<double>& snr);
     LteFeedbackDoubleVector computeD2DFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, MacNodeId peerId, const inet::Coord& peerCoord);
 };
 

@@ -31,6 +31,9 @@ class NtnPhyGnb : public LtePhyEnb
     void sendUnicast(LteAirFrame *airFrame) override;
     void sendCsiReferenceSignalFrameToAttachedUes(LteAirFrame *frame) override;
 
+    void handleSrsReferenceSignal(UserControlInfo *lteinfo, LteAirFrame *frame) override;
+    void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame) override;
+
     void handleNtnAirFrame(cMessage *msg);
     void sendNtn(LteAirFrame *airFrame);
 };

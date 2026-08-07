@@ -85,6 +85,41 @@ GHz NtnPhyBase::shiftFrequencyBand(GHz carrierFreq) const
     return GHz(transmitFrequency);
 }
 
+NtnPhyBase::HopAction NtnPhyBase::getHopAction(const UserControlInfo& lteInfo) const
+{
+    // The satellite is always the first radio receiver of a transparent path: downlink
+    // frames reach it from the gateway over the feeder link, uplink frames from the UE
+    // over the service link.
+    if (nodeType_ == SATELLITE_NODE) {
+        switch (lteInfo.getFrameType()) {
+            case DATAPKT:
+                return HopAction::STORE_RELAY_HOP_SINR;
+            case CSIRSPKT:  // downlink reference signal, arrives from the gateway
+                return isFeederLink_ ? HopAction::STORE_RELAY_HOP_SINR : HopAction::RELAY_ONLY;
+            case SRSPKT:    // uplink reference signal, arrives from the UE
+                return isFeederLink_ ? HopAction::RELAY_ONLY : HopAction::STORE_RELAY_HOP_SINR;
+            default:
+                return HopAction::RELAY_ONLY;
+        }
+    }
+
+    // The gateway only receives over the radio on its feeder link, so every frame that
+    // gets here is the last hop of an uplink. Downlink frames reach the gateway from the
+    // gNB over the wired fronthaul and never pass through handleAirFrame().
+    if (nodeType_ == NTN_GATEWAY_NODE && isFeederLink_) {
+        switch (lteInfo.getFrameType()) {
+            case DATAPKT:
+                return HopAction::STORE_RECEPTION_RESULT;
+            case SRSPKT:
+                return HopAction::STORE_END_TO_END_SINR;
+            default:
+                return HopAction::RELAY_ONLY;
+        }
+    }
+
+    return HopAction::RELAY_ONLY;
+}
+
 void NtnPhyBase::handleAirFrame(cMessage *msg)
 {
     auto *frame = check_and_cast<LteAirFrame *>(msg);
@@ -92,42 +127,49 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
     EV << "NtnPhyBase::handleAirFrame - received air frame " << msg->getName() << " from " << (isFeederLink_ ? "feeder" : "service") << " link radio"
             << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
 
-    if (lteInfo.getFrameType() == DATAPKT ||
-            (nodeType_ == SATELLITE_NODE && isFeederLink_ && lteInfo.getFrameType() == CSIRSPKT) )
-    {
-        GHz carrierFrequency = lteInfo.getCarrierFrequency();
-        LteChannelModel *channelModel = getChannelModel(carrierFrequency);
-        if (channelModel != nullptr) {
-            if (nodeType_ == SATELLITE_NODE) {
-                auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
-                if (ntnFrame == nullptr)
-                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN frame %s is not an NtnAirFrame", frame->getFullName());
-                std::vector<double> sinrVector = channelModel->getSINR(frame, &lteInfo);
-                ntnFrame->setRelayHopSinrVector(sinrVector);
-                EV << "NtnPhyBase::handleAirFrame - forward the frame to the " << (isFeederLink_ ? "service" : "feeder") << " NIC for relaying" << endl;
-            }
-            else {
-                auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
-                if (ntnFrame == nullptr)
-                    throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN data frame %s is not an NtnAirFrame", frame->getFullName());
+    HopAction action = getHopAction(lteInfo);
+    GHz carrierFrequency = lteInfo.getCarrierFrequency();
+    LteChannelModel *channelModel = action == HopAction::RELAY_ONLY ? nullptr : getChannelModel(carrierFrequency);
 
-                if (lteInfo.getFrameType() == DATAPKT) {
-                    bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
-                    ntnFrame->setGatewayReceptionResultInfo(result);
-                    EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
-                }
-                EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
+    if (action != HopAction::RELAY_ONLY && channelModel == nullptr) {
+        EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
+           << carrierFrequency << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
+        action = HopAction::RELAY_ONLY;
+    }
+
+    if (action != HopAction::RELAY_ONLY) {
+        auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+        if (ntnFrame == nullptr)
+            throw cRuntimeError("NtnPhyBase::handleAirFrame - transparent NTN frame %s is not an NtnAirFrame", frame->getFullName());
+
+        switch (action) {
+            case HopAction::STORE_RELAY_HOP_SINR:
+                ntnFrame->setRelayHopSinrVector(channelModel->getSINR(frame, &lteInfo));
+                break;
+            case HopAction::STORE_END_TO_END_SINR: {
+                // Both hops combined, so the terrestrial gNB can derive uplink CSI from the
+                // actual satellite path instead of measuring a channel it does not have.
+                std::vector<double> sinrVector = channelModel->computeReceptionSinr(frame, &lteInfo);
+                ntnFrame->setEndToEndSinrVector(sinrVector);
+                EV << "NtnPhyBase::handleAirFrame - stored end-to-end SINR for frame " << frame->getName()
+                   << " over " << sinrVector.size() << " band(s)" << endl;
+                break;
             }
-        }
-        else {
-            EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
-               << carrierFrequency << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
+            case HopAction::STORE_RECEPTION_RESULT: {
+                bool result = channelModel->isReceptionSuccessful(frame, &lteInfo);
+                ntnFrame->setGatewayReceptionResultInfo(result);
+                EV << "NtnPhyBase::handleAirFrame - handled LteAirframe with ID " << frame->getId() << " with result " << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
+                break;
+            }
+            case HopAction::RELAY_ONLY:
+                break;
         }
     }
-    else {
-        // CONTROL packet
-        EV << "NtnPhyBase::handleAirFrame - forward the control frame to " << ((nodeType_ == SATELLITE_NODE) ? (isFeederLink_ ? "the service link NIC for relaying" : "the feeder link NIC for relaying") : "the connected eNB/gNB") << endl;
-    }
+
+    if (nodeType_ == SATELLITE_NODE)
+        EV << "NtnPhyBase::handleAirFrame - forward the frame to the " << (isFeederLink_ ? "service" : "feeder") << " NIC for relaying" << endl;
+    else
+        EV << "NtnPhyBase::handleAirFrame - forward the frame to the connected eNB/gNB" << endl;
 
     send(msg, "upperLayerOut");
 }

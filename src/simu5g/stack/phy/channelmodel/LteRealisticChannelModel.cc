@@ -1811,7 +1811,10 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
             // we are on the BS, so we need to retrieve the channel model of the sender
             // XXX I know, there might be a faster way...
             LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
-            ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
+            // On a frequency-translating NTN path the last radio hop uses the feeder carrier,
+            // for which the UE has no channel model, so there is nowhere to record this.
+            if (ueChannelModel != nullptr)
+                ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
         }
     }
 
