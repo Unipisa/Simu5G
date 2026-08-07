@@ -408,6 +408,21 @@ class LteRealisticChannelModel : public LteChannelModel
   protected:
 
     /*
+     * Returns the channel model on which the per-UE SINR statistics of a reception must be
+     * recorded, or nullptr if there is none. By default this is the channel model that the
+     * UE itself uses for the carrier the frame was received on, so that the measurement is
+     * attributed to the UE rather than to the receiving base station.
+     *
+     * Subclasses must override this whenever the node running the computation is not the UE's
+     * serving base station, or the frame arrived on a different carrier than the UE
+     * transmitted on - both of which happen on a transparent, frequency-translating NTN path.
+     *
+     * @param ueId mac node id of the UE at the terrestrial end of the link
+     * @param carrierFrequency carrier the frame was received on
+     */
+    virtual LteChannelModel *getSinrStatisticsTarget(MacNodeId ueId, GHz carrierFrequency);
+
+    /*
      * Returns the 2D distance between two coordinates (ignore z-axis)
      */
     double getTwoDimDistance(inet::Coord a, inet::Coord b);

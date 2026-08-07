@@ -112,6 +112,12 @@ bool NtnPhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
     return true;
 }
 
+LteChannelModel *NtnPhyUe::getNtnChannelModel(GHz carrierFreq) const
+{
+    auto it = ntnChannelModel_.find(carrierFreq);
+    return (it == ntnChannelModel_.end()) ? nullptr : it->second;
+}
+
 LteChannelModel *NtnPhyUe::getReceptionChannelModel(const UserControlInfo *lteInfo)
 {
     GHz carrierFreq = lteInfo->getCarrierFrequency();

@@ -54,6 +54,12 @@ class NtnPhyBase : public ChannelAccess
     omnetpp::cGate *resolvePeerGate() const;
     omnetpp::cModule *resolvePeerNode() const;
     int getReceiverGateIndex(const omnetpp::cModule *receiver, bool isNr) const;
+
+  public:
+    // Carrier that the given hop carrier corresponds to on the UE-facing service link.
+    // Feeder-link hops are frequency-translated, so their carrier differs from the one the
+    // UE transmits and receives on.
+    GHz toServiceLinkCarrier(GHz carrierFreq) const;
 };
 
 } // namespace simu5g

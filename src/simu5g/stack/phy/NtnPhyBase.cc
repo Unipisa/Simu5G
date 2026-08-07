@@ -126,6 +126,18 @@ NtnPhyBase::HopAction NtnPhyBase::getHopAction(const UserControlInfo& lteInfo) c
     return HopAction::RELAY_ONLY;
 }
 
+GHz NtnPhyBase::toServiceLinkCarrier(GHz carrierFreq) const
+{
+    if (!isFeederLink_ || std::isnan(carrierFreq.get()))
+        return carrierFreq;
+
+    double serviceFrequency = carrierFreq.get() - feederLinkFrequencyOffset_.get();
+    if (serviceFrequency <= 0.0)
+        throw cRuntimeError("NtnPhyBase::toServiceLinkCarrier - cannot translate feeder-link carrier %gGHz with offset %gGHz",
+                carrierFreq.get(), feederLinkFrequencyOffset_.get());
+    return GHz(serviceFrequency);
+}
+
 void NtnPhyBase::handleAirFrame(cMessage *msg)
 {
     auto *frame = check_and_cast<LteAirFrame *>(msg);

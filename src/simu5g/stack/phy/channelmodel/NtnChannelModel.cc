@@ -11,6 +11,8 @@
 
 #include "simu5g/stack/phy/channelmodel/NtnChannelModel.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+#include "simu5g/stack/phy/NtnPhyBase.h"
+#include "simu5g/stack/phy/NtnPhyUe.h"
 #include "simu5g/stack/phy/packet/NtnAirFrame.h"
 #include "inet/common/ModuleRefByPar.h"
 
@@ -159,6 +161,23 @@ double NtnChannelModel::computeSatelliteAntennaOffAxisAngle(const IAntennaModel 
     double boresightToLosCosine = boresightUnit * los;
     double angle = math::rad2deg(std::acos(clampCosine(boresightToLosCosine)));
     return clampAntennaAngle(angle);
+}
+
+LteChannelModel *NtnChannelModel::getSinrStatisticsTarget(MacNodeId ueId, GHz carrierFrequency)
+{
+    // This model may be running at the gateway, on the frequency-translated feeder carrier,
+    // while the UE only knows the service carrier. Translate back before looking the UE up,
+    // and attribute the measurement to the UE's NTN channel model, which is the one that
+    // represents the satellite path.
+    GHz serviceCarrier = carrierFrequency;
+    if (auto *ntnPhy = dynamic_cast<NtnPhyBase *>(phy_.get()))
+        serviceCarrier = ntnPhy->toServiceLinkCarrier(carrierFrequency);
+
+    auto *uePhy = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(ueId));
+    if (auto *ntnUePhy = dynamic_cast<NtnPhyUe *>(uePhy))
+        return ntnUePhy->getNtnChannelModel(serviceCarrier);
+
+    return uePhy->getChannelModel(serviceCarrier);
 }
 
 std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)

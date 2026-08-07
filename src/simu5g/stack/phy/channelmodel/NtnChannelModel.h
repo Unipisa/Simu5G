@@ -35,6 +35,8 @@ class NtnChannelModel : public LteRealisticChannelModel
 
     inet::ModuleRefByPar<IAntennaModel> antennaModel_;
 
+    LteChannelModel *getSinrStatisticsTarget(MacNodeId ueId, GHz carrierFrequency) override;
+
     /*
      * Frequency-selective fading data structures
      */

@@ -663,14 +663,13 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
     // emit SINR statistic
     if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT || lteInfo->getFrameType() == SRSPKT) && usedRBs > 0) {
-        // we are on the BS, so we need to retrieve the channel model of the sender
-        // XXX I know, there might be a faster way...
-        LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
-
-        if (dir == DL) // we are on the UE
-            ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
-        else
-            ueChannelModel->emit(measuredSinrUlSignal_, sumSnr / usedRBs);
+        LteChannelModel *ueChannelModel = getSinrStatisticsTarget(ueId, lteInfo->getCarrierFrequency());
+        if (ueChannelModel != nullptr) {
+            if (dir == DL) // we are on the UE
+                ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
+            else
+                ueChannelModel->emit(measuredSinrUlSignal_, sumSnr / usedRBs);
+        }
     }
 
     // if sender is an eNodeB
@@ -1808,11 +1807,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
         if (dir == DL) // we are on the UE
             emit(rcvdSinrDlSignal_, sumSnr / usedRBs);
         else {
-            // we are on the BS, so we need to retrieve the channel model of the sender
-            // XXX I know, there might be a faster way...
-            LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
-            // On a frequency-translating NTN path the last radio hop uses the feeder carrier,
-            // for which the UE has no channel model, so there is nowhere to record this.
+            LteChannelModel *ueChannelModel = getSinrStatisticsTarget(id, lteInfo->getCarrierFrequency());
             if (ueChannelModel != nullptr)
                 ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
         }
@@ -2228,6 +2223,13 @@ double LteRealisticChannelModel::computeRuralMacro(double d, double& dbp, bool l
         + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(11.75 * hUe_), 2)) - 4.97);
     return att;
+}
+
+LteChannelModel *LteRealisticChannelModel::getSinrStatisticsTarget(MacNodeId ueId, GHz carrierFrequency)
+{
+    // we are on the BS, so we need to retrieve the channel model of the sender
+    // XXX I know, there might be a faster way...
+    return check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(ueId))->getChannelModel(carrierFrequency);
 }
 
 double LteRealisticChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord b)
