@@ -95,9 +95,15 @@ NtnPhyBase::HopAction NtnPhyBase::getHopAction(const UserControlInfo& lteInfo) c
             case DATAPKT:
                 return HopAction::STORE_RELAY_HOP_SINR;
             case CSIRSPKT:  // downlink reference signal, arrives from the gateway
-                return isFeederLink_ ? HopAction::STORE_RELAY_HOP_SINR : HopAction::RELAY_ONLY;
+                if (!isFeederLink_)
+                    throw cRuntimeError("NtnPhyBase::getHopAction - satellite PHY %s received CSI-RS over the service link, but expected the feeder link (sourceId=%d, destId=%d)",
+                            getFullPath().c_str(), lteInfo.getSourceId(), lteInfo.getDestId());
+                return HopAction::STORE_RELAY_HOP_SINR;
             case SRSPKT:    // uplink reference signal, arrives from the UE
-                return isFeederLink_ ? HopAction::RELAY_ONLY : HopAction::STORE_RELAY_HOP_SINR;
+                if (isFeederLink_)
+                    throw cRuntimeError("NtnPhyBase::getHopAction - satellite PHY %s received SRS over the feeder link, but expected the service link (sourceId=%d, destId=%d)",
+                            getFullPath().c_str(), lteInfo.getSourceId(), lteInfo.getDestId());
+                return HopAction::STORE_RELAY_HOP_SINR;
             default:
                 return HopAction::RELAY_ONLY;
         }
