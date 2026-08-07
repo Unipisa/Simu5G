@@ -56,6 +56,10 @@ class LeoSatMobility : public inet::MovingMobilityBase
     };
 
     bool isPreInitialized_ = false;
+    // The initial placement is reported at INFO because a satellite that starts outside the
+    // ground nodes' visibility receives nothing at all; later updates stay at DEBUG so long
+    // runs and large constellations do not flood the log.
+    bool isInitialPositionReported_ = false;
 
     elsetrec satrec_;
     TLE tle_;

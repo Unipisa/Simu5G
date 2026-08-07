@@ -166,6 +166,13 @@ void SatelliteInserter::createSatellite(TLE tle, unsigned int satNum, unsigned i
 
     mod->finalizeParameters();
     mod->buildInside();
+
+    // Reported at INFO so that a scenario's satellite population is visible without a debug
+    // build: which TLE records produced modules, and under what names.
+    EV_INFO << "SatelliteInserter::createSatellite - created " << mod->getFullPath()
+            << " for \"" << tle.get_satellite_name() << "\" (catalog number "
+            << tle.get_tle_line1().substr(2, 5) << ")" << std::endl;
+
     std::vector<LeoSatMobility *> leoSatMobilityModules;
     collectLeoSatMobilityModules(mod, leoSatMobilityModules);
     for (auto mobility : leoSatMobilityModules) {
@@ -219,6 +226,11 @@ void SatelliteInserter::instantiateSatellite(TLE tle)
     }
     if (ignoreUnknownSatellites) {
         // Satellites whose name does not start with a constellation name will be discarded.
+        // Reported at INFO because the resulting network then holds fewer satellites than the
+        // TLE file lists, with nothing else to indicate which ones were left out.
+        EV_INFO << "SatelliteInserter::instantiateSatellite - discarding \"" << tle.get_satellite_name()
+                << "\" (catalog number " << tle.get_tle_line1().substr(2, 5)
+                << "): its name matches no known constellation and ignoreUnknownSatellites is set" << std::endl;
         return;
     }
     // Use catalog number for satellites that could not be assign to a constellation

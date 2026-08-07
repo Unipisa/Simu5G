@@ -96,6 +96,10 @@ void NtnPhyGnb::handleNtnAirFrame(cMessage *msg)
     }
 
     if (!binder_->nodeExists(sourceId) || !binder_->nodeExists(lteInfo->getDestId())) {
+        // Either endpoint has left the simulation. Silent here would be indistinguishable
+        // from the transparent NTN path dropping the frame for a physical reason.
+        EV << "NtnPhyGnb::handleNtnAirFrame - source " << sourceId << " or destination " << lteInfo->getDestId()
+           << " no longer exists: frame deleted" << endl;
         delete lteInfo;
         delete frame;
         return;

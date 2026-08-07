@@ -14,9 +14,11 @@ void GeoSatMobility::initialize( int stage )
     ASSERT(referenceSystem_ != nullptr);
 
     inet::GeoCoord satelliteWgs84(inet::deg(par("initialLatitude")), inet::deg(par("initialLongitude")), inet::m(par("initialAltitude")));
-    EV_DEBUG << "GeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
-             << ", lon(deg) " << satelliteWgs84.longitude
-             << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
+    // Reported at INFO because a satellite placed outside the ground nodes' visibility
+    // receives nothing at all, and this runs once per satellite.
+    EV_INFO << "GeoSatMobility::initialize - satellite position: (lat(deg) " << satelliteWgs84.latitude
+            << ", lon(deg) " << satelliteWgs84.longitude
+            << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
 
     lastPosition = referenceSystem_->omnetFromWgs84(satelliteWgs84);
 
