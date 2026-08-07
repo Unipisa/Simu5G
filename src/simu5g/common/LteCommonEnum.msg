@@ -146,6 +146,11 @@ enum DeploymentScenario
     RURAL_MACROCELL = 3;
     SUBURBAN_MACROCELL = 4;
     UNKNOWN_SCENARIO = 5;
+    NTN_OPEN = 6;
+    NTN_RURAL = 7;
+    NTN_SUBURBAN = 8;
+    NTN_URBAN = 9;
+    NTN_DENSE_URBAN = 10;
 };
 
 

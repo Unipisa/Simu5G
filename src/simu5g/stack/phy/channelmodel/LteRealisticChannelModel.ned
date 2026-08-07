@@ -31,7 +31,7 @@ simple LteRealisticChannelModel extends LteChannelModel
         bool shadowing = default(true);
 
         // Pathloss scenario from ITU -->
-        string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOWN_SCENARIO) = default("URBAN_MACROCELL");
+        string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOWN_SCENARIO,NTN_OPEN,NTN_RURAL,NTN_SUBURBAN,NTN_URBAN,NTN_DENSE_URBAN) = default("URBAN_MACROCELL");
 
         // eNodeB height -->
         double nodebHeight @unit(m) = default(25m);
@@ -109,4 +109,3 @@ simple LteRealisticChannelModel extends LteChannelModel
         @signal[measuredSinrUl];
         @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
 }
-

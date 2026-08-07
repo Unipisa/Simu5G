@@ -15,6 +15,10 @@ simple NtnChannelModel extends LteRealisticChannelModel
 {
     parameters:
         @class("NtnChannelModel");
+
+        scenario = default("NTN_RURAL");
+        fixedLos = default(true);
+
         string antennaModelModule = default("^.antennaModel");
         double polarizationMismatchLoss @unit(dB) = default(-3dB);
 }

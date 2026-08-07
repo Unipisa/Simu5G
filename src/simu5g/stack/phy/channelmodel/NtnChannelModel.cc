@@ -61,8 +61,12 @@ void NtnChannelModel::initialize(int stage)
         polarizationMismatchLoss_ = par("polarizationMismatchLoss");
         // TODO Apply this once per link when NTN Tx/Rx antenna-model references expose
         // their polarizations and both endpoints are configured with different non-NONE values.
-        if (inside_building_)
+        if (inside_building_ && scenario_ != NTN_OPEN)
             useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
+        if (scenario_ == NTN_OPEN) {
+            EV_INFO << "NtnChannelModel: NTN_OPEN enforces an outdoor LOS/AWGN channel; "
+                    << "dynamicLos, fixedLos, insideBuilding, shadowing, and fading parameters are ignored" << endl;
+        }
     }
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         antennaModel_.reference(this, "antennaModelModule", true);
@@ -233,15 +237,15 @@ double NtnChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Co
 
     // compute base path loss
     double basePL = computePathLoss(distance, dbp, los);
-    // add O2I penetration loss
-    double o2iLoss = computeBuildingPenetrationLoss(nodeId);
+    // Open environments are outdoor AWGN channels, so they have no O2I loss.
+    double o2iLoss = scenario_ == NTN_OPEN ? 0.0 : computeBuildingPenetrationLoss(nodeId);
     // add atmospheric loss
     double atmLoss = computeAtmosphericLoss();
     // add scintillation loss
     double scintLoss = computeScintillationLoss();
     // add shadowing
     double shadowing = 0.0;
-    if (num(nodeId) < BGUE_MIN_ID && shadowing_)
+    if ((scenario_ != NTN_OPEN) && num(nodeId) < BGUE_MIN_ID && shadowing_)
         shadowing = computeShadowing(distance, nodeId, speed, cqiDl);
 
     // compute attenuation
@@ -271,7 +275,7 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
     // TODO revisit whether the same clutter-loss model should be applied to feeder links,
     // where the terrestrial endpoint is a gateway rather than a service-link terminal.
     double pathLoss = 32.45 + 20 * log10CarrierFrequencyGHz_ + 20 * std::log10(distance);
-    if (los)
+    if (scenario_ == NTN_OPEN || los)
         return pathLoss;
 
     // add clutter loss if non-LOS
@@ -292,7 +296,7 @@ double NtnChannelModel::computePathLoss(double distance, double dbp, bool los)
 
 double NtnChannelModel::computeBuildingPenetrationLoss(MacNodeId nodeId)
 {
-    if (!inside_building_)
+    if (scenario_ == NTN_OPEN || !inside_building_)
         return 0.0;
 
     auto probabilityIt = buildingPenetrationProbabilityMap_.find(nodeId);
@@ -376,20 +380,19 @@ double NtnChannelModel::computeScintillationLoss()
 const FrequencySelectiveScenarioParameters& NtnChannelModel::getFrequencySelectiveScenarioParameters(bool los, bool isSband) const
 {
     switch (scenario_) {
-        case INDOOR_HOTSPOT:
-        case URBAN_MICROCELL:
+        case NTN_DENSE_URBAN:
             if (los)
                 return isSband ? kDenseUrbanLosSband : kDenseUrbanLosKaband;
             return isSband ? kDenseUrbanNlosSband : kDenseUrbanNlosKaband;
-        case URBAN_MACROCELL:
+        case NTN_URBAN:
             if (los)
                 return isSband ? kUrbanLosSband : kUrbanLosKaband;
             return isSband ? kUrbanNlosSband : kUrbanNlosKaband;
-        case SUBURBAN_MACROCELL:
+        case NTN_SUBURBAN:
             if (los)
                 return isSband ? kSuburbanLosSband : kSuburbanLosKaband;
             return isSband ? kSuburbanNlosSband : kSuburbanNlosKaband;
-        case RURAL_MACROCELL:
+        case NTN_RURAL:
             if (los)
                 return isSband ? kRuralLosSband : kRuralLosKaband;
             return isSband ? kRuralNlosSband : kRuralNlosKaband;
@@ -401,13 +404,12 @@ const FrequencySelectiveScenarioParameters& NtnChannelModel::getFrequencySelecti
 double NtnChannelModel::getFadingRefreshDistance(bool los) const
 {
     switch (scenario_) {
-        case INDOOR_HOTSPOT:
-        case URBAN_MICROCELL:
-        case URBAN_MACROCELL:
+        case NTN_DENSE_URBAN:
+        case NTN_URBAN:
             return los ? 30.0 : 40.0;
-        case SUBURBAN_MACROCELL:
+        case NTN_SUBURBAN:
             return los ? 30.0 : 40.0;
-        case RURAL_MACROCELL:
+        case NTN_RURAL:
             return los ? 50.0 : 36.0;
         default:
             throw cRuntimeError("NtnChannelModel::getFadingRefreshDistance - unsupported scenario value %d", scenario_);
@@ -485,7 +487,7 @@ void NtnChannelModel::initializeFrequencySelectiveFadingState(FrequencySelective
 
 std::vector<double> NtnChannelModel::computeFrequencySelectiveFading(MacNodeId nodeId, double speed)
 {
-    if (!fading_)
+    if (scenario_ == NTN_OPEN || !fading_)
         return std::vector<double>(numBands_, 0.0);
 
     inet::Coord terrestrialEndpointEcef = ecefFromWgs84(lastTerrestrialEndpointWgs84_);
@@ -542,6 +544,9 @@ double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, doub
 {
     (void)distance;
 
+    if (scenario_ == NTN_OPEN)
+        return 0.0;
+
     ShadowFadingMap *actualShadowingMap;
     if (cqiDl)
         actualShadowingMap = obtainShadowingMap(nodeId);
@@ -562,18 +567,17 @@ double NtnChannelModel::computeShadowing(double distance, MacNodeId nodeId, doub
 
     double stdDev = 0.0;
     switch (scenario_) {
-        case INDOOR_HOTSPOT:
-        case URBAN_MICROCELL:
+        case NTN_DENSE_URBAN:
             if (isSband)
                 stdDev = los ? kDenseUrbanSbandLosSf[angleIndex] : kDenseUrbanSbandNlosSf[angleIndex];
             else
                 stdDev = los ? kDenseUrbanKabandLosSf[angleIndex] : kDenseUrbanKabandNlosSf[angleIndex];
             break;
-        case URBAN_MACROCELL:
+        case NTN_URBAN:
             stdDev = los ? kUrbanLosSf[angleIndex] : kUrbanNlosSf[angleIndex];
             break;
-        case SUBURBAN_MACROCELL:
-        case RURAL_MACROCELL:
+        case NTN_SUBURBAN:
+        case NTN_RURAL:
             if (isSband)
                 stdDev = los ? kSuburbanRuralSbandLosSf[angleIndex] : kSuburbanRuralSbandNlosSf[angleIndex];
             else
@@ -607,6 +611,11 @@ void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
 {
     (void)d;
 
+    if (scenario_ == NTN_OPEN) {
+        losMap_[nodeId] = true;
+        return;
+    }
+
     if (!dynamicLos_) {
         losMap_[nodeId] = fixedLos_;
         return;
@@ -621,15 +630,14 @@ void NtnChannelModel::computeLosProbability(double d, MacNodeId nodeId)
 
     double p = 0.0;
     switch (scenario_) {
-        case INDOOR_HOTSPOT:
-        case URBAN_MICROCELL:
+        case NTN_DENSE_URBAN:
             p = kDenseUrbanLosProb[angleIndex];
             break;
-        case URBAN_MACROCELL:
+        case NTN_URBAN:
             p = kUrbanLosProb[angleIndex];
             break;
-        case SUBURBAN_MACROCELL:
-        case RURAL_MACROCELL:
+        case NTN_SUBURBAN:
+        case NTN_RURAL:
             p = kSuburbanRuralLosProb[angleIndex];
             break;
         default:
