@@ -31,6 +31,9 @@ class NtnChannelModel : public LteRealisticChannelModel
     inet::GeoCoord lastTerrestrialEndpointWgs84_ = inet::GeoCoord::NIL;
     inet::Coord lastSatelliteEndpointEcefCoord_;
     std::map<MacNodeId, double> buildingPenetrationProbabilityMap_;
+    // Last known visibility of the satellite from each terrestrial endpoint, so that rising
+    // and setting are reported once instead of on every evaluated frame.
+    std::map<MacNodeId, bool> satelliteVisibleMap_;
     double polarizationMismatchLoss_ = 0.0; // in dB
 
     inet::ModuleRefByPar<IAntennaModel> antennaModel_;
@@ -89,6 +92,14 @@ class NtnChannelModel : public LteRealisticChannelModel
 
     // Returns the off-axis angle between an antenna boresight and the line of sight to its peer.
     double computeAntennaOffAxisAngle(const IAntennaModel *antenna, RanNodeType endpointType, const inet::Coord& endpointEcef, const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const;
+
+    /*
+     * Reports, at INFO level, that the satellite has risen above or set below the local
+     * horizon of the given terrestrial endpoint. Nothing is received while it is below, so a
+     * scenario whose satellite never rises delivers nothing at all; logging the first
+     * observation makes that visible instead of leaving it to be inferred from empty results.
+     */
+    void reportSatelliteVisibility(MacNodeId terrestrialEndpointId, double elevation);
 
     // Computes the off-axis angle for a ground antenna using local azimuth/elevation pointing.
     double computeGroundAntennaOffAxisAngle(const IAntennaModel *antenna, const inet::Coord& endpointEcef, const inet::GeoCoord& endpointWgs84, const inet::Coord& peerEcef) const;

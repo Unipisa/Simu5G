@@ -167,6 +167,25 @@ double NtnChannelModel::computeSatelliteAntennaOffAxisAngle(const IAntennaModel 
     return clampAntennaAngle(angle);
 }
 
+void NtnChannelModel::reportSatelliteVisibility(MacNodeId terrestrialEndpointId, double elevation)
+{
+    bool visible = elevation >= 0.0;
+    auto [it, inserted] = satelliteVisibleMap_.insert({terrestrialEndpointId, visible});
+    if (!inserted) {
+        if (it->second == visible)
+            return;
+        it->second = visible;
+    }
+
+    if (visible)
+        EV_INFO << "NtnChannelModel::reportSatelliteVisibility - satellite rose above the local horizon of node "
+                << terrestrialEndpointId << ", elevation[" << elevation << "deg]" << endl;
+    else
+        EV_INFO << "NtnChannelModel::reportSatelliteVisibility - satellite is below the local horizon of node "
+                << terrestrialEndpointId << ", elevation[" << elevation << "deg]. Nothing will be received from it "
+                << "until it rises; check the scenario start time against the satellite's pass schedule." << endl;
+}
+
 LteChannelModel *NtnChannelModel::getSinrStatisticsTarget(MacNodeId ueId, GHz carrierFrequency)
 {
     // This model may be running at the gateway, on the frequency-translated feeder carrier,
@@ -697,6 +716,7 @@ std::vector<double> NtnChannelModel::getSINR(LteAirFrame *frame, UserControlInfo
 
     Coord terrestrialEndpointEcef = ecefFromWgs84(terrestrialEndpointWgs84);
     double elevation = computeElevationFromEcefEndpoints(terrestrialEndpointWgs84, terrestrialEndpointEcef, satelliteEndpointEcefCoord);
+    reportSatelliteVisibility(terrestrialEndpointId, elevation);
     if (elevation < 0.0) {
         EV_DEBUG << "NtnChannelModel::getSINR - satellite below local horizon, elevation[" << elevation
                  << " deg], returning no-signal SINR" << endl;
@@ -793,6 +813,7 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
 
     Coord terrestrialEndpointEcef = ecefFromWgs84(terrestrialEndpointWgs84);
     double elevation = computeElevationFromEcefEndpoints(terrestrialEndpointWgs84, terrestrialEndpointEcef, satelliteEndpointEcefCoord);
+    reportSatelliteVisibility(terrestrialEndpointId, elevation);
     if (elevation < 0.0) {
         EV_DEBUG << "NtnChannelModel::getRSRP - satellite below local horizon, elevation[" << elevation
                  << " deg], returning no-signal RSRP" << endl;
