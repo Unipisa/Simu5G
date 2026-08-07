@@ -1,6 +1,6 @@
 # Simu5G NTN Implementation
 
-This document describes the partial non-terrestrial network (NTN) implementation on the `ntn` branch. It was derived from the code and branch history and reviewed through commit `6a9188f9` (`Attribute NTN uplink SINR statistics to the UE's NTN channel model`), which includes commits through `ebb7a181` (`Add NTN-specific deployment scenarios, and set NTN_RURAL with fixed LOS as default`). Treat the source files cited below as authoritative if the branch evolves.
+This document describes the partial non-terrestrial network (NTN) implementation on the `ntn` branch. It was derived from the code and branch history and reviewed through commit `1aa1083d` (`Make two-hop SINR evaluation mandatory on the transparent NTN path`). Treat the source files cited below as authoritative if the branch evolves.
 
 ## Scope and Status
 
@@ -27,6 +27,7 @@ Available now:
 - Satellite, gateway, isotropic terminal, and VSAT antenna models.
 - A channel model based partly on 3GPP TR 38.811 tables and TR 38.821 antenna parameters.
 - Per-link carrier frequencies: a feeder-link NIC retunes its own channel models to the translated carrier, so every frequency-dependent term of that hop is computed at the feeder frequency.
+- Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios.
 
 Not available as a complete model:
@@ -150,7 +151,11 @@ Do not edit generated `*_m.cc` or `*_m.h` files. Change the `.msg` source and re
 
 ### CSI-RS, SRS, and Control Frames
 
-**Downlink CSI-RS**: `NtnPhyGnb` creates CSI-RS as `NtnAirFrame` and records attached UE IDs. Satellite service `NtnPhyBase` duplicates one frame per attached UE. The first hop is evaluated, but `NtnChannelModel::getRSRP()` evaluates only the last hop and does not combine the stored relay-hop measurement. CQI therefore does not represent a complete two-hop received-power metric.
+**Downlink CSI-RS**: `NtnPhyGnb` creates CSI-RS as `NtnAirFrame` and records attached UE IDs. Satellite feeder `NtnPhyBase` evaluates the feeder hop and stores it in `relayHopSinr[]`; satellite service `NtnPhyBase` then duplicates one frame per attached UE, and `NtnAirFrame::dup()` deep-copies the stored measurement. At the UE, `LteDlFeedbackGenerator::handleCsiReferenceSignal()` calls `computeReceptionSinr()` on the model returned by `NtnPhyUe::getReceptionChannelModel()`, so downlink CSI is combined over both hops. Downlink data decoding reaches the same method through `isReceptionSuccessful()`.
+
+Since commit `1aa1083d` this is enforced rather than merely arranged: `computeReceptionSinr()` throws if a frame arrives without a first-hop measurement instead of silently degrading to the last hop, and `NtnPhyBase::handleAirFrame()` throws instead of relaying a frame it has no channel model to evaluate. D2D is delegated to the base implementation, as those links never transit the satellite.
+
+`NtnChannelModel::getRSRP()` is a separate matter and remains single-hop: it ignores the frame entirely, so it cannot reach `relayHopSinr[]`. It is not used for CSI; it feeds RSRP-based cell selection and beacon RSSI (see the note under Known Physical Inconsistencies).
 
 **Uplink SRS**: Satellite service `NtnPhyBase` measures SRS on the first hop and stores SINR in `relayHopSinr[]`. Gateway feeder `NtnPhyBase` combines both hops using `computeReceptionSinr()`, storing the result in `endToEndSinr[]`. `NtnPhyGnb::handleSrsReferenceSignal()` reads `endToEndSinr[]` and passes it to `LteUlFeedbackGenerator::computeUlFeedback()`, which derives the uplink CQI from the combined two-hop measurement rather than re-measuring a non-existent terrestrial link. This closes the uplink CSI measurement loop through the transparent path.
 
@@ -246,9 +251,11 @@ Noise is always computed over 180 kHz. RB center frequencies account for numerol
 
 `polarizationMismatchLoss` is declared and read, and antenna polarization is configured, but the loss is never applied.
 
-#### Building High-Loss Parameter Is Missing
+#### RSRP-Based Cell Selection and Handover Measure a Link That Does Not Exist
 
-When `insideBuilding` is true, `NtnChannelModel` reads `useBuildingPenetrationHighLossModel`, but that parameter is not declared by `NtnChannelModel` or its NED ancestors on this branch. This path can fail during initialization.
+`NtnChannelModel::getRSRP()` ignores the frame it is given, so it cannot combine the stored relay hop and always reports the last hop alone. Worse, its two consumers do not use the NTN model at all: `LtePhyUe::findCandidateEnb()` and `LtePhyUe::computeReceivedBeaconPacketRssi()` both call `primaryChannelModel_`, the terrestrial model, against a synthesised direct gNodeB-UE geometry. `NtnPhyUe` overrides neither.
+
+This is the same defect class as the original uplink CSI bug fixed in `9b265962`. It is latent rather than live: `enableHandover` and `enableBeacons` default to false, and a `BEACONPKT` never sets `destId`, so it is dropped at the satellite before reaching any UE. It becomes real the moment handover is enabled for an NTN cell.
 
 #### SINR Statistics Attribution (fixed in commit 6a9188f9)
 
@@ -275,17 +282,19 @@ Run from the scenario directory after sourcing the required OMNeT++, INET, and S
 ./run -u Cmdenv -c LeoSat
 ```
 
-**Current delivery status** (as of commit `ebb7a181`, with `scenario = "RURAL_MACROCELL"` and `fixedLos = true` defaults):
+**Current delivery status** (2 s runs, with `scenario = "RURAL_MACROCELL"` and `fixedLos = true` defaults):
 
 | Config | DL delivered | UL delivered | UL CQI |
 |---|---|---|---|
 | `GeoSat` | 58.5 kB | 56.4 kB | 4 |
 | `GeoSat` + `VSATAntennaModel` | 58.5 kB | 56.1 kB | 11 |
-| `LeoSat` | 0 B | 0 B | 0 |
+| `LeoSat` | 58.5 kB | 56.1 kB | 10 |
 
-GeoSat now delivers both directions, representing a major improvement from the prior "delivers nothing" state. The UL CSI now derives from the actual satellite path (via commit `9b265962` and the `endToEndSinr[]` hook in `6a9188f9`), and the link budget defaults no longer apply NLOS clutter to satellite paths.
+Both configurations now deliver in both directions. Uplink CSI derives from the actual satellite path (`9b265962`, with the statistics hook in `6a9188f9`), the link-budget defaults no longer apply NLOS clutter to satellite links (`ebb7a181`), and the feeder hop is evaluated at its own carrier (`94160458`).
 
-There are no NTN entries in `tests/fingerprint`, no coordinate/orbit unit tests, and no channel/link-budget regression tests. Existing result files under the smoke scenario reference obsolete topology or parameters and must not be treated as validation of the current source. LeoSat delivery failure is unexplained (likely geometry-related) and is not yet addressed.
+`LeoSat` previously delivered nothing, and the cause was geometric rather than a modelling defect: the configured epoch placed the satellite 22.2 degrees below the local horizon of the ground nodes. **A LEO scenario's start time must be chosen inside a pass.** The TLE in `space_Veins-1.txt` describes a 350 km circular orbit at 70 degrees inclination, whose visibility cap spans 18.56 degrees of arc, i.e. 2.6% of the Earth at any instant, so most instants are not usable. The pass schedule for the current ground-node position is recorded in a comment above `wall_clock_sim_start_time_utc` in `omnetpp.ini`. Satellite placement and visibility are now reported at INFO (see Implementation Conventions), so a badly chosen epoch is self-diagnosing.
+
+There are no NTN entries in `tests/fingerprint`, no coordinate/orbit unit tests, and no channel/link-budget regression tests. Existing result files under the smoke scenario reference obsolete topology or parameters and must not be treated as validation of the current source.
 
 ## Minimum Work for Credible Bent-Pipe NTN
 
@@ -316,8 +325,9 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 4. Make Control and Measurement Paths Consistent
 
-- ✓ **SRS (commit 9b265962, hook 6a9188f9)**: SRS is now measured on both hops at the satellite and gateway, combined, and fed to uplink CQI computation via `endToEndSinr[]`. Uplink CSI measurement is consistent with the transparent path.
-- **CSI-RS (incomplete)**: Downlink CSI-RS still evaluates only the last hop; two-hop combination remains unimplemented.
+- ✓ **SRS (commit 9b265962, hook 6a9188f9)**: SRS is measured on both hops at the satellite and gateway, combined, and fed to uplink CQI computation via `endToEndSinr[]`. Uplink CSI measurement is consistent with the transparent path.
+- ✓ **CSI-RS and two-hop enforcement (commit 1aa1083d)**: downlink CSI and data decoding both combine the two hops through `computeReceptionSinr()`, and a missing first-hop measurement is now an error rather than a silent single-hop fallback.
+- **RSRP-based measurement (incomplete)**: cell selection and beacon RSSI remain single-hop and use the terrestrial channel model with a fictitious direct geometry. This must be fixed before handover can be enabled for NTN.
 - **Control frame loss (incomplete)**: Apply channel success to grants, HARQ feedback, and random access, not only data and SRS.
 - Review HARQ process counts/timing, random-access windows, scheduling requests, RLC timers, and other procedures against GEO/LEO RTT.
 - Model timing advance/common timing reference and NTN assistance data assumptions explicitly.
@@ -362,6 +372,8 @@ Do not accept `.UPDATED` fingerprint files merely because physical-model changes
 
 Follow the surrounding Simu5G and OMNeT++ style when extending NTN:
 
+- **`EV_DEBUG` and `EV_TRACE` do not exist in release builds.** OMNeT++ sets `COMPILETIME_LOGLEVEL` to `LOGLEVEL_DETAIL` under `NDEBUG`, so those statements are compiled out entirely and no runtime `--cmdenv-log-level` can bring them back. Anything a user needs in order to understand why a scenario produced nothing must be at `EV`/`EV_INFO` or above. This is not hypothetical: the whole orbital subsystem once logged only at `EV_DEBUG`, which made a satellite parked below the horizon indistinguishable from a broken model. Satellite creation (`SatelliteInserter::createSatellite`), initial placement (`GeoSatMobility`, `LeoSatMobility`) and horizon crossings (`NtnChannelModel::reportSatelliteVisibility`) are now reported at INFO. Keep per-frame detail at `EV_DEBUG`, and report state *changes* rather than every evaluation so long runs stay readable.
+- Prefer a hard error to a silent degradation on the transparent path. A frame that cannot be evaluated correctly should abort the run where the problem is, not produce a plausible number that is discovered later, or never. Existing examples: `NtnPhyGnb` on a missing `gatewayReceptionResult` or `endToEndSinr`, `NtnPhyBase::getHopAction()` on a reference signal arriving over the wrong link, and `NtnChannelModel::computeReceptionSinr()` on a missing first hop.
 - Pair C++ behavior with NED declarations; every new `par()` access must have a corresponding NED parameter and scenario configuration where required.
 - Use staged `initialize(int stage)` for Binder references, registrations, relationships, PHY setup, and dynamically inserted modules. Do not move setup into constructors.
 - Keep logical stack identity (`sourceId`/`destId`) separate from current-hop radio identity unless intentionally redesigning the transparent architecture.

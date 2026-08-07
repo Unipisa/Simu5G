@@ -164,11 +164,12 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
     GHz carrierFrequency = lteInfo.getCarrierFrequency();
     LteChannelModel *channelModel = action == HopAction::RELAY_ONLY ? nullptr : getChannelModel(carrierFrequency);
 
-    if (action != HopAction::RELAY_ONLY && channelModel == nullptr) {
-        EV << "NtnPhyBase::handleAirFrame - no channel model configured for carrier "
-           << carrierFrequency << " on " << (isFeederLink_ ? "feeder" : "service") << " link" << endl;
-        action = HopAction::RELAY_ONLY;
-    }
+    // Relaying the frame unevaluated would leave the first hop unmeasured, silently reducing
+    // the transparent path to a single hop at the final receiver.
+    if (action != HopAction::RELAY_ONLY && channelModel == nullptr)
+        throw cRuntimeError("NtnPhyBase::handleAirFrame - no channel model configured for carrier %gGHz on the %s link of %s. "
+                "This hop cannot be evaluated, which would silently reduce the transparent path to a single hop.",
+                carrierFrequency.get(), isFeederLink_ ? "feeder" : "service", getFullPath().c_str());
 
     if (action != HopAction::RELAY_ONLY) {
         auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);

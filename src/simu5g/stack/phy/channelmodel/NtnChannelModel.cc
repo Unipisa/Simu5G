@@ -205,9 +205,19 @@ LteChannelModel *NtnChannelModel::getSinrStatisticsTarget(MacNodeId ueId, GHz ca
 
 std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
+    // D2D links never transit the satellite, so they are evaluated as ordinary single-hop
+    // links by the base implementation.
+    if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)
+        return LteRealisticChannelModel::computeReceptionSinr(frame, lteInfo);
+
+    // Falling back to a single-hop evaluation here would silently report the last hop alone,
+    // which reads as a plausible but optimistic SINR, so treat a missing first hop as a defect.
     auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
     if (ntnFrame == nullptr || !ntnFrame->hasRelayHopSinr())
-        return LteRealisticChannelModel::computeReceptionSinr(frame, lteInfo);
+        throw cRuntimeError("NtnChannelModel::computeReceptionSinr - frame %s carries no first-hop SINR. "
+                "A transparent NTN path must evaluate the first radio hop before combining it with the last one; "
+                "this usually means the relaying node had no channel model for the frame's carrier.",
+                frame->getName());
 
     // compute SINR on the last hop
     std::vector<double> localHopSinr = getSINR(frame, lteInfo);
