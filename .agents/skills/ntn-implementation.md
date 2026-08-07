@@ -1,6 +1,6 @@
 # Simu5G NTN Implementation
 
-This document describes the partial non-terrestrial network (NTN) implementation on the `ntn` branch. It was derived from the code and branch history and reviewed through commit `03f8158a` (`Use actual transmitter power for NTN relay hops`), after rebasing onto `cqi-computation` (itself rebased onto `master`). Treat the source files cited below as authoritative if the branch evolves.
+This document describes the partial non-terrestrial network (NTN) implementation on the `ntn` branch. It was derived from the code and branch history and reviewed through commit `6a9188f9` (`Attribute NTN uplink SINR statistics to the UE's NTN channel model`), which includes commits through `ebb7a181` (`Add NTN-specific deployment scenarios, and set NTN_RURAL with fixed LOS as default`). Treat the source files cited below as authoritative if the branch evolves.
 
 ## Scope and Status
 
@@ -105,7 +105,8 @@ The UE still attaches to the logical gNB using the ordinary serving-node relatio
 
 - `relayHopSinr[]`: first radio-hop SINR, one value per band;
 - `attachedUes[]`: CSI-RS fan-out targets;
-- `gatewayReceptionResultValid` and `gatewayReceptionResult`: uplink decoding decision made at the gateway.
+- `gatewayReceptionResultValid` and `gatewayReceptionResult`: uplink decoding decision made at the gateway;
+- `endToEndSinrValid` and `endToEndSinr[]`: combined two-hop uplink SINR for SRS and control-frame CSI, stored by the gateway.
 
 `UserControlInfo` in `src/simu5g/common/LteControlInfo.msg` carries actual current-hop metadata separately from logical source/destination IDs:
 
@@ -138,17 +139,21 @@ Do not edit generated `*_m.cc` or `*_m.h` files. Change the `.msg` source and re
 1. `NtnPhyUe::sendUnicast()` checks whether the serving gNB has a transparent NTN association.
 2. If needed, it converts the ordinary `LteAirFrame` into `NtnAirFrame`, preserving duration, priority, control information, and payload.
 3. The UE records actual transmitter metadata and directly sends the frame to the associated satellite service-link input.
-4. Satellite service `NtnPhyBase` stores first-hop SINR.
+4. Satellite service `NtnPhyBase` stores first-hop SINR in `relayHopSinr[]`.
 5. The satellite relay sends the frame to feeder `NtnPhyBase`, which shifts frequency, selects the satellite feeder-antenna transmit power, and directly sends it to the gateway.
 6. Gateway feeder `NtnPhyBase` combines both hops, calls `isReceptionSuccessful()`, and stores the Boolean result in the frame.
-7. The gateway fronthaul NIC translates the frequency back to the service carrier and forwards the frame to the gNB.
-8. `NtnPhyGnb` validates the frame and trusts the gateway's stored reception result instead of recomputing the radio channel. `NtnPhyGnb::handleNtnAirFrame()` throws `cRuntimeError` if a non-control (data) `NtnAirFrame` arrives without `gatewayReceptionResultValid` set — there is no fallback recomputation path.
+7. For SRS frames, the gateway also combines `relayHopSinr[]` with its own measurement using the harmonic formula and stores the result in `endToEndSinr[]`.
+8. The gateway fronthaul NIC translates the frequency back to the service carrier and forwards the frame to the gNB.
+9. `NtnPhyGnb` validates the frame and trusts the gateway's stored reception result instead of recomputing the radio channel. `NtnPhyGnb::handleNtnAirFrame()` throws `cRuntimeError` if a non-control (data) `NtnAirFrame` arrives without `gatewayReceptionResultValid` set — there is no fallback recomputation path.
+10. For SRS frames, `NtnPhyGnb::handleSrsReferenceSignal()` reads the stored `endToEndSinr[]` and passes it to `LteUlFeedbackGenerator::computeUlFeedback()`, which derives the uplink CQI from the actual satellite path rather than re-measuring a terrestrial link. `NtnPhyGnb` throws an error if `endToEndSinr[]` is not set.
 
 ### CSI-RS, SRS, and Control Frames
 
-`NtnPhyGnb` creates CSI-RS as `NtnAirFrame` and records attached UE IDs. Satellite service `NtnPhyBase` duplicates one frame per attached UE. The first hop is evaluated, but `NtnChannelModel::getRSRP()` evaluates only the last hop and does not combine the stored relay-hop measurement. CQI therefore does not represent a complete two-hop received-power metric.
+**Downlink CSI-RS**: `NtnPhyGnb` creates CSI-RS as `NtnAirFrame` and records attached UE IDs. Satellite service `NtnPhyBase` duplicates one frame per attached UE. The first hop is evaluated, but `NtnChannelModel::getRSRP()` evaluates only the last hop and does not combine the stored relay-hop measurement. CQI therefore does not represent a complete two-hop received-power metric.
 
-Data packets and the special satellite feeder-side CSI-RS case receive explicit channel evaluation in `NtnPhyBase::handleAirFrame()`. Other control frames are relayed without a per-hop failure decision. This includes grants, HARQ feedback, random access, and most control traffic. SRS follows the routed frame path but does not have a complete NTN-specific two-hop measurement design.
+**Uplink SRS**: Satellite service `NtnPhyBase` measures SRS on the first hop and stores SINR in `relayHopSinr[]`. Gateway feeder `NtnPhyBase` combines both hops using `computeReceptionSinr()`, storing the result in `endToEndSinr[]`. `NtnPhyGnb::handleSrsReferenceSignal()` reads `endToEndSinr[]` and passes it to `LteUlFeedbackGenerator::computeUlFeedback()`, which derives the uplink CQI from the combined two-hop measurement rather than re-measuring a non-existent terrestrial link. This closes the uplink CSI measurement loop through the transparent path.
+
+**Other control frames**: Data packets and SRS receive explicit channel evaluation in `NtnPhyBase::handleAirFrame()`. Remaining control frames (grants, HARQ feedback, random access) are relayed without a per-hop failure decision.
 
 ## Geographic and Orbital Model
 
@@ -248,6 +253,12 @@ Noise is always computed over 180 kHz. RB center frequencies account for numerol
 
 When `insideBuilding` is true, `NtnChannelModel` reads `useBuildingPenetrationHighLossModel`, but that parameter is not declared by `NtnChannelModel` or its NED ancestors on this branch. This path can fail during initialization.
 
+#### SINR Statistics Attribution (fixed in commit 6a9188f9)
+
+**Previously**: `rcvdSinrUl` was emitted toward the UE's terrestrial channel model, but on a frequency-translating NTN path the frame arrives at the gateway on the feeder carrier (27 GHz), for which the UE has no channel model. This caused `rcvdSinrUl` to record as `nan` and could segfault when trying to attribute the measurement.
+
+**Now**: A virtual hook `LteRealisticChannelModel::getSinrStatisticsTarget()` allows `NtnChannelModel` to translate the feeder carrier back to the service carrier and return the UE's NTN channel model for attribution. `rcvdSinrUl` now correctly records the actual satellite path SINR (e.g., 0.162 dB for default GeoSat configuration, 19.459 dB with VSATAntennaModel).
+
 ## Smoke Scenarios and Verification State
 
 The only current examples are under `simulations/nr/ntn_smoke/`:
@@ -267,7 +278,17 @@ Run from the scenario directory after sourcing the required OMNeT++, INET, and S
 ./run -u Cmdenv -c LeoSat
 ```
 
-There are no NTN entries in `tests/fingerprint`, no coordinate/orbit unit tests, and no channel/link-budget regression tests. Existing result files under the smoke scenario reference obsolete topology or parameters and must not be treated as validation of the current source.
+**Current delivery status** (as of commit `ebb7a181`, with `scenario = "RURAL_MACROCELL"` and `fixedLos = true` defaults):
+
+| Config | DL delivered | UL delivered | UL CQI |
+|---|---|---|---|
+| `GeoSat` | 58.5 kB | 56.4 kB | 4 |
+| `GeoSat` + `VSATAntennaModel` | 58.5 kB | 56.1 kB | 12 |
+| `LeoSat` | 0 B | 0 B | 0 |
+
+GeoSat now delivers both directions, representing a major improvement from the prior "delivers nothing" state. The UL CSI now derives from the actual satellite path (via commit `9b265962` and the `endToEndSinr[]` hook in `6a9188f9`), and the link budget defaults no longer apply NLOS clutter to satellite paths.
+
+There are no NTN entries in `tests/fingerprint`, no coordinate/orbit unit tests, and no channel/link-budget regression tests. Existing result files under the smoke scenario reference obsolete topology or parameters and must not be treated as validation of the current source. LeoSat delivery failure is unexplained (likely geometry-related) and is not yet addressed.
 
 ## Minimum Work for Credible Bent-Pipe NTN
 
@@ -298,9 +319,9 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 4. Make Control and Measurement Paths Consistent
 
-- Apply channel success to relevant control traffic, not only data.
-- Define two-hop CSI-RS RSRP/SINR semantics and combine both hops where appropriate.
-- Verify SRS behavior and uplink channel estimation through the transparent path.
+- ✓ **SRS (commit 9b265962, hook 6a9188f9)**: SRS is now measured on both hops at the satellite and gateway, combined, and fed to uplink CQI computation via `endToEndSinr[]`. Uplink CSI measurement is consistent with the transparent path.
+- **CSI-RS (incomplete)**: Downlink CSI-RS still evaluates only the last hop; two-hop combination remains unimplemented.
+- **Control frame loss (incomplete)**: Apply channel success to grants, HARQ feedback, and random access, not only data and SRS.
 - Review HARQ process counts/timing, random-access windows, scheduling requests, RLC timers, and other procedures against GEO/LEO RTT.
 - Model timing advance/common timing reference and NTN assistance data assumptions explicitly.
 
