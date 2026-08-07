@@ -63,6 +63,19 @@ class LteChannelModel : public cSimpleModule
     virtual GHz getCarrierFrequency() const { return GHz(carrierFrequencyGHz_); }
 
     /*
+     * Retunes this channel model to a different carrier, keeping all cached derived values
+     * coherent. Every frequency-dependent term of a channel model derives from these
+     * members rather than from the frame being evaluated, so a model instance that only
+     * ever serves a frequency-translated hop must be retuned to that hop's carrier.
+     *
+     * This is intended for transparent relays (see NtnPhyBase), which own one channel model
+     * per link and know the translation. It must be called before the model evaluates any
+     * frame, and after initialize() has registered the carrier with the CellInfo, so that
+     * the cell is still registered on the untranslated carrier.
+     */
+    virtual void setCarrierFrequency(GHz carrierFrequency);
+
+    /*
      * Returns the number of logical bands
      */
     virtual unsigned int getNumBands() const { return numBands_; }

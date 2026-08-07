@@ -23,10 +23,7 @@ void LteChannelModel::initialize(int stage)
         componentCarrier_.reference(this, "componentCarrierModule", true);
 
         numBands_ = componentCarrier_->getNumBands();   // TODO fix this for UEs' channel model (probably it's not used)
-        carrierFrequency_ = componentCarrier_->getCarrierFrequency();
-        carrierFrequencyGHz_ = GHz(carrierFrequency_).get();
-        carrierFrequencyHz_ = Hz(carrierFrequency_).get();
-        log10CarrierFrequencyGHz_ = log10(carrierFrequencyGHz_);
+        setCarrierFrequency(componentCarrier_->getCarrierFrequency());
     }
     if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         // register the carrier to the cellInfo module and the binder
@@ -35,6 +32,17 @@ void LteChannelModel::initialize(int stage)
             cellInfo_->registerCarrier(carrierFrequency_, numBands_, componentCarrier_->getNumerologyIndex());
         }
     }
+}
+
+void LteChannelModel::setCarrierFrequency(GHz carrierFrequency)
+{
+    if (!(carrierFrequency.get() > 0.0))
+        throw cRuntimeError("LteChannelModel::setCarrierFrequency - carrier frequency must be positive, got %gGHz", carrierFrequency.get());
+
+    carrierFrequency_ = carrierFrequency;
+    carrierFrequencyGHz_ = GHz(carrierFrequency_).get();
+    carrierFrequencyHz_ = Hz(carrierFrequency_).get();
+    log10CarrierFrequencyGHz_ = log10(carrierFrequencyGHz_);
 }
 
 std::vector<double> LteChannelModel::getSINR(LteAirFrame *frame, UserControlInfo *lteInfo)

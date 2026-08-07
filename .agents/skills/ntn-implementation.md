@@ -26,13 +26,14 @@ Available now:
 - WGS84, ECEF, and local OMNeT++ coordinate conversion through GeographicLib.
 - Satellite, gateway, isotropic terminal, and VSAT antenna models.
 - A channel model based partly on 3GPP TR 38.811 tables and TR 38.821 antenna parameters.
+- Per-link carrier frequencies: a feeder-link NIC retunes its own channel models to the translated carrier, so every frequency-dependent term of that hop is computed at the feeder frequency.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios.
 
 Not available as a complete model:
 
 - Geometry-derived propagation delay and NTN-aware protocol timers.
 - An input-dependent bent-pipe transponder model with payload gain, added noise, bandwidth limits, output backoff, and saturation.
-- Consistent feeder/service carrier frequencies in all channel calculations.
+- Satellite-relative Doppler beyond the carrier-frequency scaling (the terrestrial-endpoint speed is still the only source of relative motion).
 - Satellite-relative Doppler, compensation, and residual frequency error.
 - Interference, beams, coverage management, satellite selection, and handover.
 - Automated NTN tests or a current trusted result baseline.
@@ -229,10 +230,6 @@ The smoke scenario uses the UE's default isotropic NTN antenna, not `VSATAntenna
 
 ### Known Physical Inconsistencies
 
-#### Feeder Frequency Is Only Partly Shifted
-
-The default component carrier is 2 GHz. `NtnPhyBase` uses 27 GHz as the feeder channel-map key and stores 27 GHz in `UserControlInfo`, so antenna gains see 27 GHz. However, each `NtnChannelModel` retains its original component-carrier fields. FSPL, clutter selection, building loss, atmosphere, scintillation, fading table selection, fading RB centers, and Doppler consequently still use 2 GHz unless the channel-model design is changed. A simple map-key offset is not sufficient.
-
 #### No Transparent-Payload Gain or Added Noise
 
 The gateway and satellite now replace `UserControlInfo::txPower` with the transmitting antenna model's configured `txPower` before each outgoing radio hop. The channel model treats this as conducted power before transmit antenna gain and feeder loss. This is a fixed-output approximation: output power does not depend on received input power. The relay still has no transponder gain, input/output noise, bandwidth, filtering, saturation, output backoff, or nonlinear distortion. `relayDelay` is the only payload parameter.
@@ -257,7 +254,7 @@ When `insideBuilding` is true, `NtnChannelModel` reads `useBuildingPenetrationHi
 
 **Previously**: `rcvdSinrUl` was emitted toward the UE's terrestrial channel model, but on a frequency-translating NTN path the frame arrives at the gateway on the feeder carrier (27 GHz), for which the UE has no channel model. This caused `rcvdSinrUl` to record as `nan` and could segfault when trying to attribute the measurement.
 
-**Now**: A virtual hook `LteRealisticChannelModel::getSinrStatisticsTarget()` allows `NtnChannelModel` to translate the feeder carrier back to the service carrier and return the UE's NTN channel model for attribution. `rcvdSinrUl` now correctly records the actual satellite path SINR (e.g., 0.162 dB for default GeoSat configuration, 19.459 dB with VSATAntennaModel).
+**Now**: A virtual hook `LteRealisticChannelModel::getSinrStatisticsTarget()` allows `NtnChannelModel` to translate the feeder carrier back to the service carrier and return the UE's NTN channel model for attribution. `rcvdSinrUl` now correctly records the actual satellite path SINR (0.117 dB for the default GeoSat configuration, 16.68 dB with `VSATAntennaModel`).
 
 ## Smoke Scenarios and Verification State
 
@@ -283,7 +280,7 @@ Run from the scenario directory after sourcing the required OMNeT++, INET, and S
 | Config | DL delivered | UL delivered | UL CQI |
 |---|---|---|---|
 | `GeoSat` | 58.5 kB | 56.4 kB | 4 |
-| `GeoSat` + `VSATAntennaModel` | 58.5 kB | 56.1 kB | 12 |
+| `GeoSat` + `VSATAntennaModel` | 58.5 kB | 56.1 kB | 11 |
 | `LeoSat` | 0 B | 0 B | 0 |
 
 GeoSat now delivers both directions, representing a major improvement from the prior "delivers nothing" state. The UL CSI now derives from the actual satellite path (via commit `9b265962` and the `endToEndSinr[]` hook in `6a9188f9`), and the link budget defaults no longer apply NLOS clutter to satellite paths.
@@ -296,7 +293,7 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 1. Correct Per-Hop Link State
 
-- Represent service and feeder carriers independently; every frequency-dependent channel calculation must use the current hop's actual frequency.
+- ✓ **Per-hop carrier frequency (done)**: `NtnPhyBase::registerChannelModel()` retunes a feeder-link NIC's channel models to the translated carrier via `LteChannelModel::setCarrierFrequency()`, so path loss, clutter and fading band selection, building penetration, atmospheric absorption, scintillation, RB centre frequencies, and Doppler are all computed at the feeder frequency. This works because a channel model instance only ever serves one link; it is retuned at `INITSTAGE_SIMU5G_REGISTRATIONS2`, after any CellInfo carrier registration.
 - Preserve the current convention that antenna `txPower` is conducted power before antenna gain and feeder loss, and validate configured values against the intended EIRP.
 - Add an explicit transparent-payload model for transponder gain, noise figure/noise temperature, bandwidth, filtering, saturation, output backoff, and optional nonlinearity.
 - Define whether the two-hop success calculation models amplify-and-forward, frequency translation, or another transparent payload. Use a formula consistent with that choice.
@@ -338,8 +335,7 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 - Add co-channel interference from UEs, beams, satellites, and gateways.
 - Apply polarization mismatch once per hop.
-- Use actual feeder frequency for atmospheric and scintillation losses.
-- Add rain/cloud attenuation and configurable environmental assumptions if Ka-band feeder fidelity is required.
+- Add rain/cloud attenuation and configurable environmental assumptions if Ka-band feeder fidelity is required. The feeder hop now runs at the real Ka carrier, so these are the remaining unmodelled Ka effects.
 - Make thermal-noise bandwidth numerology-aware.
 - Declare and test all NED parameters read by C++.
 

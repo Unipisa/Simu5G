@@ -50,18 +50,33 @@ void NtnPhyBase::initializeChannelModels()
 {
     primaryChannelModel_.reference(this, "channelModelModule", true);
     primaryChannelModel_->setPhy(this);
-    GHz carrierFreq = primaryChannelModel_->getCarrierFrequency();
-    channelModel_[isFeederLink_ ? GHz(carrierFreq.get() + feederLinkFrequencyOffset_.get()) : carrierFreq] = primaryChannelModel_;
+    registerChannelModel(primaryChannelModel_);
 
     int numChannelModels = primaryChannelModel_->getVectorSize();
     for (int index = 1; index < numChannelModels; index++) {
         LteChannelModel *chanModel = check_and_cast<LteChannelModel *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
         chanModel->setPhy(this);
-        carrierFreq = chanModel->getCarrierFrequency();
-        if (isFeederLink_)
-            carrierFreq = shiftFrequencyBand(carrierFreq);
-        channelModel_[carrierFreq] = chanModel;
+        registerChannelModel(chanModel);
     }
+}
+
+void NtnPhyBase::registerChannelModel(LteChannelModel *channelModel)
+{
+    // A feeder-link NIC only ever evaluates the frequency-translated hop, so retune the
+    // channel model itself rather than only offsetting the lookup key. Every
+    // frequency-dependent term is computed inside the model from its own carrier and not
+    // from the frame being evaluated: path loss, clutter and fading band selection,
+    // building penetration, atmospheric absorption, scintillation, resource-block centre
+    // frequencies, and Doppler. Offsetting only the key leaves all of those on the service
+    // carrier, which understates feeder path loss by 20*log10(f_feeder / f_service).
+    //
+    // This runs at INITSTAGE_SIMU5G_REGISTRATIONS2, i.e. after LteChannelModel::initialize()
+    // has read the component carrier and registered it with the CellInfo, so a cell is
+    // still registered on the service carrier rather than on the translated one.
+    if (isFeederLink_)
+        channelModel->setCarrierFrequency(shiftFrequencyBand(channelModel->getCarrierFrequency()));
+
+    channelModel_[channelModel->getCarrierFrequency()] = channelModel;
 }
 
 LteChannelModel *NtnPhyBase::getChannelModel(GHz carrierFreq) const

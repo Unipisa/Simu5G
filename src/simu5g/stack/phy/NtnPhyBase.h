@@ -43,6 +43,9 @@ class NtnPhyBase : public ChannelAccess
 
     void initialize(int stage) override;
     void initializeChannelModels();
+    // Adds a channel model to the carrier lookup, retuning it to the feeder carrier first
+    // when this NIC serves the frequency-translated hop.
+    void registerChannelModel(LteChannelModel *channelModel);
     LteChannelModel *getChannelModel(GHz carrierFreq) const;
     GHz shiftFrequencyBand(GHz carrierFreq) const;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
