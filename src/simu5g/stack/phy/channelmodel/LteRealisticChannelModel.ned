@@ -39,6 +39,9 @@ simple LteRealisticChannelModel extends LteChannelModel
         double buildingHeight @unit(m) = default(20m);
         // determines if the UE is inside a building
         bool insideBuilding = default(false);
+        // selects the high-loss or the low-loss O2I building penetration model,
+        // see table 7.4.3-2 in TR 38.901
+        bool useBuildingPenetrationHighLossModel = default(false);
 
         double streetWidth @unit(m) = default(20m);
         double ueHeight @unit(m) = default(1.5m);
