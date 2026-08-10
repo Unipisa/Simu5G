@@ -1,6 +1,8 @@
 # Propagation Delay and NTN-Aware Timers
 
-This document expands item 2 ("Add Propagation Delay") of `ntn-implementation.md`, and the timer half of item 4. It is a design discussion, not a record of implemented behaviour: **none of the changes described here exist on the `ntn` branch yet.** File and line references describe the current state of the code and must be re-checked if the branch evolves.
+This document expands item 2 ("Add Propagation Delay") of `ntn-implementation.md`, and the timer half of item 4.
+
+**Status: Part 1 (step 1 of the staging plan) is implemented; Parts 2-6 are still design discussion.** The propagation delay itself now exists — see "Step 1 as built" below for what landed and the measured results. Everything about MAC timers remains unimplemented. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
 
 The short version: adding the delay is mechanical; making the NR stack survive it is not. Simu5G assumes throughout that a frame sent in one TTI is received in the next, and several MAC procedures are timed as counters decremented once per TTI. Those counters conflate "how many of my own slots have passed" with "how long until the peer can possibly answer". Only the second meaning has to grow with propagation delay.
 
@@ -8,7 +10,7 @@ The short version: adding the delay is mechanical; making the NR stack survive i
 
 ### Where it goes
 
-Four `sendDirect()` call sites currently pass a propagation delay of zero:
+Four `sendDirect()` call sites passed a propagation delay of zero (line numbers as of before the step-1 commit):
 
 - `src/simu5g/stack/phy/NtnPhyBase.cc:241` (feeder/service hop)
 - `src/simu5g/stack/phy/NtnPhyBase.cc:273` (CSI-RS / beacon fan-out)
@@ -54,6 +56,66 @@ Reference round-trip delays from TR 38.821:
 | LEO 600, regenerative | ~12.9 ms | ~4 ms |
 
 The branch is transparent, so the two-hop rows apply. Note that the smoke LEO TLE (`space_Veins-1.txt`) describes a 350 km orbit, which lands below the LEO 600 row and is therefore a weak stress case. **GEO is the scenario that actually exercises the timer work.**
+
+### Step 1 as built
+
+`src/simu5g/stack/phy/NtnPropagationDelay.{h,cc}` holds the shared logic. `NtnPhyBase` derives from `ChannelAccess` and `NtnPhyUe` from `NrPhyUe`, so there is no common base to hang it on; both PHYs hold one instance **by value** and configure it from their own NED parameters.
+
+Two details worth knowing before changing it:
+
+- **The receiver's position comes from `targetGate->getPathEndGate()->getOwnerModule()`**, cast to `ChannelAccess`. That is the receiving PHY, and its `getRadioPosition()` is exactly what the receiving channel model will use — so delay and path loss share one geometry by construction. It is deliberately *not* routed through the receiver's `mobility` submodule: on a `MovingMobilityBase`, `getCurrentPosition()` also advances that module's state and emits `mobilityStateChangedSignal`, which a transmitter has no business triggering from inside its send path.
+- **Trap 1 is fixed behind its own flag.** `transparentPayloadRelay` charges the frame duration only on hops where the satellite is the *transmitter*, so a two-hop path costs `d1/c + d2/c + duration` rather than `+ 2 x duration`.
+
+Four NED parameters, declared with identical names in both `NtnPhyBase.ned` and `NtnPhyUe.ned` so one `**.` line reaches all four radios: `useGeometricPropagationDelay` (default true), `transparentPayloadRelay` (default true), `maxHopPropagationDelay` (default 150ms), `propagationDelayReportThreshold` (default 0.1ms). Two statistics per PHY: `ntnHopPropagationDelay`, `ntnHopSlantRange`.
+
+Each hop is reported once at `EV_INFO` and again only when its delay moves by more than the threshold, mirroring `NtnChannelModel::reportSatelliteVisibility()`. `GeoSat` therefore emits exactly four lines for a whole run:
+
+```text
+NtnPropagationDelay::reportHop - radio hop 16384 -> 17408: slantRange[37966.3km], oneWayDelay[126.642ms], elevation[37.5398deg]
+NtnPropagationDelay::reportHop - radio hop 17408 -> 2049:  slantRange[37966.1km], oneWayDelay[126.641ms], elevation[37.5412deg]
+```
+
+### Measured results
+
+Geometry, verified against an independent WGS84 computation from the configured lat/lon/alt (agrees to the metre) and against the elevations `reportSatelliteVisibility` computes by a different route:
+
+| Scenario | Hop slant range | One-way per hop | Four-hop RTD | TR 38.821 band |
+|---|---|---|---|---|
+| `GeoSat` gateway↔sat | 37 966.260 km | 126.6418 ms | **506.57 ms** | 477.5–541.5 ms ✓ |
+| `GeoSat` UE↔sat | 37 966.148 km | 126.6414 ms | | |
+| `LeoSat` (350 km, pass peak) | 624.3 km | 2.0825 ms | **8.33 ms** | below LEO-600 row, as expected |
+
+Delivery over the standard 2 s smoke run:
+
+| Configuration | DL | UL | DL app delay (mean) | UL app delay (mean) |
+|---|---|---|---|---|
+| both flags off (baseline) | 58.5 kB | 56.4 kB | 6.29 ms | 28.77 ms |
+| cut-through only | 58.5 kB | 56.7 kB | 5.22 ms | 24.05 ms |
+| **delay on (default)** | **9.3 kB** | **2.1 kB** | 778 ms | 892 ms |
+| `LeoSat`, delay on | 58.5 kB | 56.1 kB | 10.4 ms | 36.9 ms |
+
+Four things to read from this table:
+
+1. **The refactor is behaviour-neutral.** With both flags off the run reproduces the previously recorded 58.5 kB / 56.4 kB exactly.
+2. **Cut-through removes exactly one slot** from the downlink (6.29 → 5.22 ms) with delivery unchanged, confirming the flag does only what it claims. The larger uplink drop compounds through the grant loop.
+3. **GEO collapses, and that is the expected step-1 output**, not a regression: 58.5 → 9.3 kB downlink, 56.4 → 2.1 kB uplink. Minimum observed app-level delay is 269 ms (DL) and 258 ms (UL), both just above the 253.3 ms one-way propagation floor, so the delay itself is being applied correctly and the loss is a MAC-layer stall on top of it.
+4. **`LeoSat` is essentially undamaged** at an 8.3 ms RTD. This is the sharpest available evidence that the collapse is genuine RTT physics rather than a defect in the delay code: the same code path, the same flags, two orders of magnitude difference in RTD, and only the long one breaks.
+
+Terrestrial scenarios are structurally unaffected — the only NED types referencing `NtnPhyBase`/`NtnPhyUe` are `NtnFeederLinkNic`, `NtnServiceLinkNic` and `NtnNrNicUe`, no fingerprint test instantiates any of them, and `simulations/nr/standalone` still runs clean.
+
+**Recovering the pre-delay baseline** is one ini stanza:
+
+```ini
+**.useGeometricPropagationDelay = false
+**.transparentPayloadRelay = false
+```
+
+### Notes for whoever does step 3
+
+- `simulations/nr/ntn_smoke/` has **no `run` wrapper**, unlike `simulations/nr/standalone/`. Invoke `simu5g -u Cmdenv -c GeoSat omnetpp.ini` directly; the `./run` line in `ntn-implementation.md` does not work from that directory.
+- The 2 s `sim-time-limit` is only four GEO round trips and yields no meaningful throughput number. Add a config inheriting `GeoSat` with a longer limit rather than editing `GeoSat`, so the baseline above stays comparable.
+- For LEO delay runs, drop `*.leo*[*].mobility.updateInterval` from its 1 s default to 100 ms: at 1 s the cached satellite position is up to ~7.5 km stale, i.e. ~25 µs of delay error, which would otherwise dominate the modelling error.
+- `ue[0].cellularNic.phy` (the LTE-side PHY, also an `NtnPhyUe`) records `nan` for both statistics because it never transmits over the NTN path. Harmless, but do not read it as a missing measurement.
 
 ## Part 2 — A Taxonomy of Simu5G Timers
 
@@ -230,7 +292,7 @@ Guardrails:
 
 ## Part 7 — Staging
 
-1. **Delay only**, nothing else. Run the GEO smoke. *It will break — capture exactly how.* That failure signature is the baseline and tells you which mechanism bites first.
+1. ✓ **Delay only (done).** See "Step 1 as built" in Part 1 for what landed and the measured failure signature: GEO drops from 58.5/56.4 kB to 9.3/2.1 kB while LEO is untouched at an 8.3 ms RTD.
 2. Binder RTD service and NED parameters. No behavioural effect yet.
 3. RAC and BSR offsets.
 4. HARQ: process count, feedback-disabled mode, remove the `-2` initialisation and `HARQ_TX_INTERVAL`.

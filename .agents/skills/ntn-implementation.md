@@ -29,11 +29,12 @@ Available now:
 - Per-link carrier frequencies: a feeder-link NIC retunes its own channel models to the translated carrier, so every frequency-dependent term of that hop is computed at the feeder frequency.
 - Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently. This applies to SINR (data, CSI-RS, SRS) and, since the beacon RSSI fix, to RSRP as well.
 - Two-hop beacon RSSI: a `BEACONPKT` reaches attached UEs through the satellite the same way CSI-RS does, and `NtnChannelModel::computeReceptionRsrp()` combines both hops for `NtnPhyUe::computeReceivedBeaconPacketRssi()`, feeding the (still unimplemented) handover machinery a correct measurement instead of a fictitious direct-geometry one.
+- Geometry-derived per-hop propagation delay, with the frame duration charged once end to end as a bent-pipe transponder requires. See item 2 below and `ntn-delay-and-timers.md`.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios.
 
 Not available as a complete model:
 
-- Geometry-derived propagation delay and NTN-aware protocol timers.
+- NTN-aware protocol timers. The propagation delay now exists, but no MAC timer accounts for it, so the GEO smoke scenario delivers roughly a sixth of its previous downlink and a twentieth of its uplink. This is the branch's most consequential open item.
 - An input-dependent bent-pipe transponder model with payload gain, added noise, bandwidth limits, output backoff, and saturation.
 - Satellite-relative Doppler beyond the carrier-frequency scaling (the terrestrial-endpoint speed is still the only source of relative motion).
 - Satellite-relative Doppler, compensation, and residual frequency error.
@@ -315,13 +316,11 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 2. Add Propagation Delay
 
-- Compute each radio hop's current ECEF slant range divided by light speed.
-- Pass this as the propagation-delay argument to `sendDirect()` for UE-satellite and gateway-satellite transmissions.
-- Keep payload processing delay separate in `NtnRelay`.
-- Verify GEO and LEO round-trip times against geometry.
-- Adapt NR timers and scheduling assumptions that fail with long RTT; adding packet delay alone is not sufficient.
+- ✓ **Geometry-derived per-hop delay (done)**: `NtnPropagationDelay` (`src/simu5g/stack/phy/NtnPropagationDelay.{h,cc}`) computes each radio hop's ECEF slant range divided by light speed and supplies it to all four `sendDirect()` sites in `NtnPhyBase` and `NtnPhyUe`. Enabled by default via `useGeometricPropagationDelay`; `transparentPayloadRelay` additionally charges the frame duration once end to end rather than once per hop, as a bent-pipe transponder requires. Measured GEO round-trip delay is 506.57 ms, inside the TR 38.821 transparent band, and LEO is 8.33 ms. Payload processing delay stays separate in `NtnRelay::relayDelay`.
+- Adapt NR timers and scheduling assumptions that fail with long RTT; adding packet delay alone is not sufficient. **This is now the live blocker**: with the delay enabled the GEO smoke scenario's delivery falls from 58.5/56.4 kB to 9.3/2.1 kB, while LEO at 8.3 ms RTD is unaffected.
+- The wired gNB-gateway fronthaul (`simulations/nr/ntn_smoke/NtnGeo.ned:87`) is still a bare NED connection with zero delay and infinite datarate; it needs a channel, not a module parameter.
 
-**See `ntn-delay-and-timers.md`** (in this directory) for the full design discussion: the four `sendDirect()` call sites and the two traps around them (frame duration charged per hop, and the channel-less fronthaul connection); a taxonomy separating timers that must scale with RTT from the ones that must not; the 3GPP K_offset/`ntn-Config` framing including whether the value is per-UE and how often it must be refreshed; per-mechanism treatment of HARQ, RAC, BSR, CQI aging, and grant timing; and a staging order with the diagnostics needed to debug each step. The timer half of item 4 below is covered there as well.
+**See `ntn-delay-and-timers.md`** (in this directory) for the full design discussion: the four `sendDirect()` call sites and the two traps around them (frame duration charged per hop, and the channel-less fronthaul connection); a taxonomy separating timers that must scale with RTT from the ones that must not; the 3GPP K_offset/`ntn-Config` framing including whether the value is per-UE and how often it must be refreshed; per-mechanism treatment of HARQ, RAC, BSR, CQI aging, and grant timing; and a staging order with the diagnostics needed to debug each step, plus the measured step-1 results. The timer half of item 4 below is covered there as well.
 
 ### 3. Model Relative Motion and Doppler
 
