@@ -23,7 +23,16 @@ Define_Module(NtnPhyUe);
 void NtnPhyUe::initialize(int stage)
 {
     NrPhyUe::initialize(stage);
-    if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
+    if (stage == inet::INITSTAGE_LOCAL) {
+        // Cached once here rather than looked up per transmission: the access class walks
+        // the whole module tree from the system module on every call.
+        referenceSystem_ = GeographicReferenceSystemAccess().get();
+        if (referenceSystem_ == nullptr)
+            throw cRuntimeError("NtnPhyUe::initialize - %s found no GeographicReferenceSystem module in the "
+                    "network. A transparent NTN path cannot place its radios without one.", getFullPath().c_str());
+        propagationDelay_.initialize(this, referenceSystem_);
+    }
+    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
         initializeChannelModels();
     }
 }
@@ -94,21 +103,24 @@ bool NtnPhyUe::sendUnicastViaNtn(LteAirFrame *airFrame)
 
     if (airFrame->getControlInfo() != nullptr) {
         UserControlInfo *userControlInfo = check_and_cast<UserControlInfo *>(airFrame->removeControlInfo());
-        GeographicReferenceSystem *referenceSystem = GeographicReferenceSystemAccess().get();
-        ASSERT(referenceSystem != nullptr);
-        inet::GeoCoord txWgs84 = referenceSystem->wgs84FromOmnet(getRadioPosition());
         userControlInfo->setRadioTransmitterId(nodeId_);
         userControlInfo->setRadioTransmitterCoord(getRadioPosition());
-        userControlInfo->setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
+        userControlInfo->setRadioTransmitterEcefCoord(propagationDelay_.ecefFromRadioPosition(getRadioPosition()));
         userControlInfo->setRadioTransmitterAntenna(ntnAntennaModel_);
         userControlInfo->setRadioReceiverId(association->satelliteId);
         airFrame->setAdditionalInfo(*userControlInfo);
         delete userControlInfo;
     }
 
+    // Computed outside the block above: the hop takes just as long whether or not the frame
+    // happens to carry control info.
+    simtime_t delay = propagationDelay_.computeHopDelay(getRadioPosition(), serviceLinkGate,
+            nodeId_, association->satelliteId);
     EV << NOW << " NtnPhyUe::sendUnicastViaNtn - forwarding frame for serving node "
-       << destId << " to satellite " << association->satelliteId << endl;
-    sendDirect(airFrame, 0, airFrame->getDuration(), serviceLinkGate);
+       << destId << " to satellite " << association->satelliteId
+       << ", propagationDelay[" << delay << "]" << endl;
+    sendDirect(airFrame, delay, propagationDelay_.transmissionDuration(nodeType_, airFrame->getDuration()),
+            serviceLinkGate);
     return true;
 }
 

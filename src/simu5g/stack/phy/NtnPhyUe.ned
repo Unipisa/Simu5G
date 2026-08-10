@@ -22,4 +22,18 @@ simple NtnPhyUe extends NrPhyUe
         @class("NtnPhyUe");
         string ntnChannelModelModule = default("^.ntnChannelModel[0]");
         string ntnAntennaModelModule = default("^.ntnAntennaModel");
+
+        // Declared with the same names and defaults as in NtnPhyBase, so that a single
+        // "**." assignment configures every radio on the transparent path -- the UE, the
+        // gateway feeder NIC, and both satellite NICs -- rather than three of the four.
+        // See NtnPhyBase.ned for what each one means.
+        bool useGeometricPropagationDelay = default(true);
+        bool transparentPayloadRelay = default(true);
+        double maxHopPropagationDelay @unit(s) = default(150ms);
+        double propagationDelayReportThreshold @unit(s) = default(0.1ms);
+
+        @signal[ntnHopPropagationDelay];
+        @statistic[ntnHopPropagationDelay](title="Propagation delay of a transparent NTN radio hop"; unit="s"; source="ntnHopPropagationDelay"; record=mean,min,max,vector);
+        @signal[ntnHopSlantRange];
+        @statistic[ntnHopSlantRange](title="Slant range of a transparent NTN radio hop"; unit="m"; source="ntnHopSlantRange"; record=mean,min,max,vector);
 }

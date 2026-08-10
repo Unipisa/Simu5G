@@ -34,12 +34,15 @@ void NtnPhyBase::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         antennaModel_.reference(this, "antennaModelModule", true);
         referenceSystem_ = GeographicReferenceSystemAccess().get();
-        ASSERT(referenceSystem_ != nullptr);
+        if (referenceSystem_ == nullptr)
+            throw cRuntimeError("NtnPhyBase::initialize - %s found no GeographicReferenceSystem module in the "
+                    "network. A transparent NTN path cannot place its radios without one.", getFullPath().c_str());
         isFeederLink_ = par("linkType").stdstringValue() == "feeder";
         feederLinkFrequencyOffset_ = GHz(par("feederLinkFrequencyOffset"));
         cModule *node = getContainingNode(this);
         nodeId_ = MacNodeId(node->par("macNodeId").intValue());
         nodeType_ = aToNodeType(node->par("nodeType").stdstringValue());
+        propagationDelay_.initialize(this, referenceSystem_);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
         initializeChannelModels();
@@ -228,17 +231,16 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setCarrierFrequency(shiftFrequencyBand(lteInfo.getCarrierFrequency()));
         EV_DEBUG << " to " << lteInfo.getCarrierFrequency() << endl;
 
-        inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
-        lteInfo.setRadioTransmitterId(nodeId_);
-        lteInfo.setRadioTransmitterCoord(getRadioPosition());
-        lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
-        lteInfo.setRadioReceiverId(MacNodeId(peerNode->par("macNodeId").intValue()));
-        lteInfo.setRadioTransmitterAntenna(antennaModel_);
-        lteInfo.setTxPower(antennaModel_->getTxPower());
+        MacNodeId peerId = MacNodeId(peerNode->par("macNodeId").intValue());
+        setRadioTransmitterInfo(lteInfo);
+        lteInfo.setRadioReceiverId(peerId);
         frame->setAdditionalInfo(lteInfo);
+
+        simtime_t delay = propagationDelay_.computeHopDelay(getRadioPosition(), peerGate, nodeId_, peerId);
         EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to peer node " << peerNode->getFullPath()
-                << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]" << endl;
-        sendDirect(frame, 0, frame->getDuration(), peerGate);
+                << ", carrierFreq[" << lteInfo.getCarrierFrequency() << "]"
+                << ", propagationDelay[" << delay << "]" << endl;
+        sendDirect(frame, delay, propagationDelay_.transmissionDuration(nodeType_, frame->getDuration()), peerGate);
     }
     else {
         auto *frame = check_and_cast<LteAirFrame *>(msg);
@@ -247,14 +249,10 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
 
         if ((lteInfo.getFrameType() == CSIRSPKT || lteInfo.getFrameType() == BEACONPKT) && ntnFrame != nullptr && ntnFrame->hasAttachedUes()) {
-            inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
-            lteInfo.setRadioTransmitterId(nodeId_);
-            lteInfo.setRadioTransmitterCoord(getRadioPosition());
-            lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
-            lteInfo.setRadioTransmitterAntenna(antennaModel_);
-            lteInfo.setTxPower(antennaModel_->getTxPower());
+            setRadioTransmitterInfo(lteInfo);
 
             std::vector<MacNodeId> attachedUes = ntnFrame->getAttachedUesVector();
+            simtime_t duration = propagationDelay_.transmissionDuration(nodeType_, frame->getDuration());
             EV << "NtnPhyBase::handleUpperMessage - forwarding " << frame->getName()
                << " to " << attachedUes.size() << " attached UE target(s)" << endl;
 
@@ -265,12 +263,19 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
                     continue;
                 }
 
+                int receiverGateId = getReceiverGateIndex(receiver, isNrUe(ueId));
                 LteAirFrame *frameToSend = frame->dup();
                 UserControlInfo ueInfo(lteInfo);
                 ueInfo.setDestId(ueId);
                 ueInfo.setRadioReceiverId(ueId);
                 frameToSend->setAdditionalInfo(ueInfo);
-                sendDirect(frameToSend, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(ueId)));
+
+                // The transmitter metadata is per-transmitter and stays hoisted out of the
+                // loop, but the delay is per-receiver: this is the differential delay across
+                // the beam, not a repeated computation of the same value.
+                simtime_t delay = propagationDelay_.computeHopDelay(getRadioPosition(),
+                        receiver->gate(receiverGateId), nodeId_, ueId);
+                sendDirect(frameToSend, delay, duration, receiver, receiverGateId);
             }
 
             delete frame;
@@ -285,16 +290,17 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
             return;
         }
 
-        inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
-        lteInfo.setRadioTransmitterId(nodeId_);
-        lteInfo.setRadioTransmitterCoord(getRadioPosition());
-        lteInfo.setRadioTransmitterEcefCoord(ecefFromWgs84(txWgs84));
+        int receiverGateId = getReceiverGateIndex(receiver, isNrUe(destId));
+        setRadioTransmitterInfo(lteInfo);
         lteInfo.setRadioReceiverId(destId);
-        lteInfo.setRadioTransmitterAntenna(antennaModel_);
-        lteInfo.setTxPower(antennaModel_->getTxPower());
         frame->setAdditionalInfo(lteInfo);
-        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to node " << destId << endl;
-        sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(destId)));
+
+        simtime_t delay = propagationDelay_.computeHopDelay(getRadioPosition(),
+                receiver->gate(receiverGateId), nodeId_, destId);
+        EV << "NtnPhyBase::handleUpperMessage - forwarding air frame " << frame->getName() << " to node " << destId
+           << ", propagationDelay[" << delay << "]" << endl;
+        sendDirect(frame, delay, propagationDelay_.transmissionDuration(nodeType_, frame->getDuration()),
+                receiver, receiverGateId);
     }
 }
 
@@ -342,6 +348,17 @@ cGate *NtnPhyBase::resolvePeerGate() const
     if (peerGate == nullptr)
         throw cRuntimeError("NtnPhyBase::resolvePeerGate - peer node %s has no feederLinkRadioIn gate", peerNode->getFullPath().c_str());
     return peerGate;
+}
+
+inet::Coord NtnPhyBase::setRadioTransmitterInfo(UserControlInfo& lteInfo) const
+{
+    inet::Coord txEcef = propagationDelay_.ecefFromRadioPosition(getRadioPosition());
+    lteInfo.setRadioTransmitterId(nodeId_);
+    lteInfo.setRadioTransmitterCoord(getRadioPosition());
+    lteInfo.setRadioTransmitterEcefCoord(txEcef);
+    lteInfo.setRadioTransmitterAntenna(antennaModel_);
+    lteInfo.setTxPower(antennaModel_->getTxPower());
+    return txEcef;
 }
 
 int NtnPhyBase::getReceiverGateIndex(const cModule *receiver, bool isNr) const

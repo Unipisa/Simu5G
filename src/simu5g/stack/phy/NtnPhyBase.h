@@ -9,6 +9,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+#include "simu5g/stack/phy/NtnPropagationDelay.h"
 #include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
 #include "simu5g/stack/phy/antennamodel/IAntennaModel.h"
 #include "simu5g/world/radio/ChannelAccess.h"
@@ -41,6 +42,7 @@ class NtnPhyBase : public ChannelAccess
     RanNodeType nodeType_ = UNKNOWN_NODE_TYPE;
     bool isFeederLink_ = false;
     GHz feederLinkFrequencyOffset_ = GHz(NTN_FEEDER_LINK_FREQUENCY_OFFSET_GHZ);
+    NtnPropagationDelay propagationDelay_;
 
     void initialize(int stage) override;
     void initializeChannelModels();
@@ -58,6 +60,11 @@ class NtnPhyBase : public ChannelAccess
     omnetpp::cGate *resolvePeerGate() const;
     omnetpp::cModule *resolvePeerNode() const;
     int getReceiverGateIndex(const omnetpp::cModule *receiver, bool isNr) const;
+
+    // Fills in the transmitter-side radio metadata carried by every NTN air frame, and
+    // returns the transmitter's ECEF position. The receiver id is left to the caller: the
+    // CSI-RS/beacon fan-out sets a different one on each duplicated frame.
+    inet::Coord setRadioTransmitterInfo(UserControlInfo& lteInfo) const;
 
   public:
     // Carrier that the given hop carrier corresponds to on the UE-facing service link.

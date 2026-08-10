@@ -16,7 +16,9 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
+#include "simu5g/stack/phy/NtnPropagationDelay.h"
 #include "simu5g/stack/phy/antennamodel/IAntennaModel.h"
 
 namespace simu5g {
@@ -28,6 +30,8 @@ class NtnPhyUe : public NrPhyUe
     std::map<GHz, opp_component_ptr<LteChannelModel>> ntnChannelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryNtnChannelModel_;
     inet::ModuleRefByPar<IAntennaModel> ntnAntennaModel_;
+    GeographicReferenceSystem *referenceSystem_ = nullptr;
+    NtnPropagationDelay propagationDelay_;
 
     void initialize(int stage) override;
     void initializeChannelModels();
