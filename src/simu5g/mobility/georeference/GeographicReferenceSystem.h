@@ -8,10 +8,11 @@
 #include "inet/common/InitStages.h"
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
+#include "inet/common/geometry/common/Quaternion.h"
 
 namespace simu5g {
 
-class GeographicReferenceSystem : public omnetpp::cSimpleModule
+class GeographicReferenceSystem : public omnetpp::cSimpleModule, public inet::IGeographicCoordinateSystem
 {
   protected:
     inet::Coord referenceOmnetCoord_;
@@ -33,6 +34,11 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
 
     inet::Coord omnetFromWgs84(const inet::GeoCoord& wgs84Coord) const;
     inet::GeoCoord wgs84FromOmnet(const inet::Coord& omnetCoord) const;
+
+    inet::GeoCoord getScenePosition() const override { return referenceWgs84_; }
+    inet::Quaternion getSceneOrientation() const override { return inet::Quaternion::IDENTITY; }
+    inet::Coord computeSceneCoordinate(const inet::GeoCoord& geographicCoordinate) const override { return omnetFromWgs84(geographicCoordinate); }
+    inet::GeoCoord computeGeographicCoordinate(const inet::Coord& sceneCoordinate) const override { return wgs84FromOmnet(sceneCoordinate); }
 };
 
 class GeographicReferenceSystemAccess {

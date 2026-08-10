@@ -16,6 +16,8 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
+import inet.visualizer.canvas.mobility.MobilityCanvasVisualizer;
+import inet.visualizer.canvas.scene.GeoHorizonCanvasVisualizer;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.mobility.georeference.GeographicReferenceSystem;
@@ -24,6 +26,7 @@ import simu5g.nodes.NtnGNodeB;
 import simu5g.nodes.NtnNrUe;
 import simu5g.nodes.GeoSatellite;
 import simu5g.nodes.Upf;
+import simu5g.visualizer.canvas.LocalGeoMapCanvasVisualizer;
 import simu5g.world.radio.LteChannelControl;
 
 //
@@ -33,28 +36,36 @@ network NtnGeo
 {
     parameters:
         int numUe = default(1);
-        @display("i=block/network2;bgb=1000,600;bgi=background/pisa");
+        @display("i=block/network2;bgb=1000,600");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=50,25;is=s");
+            @display("p=780,25;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=50,75;is=s");
+            @display("p=780,70;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,125;is=s");
+            @display("p=780,115;is=s");
         }
         binder: Binder {
-            @display("p=50,175;is=s");
+            @display("p=780,160;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50,258;is=s");
+            @display("p=780,205;is=s");
         }
 
         geoRef: GeographicReferenceSystem {
-            @display("p=50,345;is=s");
+            @display("p=780,250;is=s");
         }
-
+        map: LocalGeoMapCanvasVisualizer {
+            @display("p=780,295;is=s");
+        }
+        satelliteVisualizer: MobilityCanvasVisualizer {
+            @display("p=780,340;is=s");
+        }
+        geoHorizon: GeoHorizonCanvasVisualizer {
+            @display("p=780,385;is=s");
+        }
         server: StandardHost {
             @display("p=180,120;is=n;i=device/server");
         }
