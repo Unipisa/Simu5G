@@ -119,6 +119,11 @@ NtnPhyBase::HopAction NtnPhyBase::getHopAction(const UserControlInfo& lteInfo) c
                     throw cRuntimeError("NtnPhyBase::getHopAction - satellite PHY %s received SRS over the feeder link, but expected the service link (sourceId=%d, destId=%d)",
                             getFullPath().c_str(), lteInfo.getSourceId(), lteInfo.getDestId());
                 return HopAction::STORE_RELAY_HOP_SINR;
+            case BEACONPKT: // downlink measurement signal, arrives from the gateway
+                if (!isFeederLink_)
+                    throw cRuntimeError("NtnPhyBase::getHopAction - satellite PHY %s received a beacon over the service link, but expected the feeder link (sourceId=%d, destId=%d)",
+                            getFullPath().c_str(), lteInfo.getSourceId(), lteInfo.getDestId());
+                return HopAction::STORE_RELAY_HOP_RSRP;
             default:
                 return HopAction::RELAY_ONLY;
         }
@@ -180,6 +185,9 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
             case HopAction::STORE_RELAY_HOP_SINR:
                 ntnFrame->setRelayHopSinrVector(channelModel->getSINR(frame, &lteInfo));
                 break;
+            case HopAction::STORE_RELAY_HOP_RSRP:
+                ntnFrame->setRelayHopRsrpVector(channelModel->getRSRP(frame, &lteInfo));
+                break;
             case HopAction::STORE_END_TO_END_SINR: {
                 // Both hops combined, so the terrestrial gNB can derive uplink CSI from the
                 // actual satellite path instead of measuring a channel it does not have.
@@ -238,7 +246,7 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
         lteInfo.setCarrierFrequency(shiftFrequencyBand(lteInfo.getCarrierFrequency()));
         auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
 
-        if (lteInfo.getFrameType() == CSIRSPKT && ntnFrame != nullptr && ntnFrame->hasAttachedUes()) {
+        if ((lteInfo.getFrameType() == CSIRSPKT || lteInfo.getFrameType() == BEACONPKT) && ntnFrame != nullptr && ntnFrame->hasAttachedUes()) {
             inet::GeoCoord txWgs84 = referenceSystem_->wgs84FromOmnet(getRadioPosition());
             lteInfo.setRadioTransmitterId(nodeId_);
             lteInfo.setRadioTransmitterCoord(getRadioPosition());
@@ -247,13 +255,13 @@ void NtnPhyBase::handleUpperMessage(cMessage *msg)
             lteInfo.setTxPower(antennaModel_->getTxPower());
 
             std::vector<MacNodeId> attachedUes = ntnFrame->getAttachedUesVector();
-            EV << "NtnPhyBase::handleUpperMessage - forwarding CSI-RS frame " << frame->getName()
+            EV << "NtnPhyBase::handleUpperMessage - forwarding " << frame->getName()
                << " to " << attachedUes.size() << " attached UE target(s)" << endl;
 
             for (MacNodeId ueId : attachedUes) {
                 cModule *receiver = binder_->getNodeModule(ueId);
                 if (receiver == nullptr) {
-                    EV << "NtnPhyBase::handleUpperMessage - attached UE " << ueId << " is not available. Skip CSI-RS copy." << endl;
+                    EV << "NtnPhyBase::handleUpperMessage - attached UE " << ueId << " is not available. Skip copy." << endl;
                     continue;
                 }
 

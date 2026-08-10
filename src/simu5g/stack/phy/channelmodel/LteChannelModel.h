@@ -164,6 +164,14 @@ class LteChannelModel : public cSimpleModule
      */
     virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
+     * Compute the RSRP used for measurement/cell-selection decisions. This may differ from
+     * getRSRP() for relay paths that combine multiple radio hops.
+     *
+     * @param frame pointer to the packet
+     * @param lteInfo pointer to the user control info
+     */
+    virtual std::vector<double> computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
+    /*
      * Compute received useful signal for D2D transmissions
      */
     virtual std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) = 0;

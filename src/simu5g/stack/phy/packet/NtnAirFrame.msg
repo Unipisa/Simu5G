@@ -26,6 +26,7 @@ namespace simu5g;
 packet NtnAirFrame extends LteAirFrame
 {
     double relayHopSinr[];
+    double relayHopRsrp[];
     MacNodeId attachedUes[];
     bool gatewayReceptionResultValid = false;
     bool gatewayReceptionResult = false;
@@ -52,6 +53,25 @@ cplusplus(NtnAirFrame) {{
         for (size_t i = 0; i < sinr.size(); i++)
             sinr[i] = getRelayHopSinr(i);
         return sinr;
+    }
+
+    bool hasRelayHopRsrp() const { return getRelayHopRsrpArraySize() > 0; }
+
+    void clearRelayHopRsrp() { setRelayHopRsrpArraySize(0); }
+
+    void setRelayHopRsrpVector(const std::vector<double>& rsrp)
+    {
+        setRelayHopRsrpArraySize(rsrp.size());
+        for (size_t i = 0; i < rsrp.size(); i++)
+            setRelayHopRsrp(i, rsrp[i]);
+    }
+
+    std::vector<double> getRelayHopRsrpVector() const
+    {
+        std::vector<double> rsrp(getRelayHopRsrpArraySize());
+        for (size_t i = 0; i < rsrp.size(); i++)
+            rsrp[i] = getRelayHopRsrp(i);
+        return rsrp;
     }
 
     bool hasAttachedUes() const { return getAttachedUesArraySize() > 0; }

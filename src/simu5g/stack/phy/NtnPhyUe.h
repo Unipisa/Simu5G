@@ -41,6 +41,7 @@ class NtnPhyUe : public NrPhyUe
     // Channel model this UE uses for the transparent NTN path on the given service-link
     // carrier, or nullptr if it has none.
     LteChannelModel *getNtnChannelModel(GHz carrierFreq) const;
+    double computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 };
 
 } // namespace simu5g

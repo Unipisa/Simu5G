@@ -70,6 +70,11 @@ std::vector<double> LteDummyChannelModel::getRSRP(LteAirFrame *frame, UserContro
     return tmp;
 }
 
+std::vector<double> LteDummyChannelModel::computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    return getRSRP(frame, lteInfo);
+}
+
 std::vector<double> LteDummyChannelModel::getSINR_bgUe(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     std::vector<double> tmp(numBands_, FAKE_SINR_DB);

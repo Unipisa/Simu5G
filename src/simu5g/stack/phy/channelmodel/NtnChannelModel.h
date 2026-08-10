@@ -113,6 +113,7 @@ class NtnChannelModel : public LteRealisticChannelModel
     std::vector<double> computeReceptionSinr(LteAirFrame *frame, UserControlInfo *lteInfo) override;
     std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
     std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 };
 
 } // namespace simu5g

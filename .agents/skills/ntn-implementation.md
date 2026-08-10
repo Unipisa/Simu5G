@@ -27,7 +27,8 @@ Available now:
 - Satellite, gateway, isotropic terminal, and VSAT antenna models.
 - A channel model based partly on 3GPP TR 38.811 tables and TR 38.821 antenna parameters.
 - Per-link carrier frequencies: a feeder-link NIC retunes its own channel models to the translated carrier, so every frequency-dependent term of that hop is computed at the feeder frequency.
-- Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently.
+- Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently. This applies to SINR (data, CSI-RS, SRS) and, since the beacon RSSI fix, to RSRP as well.
+- Two-hop beacon RSSI: a `BEACONPKT` reaches attached UEs through the satellite the same way CSI-RS does, and `NtnChannelModel::computeReceptionRsrp()` combines both hops for `NtnPhyUe::computeReceivedBeaconPacketRssi()`, feeding the (still unimplemented) handover machinery a correct measurement instead of a fictitious direct-geometry one.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios.
 
 Not available as a complete model:
@@ -106,7 +107,8 @@ The UE still attaches to the logical gNB using the ordinary serving-node relatio
 `src/simu5g/stack/phy/packet/NtnAirFrame.msg` extends `LteAirFrame` with:
 
 - `relayHopSinr[]`: first radio-hop SINR, one value per band;
-- `attachedUes[]`: CSI-RS fan-out targets;
+- `relayHopRsrp[]`: first radio-hop RSRP, one value per band, populated for beacon frames;
+- `attachedUes[]`: CSI-RS and beacon fan-out targets;
 - `gatewayReceptionResultValid` and `gatewayReceptionResult`: uplink decoding decision made at the gateway;
 - `endToEndSinrValid` and `endToEndSinr[]`: combined two-hop uplink SINR for SRS and control-frame CSI, stored by the gateway.
 
@@ -155,11 +157,13 @@ Do not edit generated `*_m.cc` or `*_m.h` files. Change the `.msg` source and re
 
 Since commit `1aa1083d` this is enforced rather than merely arranged: `computeReceptionSinr()` throws if a frame arrives without a first-hop measurement instead of silently degrading to the last hop, and `NtnPhyBase::handleAirFrame()` throws instead of relaying a frame it has no channel model to evaluate. D2D is delegated to the base implementation, as those links never transit the satellite.
 
-`NtnChannelModel::getRSRP()` is a separate matter and remains single-hop: it ignores the frame entirely, so it cannot reach `relayHopSinr[]`. It is not used for CSI; it feeds RSRP-based cell selection and beacon RSSI (see the note under Known Physical Inconsistencies).
+`NtnChannelModel::getRSRP()` itself remains a single-hop primitive: it still reports only the hop described by the `UserControlInfo` it is given, the same as `getSINR()`. It now has a two-hop sibling, `computeReceptionRsrp()`, that combines it with a stored first hop the same way `computeReceptionSinr()` combines `getSINR()`; see the "Downlink Beacons" paragraph below and the note under Known Physical Inconsistencies.
 
 **Uplink SRS**: Satellite service `NtnPhyBase` measures SRS on the first hop and stores SINR in `relayHopSinr[]`. Gateway feeder `NtnPhyBase` combines both hops using `computeReceptionSinr()`, storing the result in `endToEndSinr[]`. `NtnPhyGnb::handleSrsReferenceSignal()` reads `endToEndSinr[]` and passes it to `LteUlFeedbackGenerator::computeUlFeedback()`, which derives the uplink CQI from the combined two-hop measurement rather than re-measuring a non-existent terrestrial link. This closes the uplink CSI measurement loop through the transparent path.
 
-**Other control frames**: Data packets and SRS receive explicit channel evaluation in `NtnPhyBase::handleAirFrame()`. Remaining control frames (grants, HARQ feedback, random access) are relayed without a per-hop failure decision.
+**Downlink beacons**: `LtePhyEnb::createBeaconMessage()` builds a `BEACONPKT` with no `destId` (ordinary eNBs deliver it as a physical broadcast). `NtnPhyGnb::sendBroadcast()` gives it the same attached-UE fan-out treatment as CSI-RS instead, populating `attachedUes[]` from `cellInfo_->getAttachedUes()` before forwarding it over the NTN path. Satellite feeder `NtnPhyBase` measures the first hop and stores it in `relayHopRsrp[]` (`NtnPhyBase::getHopAction()` treats `BEACONPKT` like `CSIRSPKT`: it must arrive on the feeder link). Satellite service `NtnPhyBase` then duplicates one frame per attached UE via the same `CSIRSPKT`/`BEACONPKT` fan-out branch in `handleUpperMessage()`, and `NtnAirFrame::dup()` deep-copies `relayHopRsrp[]` along with the other stored measurements. At the UE, `NtnPhyUe::computeReceivedBeaconPacketRssi()` calls `computeReceptionRsrp()` on the model returned by `getReceptionChannelModel()` when the frame arrived via a transparent NTN gNB, combining both hops with the same cascaded-hop harmonic-mean approximation `computeReceptionSinr()` uses for SINR (RSRP is a power, not a ratio, so this is an explicit approximation pending the transponder gain/noise model in item 1). `computeReceivedBeaconPacketRssi()` is only ever invoked from `HandoverController::beaconReceived()`, itself gated behind `enableHandover`, so this fixes the measurement without enabling or implementing handover switching. `LtePhyUe::findCandidateEnb()` (dynamic cell search, gated by `dynamicCellAssociation`) is unchanged and still evaluates a fictitious direct gNB-UE geometry through the terrestrial model; it remains the blocker for enabling NTN handover (see item 5 and the note under Known Physical Inconsistencies).
+
+**Other control frames**: Data packets, SRS, and beacons receive explicit channel evaluation in `NtnPhyBase::handleAirFrame()`. Remaining control frames (grants, HARQ feedback, random access) are relayed without a per-hop failure decision, and this is intentionally out of scope (see Minimum Work item 4 below).
 
 ## Geographic and Orbital Model
 
@@ -251,11 +255,13 @@ Noise is always computed over 180 kHz. RB center frequencies account for numerol
 
 `polarizationMismatchLoss` is declared and read, and antenna polarization is configured, but the loss is never applied.
 
-#### RSRP-Based Cell Selection and Handover Measure a Link That Does Not Exist
+#### RSRP-Based Cell Selection and Handover Measure a Link That Does Not Exist (beacon RSSI fixed; cell search still open)
 
-`NtnChannelModel::getRSRP()` ignores the frame it is given, so it cannot combine the stored relay hop and always reports the last hop alone. Worse, its two consumers do not use the NTN model at all: `LtePhyUe::findCandidateEnb()` and `LtePhyUe::computeReceivedBeaconPacketRssi()` both call `primaryChannelModel_`, the terrestrial model, against a synthesised direct gNodeB-UE geometry. `NtnPhyUe` overrides neither.
+**Previously**: `NtnChannelModel::getRSRP()` ignored the frame it was given, so it could not combine the stored relay hop and always reported the last hop alone. Both consumers -- `LtePhyUe::findCandidateEnb()` and `LtePhyUe::computeReceivedBeaconPacketRssi()` -- called `primaryChannelModel_`, the terrestrial model, against a synthesised direct gNodeB-UE geometry, and `NtnPhyUe` overrode neither. This was the same defect class as the original uplink CSI bug fixed in `9b265962`, and it was latent rather than live: `enableHandover`/`enableBeacons` default to false, and a `BEACONPKT` never set `destId`, so it was dropped at the satellite before reaching any UE.
 
-This is the same defect class as the original uplink CSI bug fixed in `9b265962`. It is latent rather than live: `enableHandover` and `enableBeacons` default to false, and a `BEACONPKT` never sets `destId`, so it is dropped at the satellite before reaching any UE. It becomes real the moment handover is enabled for an NTN cell.
+**Now**: Beacon delivery mirrors the CSI-RS fan-out -- `NtnPhyGnb::sendBroadcast()` populates `attachedUes[]` for `BEACONPKT`, and `NtnPhyBase::getHopAction()`/`handleAirFrame()` store the feeder-hop measurement in a new `relayHopRsrp[]` field via `HopAction::STORE_RELAY_HOP_RSRP` -- so a beacon now reaches attached UEs carrying a first-hop measurement, the same way CSI-RS and data already did. `NtnChannelModel::computeReceptionRsrp()` -- a new virtual on `LteChannelModel`, alongside `computeReceptionSinr()`, defaulting to single-hop `getRSRP()` everywhere except `NtnChannelModel` -- combines it with the local hop using the same harmonic-mean-of-linear-power formula `computeReceptionSinr()` uses for SINR. `NtnPhyUe::computeReceivedBeaconPacketRssi()` overrides the base class to call it when the beacon's source gNB has a transparent NTN association, falling back to the terrestrial path otherwise. Like `computeReceptionSinr()`, this harmonic combination is an approximation that assumes a matched-power relay; it is not yet consistent with the transponder gain/noise model described under "No Transparent-Payload Gain or Added Noise" (item 1), which remains unimplemented. `NtnChannelModel::getRSRP()` itself is unchanged and still single-hop -- it remains the correct primitive for measuring one hop at a time, exactly as `getSINR()` does for `computeReceptionSinr()`.
+
+`LtePhyUe::findCandidateEnb()` is unchanged and still calls `primaryChannelModel_` against a synthesised direct gNodeB-UE geometry: cell search/reselection still measures a link that does not exist. Only beacon-driven RSSI -- the input to handover feasibility once `enableHandover` is turned on -- is now two-hop-correct. Handover triggering and switching (`HandoverController::triggerHandover()`/`doHandover()`) are unmodified and remain absent as a decision-making capability for NTN cells (see item 5).
 
 #### SINR Statistics Attribution (fixed in commit 6a9188f9)
 
@@ -327,8 +333,7 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 - ✓ **SRS (commit 9b265962, hook 6a9188f9)**: SRS is measured on both hops at the satellite and gateway, combined, and fed to uplink CQI computation via `endToEndSinr[]`. Uplink CSI measurement is consistent with the transparent path.
 - ✓ **CSI-RS and two-hop enforcement (commit 1aa1083d)**: downlink CSI and data decoding both combine the two hops through `computeReceptionSinr()`, and a missing first-hop measurement is now an error rather than a silent single-hop fallback.
-- **RSRP-based measurement (incomplete)**: cell selection and beacon RSSI remain single-hop and use the terrestrial channel model with a fictitious direct geometry. This must be fixed before handover can be enabled for NTN.
-- **Control frame loss (incomplete)**: Apply channel success to grants, HARQ feedback, and random access, not only data and SRS.
+- ✓ **RSRP-based measurement, beacon RSSI**: beacon delivery to attached UEs is fixed (`NtnPhyGnb::sendBroadcast()` fans `BEACONPKT` out over `attachedUes[]`, and `NtnPhyBase::getHopAction()` stores the feeder-hop measurement in the new `relayHopRsrp[]` field), and `NtnPhyUe::computeReceivedBeaconPacketRssi()` now combines both hops through the new `NtnChannelModel::computeReceptionRsrp()`, using the same harmonic-mean formula as `computeReceptionSinr()`, when the beacon's source gNB is a transparent NTN cell. Cell search (`LtePhyUe::findCandidateEnb()`) and handover triggering/switching remain untouched and out of scope; see the note under Known Physical Inconsistencies.
 - Review HARQ process counts/timing, random-access windows, scheduling requests, RLC timers, and other procedures against GEO/LEO RTT.
 - Model timing advance/common timing reference and NTN assistance data assumptions explicitly.
 
@@ -373,7 +378,7 @@ Do not accept `.UPDATED` fingerprint files merely because physical-model changes
 Follow the surrounding Simu5G and OMNeT++ style when extending NTN:
 
 - **`EV_DEBUG` and `EV_TRACE` do not exist in release builds.** OMNeT++ sets `COMPILETIME_LOGLEVEL` to `LOGLEVEL_DETAIL` under `NDEBUG`, so those statements are compiled out entirely and no runtime `--cmdenv-log-level` can bring them back. Anything a user needs in order to understand why a scenario produced nothing must be at `EV`/`EV_INFO` or above. This is not hypothetical: the whole orbital subsystem once logged only at `EV_DEBUG`, which made a satellite parked below the horizon indistinguishable from a broken model. Satellite creation (`SatelliteInserter::createSatellite`), initial placement (`GeoSatMobility`, `LeoSatMobility`) and horizon crossings (`NtnChannelModel::reportSatelliteVisibility`) are now reported at INFO. Keep per-frame detail at `EV_DEBUG`, and report state *changes* rather than every evaluation so long runs stay readable.
-- Prefer a hard error to a silent degradation on the transparent path. A frame that cannot be evaluated correctly should abort the run where the problem is, not produce a plausible number that is discovered later, or never. Existing examples: `NtnPhyGnb` on a missing `gatewayReceptionResult` or `endToEndSinr`, `NtnPhyBase::getHopAction()` on a reference signal arriving over the wrong link, and `NtnChannelModel::computeReceptionSinr()` on a missing first hop.
+- Prefer a hard error to a silent degradation on the transparent path. A frame that cannot be evaluated correctly should abort the run where the problem is, not produce a plausible number that is discovered later, or never. Existing examples: `NtnPhyGnb` on a missing `gatewayReceptionResult` or `endToEndSinr`, `NtnPhyBase::getHopAction()` on a reference signal arriving over the wrong link, and `NtnChannelModel::computeReceptionSinr()`/`computeReceptionRsrp()` on a missing first hop.
 - Pair C++ behavior with NED declarations; every new `par()` access must have a corresponding NED parameter and scenario configuration where required.
 - Use staged `initialize(int stage)` for Binder references, registrations, relationships, PHY setup, and dynamically inserted modules. Do not move setup into constructors.
 - Keep logical stack identity (`sourceId`/`destId`) separate from current-hop radio identity unless intentionally redesigning the transparent architecture.

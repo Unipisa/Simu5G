@@ -63,6 +63,18 @@ void NtnPhyGnb::sendNtn(LteAirFrame *airFrame)
 
 void NtnPhyGnb::sendBroadcast(LteAirFrame *airFrame)
 {
+    auto *ci = check_and_cast<UserControlInfo *>(airFrame->getControlInfo());
+    if (ci->getFrameType() == BEACONPKT) {
+        // Beacons have no destId, so the satellite's per-node forwarding logic cannot route
+        // them. Give them the same attached-UE fan-out treatment as CSI-RS instead.
+        auto *ntnFrame = check_and_cast<NtnAirFrame *>(airFrame);
+        std::vector<MacNodeId> attachedUes;
+        for (MacNodeId ueId : cellInfo_->getAttachedUes()) {
+            if (isNrUe(ueId) == isNr_)
+                attachedUes.push_back(ueId);
+        }
+        ntnFrame->setAttachedUesVector(attachedUes);
+    }
     sendNtn(airFrame);
 }
 

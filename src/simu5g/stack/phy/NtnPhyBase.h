@@ -27,6 +27,7 @@ class NtnPhyBase : public ChannelAccess
     enum class HopAction {
         RELAY_ONLY,             // no per-hop evaluation, just forward
         STORE_RELAY_HOP_SINR,   // first radio hop: measure and carry the result
+        STORE_RELAY_HOP_RSRP,   // first radio hop: measure and carry the RSRP result
         STORE_END_TO_END_SINR,  // last radio hop: combine both hops into a CSI measurement
         STORE_RECEPTION_RESULT, // last radio hop: combine both hops into a decoding decision
     };

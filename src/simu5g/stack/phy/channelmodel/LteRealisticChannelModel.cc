@@ -1839,6 +1839,11 @@ std::vector<double> LteRealisticChannelModel::computeReceptionSinr(LteAirFrame *
     return getSINR(frame, lteInfo);
 }
 
+std::vector<double> LteRealisticChannelModel::computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    return getRSRP(frame, lteInfo);
+}
+
 bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     EV << "LteRealisticChannelModel::error_D2D" << endl;

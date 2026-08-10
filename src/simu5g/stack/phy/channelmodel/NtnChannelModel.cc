@@ -858,4 +858,41 @@ std::vector<double> NtnChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo
     return rsrpVector;
 }
 
+std::vector<double> NtnChannelModel::computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    // Falling back to a single-hop evaluation here would silently report the last hop alone,
+    // the same concern computeReceptionSinr() already guards against for SINR.
+    auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
+    if (ntnFrame == nullptr || !ntnFrame->hasRelayHopRsrp())
+        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - frame %s carries no first-hop RSRP. "
+                "A transparent NTN path must evaluate the first radio hop before combining it with the last one; "
+                "this usually means the relaying node had no channel model for the frame's carrier.",
+                frame->getName());
+
+    std::vector<double> localHopRsrp = getRSRP(frame, lteInfo);
+    std::vector<double> relayHopRsrp = ntnFrame->getRelayHopRsrpVector();
+    if (relayHopRsrp.size() != localHopRsrp.size()) {
+        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - relay-hop RSRP vector size %lu differs from local-hop RSRP vector size %lu",
+                static_cast<unsigned long>(relayHopRsrp.size()), static_cast<unsigned long>(localHopRsrp.size()));
+    }
+
+    // RSRP is a power (dBm), not a ratio, so there is no exact physical two-hop combining rule
+    // without the transponder gain/noise model that item 1 of the NTN roadmap still lacks. As an
+    // explicit approximation, reuse the same cascaded-hop harmonic-mean formula already applied
+    // to SINR in computeReceptionSinr(), using the dBm<->linear-watts pair rather than the
+    // dB<->ratio pair (the two give numerically identical combined results here, since the
+    // harmonic mean is scale-covariant, but the dBm pair keeps the units honest).
+    std::vector<double> combinedRsrp(localHopRsrp.size(), 0.0);
+    for (size_t i = 0; i < combinedRsrp.size(); i++) {
+        double relayLinear = dBmToLinear(relayHopRsrp[i]);
+        double localLinear = dBmToLinear(localHopRsrp[i]);
+        double combinedLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
+        combinedRsrp[i] = linearToDBm(combinedLinear);
+        EV_DEBUG << "NtnChannelModel::computeReceptionRsrp - band[" << i << "] 1st-hop RSRP[" << relayHopRsrp[i] << "dBm] 2nd-hop RSRP[" << localHopRsrp[i]
+                    << "dBm] combined[" << combinedRsrp[i] << "]" << endl;
+    }
+
+    return combinedRsrp;
+}
+
 } // namespace simu5g

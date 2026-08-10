@@ -136,4 +136,21 @@ LteChannelModel *NtnPhyUe::getReceptionChannelModel(const UserControlInfo *lteIn
     return (it == ntnChannelModel_.end()) ? nullptr : it->second;
 }
 
+double NtnPhyUe::computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(lteInfo->getSourceId());
+    if (association == nullptr || !association->isTransparent)
+        return NrPhyUe::computeReceivedBeaconPacketRssi(frame, lteInfo);
+
+    LteChannelModel *channelModel = getReceptionChannelModel(lteInfo);
+    if (channelModel == nullptr)
+        throw cRuntimeError("NtnPhyUe::computeReceivedBeaconPacketRssi - no NTN channel model for carrier %gGHz", lteInfo->getCarrierFrequency().get());
+
+    std::vector<double> rsrpV = channelModel->computeReceptionRsrp(frame, lteInfo);
+    double rsrp = 0;
+    for (double value : rsrpV)
+        rsrp += value;
+    return rsrp / rsrpV.size();
+}
+
 } //namespace

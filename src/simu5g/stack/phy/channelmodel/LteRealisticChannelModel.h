@@ -261,6 +261,13 @@ class LteRealisticChannelModel : public LteChannelModel
     std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
+     * Compute the RSRP used for measurement/cell-selection decisions. The base implementation
+     * is single-hop and just forwards to getRSRP(); relay paths that combine multiple radio
+     * hops (see NtnChannelModel) override this.
+     */
+    std::vector<double> computeReceptionRsrp(LteAirFrame *frame, UserControlInfo *lteInfo) override;
+
+    /*
      * Compute sinr for each band for a background UE according to pathloss
      *
      * @param frame pointer to the packet
