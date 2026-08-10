@@ -321,6 +321,8 @@ Complete these items before describing the implementation as a usable bent-pipe 
 - Verify GEO and LEO round-trip times against geometry.
 - Adapt NR timers and scheduling assumptions that fail with long RTT; adding packet delay alone is not sufficient.
 
+**See `ntn-delay-and-timers.md`** (in this directory) for the full design discussion: the four `sendDirect()` call sites and the two traps around them (frame duration charged per hop, and the channel-less fronthaul connection); a taxonomy separating timers that must scale with RTT from the ones that must not; the 3GPP K_offset/`ntn-Config` framing including whether the value is per-UE and how often it must be refreshed; per-mechanism treatment of HARQ, RAC, BSR, CQI aging, and grant timing; and a staging order with the diagnostics needed to debug each step. The timer half of item 4 below is covered there as well.
+
 ### 3. Model Relative Motion and Doppler
 
 - Preserve the SGP4-derived Earth-fixed velocity in `LeoSatMobility`.
