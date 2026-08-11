@@ -88,6 +88,7 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
 
     auto pduInfo = pdu_.at(cw)->getTag<UserControlInfo>();
     auto pdu = pdu_.at(cw)->peekAtFront<LteMacPdu>();
+    bool feedbackEnabled = isFeedbackEnabledFor(pduInfo->getDirection());
 
     // TODO: Change to Tag (allows length 0)
     auto fb = makeShared<LteHarqFeedback>();
@@ -110,8 +111,16 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
         status_.at(cw) = RXHARQ_PDU_CORRUPTED;
 
         EV << "LteHarqProcessRx::createFeedback - tx number " << (unsigned int)transmissions_ << endl;
-        if (transmissions_ == (maxHarqRtx_ + 1)) {
-            EV << NOW << " LteHarqProcessRx::createFeedback - max number of tx reached for cw " << cw << ". Resetting cw" << endl;
+
+        // With feedback disabled the transmitter completed this unit as soon as it sent it
+        // and will never retransmit, so a corrupted PDU is simply lost and the process must
+        // be purged now. Leaving it CORRUPTED would pin the ACID forever and eventually
+        // make insertPdu() reject new data on it; signalling the MAC for a retransmission
+        // would ask for one that cannot arrive. Recovering the loss is RLC ARQ's job.
+        if (!feedbackEnabled || transmissions_ == (maxHarqRtx_ + 1)) {
+            EV << NOW << " LteHarqProcessRx::createFeedback - "
+               << (feedbackEnabled ? "max number of tx reached" : "feedback disabled")
+               << " for cw " << cw << ". Resetting cw" << endl;
 
             // purge PDU
             purgeCorruptedPdu(cw);
@@ -128,7 +137,20 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
         status_.at(cw) = RXHARQ_PDU_CORRECT;
     }
 
+    // Everything above is the process state machine -- marking the codeword CORRECT so the
+    // buffer can deliver it, or purging one that will never be retransmitted -- and has to
+    // run either way. Only the feedback packet itself is suppressed.
+    if (!feedbackEnabled) {
+        delete pkt;
+        return nullptr;
+    }
+
     return pkt;
+}
+
+bool LteHarqProcessRx::isFeedbackEnabledFor(Direction dir) const
+{
+    return macOwner_->par(dir == UL ? "harqFeedbackEnabledUl" : "harqFeedbackEnabledDl").boolValue();
 }
 
 bool LteHarqProcessRx::isCorrect(Codeword cw)

@@ -41,6 +41,10 @@ LteHarqUnitTx::LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw,
             dir_ = UL;
         }
     }
+
+    // Feedback is configured per direction; see LteMacBase.ned. D2D keeps the downlink
+    // setting, since it is a direct link with no satellite hop either way.
+    harqFeedbackEnabled_ = macOwner_->par(dir_ == UL ? "harqFeedbackEnabledUl" : "harqFeedbackEnabledDl");
 }
 
 void LteHarqUnitTx::insertPdu(Packet *pkt)
@@ -196,6 +200,22 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
     }
 
     return reset;
+}
+
+bool LteHarqUnitTx::completeWithoutFeedback()
+{
+    // With HARQ feedback disabled there is nothing to wait for, so a transmitted unit is
+    // done: it completes here instead of sitting in TXHARQ_PDU_WAITING until an
+    // acknowledgement that will never be sent. That is what removes the stop-and-wait
+    // ceiling of N * TBS / RTT; recovering a lost block is RLC ARQ's job.
+    //
+    // Called from LteHarqProcessTx, not from extractPdu(), because the owning process
+    // tracks numEmptyUnits_ separately from this unit's status and has to be told.
+    if (status_ != TXHARQ_PDU_WAITING)
+        throw cRuntimeError("LteHarqUnitTx::completeWithoutFeedback(): unit is not waiting");
+
+    resetUnit();
+    return true;
 }
 
 bool LteHarqUnitTx::isEmpty()

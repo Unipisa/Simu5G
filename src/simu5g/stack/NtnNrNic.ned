@@ -33,6 +33,15 @@ module NtnNrNic extends NrNicEnb
         rrc.bearerManagement.nrRlcAmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcAmEntity");
         rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcUmEntity");
 
+        // Must match the served UEs' values: LteHarqBufferRx is sized from the receiver's
+        // own harqProcesses while the transmitter picks an ACID from its own, so a mismatch
+        // indexes out of range, and feedback is a peer agreement -- a transmitter that has
+        // stopped waiting must be paired with a receiver that has stopped sending. See
+        // ~NtnNrMacUe for the derivation and the measured effect of each direction.
+        mac.harqProcesses = default(32);
+        mac.harqFeedbackEnabledDl = default(false);
+        mac.harqFeedbackEnabledUl = default(true);
+
         // RRC re-establishment. The terrestrial 100ms default is well inside one satellite
         // round trip, so a re-establishment attempt would time out before its response
         // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value.

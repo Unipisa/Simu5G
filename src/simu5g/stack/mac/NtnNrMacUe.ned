@@ -93,6 +93,40 @@ module NtnNrMacUe extends NrMacUe
     parameters:
         @class("NtnNrMacUe");
 
+        // Both directions allocate through firstAvailable(), so HARQ is N-process
+        // stop-and-wait and throughput is capped at N * TBS / RTT. Keeping the pipe full
+        // needs one process per slot of round trip: about 26 for LEO-600 and 42 for
+        // LEO-1200, but 541 for GEO. 32 is the Rel-17 ceiling
+        // (nrofHARQ-ProcessesForPDSCH-v1700), so it covers LEO and cannot cover GEO --
+        // which is why 3GPP also specifies feedback disabling, see harqFeedbackEnabled
+        // below.
+        //
+        // This must match the value on the peer: LteHarqBufferRx is sized from the
+        // receiver's own harqProcesses while the transmitter picks an ACID from its own,
+        // so a mismatch indexes out of range. ~NtnNrNic sets the same value for the gNodeB.
+        //
+        // 32 exceeds the 4-bit HARQ process ID field of a real DCI; TR 38.821 clause 6.4.2
+        // lists several ways round that (slot-number based IDs, virtual IDs, reuse within
+        // the round-trip delay) without converging on one. Simu5G does not model DCI, so
+        // the choice is free here -- but it is a real constraint in a deployment.
+        harqProcesses = default(32);
+
+        // Downlink feedback off, uplink feedback on. TR 38.821 clause 7.2.1.4 treats the
+        // two as separate decisions, and measurement says they really are: over GEO,
+        // disabling downlink feedback raises downlink delivery by about 37% (the pool stops
+        // being stop-and-wait), while additionally disabling uplink feedback costs about
+        // 80% of uplink delivery, because an uplink MAC PDU also carries the buffer status
+        // report and losing one with no retransmission stalls the UE for a whole
+        // retxBsrTimer before the gNodeB learns it has data.
+        //
+        // With uplink feedback still enabled the uplink remains stop-and-wait, which is why
+        // harqProcesses above stays at 32 -- TR 38.821 clause 6.4.2 "Option 2: Greater than
+        // 16 HARQ process IDs with UL HARQ feedback enabled". Downlink reliability now
+        // rests on RLC ARQ, so an NTN bearer should use RLC AM; see the warning emitted
+        // when it does not.
+        harqFeedbackEnabledDl = default(false);
+        harqFeedbackEnabledUl = default(true);
+
         string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");   // GEO is the safe worst case
 
         double ntnRaResponseWindowOffset @unit(s) = default(this.ntnOrbitProfile == "GEO" ? 542ms : 26ms);

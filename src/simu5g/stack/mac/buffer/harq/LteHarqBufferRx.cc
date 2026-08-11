@@ -69,7 +69,15 @@ void LteHarqBufferRx::sendFeedback()
     for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
             if (processes_[i]->isEvaluated(cw)) {
+                // createFeedback() also advances the process state machine -- it is what
+                // marks a codeword CORRECT so extractCorrectPdus() can deliver it, and what
+                // purges a PDU that will never be retransmitted -- so it must be called
+                // even when feedback is disabled for this direction. It returns nullptr in
+                // that case, having done the state work and dropped the packet.
                 auto pkt = processes_[i]->createFeedback(cw);
+                if (pkt == nullptr)
+                    continue;
+
                 auto hfb = pkt->peekAtFront<LteHarqFeedback>();
 
                 // debug output:

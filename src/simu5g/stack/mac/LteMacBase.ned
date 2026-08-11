@@ -36,6 +36,27 @@ module LteMacBase like ILteMac
         int maxHarqRtx = default(3);
         int harqFbEvaluationTimer = default(4);              // number of slots for sending back HARQ FB
 
+        // When false, the receiver sends no HARQ feedback in that direction and the
+        // transmitter does not wait for any: a unit completes as soon as it is transmitted
+        // and its process returns to the pool immediately, so HARQ stops being stop-and-wait
+        // and reliability rests on RLC ARQ instead. This is the NTN mechanism of
+        // TR 38.821 clause 6.4.2 -- "disable UL HARQ feedback to avoid stop-and-wait in HARQ
+        // procedure and rely on RLC ARQ for reliability".
+        //
+        // The two directions are separate because TR 38.821 clause 7.2.1.4 treats them
+        // separately ("disable uplink HARQ feedback for downlink transmission at the UE
+        // receiver" and, as a distinct decision, "disable HARQ uplink retransmission at the
+        // UE transmitter") and because they behave very differently. Downlink is pure data,
+        // so dropping its feedback costs only the block error rate. Uplink MAC PDUs also
+        // carry the buffer status report, so losing one with no retransmission costs a whole
+        // retxBsrTimer cycle before the gNodeB learns the UE has data at all -- measured at
+        // roughly a fivefold uplink throughput loss over GEO.
+        //
+        // Both default true, so terrestrial behaviour is unchanged; the NTN MAC types
+        // override them.
+        bool harqFeedbackEnabledDl = default(true);   // feedback the UE sends about downlink data
+        bool harqFeedbackEnabledUl = default(true);   // feedback the gNodeB sends about uplink data
+
         //# Statistics display (in GUI)
         bool statDisplay = default(false);
 

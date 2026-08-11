@@ -73,6 +73,15 @@ Packet *LteHarqProcessTx::extractPdu(Codeword cw)
     numSelected_--;
     auto pdu = units_[cw]->extractPdu();
     auto tmp = pdu->peekAtFront<LteMacPdu>();
+
+    // With feedback disabled the unit is done the moment it is transmitted. It has to be
+    // completed here rather than inside LteHarqUnitTx::extractPdu(), because numEmptyUnits_
+    // lives on the process and isEmpty()/firstAvailable() read it rather than the unit's
+    // own status -- resetting the unit alone would leave every process permanently
+    // occupied.
+    if (!units_[cw]->isHarqFeedbackEnabled() && units_[cw]->completeWithoutFeedback())
+        numEmptyUnits_++;
+
     return pdu;
 }
 

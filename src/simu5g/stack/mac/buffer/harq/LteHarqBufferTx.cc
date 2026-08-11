@@ -141,9 +141,23 @@ UnitList LteHarqBufferTx::firstAvailable()
     unsigned char acid = HARQ_NONE;
 
     if (selectedAcid_ == HARQ_NONE) {
-        for (unsigned int i = 0; i < numProc_; i++) {
+        // With HARQ feedback enabled a process stays occupied until it is acknowledged, so
+        // scanning from zero naturally spreads transmissions across the pool.
+        //
+        // With feedback disabled it does not: the process is released the moment it
+        // transmits, so process 0 is free again on the very next slot and would be handed
+        // out every time. The receiver still needs harqFbEvaluationTimer slots to evaluate
+        // a PDU, and would reject the next one as arriving on a busy process. Advance a
+        // cursor instead, which is what a real scheduler does with the HARQ process ID it
+        // puts in the DCI.
+        bool feedbackEnabled = macOwner_->par(macOwner_->getNodeType() == NODEB
+                ? "harqFeedbackEnabledDl" : "harqFeedbackEnabledUl").boolValue();
+        unsigned int start = feedbackEnabled ? 0 : nextAcid_;
+        for (unsigned int n = 0; n < numProc_; n++) {
+            unsigned int i = (start + n) % numProc_;
             if (processes_[i]->isEmpty()) {
                 acid = i;
+                nextAcid_ = (i + 1) % numProc_;
                 break;
             }
         }

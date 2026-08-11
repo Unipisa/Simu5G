@@ -36,6 +36,10 @@ class LteHarqBufferTx : noncopyable
     unsigned int numProc_;
     unsigned int numEmptyProc_; // @ fb on reset, @ insert
     unsigned char selectedAcid_; // @ insert, @ marksel, @ sendseldn
+
+    /// Round-robin cursor for firstAvailable(), used only when HARQ feedback is disabled.
+    /// See the comment there for why scanning from zero does not work in that mode.
+    unsigned int nextAcid_ = 0;
     MacNodeId nodeId_; // UE nodeId for which this buffer has been created
 
   protected:

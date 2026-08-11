@@ -74,6 +74,10 @@ class LteHarqUnitTx : noncopyable
     //Maximum number of H-ARQ retransmissions
     unsigned int maxHarqRtx_;
 
+    /// When false, the unit completes on transmission instead of waiting for feedback that
+    /// will never arrive; see harqFeedbackEnabled in LteMacBase.ned.
+    bool harqFeedbackEnabled_;
+
     // Statistics
 
     Direction dir_ = UNKNOWN_DIRECTION;
@@ -131,6 +135,16 @@ class LteHarqUnitTx : noncopyable
     /**
      * Tells if this unit is currently managing a pdu or not.
      */
+    /**
+     * Completes a transmitted unit when HARQ feedback is disabled, instead of leaving it
+     * waiting for an acknowledgement that will never arrive. Returns true if the unit was
+     * reset, matching pduFeedback()'s contract so the owning process can keep its
+     * numEmptyUnits_ count in step.
+     */
+    virtual bool completeWithoutFeedback();
+
+    bool isHarqFeedbackEnabled() const { return harqFeedbackEnabled_; }
+
     virtual bool isEmpty();
 
     /**

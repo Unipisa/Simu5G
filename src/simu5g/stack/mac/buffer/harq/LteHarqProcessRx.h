@@ -67,6 +67,11 @@ class LteHarqProcessRx
 
     unsigned char maxHarqRtx_;
 
+    /// True when HARQ feedback is configured for the direction the received PDU travelled;
+    /// see harqFeedbackEnabledDl/Ul in LteMacBase.ned. Evaluated per PDU rather than
+    /// cached, because one MAC can hold RX processes for both directions.
+    bool isFeedbackEnabledFor(Direction dir) const;
+
     /// Number of slots for sending back HARQ Feedback
     unsigned short harqFbEvaluationTimer_;
 
