@@ -47,6 +47,12 @@ module NtnNrNicUe extends NrNicUe
         rrc.bearerManagement.nrRlcAmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcAmEntity");
         rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcUmEntity");
 
+        // The NR MAC gets the NTN-dimensioned random-access and buffer-status-report
+        // counters; see ~NtnNrMacUe. Only the NR leg is retyped -- the LTE-leg "mac"
+        // carries no NTN traffic. Unlike RLC these counters are not a peer protocol: only
+        // the UE counts them, so ~NtnNrNic needs no matching change.
+        nrMac.typename = default("NtnNrMacUe");
+
         // RRC re-establishment. The terrestrial 100ms default is well inside one satellite
         // round trip, so a re-establishment attempt would time out before its response
         // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value.
