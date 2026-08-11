@@ -121,9 +121,9 @@ Terrestrial scenarios are structurally unaffected — the only NED types referen
 
 The useful distinction is not "counter versus `cMessage`". It is **local processing budget versus waiting for a peer's response.** Simu5G has three kinds of timing and only one is broken by long RTT.
 
-### Class 1: `cMessage` timers already expressed in seconds
+### Class 1: `cMessage` timers already expressed in seconds — **done**
 
-RLC AM `tReordering`, `tStatusProhibit`, `tPollRetransmit` (`src/simu5g/stack/rlc/am/`), PDCP timers, `HandoverController`. These need new *values*, not new code.
+RLC AM `t_Reassembly`/`t_Reordering`, `t_StatusProhibit`, `t_PollRetransmit` (`src/simu5g/stack/rlc/am/`), RLC UM `t_Reassembly` (`src/simu5g/stack/rlc/um/`), RRC `t301`. These needed new *values*, not new code — and they now have them. See "Class 1 as built" below for the 3GPP derivation and the measured effect.
 
 ### Class 2: wall-clock comparisons against slot duration
 
@@ -145,6 +145,38 @@ This encodes decode/processing time (3GPP's k1). It must **not** scale with prop
 Within class 3, only the response-waits change. Periodic-grant counters count the UE's own slots and stay as they are.
 
 Converting class 3 to `cMessage` timers wholesale would be a large refactor that buys nothing: a counter decremented once per slot is a perfectly good timer as long as it counts the right number of slots.
+
+### Class 1 as built
+
+3GPP publishes no recommended timer *values* — those are network configuration. It publishes three things that together determine them:
+
+- **TR 38.821 §7.2.2.1** gives a formula, `t-Reassembly = RTD * nrof_HARQ_retrans + scheduling_offset`, and states that "No modification of the t-PollRetransmit timer and of the t-statusProhibit timer are needed to support NTN." That sentence is about value *ranges*, not values: the TS 38.331 enumerations already reach ms4000 and ms2400, so only `t-Reassembly` needed the Rel-17 `t-ReassemblyExt` extension to 2200 ms. The configured values still have to change.
+- **TR 38.821 §7.2.2.2** gives the reference round-trip delays — GEO transparent **541.46 ms**, LEO transparent **25.77 ms** — the budget `RetransmissionTime = RTD * (maxRetxThreshold+1)`, and "1 or 4 RLC retransmissions are considered here". It tabulates GEO and LEO **separately**, so per-orbit profiles are the report's own structure.
+- **TS 38.331** gives the legal enumerations to round to.
+
+With Simu5G's `maxHarqRtx = 3` (4 HARQ transmissions):
+
+| Parameter | Derivation | GEO | LEO |
+|---|---|---|---|
+| `t_Reassembly` (AM RX, UM RX) | RTD x 4 + offset | 2166 → **2200 ms** | 103 → **150 ms** |
+| `t_PollRetransmit` (AM TX) | smallest 38.331 value > RTD | **800 ms** | **80 ms** |
+| `t_StatusProhibit` (AM RX) | < `t_PollRetransmit` − RTD | **250 ms** | **50 ms** |
+| `maxRtxThreshold` | §7.2.2.2 "1 or 4" | **4** (unchanged) | **4** (unchanged) |
+| `t301` (RRC) | 38.331 T301 enumeration | **2000 ms** | **1000 ms** |
+
+Two independent cross-checks: GEO `t_Reassembly` lands on 2200 ms, exactly the ceiling RAN2 chose for `t-ReassemblyExt-r17`; and GEO `t_PollRetransmit` = 800 ms matches the GEO profile in Amarisoft's production NR-NTN configuration (which also uses 80 ms for LEO). LEO's 150 ms fits the base TS 38.331 range, so LEO needs no Rel-17 extension — that asymmetry is why there are two profiles.
+
+**Where it lives.** Two new NED types, `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned` and `NtnNrRlcUmEntity.ned`, extend the NR entities and override only timer defaults — no C++ changes. `NtnNrNicUe.ned`/`NtnNrNic.ned` redirect `BearerManagement`'s `nrRlc*EntityModuleType` strings to them and set `t301`. Entities are created with the **NIC** as parent (`BearerManagement.cc:372`), not under `bearerManagement`. A single `**.ntnOrbitProfile = "LEO"` reaches every NIC and every dynamically created entity, because all four declare the parameter under the same name.
+
+**Measured.** UM (what the default configs run) holds or improves: GeoSat DL 4650 → 4950 B/s, LeoSat unchanged. AM is only reachable via the new `[Config GeoSatAm]`, since `Ip2Nic` defaults every class to UM; there, RLF moves from **t = 4.4 s** with terrestrial timers to **t = 25.8 s** with NTN timers, a 5.9x improvement.
+
+**RLF is delayed, not avoided, and the reason matters.** The derivation sizes `t_PollRetransmit` against the 541 ms propagation delay, which is correct for a healthy link. In the current branch the class-3 counters are still unfixed, so MAC stalling adds hundreds of ms per direction and the real RLC status round trip exceeds 800 ms. Do **not** inflate `t_PollRetransmit` to absorb that — it would be tuning to a defect and would need undoing after steps 3-4. **Class 1 cannot be fully validated until class 3 is fixed.**
+
+Two things deliberately left alone: PDCP (no `discardTimer` is modelled at all, and `NrPdcpRxEntity.timeout` only runs on dual-connectivity split bearers, so it is dead code on a single-leg NTN bearer — a real gap, but not a value problem), and `t311`, whose `0s` default is a scenario choice rather than an NTN property.
+
+**Known defect exposed, not caused, by this work:** once RLF fires on a satellite link, the run aborts on an unguarded `map::at` in `NrMacUe` when an in-flight RLC fragment arrives after the MAC queues are torn down. Both AM configs hit it; the terrestrial `simulations/nr/rlc` `[Config AM-RLF]` does not, because nothing is in flight there.
+
+**On mixed LEO/GEO.** `ntnOrbitProfile` is a stopgap. Timer values should follow the serving path once a UE can attach to either orbit. What blocks that today is the absence of NTN handover and dynamic association (item 5), not these timers — `Binder::getAssociatedSatelliteForGateway()` throws on a second distinct peer. Note also that `BearerManagement` creates entities per (peer, DRB) and re-creates them on teardown, so re-established bearers pick up fresh values at construction; that is how RRC reconfiguration delivers new timer values in a real network, and it is preferable to mutating a live entity. Each value is produced by exactly one NED expression so that swapping the orbit label for a measured RTD (step 2) is a local edit.
 
 ## Part 3 — K_offset in the 3GPP Specifications
 
@@ -296,7 +328,7 @@ Guardrails:
 2. Binder RTD service and NED parameters. No behavioural effect yet.
 3. RAC and BSR offsets.
 4. HARQ: process count, feedback-disabled mode, remove the `-2` initialisation and `HARQ_TX_INTERVAL`.
-5. RLC AM timer values, plus the `tPollRetransmit > rtd` assertion.
+5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301`, spec-derived per orbit — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2. The `tPollRetransmit > rtd` assertion is deferred to step 2, which is where a measured RTD becomes available to assert against.
 6. Grant/k2 restructuring, if at all.
 
 ## Part 8 — Diagnostics and Verification
