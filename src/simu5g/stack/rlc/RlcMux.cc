@@ -99,7 +99,16 @@ void RlcMux::fromMacLayer(cPacket *pktAux)
         // MAC SDU request — dispatch to TX entity via macToTxEntity gate
         DrbKey id = ctrlInfoToTxDrbKey(lteInfo.get());
         RlcTxEntityBase *txbuf = bearerManagement_->lookupRlcTxBuffer(id);
-        ASSERT(txbuf != nullptr);
+        if (txbuf == nullptr) {
+            // The bearer was torn down (radio link failure) after the MAC issued this
+            // request. There is no entity left to serve it, so discard it rather than
+            // dereferencing nothing, as the MAC does for data belonging to deleted
+            // connections.
+            EV << "RlcMux::fromMacLayer - no TX entity for " << id
+               << " (torn down); dropping MAC SDU request\n";
+            delete pkt;
+            return;
+        }
 
         send(pkt, txbuf->gate("macIn")->getPathStartGate());  // path start = our macToTxEntity gate (crosses the RlcEntity compound boundary)
     }
@@ -109,7 +118,17 @@ void RlcMux::fromMacLayer(cPacket *pktAux)
 
         DrbKey id = ctrlInfoToRxDrbKey(lteInfo.get());
         auto it = rxGateIndices_.find(id);
-        ASSERT(it != rxGateIndices_.end());  // bearers are established duplex: both sides exist
+        if (it == rxGateIndices_.end()) {
+            // Bearers are established duplex, so both sides normally exist -- but a radio
+            // link failure unregisters them while PDUs are still in flight, which over a
+            // satellite link means for a further round-trip time. Dereferencing the end
+            // iterator here is what made such a run segfault in a release build, where the
+            // assertion this replaces was compiled out.
+            EV << "RlcMux::fromMacLayer - no RX entity for " << id
+               << " (torn down); dropping PDU " << pkt->getName() << "\n";
+            delete pkt;
+            return;
+        }
 
         EV << "RlcMux::fromMacLayer - Enqueue packet " << pkt->getName() << " into RX entity\n";
         send(pkt, "toRxEntity", it->second);
