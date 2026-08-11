@@ -22,6 +22,22 @@ module NtnNrNic extends NrNicEnb
         mac.typename = default("NrMacGnb");
         phy.typename = default("NtnPhyGnb");
 
+        // Must match the served UEs' profile: RLC is a peer protocol, and a gNodeB whose
+        // reassembly timer is shorter than its UEs' is worse than either alone. Declared
+        // under the same name and default as on ~NtnNrNicUe and on the NTN RLC entity
+        // types, so one "**.ntnOrbitProfile" assignment covers the whole scenario.
+        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");
+
+        // NR bearers over the satellite path get the NTN-dimensioned RLC timers; see
+        // ~NtnNrRlcAmEntity for the derivation from TR 38.821 and TS 38.331.
+        rrc.bearerManagement.nrRlcAmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcAmEntity");
+        rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcUmEntity");
+
+        // RRC re-establishment. The terrestrial 100ms default is well inside one satellite
+        // round trip, so a re-establishment attempt would time out before its response
+        // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value.
+        rrc.bearerManagement.t301 = default(this.ntnOrbitProfile == "GEO" ? 2000ms : 1000ms);
+
     gates:
         input ntnIn @loose;
         output ntnOut @loose;
