@@ -90,6 +90,7 @@ network NtnGeo
         ue[numUe]: NtnNrUe {
             @display("p=720,510");
         }
+        pisa: LocalFrameMarker;
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.dnPppg;
