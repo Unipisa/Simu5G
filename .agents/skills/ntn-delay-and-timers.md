@@ -137,10 +137,10 @@ This encodes decode/processing time (3GPP's k1). It must **not** scale with prop
 
 ### Class 3: per-TTI decrement counters — the actual problem
 
-- `raRespTimer_`, `racBackoffTimer_`, `bsrRtxTimer_` — `src/simu5g/stack/mac/LteMacUe.cc:816-880` (`checkRAC()`)
+- `raRespTimer_`, `racBackoffTimer_`, `bsrRtxTimer_` — `src/simu5g/stack/mac/LteMacUe.cc:816-880` (`checkRAC()`) — **done, see "RAC and BSR as built"**
 - `expirationCounter_`, `periodCounter_` — `src/simu5g/stack/mac/LteMacUe.cc:620-640`
 - `numerologyPeriodCounter_` — `src/simu5g/stack/mac/LteMacBase.cc:381`
-- the implicit `currentHarq_` cycling and HARQ process occupancy
+- the implicit `currentHarq_` cycling and HARQ process occupancy — still open, step 4
 
 Within class 3, only the response-waits change. Periodic-grant counters count the UE's own slots and stay as they are.
 
@@ -177,6 +177,39 @@ Two things deliberately left alone: PDCP (no `discardTimer` is modelled at all, 
 **Known defect exposed, not caused, by this work:** once RLF fires on a satellite link, the run aborts on an unguarded `map::at` in `NrMacUe` when an in-flight RLC fragment arrives after the MAC queues are torn down. Both AM configs hit it; the terrestrial `simulations/nr/rlc` `[Config AM-RLF]` does not, because nothing is in flight there.
 
 **On mixed LEO/GEO.** `ntnOrbitProfile` is a stopgap. Timer values should follow the serving path once a UE can attach to either orbit. What blocks that today is the absence of NTN handover and dynamic association (item 5), not these timers — `Binder::getAssociatedSatelliteForGateway()` throws on a second distinct peer. Note also that `BearerManagement` creates entities per (peer, DRB) and re-creates them on teardown, so re-established bearers pick up fresh values at construction; that is how RRC reconfiguration delivers new timer values in a real network, and it is preferable to mutating a live entity. Each value is produced by exactly one NED expression so that swapping the orbit label for a measured RTD (step 2) is a local edit.
+
+### RAC and BSR as built
+
+**Simu5G models no Scheduling Request** — no PUCCH, no SR resource, no `sr-ProhibitTimer`. A backlogged UE with no grant fires a RACH preamble instead. So `raResponseWindow` carries three 3GPP roles at once: the RAR-window start offset, the RAR window, and `sr-ProhibitTimer`. Its total necessarily exceeds any legal TS 38.331 `ra-ResponseWindow` value (that enumeration caps at `sl80`) — a property of this model, not a spec-legal configuration. `ra-ContentionResolutionTimer` is not modelled at all.
+
+TR 38.821 §7.2.1.1.1.2 is explicit that the NTN mechanism is **not** a longer window:
+
+> "Introduce an offset for the start of the ra-ResponseWindow for NTN."
+>
+> "the RAR monitoring duration shall cover at least 2 * maximum differential delay"
+
+so the parameters keep the offset and the window **separate** and sum them only where they are written into the single inherited counter. §7.2.1.3 separately confirms `sr-ProhibitTimer`'s 128 ms cap "is not sufficient" for GEO.
+
+| Parameter | Derivation | GEO | LEO |
+|---|---|---|---|
+| `ntnRaResponseWindowOffset` | = RTD | **542 ms** | **26 ms** |
+| `ntnRaResponseWindow` | 2 × max differential delay (20.6 / 6.36 ms), rounded to a legal `ra-ResponseWindow` | **40 ms** (`sl40`) | **8 ms** (`sl8`) |
+| `ntnRetxBsrTimer` | smallest TS 38.331 `retxBSR-Timer` above the RTD, never below the inherited default | **640 ms** | **320 ms** (unchanged) |
+| `ntnRacBackoffMax` | largest TS 38.321 backoff-indicator value ≤ 2 × RTD | **960 ms** | **40 ms** |
+| `maxRacAttempts` | legal `preambleTransMax` `n10` | 10 (unchanged) | 10 (unchanged) |
+
+**Values are declared in time and converted to slots at `INITSTAGE_SIMU5G_TTI_SETUP`.** This is why `NtnNrMacUe` is C++ and not NED-only like the RLC entities: the inherited counters are *slot counts*, and at µ=0 slots and milliseconds coincide, so a NED-only version would look correct in the smoke scenarios and silently halve every timeout at µ=1. Verified: at µ=0 the counts are 582/640/0..960, at µ=1 they are 1164/1280/0..1920 — exactly doubled, same durations. The stage matters too; the inherited parameters are read at `INITSTAGE_LOCAL`, but `ttiPeriod_` is only known at `TTI_SETUP`. No `checkRAC()` override is needed, since it only ever reads these members.
+
+**Measured**, 2 s runs. GEO preamble count **44 → 2**, with delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL. LEO is unaffected as intended (52 preambles, 29250/28050 B/s unchanged). Delivery is still far below the 58.5/56.4 kB of a zero-delay run because the HARQ pool limit — 5 processes against a 507 ms RTD, about 10 transport blocks per second — is step 4 and untouched.
+
+**What deliberately got no offset**, verified so it is not re-investigated:
+
+- **The gNB has no RAC counter.** `pendingRacRequests_` is drained unconditionally at the top of each `LteMacEnb::handleSelfMessage()`, and `signalRac()` feeds `racschedule()` in the *same* TTI. Preamble-to-grant turnaround at the gNB is zero TTIs; all latency is in the air hops. `NtnNrNic.ned` needs no change, and unlike RLC these counters are not a peer protocol — only the UE counts them.
+- **The gNB preamble-collision window is a fixed one-TTI bucket with no RTD term**, so under NTN two UEs at different ranges transmitting in the same slot never collide, while UEs transmitting slots apart can falsely collide. That is a timing-advance/alignment gap, not a counter; no offset fixes it.
+- **`maxRacTryouts_` bounds nothing.** The exhaustion branch (`LteMacUe.cc:798-806`) resets the counter and zeroes the backoff, so the UE retries immediately — the `//! TODO flush all buffers here` gap. Pre-existing.
+- **`LteMacEnb::numPreambles_` is dead** (assigned at `LteMacEnb.cc:133`, never read); only the UE parameter has effect.
+
+**Seam.** `ntnRaResponseWindowOffset` is the only value here that becomes per-UE and time-varying under a geometry-derived RTD, because it tracks that UE's own round trip. The window tracks differential delay across the cell (beam size) and stays a cell-level constant, as does the BSR timer. That is the reason for the split, which changes no behaviour on its own.
 
 ## Part 3 — K_offset in the 3GPP Specifications
 
@@ -326,8 +359,8 @@ Guardrails:
 
 1. ✓ **Delay only (done).** See "Step 1 as built" in Part 1 for what landed and the measured failure signature: GEO drops from 58.5/56.4 kB to 9.3/2.1 kB while LEO is untouched at an 8.3 ms RTD.
 2. Binder RTD service and NED parameters. No behavioural effect yet.
-3. RAC and BSR offsets.
-4. HARQ: process count, feedback-disabled mode, remove the `-2` initialisation and `HARQ_TX_INTERVAL`.
+3. ✓ **RAC and BSR offsets (done).** See "RAC and BSR as built" in Part 2: GEO preamble count 44 → 2, delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL, LEO unaffected.
+4. HARQ: process count, feedback-disabled mode, remove the `-2` initialisation and `HARQ_TX_INTERVAL`. **Now the binding constraint** — with the RAC storm gone, the 5-process pool against a 507 ms RTD is what caps delivery.
 5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301`, spec-derived per orbit — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2. The `tPollRetransmit > rtd` assertion is deferred to step 2, which is where a measured RTD becomes available to assert against.
 6. Grant/k2 restructuring, if at all.
 
