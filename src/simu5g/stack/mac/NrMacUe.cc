@@ -257,6 +257,15 @@ int NrMacUe::macSduRequest()
             Codeword cw = item.first.second;
             MacNodeId destId = destCid.getNodeId();
 
+            // Skip connections torn down after they were scheduled: there is nothing left to
+            // ask the RLC for. Note that indexing connDescOut_ below would silently insert an
+            // empty descriptor, resurrecting the connection with null buffers.
+            if (connDescOut_.find(destCid) == connDescOut_.end()) {
+                EV << NOW << " NrMacUe::macSduRequest - no connection for cid " << destCid
+                   << " (torn down); skipping" << endl;
+                continue;
+            }
+
             std::pair<MacCid, Codeword> key(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[citFreq]->getScheduledBytesList();
             auto bit = scheduledBytesList->find(key);
@@ -385,6 +394,16 @@ void NrMacUe::macPduMake(MacCid cid)
                 MacCid destCid = item.first.first;
                 Codeword cw = item.first.second;
 
+                // A scheduled connection with no descriptor was torn down after it was
+                // scheduled, e.g. by a handover deleting the MAC queues in the middle of this
+                // TTI. Nothing can be built for it, so skip it rather than aborting the
+                // simulation, as done for stale HARQ feedback in LteMacBase::fromPhy().
+                if (connDescOut_.find(destCid) == connDescOut_.end()) {
+                    EV << NOW << " NrMacUe::macPduMake - no connection for cid " << destCid
+                       << " (torn down); skipping" << endl;
+                    continue;
+                }
+
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
                 const FlowDescriptor& connInfo = connDescOut_.at(destCid).flowInfo;
                 MacNodeId destId = connInfo.getDestId();
@@ -432,11 +451,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 }
 
                 while (sduPerCid > 0) {
-                    // Add SDU to PDU
-                    // Find Mac Pkt
-                    if (connDescOut_.find(destCid) == connDescOut_.end())
-                        throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
-
+                    // Add SDU to PDU (the connection is known to exist, see above)
                     if (connDescOut_[destCid].queue->isEmpty()) {
                         // NR-SO defensive fallback: the front-SDU continuation state is
                         // shared across the UE's per-carrier schedulers (LteMacUe), so the

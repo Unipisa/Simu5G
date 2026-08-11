@@ -674,8 +674,18 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
                 desc.setDirection(UL);
                 createIncomingConnection(cid, desc);
             }
+            else {
+                // Neither descriptor exists: the bearer was torn down (radio link failure)
+                // while this PDU was travelling, which over a satellite link takes hundreds
+                // of milliseconds. Indexing connDescIn_ below would describe the SDU with an
+                // empty FlowDescriptor, and the RLC it names no longer exists anyway, so
+                // discard it instead, as done for stale HARQ feedback in LteMacBase::fromPhy().
+                EV << NOW << " LteMacEnb::macPduUnmake - no connection for cid " << cid
+                   << " (torn down); dropping SDU" << endl;
+                delete upPkt;
+                continue;
+            }
         }
-        ASSERT(connDescIn_.find(cid) != connDescIn_.end());
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
 
         EV << "LteMacBase: PDU Unmaker extracted SDU" << endl;

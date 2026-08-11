@@ -147,6 +147,16 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 MacCid destCid = item.first.first;
                 Codeword cw = item.first.second;
 
+                // A scheduled connection with no descriptor was torn down after it was
+                // scheduled, e.g. by a handover deleting the MAC queues in the middle of this
+                // TTI. Nothing can be built for it, so skip it rather than aborting the
+                // simulation, as done for stale HARQ feedback in LteMacBase::fromPhy().
+                if (connDescOut_.find(destCid) == connDescOut_.end()) {
+                    EV << NOW << " LteMacUeD2D::macPduMake - no connection for cid " << destCid
+                       << " (torn down); skipping" << endl;
+                    continue;
+                }
+
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
                 FlowControlInfo *connInfo = &(connDescOut_.at(destCid).flowInfo);
                 MacNodeId destId = connInfo->getDestId();
@@ -194,11 +204,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 }
 
                 while (sduPerCid > 0) {
-                    // Add SDU to PDU
-                    // Find MAC Packet
-                    if (connDescOut_.find(destCid) == connDescOut_.end())
-                        throw cRuntimeError("Unable to find MAC buffer for cid %s", destCid.str().c_str());
-
+                    // Add SDU to PDU (the connection is known to exist, see above)
                     if (connDescOut_[destCid].queue->isEmpty())
                         throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 

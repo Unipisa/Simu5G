@@ -209,6 +209,15 @@ int LteMacUe::macSduRequest()
             Codeword cw = it.first.second;
             MacNodeId destId = destCid.getNodeId();
 
+            // Skip connections torn down after they were scheduled: there is nothing left to
+            // ask the RLC for. Note that indexing connDescOut_ below would silently insert an
+            // empty descriptor, resurrecting the connection with null buffers.
+            if (connDescOut_.find(destCid) == connDescOut_.end()) {
+                EV << NOW << " LteMacUe::macSduRequest - no connection for cid " << destCid
+                   << " (torn down); skipping" << endl;
+                continue;
+            }
+
             auto key = std::make_pair(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[carrierFreq]->getScheduledBytesList();
             auto bit = scheduledBytesList->find(key);
@@ -353,6 +362,16 @@ void LteMacUe::macPduMake(MacCid cid)
             MacCid destCid = item.first.first;
             Codeword cw = item.first.second;
 
+            // A scheduled connection with no descriptor was torn down after it was scheduled,
+            // e.g. by a handover deleting the MAC queues in the middle of this TTI. Nothing can
+            // be built for it, so skip it rather than aborting the simulation, as done for
+            // stale HARQ feedback in LteMacBase::fromPhy().
+            if (connDescOut_.find(destCid) == connDescOut_.end()) {
+                EV << NOW << " LteMacUe::macPduMake - no connection for cid " << destCid
+                   << " (torn down); skipping" << endl;
+                continue;
+            }
+
             // from a UE perspective, the destId is always the one of the eNB
             MacNodeId destId = getMacCellId();
 
@@ -395,12 +414,7 @@ void LteMacUe::macPduMake(MacCid cid)
             }
 
             while (sduPerCid > 0) {
-                // Add SDU to PDU
-                // Find Mac Pkt
-
-                if (connDescOut_.find(destCid) == connDescOut_.end())
-                    throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
-
+                // Add SDU to PDU (the connection is known to exist, see above)
                 OutgoingConnectionInfo& connInfo = connDescOut_.at(destCid);
                 if (connInfo.queue->isEmpty())
                     throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
@@ -538,8 +552,18 @@ void LteMacUe::macPduUnmake(cPacket *cpkt)
                 desc.setDirection(DL);
                 createIncomingConnection(cid, desc);
             }
+            else {
+                // Neither descriptor exists: the bearer was torn down (radio link failure)
+                // while this PDU was travelling, which over a satellite link takes hundreds
+                // of milliseconds. Indexing connDescIn_ below would describe the SDU with an
+                // empty FlowDescriptor, and the RLC it names no longer exists anyway, so
+                // discard it instead, as done for stale HARQ feedback in LteMacBase::fromPhy().
+                EV << NOW << " LteMacUe::macPduUnmake - no connection for cid " << cid
+                   << " (torn down); dropping SDU" << endl;
+                delete upPkt;
+                continue;
+            }
         }
-        ASSERT(connDescIn_.find(cid) != connDescIn_.end());
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
 
         sendUpperPackets(upPkt);
@@ -560,6 +584,16 @@ void LteMacUe::handleUpperMessage(cPacket *pktAux)
     bufferizePacket(pkt);
 
     if (!isLteRlcPduNewDataInd) {
+        if (requestedSdus_ == 0) {
+            // No SDU is outstanding: the RLC had already produced this one for a request
+            // issued before a teardown (radio link failure) discarded the transmission plan.
+            // bufferizePacket() has dropped it, since its connection is gone, so there is
+            // nothing to account for here and no PDU to build.
+            EV << NOW << " LteMacUe::handleUpperMessage - MAC SDU received with no pending request"
+                  " (connections torn down); dropped" << endl;
+            return;
+        }
+
         requestedSdus_--;
         ASSERT(requestedSdus_ >= 0);
         // build a MAC PDU only after all MAC SDUs have been received from RLC
@@ -983,6 +1017,22 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 
     // remove traffic descriptor and lcg entry
     lcgMap_.clear();
+}
+
+void LteMacUe::deleteQueuesRadioLinkFailure(MacNodeId nodeId)
+{
+    Enter_Method_Silent();
+
+    LteMacBase::deleteQueuesRadioLinkFailure(nodeId);  // marks HARQ reset, then deleteQueues()
+
+    // The teardown lands in the middle of a TTI, between macSduRequest() and the arrival of
+    // the SDUs it asked the RLC for. scheduleList_ holds the LCG schedulers' decisions, whose
+    // CIDs no longer have a connection descriptor, and requestedSdus_ counts SDUs that will
+    // never be buffered. Discard both, so that nothing is built from the erased connections:
+    // this is the transmission-side counterpart of resetHarq_, which makes in-flight HARQ
+    // feedback inert on the reception side.
+    scheduleList_.clear();
+    requestedSdus_ = 0;
 }
 
 } //namespace

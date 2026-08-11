@@ -169,7 +169,19 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
 
         MacNodeId senderId = userInfo->getSourceId();
         MacCid cid = MacCid(senderId, lcid);
-        ASSERT(connDescIn_.find(cid) != connDescIn_.end());
+
+        if (connDescIn_.find(cid) == connDescIn_.end()) {
+            // The bearer was torn down (radio link failure) while this PDU was travelling,
+            // which over a satellite link takes hundreds of milliseconds. Indexing connDescIn_
+            // below would describe the SDU with an empty FlowDescriptor, and the RLC it names
+            // no longer exists anyway, so discard it instead, as done for stale HARQ feedback
+            // in LteMacBase::fromPhy().
+            EV << NOW << " LteMacEnbD2D::macPduUnmake - no connection for cid " << cid
+               << " (torn down); dropping SDU" << endl;
+            delete upPkt;
+            continue;
+        }
+
         *upPkt->addTag<FlowControlInfo>() = connDescIn_[cid].toFlowControlInfo();
 
         EV << "LteMacEnbD2D: Lcid --->"<< (int)lcid << " Cid: " << cid <<endl;

@@ -205,6 +205,14 @@ class LteMacUe : public LteMacBase
      */
     void deleteQueues(MacNodeId nodeId) override;
 
+    /**
+     * In addition to the base behavior, discards the TTI's in-progress
+     * transmission plan, which refers to the connections just deleted.
+     *
+     * @param nodeId Id of the node whose queues are deleted
+     */
+    void deleteQueuesRadioLinkFailure(MacNodeId nodeId) override;
+
     // update ID of the serving cell during handover
     virtual void doHandover(MacNodeId targetEnb);
 };
