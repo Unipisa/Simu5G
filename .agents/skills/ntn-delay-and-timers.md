@@ -2,7 +2,7 @@
 
 This document expands item 2 ("Add Propagation Delay") of `ntn-implementation.md`, and the timer half of item 4.
 
-**Status: Part 1 (step 1 of the staging plan) is implemented; Parts 2-6 are still design discussion.** The propagation delay itself now exists — see "Step 1 as built" below for what landed and the measured results. Everything about MAC timers remains unimplemented. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
+**Status: steps 1, 3, 4 and 5 of the staging plan are implemented.** Propagation delay, the class-1 timers (RLC, RRC), the class-3 RAC/BSR counters, and HARQ all now exist — see the "as built" sections in Parts 1 and 2 for what landed and the measured results. Still open: step 2 (a geometry-derived round-trip-delay service, which would replace the per-orbit profiles the implemented steps use) and step 6. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
 
 The short version: adding the delay is mechanical; making the NR stack survive it is not. Simu5G assumes throughout that a frame sent in one TTI is received in the next, and several MAC procedures are timed as counters decremented once per TTI. Those counters conflate "how many of my own slots have passed" with "how long until the peer can possibly answer". Only the second meaning has to grow with propagation delay.
 
@@ -170,11 +170,17 @@ Two independent cross-checks: GEO `t_Reassembly` lands on 2200 ms, exactly the c
 
 **Measured.** UM (what the default configs run) holds or improves: GeoSat DL 4650 → 4950 B/s, LeoSat unchanged. AM is only reachable via the new `[Config GeoSatAm]`, since `Ip2Nic` defaults every class to UM; there, RLF moves from **t = 4.4 s** with terrestrial timers to **t = 25.8 s** with NTN timers, a 5.9x improvement.
 
-**RLF is delayed, not avoided, and the reason matters.** The derivation sizes `t_PollRetransmit` against the 541 ms propagation delay, which is correct for a healthy link. In the current branch the class-3 counters are still unfixed, so MAC stalling adds hundreds of ms per direction and the real RLC status round trip exceeds 800 ms. Do **not** inflate `t_PollRetransmit` to absorb that — it would be tuning to a defect and would need undoing after steps 3-4. **Class 1 cannot be fully validated until class 3 is fixed.**
+**RLF was delayed rather than avoided, until the layers below were fixed — and that vindicated not tuning around it.** When these timers landed, the class-3 counters and the HARQ pool were still unfixed, so MAC stalling pushed the real RLC status round trip past the 800 ms `t_PollRetransmit` was sized for, and RLF still fired at t = 25.8 s. The temptation was to inflate `t_PollRetransmit` to absorb the stall; that would have been tuning to a defect. With steps 3 and 4 done, **`GeoSatAm` no longer reaches RLF at all**: the AM transmit window stops stalling, and a stalled window is the only route by which `RETX_COUNT` accumulates. The spec-derived value needed no adjustment. Exercising the teardown paths now requires forcing a window stall — see the note in `simulations/nr/ntn_smoke/omnetpp.ini`.
 
 Two things deliberately left alone: PDCP (no `discardTimer` is modelled at all, and `NrPdcpRxEntity.timeout` only runs on dual-connectivity split bearers, so it is dead code on a single-leg NTN bearer — a real gap, but not a value problem), and `t311`, whose `0s` default is a scenario choice rather than an NTN property.
 
-**Known defect exposed, not caused, by this work:** once RLF fires on a satellite link, the run aborts on an unguarded `map::at` in `NrMacUe` when an in-flight RLC fragment arrives after the MAC queues are torn down. Both AM configs hit it; the terrestrial `simulations/nr/rlc` `[Config AM-RLF]` does not, because nothing is in flight there.
+**Defect exposed, not caused, by this work — now fixed:** once RLF fires on a satellite link, frames that were in flight keep arriving for a further round-trip time and find the MAC connections already deleted. That used to abort the run, on an unguarded `map::at` in `NrMacUe` on the transmission side and on an empty `connDescIn_` entry fabricated by `macPduUnmake` on the reception side. Both are now discarded gracefully, mirroring how `deleteQueuesRadioLinkFailure` already makes in-flight HARQ feedback inert via `resetHarq_`; `LteMacUe::deleteQueuesRadioLinkFailure` additionally drops the TTI's transmission plan, which referred to the connections just deleted.
+
+The **same defect existed one layer up** and was only found afterwards: `RlcMux::fromMacLayer()` asserted that an arriving PDU has an RX gate index and that a MAC SDU request has a TX buffer, on the reasoning "bearers are established duplex: both sides exist". A teardown unregisters those entities while PDUs are still in flight; in a release build, where the assertion compiles out, the end iterator was dereferenced and the run **segfaulted**. Both lookups are now guarded the same way.
+
+The terrestrial `simulations/nr/rlc` `[Config AM-RLF]` never exercises any of this, because nothing is in flight there. Worth remembering when fixing a teardown path: fixing one layer just moves the crash up to the next, and a release build turns a would-be assertion into a segfault.
+
+**Still open on this path:** a `LteMacSduRequest` already sent to the RLC when the teardown lands reaches `RlcMux::fromMacLayer` after its TX entity was deleted, where `lookupRlcTxBuffer()` returns null and the guarding `ASSERT` is compiled out in release builds (`RlcMux.cc:101-104`). The MAC cannot recall a message it has already sent, so the drop has to happen in `RlcMux`. Not reproducible with the default seed; `-c GeoSatAm --seed-set=3` (or `4`) segfaults on it.
 
 **On mixed LEO/GEO.** `ntnOrbitProfile` is a stopgap. Timer values should follow the serving path once a UE can attach to either orbit. What blocks that today is the absence of NTN handover and dynamic association (item 5), not these timers — `Binder::getAssociatedSatelliteForGateway()` throws on a second distinct peer. Note also that `BearerManagement` creates entities per (peer, DRB) and re-creates them on teardown, so re-established bearers pick up fresh values at construction; that is how RRC reconfiguration delivers new timer values in a real network, and it is preferable to mutating a live entity. Each value is produced by exactly one NED expression so that swapping the orbit label for a measured RTD (step 2) is a local edit.
 
@@ -210,6 +216,33 @@ so the parameters keep the offset and the window **separate** and sum them only 
 - **`LteMacEnb::numPreambles_` is dead** (assigned at `LteMacEnb.cc:133`, never read); only the UE parameter has effect.
 
 **Seam.** `ntnRaResponseWindowOffset` is the only value here that becomes per-UE and time-varying under a geometry-derived RTD, because it tracks that UE's own round trip. The window tracks differential delay across the cell (beam size) and stays a cell-level constant, as does the BSR timer. That is the reason for the split, which changes no behaviour on its own.
+
+### HARQ as built
+
+Two mechanisms, and TR 38.821 §6.4.2 names both: "increase the number of HARQ processes to match the longer satellite round trip delay to avoid stop-and-wait", or "disable UL HARQ feedback to avoid stop-and-wait … and rely on RLC ARQ for reliability".
+
+Keeping the pipe full needs one process per slot of round trip — ~26 for LEO-600, ~42 for LEO-1200, ~541 for GEO — against a Rel-17 ceiling of 32. **So the process count solves LEO and cannot solve GEO.** Measured, GEO at 32 processes delivers 18450 B/s downlink, and 18450 × 0.507 / 32 ≈ 292 B, one CBR packet per process cycle: still exactly process-limited.
+
+**Feedback disabling is directional, and that turned out to matter more than expected.** TR 38.821 §7.2.1.4 states it twice, separately — "disable uplink HARQ feedback for downlink transmission at the UE receiver", and as a distinct decision "disable HARQ uplink retransmission at the UE transmitter". Measured over GEO:
+
+| | GEO DL | GEO UL | LEO DL | LEO UL |
+|---|---|---|---|---|
+| feedback on, 32 processes | 18450 | 7650 | 29250 | 28050 |
+| **DL off, UL on (the default)** | **25350** | **7650** | 28350 | 28050 |
+| both off | 25350 | **1500** | 28350 | 28050 |
+
+Disabling downlink feedback raises GEO downlink 37%; additionally disabling uplink feedback costs 80% of uplink. The reason is that an uplink MAC PDU also carries the **buffer status report**, so losing one with no retransmission stalls the UE for a whole `retxBsrTimer` before the gNodeB learns it has data. Downlink is pure data and only pays the block error rate. Hence the default: `harqFeedbackEnabledDl = false`, `harqFeedbackEnabledUl = true`, both orbits. Uplink therefore stays stop-and-wait, which is why 32 processes still matters — TR 38.821 §6.4.2 "Option 2: Greater than 16 HARQ process IDs with UL HARQ feedback enabled".
+
+LEO is essentially indifferent (28350 vs 29250 downlink, a ~3% cost of losing HARQ error correction), confirming the process count alone is sufficient there. Note the smoke load of 30 kB/s does not stress LEO's pool at all — at an 8.3 ms RTD fewer than one packet is ever in flight — so the LEO comparison needs a saturating-load scenario to be meaningful.
+
+**Two implementation traps, both found by measurement rather than reading:**
+
+- `LteHarqProcessTx` tracks `numEmptyUnits_` *separately* from the unit's own status, and `isEmpty()`/`firstAvailable()` read the counter. Resetting the unit inside `LteHarqUnitTx::extractPdu()` left every process permanently "occupied" and throughput collapsed to a fifth. The completion has to go through the process, which is why it is `LteHarqProcessTx::extractPdu()` that calls `completeWithoutFeedback()` and increments the counter.
+- With feedback disabled a process frees on transmission, so `firstAvailable()` — which scans from index 0 — hands out **ACID 0 every slot**. The receiver still needs `harqFbEvaluationTimer` slots to evaluate, so the next PDU aborts the run with "New data arriving in busy HARQ process". `LteHarqBufferTx::firstAvailable()` now advances a round-robin cursor when feedback is disabled, which is what a real scheduler does with the process ID it puts in the DCI. With feedback enabled it still starts at 0, so terrestrial is untouched.
+
+Terrestrial behaviour is provably unchanged: with both flags true, all three modified paths reduce to the original code exactly.
+
+Caveat worth recording: 32 exceeds the 4-bit HARQ process ID field of a real DCI. TR 38.821 §6.4.2 lists several ways round it — slot-number-based IDs, virtual IDs, reuse within the round-trip delay — without converging. Simu5G does not model DCI so the choice is free here, but it is a real constraint in a deployment.
 
 ## Part 3 — K_offset in the 3GPP Specifications
 
@@ -360,7 +393,7 @@ Guardrails:
 1. ✓ **Delay only (done).** See "Step 1 as built" in Part 1 for what landed and the measured failure signature: GEO drops from 58.5/56.4 kB to 9.3/2.1 kB while LEO is untouched at an 8.3 ms RTD.
 2. Binder RTD service and NED parameters. No behavioural effect yet.
 3. ✓ **RAC and BSR offsets (done).** See "RAC and BSR as built" in Part 2: GEO preamble count 44 → 2, delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL, LEO unaffected.
-4. HARQ: process count, feedback-disabled mode, remove the `-2` initialisation and `HARQ_TX_INTERVAL`. **Now the binding constraint** — with the RAC storm gone, the 5-process pool against a 507 ms RTD is what caps delivery.
+4. ✓ **HARQ (done).** Process count raised to 32 on both ends, and downlink feedback disabled while uplink feedback stays on — see "HARQ as built" below. GEO downlink 8100 → 25350 B/s, 85% of offered load.
 5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301`, spec-derived per orbit — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2. The `tPollRetransmit > rtd` assertion is deferred to step 2, which is where a measured RTD becomes available to assert against.
 6. Grant/k2 restructuring, if at all.
 

@@ -30,11 +30,13 @@ Available now:
 - Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently. This applies to SINR (data, CSI-RS, SRS) and, since the beacon RSSI fix, to RSRP as well.
 - Two-hop beacon RSSI: a `BEACONPKT` reaches attached UEs through the satellite the same way CSI-RS does, and `NtnChannelModel::computeReceptionRsrp()` combines both hops for `NtnPhyUe::computeReceivedBeaconPacketRssi()`, feeding the (still unimplemented) handover machinery a correct measurement instead of a fictitious direct-geometry one.
 - Geometry-derived per-hop propagation delay, with the frame duration charged once end to end as a bent-pipe transponder requires. See item 2 below and `ntn-delay-and-timers.md`.
-- Minimal GEO and LEO bidirectional CBR smoke scenarios.
+- NTN-aware protocol timers throughout: RLC and RRC (`NtnNrRlcAmEntity`, `NtnNrRlcUmEntity`), the RAC and BSR counters (`NtnNrMacUe`), and HARQ (32 processes, downlink feedback disabled). All values derived from TR 38.821 and TS 38.331 and selected by an `ntnOrbitProfile` parameter. See `ntn-delay-and-timers.md`.
+- Graceful teardown on a delayed link: MAC and RLC both discard data belonging to bearers released while frames were still in flight, which over a satellite link means for a further round-trip time.
+- Minimal GEO and LEO bidirectional CBR smoke scenarios, plus RLC AM variants.
 
 Not available as a complete model:
 
-- NTN-aware protocol timers. The propagation delay now exists, but no MAC timer accounts for it, so the GEO smoke scenario delivers roughly a sixth of its previous downlink and a twentieth of its uplink. This is the branch's most consequential open item.
+- Validation at realistic load. Every measurement so far is one UE at 30 kB/s over 2 s. GEO downlink now reaches 85% of that offered load, but GEO uplink remains grant-limited at about a quarter of it — the BSR/grant round trip, not HARQ — and nothing has been run with many UEs, saturating load, or across a full LEO pass. A UE also never stops retrying random access after its satellite sets, since `LteMacUe::macHandleRac()` resets the attempt counter on exhaustion.
 - An input-dependent bent-pipe transponder model with payload gain, added noise, bandwidth limits, output backoff, and saturation.
 - Satellite-relative Doppler beyond the carrier-frequency scaling (the terrestrial-endpoint speed is still the only source of relative motion).
 - Satellite-relative Doppler, compensation, and residual frequency error.
@@ -335,8 +337,8 @@ Complete these items before describing the implementation as a usable bent-pipe 
 - ✓ **SRS (commit 9b265962, hook 6a9188f9)**: SRS is measured on both hops at the satellite and gateway, combined, and fed to uplink CQI computation via `endToEndSinr[]`. Uplink CSI measurement is consistent with the transparent path.
 - ✓ **CSI-RS and two-hop enforcement (commit 1aa1083d)**: downlink CSI and data decoding both combine the two hops through `computeReceptionSinr()`, and a missing first-hop measurement is now an error rather than a silent single-hop fallback.
 - ✓ **RSRP-based measurement, beacon RSSI**: beacon delivery to attached UEs is fixed (`NtnPhyGnb::sendBroadcast()` fans `BEACONPKT` out over `attachedUes[]`, and `NtnPhyBase::getHopAction()` stores the feeder-hop measurement in the new `relayHopRsrp[]` field), and `NtnPhyUe::computeReceivedBeaconPacketRssi()` now combines both hops through the new `NtnChannelModel::computeReceptionRsrp()`, using the same harmonic-mean formula as `computeReceptionSinr()`, when the beacon's source gNB is a transparent NTN cell. Cell search (`LtePhyUe::findCandidateEnb()`) and handover triggering/switching remain untouched and out of scope; see the note under Known Physical Inconsistencies.
-- Review HARQ process counts/timing, random-access windows, scheduling requests, RLC timers, and other procedures against GEO/LEO RTT.
-- Model timing advance/common timing reference and NTN assistance data assumptions explicitly.
+- ✓ **HARQ, random access, BSR and RLC timers against GEO/LEO RTT (done)**: RLC and RRC timers on the NTN entity types, RAC/BSR counters on `NtnNrMacUe`, and HARQ raised to 32 processes with downlink feedback disabled. All values derived from TR 38.821 and TS 38.331; see `ntn-delay-and-timers.md` for the derivations and measurements. Note Simu5G models no Scheduling Request at all — a backlogged UE fires a RACH preamble instead — so `raResponseWindow` carries the RAR offset, the RAR window and `sr-ProhibitTimer` at once.
+- Model timing advance/common timing reference and NTN assistance data assumptions explicitly. **Still open, and it now matters**: with no timing advance, the gNodeB's preamble-collision window is a fixed one-slot bucket, so under differential delay two UEs transmitting in the same slot arrive slots apart and never collide, while UEs transmitting slots apart can collide spuriously. Invisible with one UE; wrong with many.
 
 ### 5. Add Coverage, Beams, and Dynamic Associations
 
