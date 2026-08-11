@@ -473,6 +473,13 @@ void LteMacUeD2D::macHandleRac(cPacket *pktAux)
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto racPkt = pkt->peekAtFront<LteRac>();
 
+    // The response window exists to wait for this response, so it ends here whatever the
+    // response says. Leaving it running would block the next RAC attempt for the rest of the
+    // window even though the previous attempt is already resolved -- barely visible with the
+    // terrestrial 20 slots, but half a second of dead time once the window is dimensioned
+    // for a satellite round trip.
+    raRespTimer_ = 0;
+
     if (racPkt->getSuccess()) {
         EV << "LteMacUeD2D::macHandleRac - Ue " << nodeId_ << " won RAC" << endl;
         // if RAC is won, BSR has to be sent
