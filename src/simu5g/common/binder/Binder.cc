@@ -17,8 +17,11 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/GeoUtils.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
+#include "simu5g/world/radio/ChannelAccess.h"
 #include "simu5g/stack/mac/LteMacUe.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
@@ -413,6 +416,135 @@ NtnGatewayInfo *Binder::getNtnGatewayInfo(MacNodeId ntnGwId) const
     return nullptr;
 }
 
+const inet::Coord& Binder::getNtnRadioPosition(MacNodeId nodeId, bool serviceLink) const
+{
+    // Deliberately not routed through the node's mobility submodule: on a MovingMobilityBase,
+    // getCurrentPosition() also advances that module's state and emits mobilityStateChangedSignal,
+    // which is not this module's business to trigger. ChannelAccess caches the position that the
+    // channel model and NtnPropagationDelay both use, so reading it here keeps the round-trip
+    // delay on exactly the same geometry as the per-hop delay and the path loss.
+    cModule *radioModule = nullptr;
+    RanNodeType nodeType = getNodeTypeById(nodeId);
+
+    if (nodeType == SATELLITE_NODE) {
+        SatelliteInfo *info = getSatelliteInfo(nodeId);
+        if (info == nullptr || info->satelliteModule == nullptr)
+            throw cRuntimeError("Binder::getNtnRadioPosition - satellite %hu is not registered", num(nodeId));
+        // The two NICs share one mobility module, so both report the same position today. The
+        // link is still named explicitly, because that will stop being true as soon as a
+        // satellite carries separately-placed antennas.
+        cModule *nic = info->satelliteModule->getSubmodule(serviceLink ? "serviceNic" : "feederNic");
+        radioModule = (nic != nullptr) ? nic->getSubmodule("phy") : nullptr;
+    }
+    else if (nodeType == NTN_GATEWAY_NODE) {
+        NtnGatewayInfo *info = getNtnGatewayInfo(nodeId);
+        if (info == nullptr || info->gatewayModule == nullptr)
+            throw cRuntimeError("Binder::getNtnRadioPosition - NTN gateway %hu is not registered", num(nodeId));
+        // A gateway radiates towards the satellite over the feeder link only; its gNodeB-facing
+        // side is the wired fronthaul and has no radio position.
+        cModule *nic = info->gatewayModule->getSubmodule("feederNic");
+        radioModule = (nic != nullptr) ? nic->getSubmodule("phy") : nullptr;
+    }
+    else {
+        radioModule = const_cast<Binder *>(this)->getPhyByNodeId(nodeId);
+    }
+
+    if (radioModule == nullptr)
+        throw cRuntimeError("Binder::getNtnRadioPosition - node %hu has no %s-link radio module. A round-trip "
+                "delay cannot be computed without the positions of both endpoints.",
+                num(nodeId), serviceLink ? "service" : "feeder");
+
+    return check_and_cast<ChannelAccess *>(radioModule)->getRadioPosition();
+}
+
+inet::Coord Binder::getNtnRadioEcefPosition(MacNodeId nodeId, bool serviceLink)
+{
+    if (ntnReferenceSystem_ == nullptr) {
+        ntnReferenceSystem_ = GeographicReferenceSystemAccess().get();
+        if (ntnReferenceSystem_ == nullptr)
+            throw cRuntimeError("Binder::getNtnRadioEcefPosition - the network has no GeographicReferenceSystem "
+                    "module, so NTN geometry cannot be evaluated");
+    }
+
+    return ecefFromWgs84(ntnReferenceSystem_->wgs84FromOmnet(getNtnRadioPosition(nodeId, serviceLink)));
+}
+
+simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
+{
+    Enter_Method_Silent("getNtnCellRoundTripDelay");
+
+    const GnbNtnAssociation *association = getGnbNtnAssociation(gnbId);
+    if (association == nullptr)
+        return SIMTIME_ZERO;
+
+    auto cached = ntnCellRoundTripDelay_.find(gnbId);
+    if (cached != ntnCellRoundTripDelay_.end())
+        return cached->second;
+
+    if (ntnReferenceSystem_ == nullptr) {
+        ntnReferenceSystem_ = GeographicReferenceSystemAccess().get();
+        if (ntnReferenceSystem_ == nullptr)
+            throw cRuntimeError("Binder::getNtnCellRoundTripDelay - the network has no GeographicReferenceSystem "
+                    "module, so NTN geometry cannot be evaluated");
+    }
+
+    inet::GeoCoord satelliteWgs84 = ntnReferenceSystem_->wgs84FromOmnet(getNtnRadioPosition(association->satelliteId, true));
+    double altitude = satelliteWgs84.altitude.get();
+
+    // A satellite sitting at the geographic reference altitude is not a satellite. This is the
+    // guard that catches a query issued before inet::INITSTAGE_SINGLE_MOBILITY, where every
+    // ChannelAccess still reports (0,0,0) -- which converts to a perfectly plausible point on the
+    // geoid, so no range check would notice.
+    if (altitude < ntnMinSatelliteAltitude_)
+        throw cRuntimeError("Binder::getNtnCellRoundTripDelay - satellite %hu is at an altitude of %g km, below "
+                "ntnMinSatelliteAltitude (%g km). Either its position was never initialised -- the round-trip "
+                "delay cannot be queried before inet::INITSTAGE_SINGLE_MOBILITY -- or the scenario misplaces it.",
+                num(association->satelliteId), altitude / 1000.0, ntnMinSatelliteAltitude_ / 1000.0);
+
+    // The longest service link and the longest feeder link this cell will use, both bounded by the
+    // lowest elevation it accepts, and both traversed twice per round trip.
+    double maxSlantRange = computeSlantRangeAtElevation(altitude, ntnMinElevation_);
+    simtime_t roundTripDelay = 4 * maxSlantRange / SPEED_OF_LIGHT + ntnRoundTripDelayMargin_;
+    ntnCellRoundTripDelay_[gnbId] = roundTripDelay;
+
+    // Reported once per cell, at INFO because EV_DEBUG is compiled out under NDEBUG and because a
+    // round-trip delay that silently came out wrong is indistinguishable from a channel problem.
+    EV_INFO << "Binder::getNtnCellRoundTripDelay - cell " << gnbId << " via satellite "
+            << association->satelliteId << " at altitude[" << altitude / 1000.0 << "km]: worst-case slant range["
+            << maxSlantRange / 1000.0 << "km] at elevation[" << ntnMinElevation_ << "deg], round-trip delay["
+            << roundTripDelay.dbl() * 1000.0 << "ms] including margin["
+            << ntnRoundTripDelayMargin_.dbl() * 1000.0 << "ms]" << endl;
+
+    return roundTripDelay;
+}
+
+simtime_t Binder::getNtnRoundTripDelay(MacNodeId gnbId, MacNodeId ueId)
+{
+    Enter_Method_Silent("getNtnRoundTripDelay");
+
+    const GnbNtnAssociation *association = getGnbNtnAssociation(gnbId);
+    if (association == nullptr)
+        return SIMTIME_ZERO;
+
+    inet::Coord ueEcef = getNtnRadioEcefPosition(ueId, true);
+    inet::Coord satelliteServiceEcef = getNtnRadioEcefPosition(association->satelliteId, true);
+    inet::Coord satelliteFeederEcef = getNtnRadioEcefPosition(association->satelliteId, false);
+    inet::Coord gatewayEcef = getNtnRadioEcefPosition(association->ntnGatewayId, false);
+
+    double serviceRange = ueEcef.distance(satelliteServiceEcef);
+    double feederRange = satelliteFeederEcef.distance(gatewayEcef);
+
+    // The gNodeB-to-gateway fronthaul is a wired connection whose delay, if any, belongs to that
+    // connection's channel rather than here.
+    simtime_t roundTripDelay = 2 * (serviceRange + feederRange) / SPEED_OF_LIGHT;
+
+    EV_DEBUG << "Binder::getNtnRoundTripDelay - UE " << ueId << " in cell " << gnbId << ": service link["
+             << serviceRange / 1000.0 << "km] feeder link[" << feederRange / 1000.0 << "km] round-trip delay["
+             << roundTripDelay.dbl() * 1000.0 << "ms]" << endl;
+
+    return roundTripDelay;
+}
+
 inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
 inline ostream& operator<<(ostream& os, const UeInfo& info) { return os << info.str(); }
 inline ostream& operator<<(ostream& os, const EnbInfo& info) { return os << info.str(); }
@@ -426,6 +558,10 @@ void Binder::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = getSystemModule()->getName();
+
+        ntnMinElevation_ = par("ntnMinElevation").doubleValue();
+        ntnRoundTripDelayMargin_ = par("ntnRoundTripDelayMargin");
+        ntnMinSatelliteAltitude_ = par("ntnMinSatelliteAltitude").doubleValue();
 
         // Add WATCH macros for all member variables
         WATCH(networkName_);

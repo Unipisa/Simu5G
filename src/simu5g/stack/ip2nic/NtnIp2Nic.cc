@@ -24,21 +24,50 @@ void NtnIp2Nic::initialize(int stage)
     Ip2Nic::initialize(stage);
 
     if (stage == INITSTAGE_SIMU5G_NODE_RELATIONSHIPS && nodeType_ == NODEB) {
-        if (!registerNtnAssociation(false))
-            // Dynamic satellites may register after this init stage, so retry at the first event.
-            scheduleAt(SIMTIME_ZERO, new cMessage("registerNtnAssociation"));
+        ntnAssociationRegistered_ = registerNtnAssociation(false);
+
+        // Deferred to the first event even when the association is already in place. A dynamic
+        // satellite may still register after this stage, and the path geometry cannot be read
+        // here in any case: no radio holds a valid position until inet::INITSTAGE_SINGLE_MOBILITY,
+        // which runs after every Simu5G stage.
+        scheduleAt(SIMTIME_ZERO, new cMessage("initNtnAssociation"));
     }
 }
 
 void NtnIp2Nic::handleMessage(cMessage *msg)
 {
-    if (msg->isName("registerNtnAssociation")) {
+    if (msg->isName("initNtnAssociation")) {
         delete msg;
-        registerNtnAssociation(true);
+        if (!ntnAssociationRegistered_)
+            ntnAssociationRegistered_ = registerNtnAssociation(true);
+        reportNtnPath();
         return;
     }
 
     Ip2Nic::handleMessage(msg);
+}
+
+void NtnIp2Nic::reportNtnPath()
+{
+    const GnbNtnAssociation *association = binder_->getGnbNtnAssociation(nodeId_);
+    if (association == nullptr)
+        return;
+
+    // Evaluated before the stream expression: the Binder logs its own derivation the first time a
+    // cell is queried, which would otherwise land in the middle of this line.
+    double cellRoundTripDelay = binder_->getNtnCellRoundTripDelay(nodeId_).dbl();
+
+    EV_INFO << "NtnIp2Nic::reportNtnPath - gNodeB " << nodeId_ << " serves through gateway "
+            << association->ntnGatewayId << " and satellite " << association->satelliteId
+            << ": worst-case cell round-trip delay[" << cellRoundTripDelay * 1000.0 << "ms]" << endl;
+
+    // The per-UE delay is the one that tracks satellite motion, so it is worth having beside the
+    // cell bound: the bound must always be the larger of the two.
+    for (MacNodeId ueId : binder_->getDeployedUes(nodeId_)) {
+        double ueRoundTripDelay = binder_->getNtnRoundTripDelay(nodeId_, ueId).dbl();
+        EV_INFO << "NtnIp2Nic::reportNtnPath - UE " << ueId << " round-trip delay["
+                << ueRoundTripDelay * 1000.0 << "ms]" << endl;
+    }
 }
 
 bool NtnIp2Nic::registerNtnAssociation(bool throwOnMissing)

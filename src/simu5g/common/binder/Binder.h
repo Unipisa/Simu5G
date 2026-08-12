@@ -31,6 +31,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class UeStatsCollector;
+class GeographicReferenceSystem;
 
 
 struct NodeInfo {
@@ -83,6 +84,20 @@ class Binder : public cSimpleModule
     std::vector<SatelliteInfo *> satelliteList_;
     std::vector<NtnGatewayInfo *> ntnGatewayList_;
     std::map<MacNodeId, GnbNtnAssociation> gnbNtnAssoc_;
+
+    // NTN round-trip delay service; see getNtnCellRoundTripDelay()
+    double ntnMinElevation_ = 0;            // deg
+    simtime_t ntnRoundTripDelayMargin_;
+    double ntnMinSatelliteAltitude_ = 0;    // m
+    // Resolved on first use rather than in initialize(): the reference system initializes at
+    // inet::INITSTAGE_LOCAL too, with no ordering guarantee against this module, and every
+    // round-trip-delay query happens at simulation time anyway.
+    GeographicReferenceSystem *ntnReferenceSystem_ = nullptr;
+    // Cell round-trip delays, keyed by gNodeB. The bound depends on the satellite's altitude but
+    // not on where it currently is, so for the circular orbits modelled here it is constant for
+    // the whole run and caching it costs nothing in accuracy -- while the timers it feeds query it
+    // once per slot. An eccentric orbit would need this re-evaluated on a validity interval.
+    std::map<MacNodeId, simtime_t> ntnCellRoundTripDelay_;
 
     // list of all background traffic managers. Used for background UEs CQI computation
     std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
@@ -167,6 +182,17 @@ class Binder : public cSimpleModule
     // helpers
     virtual bool isValidNodeId(MacNodeId  nodeId) const;
     virtual LteD2DMode computeD2DCapability(MacNodeId src, MacNodeId dst);
+
+    /*
+     * NTN round-trip delay helpers
+     */
+    // Cached OMNeT++-local position of the radio that the given node uses on the service link
+    // (UE-facing) or the feeder link (gateway-facing). Throws if the node or its radio cannot be
+    // resolved -- a silently wrong position would produce a plausible delay, which is worse.
+    virtual const inet::Coord& getNtnRadioPosition(MacNodeId nodeId, bool serviceLink) const;
+
+    // ECEF position of the same radio, using the same WGS84 conversion as NtnPropagationDelay.
+    virtual inet::Coord getNtnRadioEcefPosition(MacNodeId nodeId, bool serviceLink);
 
   public:
     Binder() {}
@@ -301,6 +327,42 @@ class Binder : public cSimpleModule
     virtual SatelliteInfo *getSatelliteInfo(MacNodeId satId) const;
 
     virtual NtnGatewayInfo *getNtnGatewayInfo(MacNodeId ntnGwId) const;
+
+    /**
+     * Worst-case round-trip delay of the transparent NTN path serving the given gNodeB, i.e. the
+     * longest round trip any UE in that cell can have. Returns zero for a gNodeB with no NTN
+     * association, which is what keeps every terrestrial path unaffected.
+     *
+     * The bound comes from the lowest elevation the cell is willing to use (ntnMinElevation),
+     * applied to both the service and the feeder link, plus ntnRoundTripDelayMargin. It therefore
+     * depends on the satellite's altitude but not on where it currently is, and for a circular
+     * orbit it is constant for the whole run. That is deliberate: 3GPP dimensions the timers this
+     * value feeds as an upper bound, not an estimate -- overestimating costs latency, while
+     * underestimating breaks the protocol -- and it is also how TR 38.821 clause 7.2 derives the
+     * 541.46ms and 25.77ms its timer recommendations are written against.
+     *
+     * This is the value to use before a UE has attached, and for anything cell-wide: a per-UE
+     * value at random-access time would model a UE that knew its own delay before connecting,
+     * which is precisely the assumption the specifications refuse to make.
+     */
+    virtual simtime_t getNtnCellRoundTripDelay(MacNodeId gnbId);
+
+    /**
+     * Instantaneous round-trip delay of the transparent NTN path between the given gNodeB and one
+     * of its UEs, from the actual positions of the UE, the satellite and the gateway. Returns zero
+     * for a gNodeB with no NTN association.
+     *
+     * Unlike getNtnCellRoundTripDelay() this tracks satellite motion, so over a LEO pass it varies
+     * by a factor of about three. It is the simulation analogue of the assistance data a real UE
+     * derives from the broadcast ephemeris plus its own GNSS position, and it is consistent with
+     * this branch's existing assumption of perfect Doppler compensation.
+     *
+     * No protocol timer uses this yet -- they are all cell-wide, see above. It exists because it is
+     * the natural home for per-UE round-trip diagnostics, because it cross-checks the geometry in
+     * NtnPropagationDelay by an independent route, and because grant timing (k2/K_offset) will
+     * need it.
+     */
+    virtual simtime_t getNtnRoundTripDelay(MacNodeId gnbId, MacNodeId ueId);
 
     /**
      * Returns true if the node exists.

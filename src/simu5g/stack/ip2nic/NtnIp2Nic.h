@@ -19,9 +19,16 @@ namespace simu5g {
 class NtnIp2Nic : public Ip2Nic
 {
   protected:
+    bool ntnAssociationRegistered_ = false;
+
     void initialize(int stage) override;
     void handleMessage(omnetpp::cMessage *msg) override;
     bool registerNtnAssociation(bool throwOnMissing);
+
+    // Logs the geometry of the transparent path once, at the first event. Reported at INFO
+    // because EV_DEBUG and EV_TRACE are compiled out under NDEBUG, and a wrong round-trip delay
+    // is otherwise indistinguishable from a channel problem.
+    void reportNtnPath();
 };
 
 } // namespace simu5g

@@ -30,6 +30,21 @@ double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, co
 }
 
 
+double computeSlantRangeAtElevation(double altitude, double elevation)
+{
+    // Law of cosines on the observer-geocentre-satellite triangle, solved for the observer-to-
+    // satellite side. With the angle at the observer equal to 90+E, cos(90+E) = -sin(E), so the
+    // quadratic in the slant range d is
+    //
+    //     d^2 + 2*Re*sin(E)*d - (2*Re*altitude + altitude^2) = 0
+    //
+    // whose positive root is the expression below. Negative elevations are legal and give a
+    // longer range, as they must: the satellite is then below the local horizon.
+    double sinElevation = std::sin(inet::math::deg2rad(elevation));
+    double reSinElevation = EARTH_RADIUS * sinElevation;
+    return std::sqrt(reSinElevation * reSinElevation + altitude * altitude + 2 * EARTH_RADIUS * altitude) - reSinElevation;
+}
+
 double computeUVDistance(const UVCoords& p1, const UVCoords& p2)
 {
     return sqrt( (p2.first - p1.first) * (p2.first - p1.first) + (p2.second - p1.second) * (p2.second - p1.second) );
