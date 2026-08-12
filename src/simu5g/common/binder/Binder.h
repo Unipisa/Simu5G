@@ -87,7 +87,6 @@ class Binder : public cSimpleModule
 
     // NTN round-trip delay service; see getNtnCellRoundTripDelay()
     double ntnMinElevation_ = 0;            // deg
-    simtime_t ntnRoundTripDelayMargin_;
     double ntnMinSatelliteAltitude_ = 0;    // m
     // Resolved on first use rather than in initialize(): the reference system initializes at
     // inet::INITSTAGE_LOCAL too, with no ordering guarantee against this module, and every
@@ -334,7 +333,7 @@ class Binder : public cSimpleModule
      * association, which is what keeps every terrestrial path unaffected.
      *
      * The bound comes from the lowest elevation the cell is willing to use (ntnMinElevation),
-     * applied to both the service and the feeder link, plus ntnRoundTripDelayMargin. It therefore
+     * applied to both the service and the feeder link. It therefore
      * depends on the satellite's altitude but not on where it currently is, and for a circular
      * orbit it is constant for the whole run. That is deliberate: 3GPP dimensions the timers this
      * value feeds as an upper bound, not an estimate -- overestimating costs latency, while

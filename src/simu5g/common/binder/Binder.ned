@@ -38,12 +38,6 @@ simple Binder
         // Only read on the NTN path; a network with no satellites never evaluates it.
         double ntnMinElevation @unit(deg) = default(10deg);
 
-        // Added to every cell round-trip delay. The timers derived from that delay must be an
-        // upper bound rather than an estimate -- overestimating costs latency, underestimating
-        // breaks the protocol -- so this is the slack knob for a scenario whose real geometry sits
-        // close to a timer's next legal value. Zero reproduces TR 38.821 exactly.
-        double ntnRoundTripDelayMargin @unit(s) = default(0s);
-
         // Sanity guard on the resolved satellite position. Below this altitude the geometry is
         // rejected rather than used, which catches a round-trip-delay query issued before
         // inet::INITSTAGE_SINGLE_MOBILITY -- at that point every radio still reports (0,0,0),

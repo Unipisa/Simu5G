@@ -503,8 +503,16 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
 
     // The longest service link and the longest feeder link this cell will use, both bounded by the
     // lowest elevation it accepts, and both traversed twice per round trip.
+    //
+    // Nothing is added on top. The timers derived from this value must be an upper bound rather
+    // than an estimate, and their own rounding to the next value TS 38.331 can signal is what
+    // supplies that: for a GEO round trip the poll retransmit enumeration jumps 500ms -> 800ms.
+    // A separate margin knob would only shift where in that gap the value lands, and near GEO
+    // there is barely room for one anyway -- four round trips already sit just inside the 2200ms
+    // ceiling of t-ReassemblyExt-r17. A scenario that needs more headroom should set the timer it
+    // cares about explicitly.
     double maxSlantRange = computeSlantRangeAtElevation(altitude, ntnMinElevation_);
-    simtime_t roundTripDelay = 4 * maxSlantRange / SPEED_OF_LIGHT + ntnRoundTripDelayMargin_;
+    simtime_t roundTripDelay = 4 * maxSlantRange / SPEED_OF_LIGHT;
     ntnCellRoundTripDelay_[gnbId] = roundTripDelay;
 
     // Reported once per cell, at INFO because EV_DEBUG is compiled out under NDEBUG and because a
@@ -512,8 +520,7 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     EV_INFO << "Binder::getNtnCellRoundTripDelay - cell " << gnbId << " via satellite "
             << association->satelliteId << " at altitude[" << altitude / 1000.0 << "km]: worst-case slant range["
             << maxSlantRange / 1000.0 << "km] at elevation[" << ntnMinElevation_ << "deg], round-trip delay["
-            << roundTripDelay.dbl() * 1000.0 << "ms] including margin["
-            << ntnRoundTripDelayMargin_.dbl() * 1000.0 << "ms]" << endl;
+            << roundTripDelay.dbl() * 1000.0 << "ms]" << endl;
 
     return roundTripDelay;
 }
@@ -560,7 +567,6 @@ void Binder::initialize(int stage)
         networkName_ = getSystemModule()->getName();
 
         ntnMinElevation_ = par("ntnMinElevation").doubleValue();
-        ntnRoundTripDelayMargin_ = par("ntnRoundTripDelayMargin");
         ntnMinSatelliteAltitude_ = par("ntnMinSatelliteAltitude").doubleValue();
 
         // Add WATCH macros for all member variables
