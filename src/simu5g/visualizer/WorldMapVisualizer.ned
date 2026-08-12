@@ -14,6 +14,7 @@ package simu5g.visualizer;
 import inet.mobility.static.StationaryMobility;
 import inet.visualizer.canvas.mobility.MobilityCanvasVisualizer;
 import inet.visualizer.canvas.scene.GeoHorizonCanvasVisualizer;
+import inet.visualizer.canvas.scene.GeoSkyViewCanvasVisualizer;
 import inet.visualizer.canvas.scene.NetworkNodeCanvasVisualizer;
 
 
@@ -42,11 +43,14 @@ module WorldMapVisualizer
         networkNodeVisualizer: NetworkNodeCanvasVisualizer {
             @display("p=59,85;is=vs");
         }
-        satelliteVisualizer: MobilityCanvasVisualizer {
+        satVisualizer: MobilityCanvasVisualizer {
             @display("p=59,130;is=vs");
         }
         geoHorizon: GeoHorizonCanvasVisualizer {
             @display("p=59,175;is=vs");
+        }
+        skyViewVisualizer: GeoSkyViewCanvasVisualizer {
+            @display("p=59,220;is=vs");
         }
         scene: LocalScene {
             @display("p=135,40");
