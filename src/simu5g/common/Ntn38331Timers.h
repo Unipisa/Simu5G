@@ -45,9 +45,14 @@ enum class Ntn38331Timer {
 omnetpp::simtime_t ntn38331Ceil(omnetpp::simtime_t value, Ntn38331Timer which);
 
 //
-// Largest legal value of the given enumeration that is less than or equal to `value`. A `value`
-// below the smallest legal value yields that smallest value; every enumeration rounded down here
-// starts at zero, so in practice that case is exact.
+// Largest legal value of the given enumeration that is less than or equal to `value`.
+//
+// A `value` below the smallest legal value yields that smallest value, which is the one case where
+// the result can exceed what was asked for. It is exact for t-StatusProhibit, whose enumeration
+// starts at ms0, and reachable for the backoff indicator, whose lowest code point is 5ms -- but
+// only for a round trip under 2.5ms, which is an order of magnitude below any satellite path.
+// Rounding up there is the harmless direction anyway: it lengthens a backoff, it does not shorten
+// a timer that has to cover a round trip.
 //
 omnetpp::simtime_t ntn38331Floor(omnetpp::simtime_t value, Ntn38331Timer which);
 

@@ -91,9 +91,13 @@ const TimerEnumeration& enumerationFor(Ntn38331Timer which)
     }();
 
     static const TimerEnumeration backoffIndicator = [] {
-        // TS 38.321 Table 7.2-1. The UE draws its random-access backoff uniformly from zero to the
-        // indicated value, so only the indicated values themselves are legal.
-        return TimerEnumeration{"backoff indicator", {0, 5, 10, 20, 30, 40, 60, 80, 120, 160, 240, 320, 480, 960, 1920}};
+        // TS 38.321 Table 7.2-1, indices 0..13; 14 and 15 are Reserved. The table starts at 5ms --
+        // there is no zero code point, because "no backoff" is signalled by omitting the BI field
+        // from the random-access response rather than by indicating zero. The UE then draws its
+        // backoff uniformly between zero and the indicated value, which is why the *lower* bound
+        // of that draw is a separate parameter fixed at zero and only the upper bound is snapped
+        // to this table.
+        return TimerEnumeration{"backoff indicator", {5, 10, 20, 30, 40, 60, 80, 120, 160, 240, 320, 480, 960, 1920}};
     }();
 
     switch (which) {
