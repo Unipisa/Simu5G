@@ -17,8 +17,6 @@ import inet.node.contract.INetworkNode;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import inet.visualizer.canvas.mobility.MobilityCanvasVisualizer;
-import inet.visualizer.canvas.scene.GeoHorizonCanvasVisualizer;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.mobility.georeference.GeographicReferenceSystem;
@@ -27,7 +25,7 @@ import simu5g.nodes.NtnGateway;
 import simu5g.nodes.NtnGNodeB;
 import simu5g.nodes.NtnNrUe;
 import simu5g.nodes.Upf;
-import simu5g.visualizer.canvas.LocalGeoMapCanvasVisualizer;
+import simu5g.visualizer.WorldMapVisualizer;
 import simu5g.world.radio.LteChannelControl;
 
 //
@@ -62,14 +60,10 @@ network NtnLeo
         satelliteInserter: SatelliteInserter {
             @display("p=780,295;is=s");
         }
-        map: LocalGeoMapCanvasVisualizer {
+
+        // world map visualization
+        worldMapVisualizer: WorldMapVisualizer {
             @display("p=780,340;is=s");
-        }
-        satelliteVisualizer: MobilityCanvasVisualizer {
-            @display("p=780,385;is=s");
-        }
-        geoHorizon: GeoHorizonCanvasVisualizer {
-            @display("p=780,430;is=s");
         }
         server: StandardHost {
             @display("p=180,120;is=n;i=device/server");
@@ -116,7 +110,6 @@ network NtnLeo
         ue[numUe]: NtnNrUe {
             @display("p=720,510");
         }
-        pisa: LocalFrameMarker;
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.dnPppg;

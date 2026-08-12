@@ -29,6 +29,7 @@ module Satellite
         @display("i=device/satellite;bgb=469,282");
 
         string nodeType = default("SATELLITE"); // DO NOT CHANGE
+        string canvasImage = default("device/satellite_vs"); // image used by canvas network-node visualizers
         int macNodeId = default(17408 + simu5g_seq("Satellite_macNodeId"));
         double feederLinkFrequencyOffset @unit(GHz) = default(25GHz);
         *.interfaceTableModule = default(absPath(".interfaceTable"));

@@ -16,8 +16,6 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import inet.visualizer.canvas.mobility.MobilityCanvasVisualizer;
-import inet.visualizer.canvas.scene.GeoHorizonCanvasVisualizer;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.mobility.georeference.GeographicReferenceSystem;
@@ -26,7 +24,7 @@ import simu5g.nodes.NtnGNodeB;
 import simu5g.nodes.NtnNrUe;
 import simu5g.nodes.GeoSatellite;
 import simu5g.nodes.Upf;
-import simu5g.visualizer.canvas.LocalGeoMapCanvasVisualizer;
+import simu5g.visualizer.WorldMapVisualizer;
 import simu5g.world.radio.LteChannelControl;
 
 //
@@ -39,33 +37,30 @@ network NtnGeo
         @display("i=block/network2;bgb=1000,600");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=780,25;is=s");
+            @display("p=79,30;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=780,70;is=s");
+            @display("p=79,74;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=780,115;is=s");
+            @display("p=79,119;is=s");
         }
         binder: Binder {
-            @display("p=780,160;is=s");
+            @display("p=79,164;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=780,205;is=s");
+            @display("p=79,211;is=s");
         }
 
         geoRef: GeographicReferenceSystem {
-            @display("p=780,250;is=s");
+            @display("p=79,256;is=s");
         }
-        map: LocalGeoMapCanvasVisualizer {
-            @display("p=780,295;is=s");
+
+        // world map visualization
+        worldMapVisualizer: WorldMapVisualizer {
+            @display("p=79,311;is=s");
         }
-        satelliteVisualizer: MobilityCanvasVisualizer {
-            @display("p=780,340;is=s");
-        }
-        geoHorizon: GeoHorizonCanvasVisualizer {
-            @display("p=780,385;is=s");
-        }
+
         server: StandardHost {
             @display("p=180,120;is=n;i=device/server");
         }
@@ -90,7 +85,7 @@ network NtnGeo
         ue[numUe]: NtnNrUe {
             @display("p=720,510");
         }
-        pisa: LocalFrameMarker;
+
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.dnPppg;

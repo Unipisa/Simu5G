@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.visualizer.canvas;
+package simu5g.visualizer;
 
 import inet.visualizer.canvas.scene.GeoMapCanvasVisualizer;
 

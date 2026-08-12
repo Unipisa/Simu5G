@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/visualizer/canvas/LocalGeoMapCanvasVisualizer.h"
+#include "simu5g/visualizer/LocalGeoMapCanvasVisualizer.h"
 
 #include "inet/common/ModuleAccess.h"
 #include "inet/common/geometry/common/CanvasProjection.h"
