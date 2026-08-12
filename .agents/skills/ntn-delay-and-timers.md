@@ -160,13 +160,13 @@ With Simu5G's `maxHarqRtx = 3` (4 HARQ transmissions):
 |---|---|---|---|
 | `t_Reassembly` (AM RX, UM RX) | RTD × HARQ transmissions, rounded up | 2166 → **2200 ms** | 70 → **75 ms** |
 | `t_PollRetransmit` (AM TX) | smallest 38.331 value > RTD | **800 ms** | **20 ms** |
-| `t_StatusProhibit` (AM RX) | < `t_PollRetransmit` − RTD, rounded down | **250 ms** | **0 ms** |
+| `t_StatusProhibit` (AM RX) | < `t_PollRetransmit` − RTD, rounded down | **250 ms** | **2 ms** |
 | `maxRtxThreshold` | §7.2.2.2 "1 or 4" | **4** (unchanged) | **4** (unchanged) |
 | `t301` (RRC) | 38.331 T301 enumeration, not derived | **2000 ms** | **2000 ms** |
 
 Two independent cross-checks on the GEO column: `t_Reassembly` lands on 2200 ms, exactly the ceiling RAN2 chose for `t-ReassemblyExt-r17`; and `t_PollRetransmit` = 800 ms matches the GEO profile in Amarisoft's production NR-NTN configuration.
 
-The LEO column is what step 2's geometry produces for the 350 km smoke TLE, and it is *shorter* than the hand-set LEO profile this section originally carried (150 / 80 / 50 ms, which were derived for LEO-600 at 25.77 ms). `t_StatusProhibit` reaching zero is legitimate, not a bug: the relation `< t_PollRetransmit − RTD` only leaves slack when the next legal poll value sits well above the round trip, and the 38.331 enumeration is dense (5 ms steps) down there where it is sparse up at GEO (ms500 → ms800). Zero simply means STATUS reports are never withheld — more control overhead, no correctness cost.
+The LEO column is what step 2's geometry produces for the 350 km smoke TLE, and it is *shorter* than the hand-set LEO profile this section originally carried (150 / 80 / 50 ms, which were derived for LEO-600 at 25.77 ms). `t_StatusProhibit` coming out at 2 ms is legitimate, not a bug: the relation `< t_PollRetransmit − RTD` only leaves slack when the next legal poll value sits well above the round trip, and the enumeration is dense (5 ms steps) down there where it is sparse up at GEO (ms500 → ms800). It is only non-zero at all because TS 38.331 Rel-16 added `T-StatusProhibit-v1610` = `{ms1, ms2, ms3, ms4}` beneath the base enumeration's floor. A short prohibit timer costs control overhead and nothing else.
 
 **Where it lives.** Two new NED types, `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned` and `NtnNrRlcUmEntity.ned`, extend the NR entities; `NtnNrNicUe.ned`/`NtnNrNic.ned` redirect `BearerManagement`'s `nrRlc*EntityModuleType` strings to them and set `t301`. Entities are created with the **NIC** as parent (`BearerManagement.cc:372`), not under `bearerManagement`.
 
