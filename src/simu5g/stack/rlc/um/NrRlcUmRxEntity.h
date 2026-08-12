@@ -34,11 +34,17 @@ class LteMacBase;
  */
 class NrRlcUmRxEntity : public RlcUmRxEntityBase
 {
+  protected:
+    // Protected rather than private so a profile subclass can re-derive it after this class has
+    // read its NED default -- see ~NtnNrRlcUmRxEntity, which replaces it with a value computed
+    // from the satellite round-trip delay. Nothing else about the timer changes.
+    simtime_t t_Reassembly;
+
+  private:
     // The SO reassembly buffer.
     RlcUmReceptionBuffer *sduBuffer = nullptr;
     int UM_Window_Size = 2048;
     cMessage *t_ReassemblyTimer = nullptr;
-    simtime_t t_Reassembly;
     unsigned long totalRcvdBytesNr_ = 0;
 
     // Duplicate detection for complete SDUs (which carry no RLC SN); snoMainPacket

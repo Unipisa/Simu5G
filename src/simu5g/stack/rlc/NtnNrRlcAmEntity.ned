@@ -24,60 +24,54 @@ package simu5g.stack.rlc;
 // maxRtxThreshold within a few poll periods and RlcAmTxEntityBase::
 // declareRadioLinkFailure() releases the bearer at both ends.
 //
-// Values are derived from 3GPP, not chosen by hand:
+// Values are derived from 3GPP and from this cell's own geometry, not chosen by
+// hand. The round-trip delay RTD comes from Binder::getNtnCellRoundTripDelay(),
+// which bounds it by the lowest elevation the cell will use -- reproducing the
+// 541.46ms (GEO) and 25.77ms (LEO-600) of TR 38.821 clause 7.2.2.2 for those
+// orbits, and giving a real number for any other. Each timer is then rounded to a
+// value TS 38.331 can actually signal, which is where its margin comes from:
 //
-//   RTD (TR 38.821 clause 7.2.2.2, transparent architecture)
-//       GEO 541.46ms, LEO 25.77ms
+//   t_Reassembly (TR 38.821 clause 7.2.2.1), in ~NtnNrRlcAmRxEntity
+//       t-Reassembly = RTD * nrof_HARQ_transmissions, rounded up.
+//       With maxHarqRtx = 3, GEO gives 541.46*4 = 2166 -> 2200ms. That is beyond
+//       the base TS 38.331 T-Reassembly range (max ms200) and corresponds to the
+//       Rel-17 t-ReassemblyExt-r17 IE, introduced for exactly this reason -- and
+//       2200ms is that IE's ceiling, which the GEO case lands just inside.
 //
-//   t_Reassembly (TR 38.821 clause 7.2.2.1)
-//       t-Reassembly = RTD * nrof_HARQ_retrans + scheduling_offset
-//       With maxHarqRtx = 3, i.e. 4 HARQ transmissions:
-//       GEO 541.46*4 = 2166 -> 2200ms;  LEO 25.77*4 = 103 -> 150ms
-//       2200ms is beyond the base TS 38.331 T-Reassembly range (max ms200) and
-//       corresponds to the Rel-17 t-ReassemblyExt-r17 IE, which was introduced
-//       for exactly this reason. The LEO value fits the base range (ms150).
+//   t_PollRetransmit, in ~NtnNrRlcAmTxEntity
+//       Must exceed one RTD or the poll expires before its STATUS can arrive, so
+//       it is the smallest legal value above the RTD: for GEO the enumeration
+//       jumps ms500 -> ms800, giving 800ms. TR 38.821 clause 7.2.2.1 states that
+//       no *range* change is needed for this timer, and none is: only the
+//       configured value has to change. ~NtnNrRlcAmTxEntity also asserts the
+//       relation, because getting it wrong degrades silently.
 //
-//   t_PollRetransmit
-//       Must exceed one RTD or the poll expires before its STATUS can arrive.
-//       Smallest legal TS 38.331 enumerated value above the RTD:
-//       GEO ms500 < 541.46 < ms800 -> 800ms;  LEO -> 80ms
-//       TR 38.821 clause 7.2.2.1 states that no *range* change is needed for
-//       this timer, and none is: only the configured value has to change.
-//
-//   t_StatusProhibit
+//   t_StatusProhibit, in ~NtnNrRlcAmRxEntity
 //       Must stay below t_PollRetransmit - RTD, so a poll arriving while the
 //       prohibit timer runs can still be answered before the poll expires:
-//       GEO 800-541 = 259 -> 250ms;  LEO 80-26 = 54 -> 50ms
+//       GEO 800-541 = 259 -> 250ms. On a short round trip this legitimately
+//       rounds down to zero, which simply means STATUS reports are never
+//       withheld.
 //
 //   maxRtxThreshold is left at its inherited default of 4, which is already the
 //   upper of the two cases TR 38.821 clause 7.2.2.2 considers ("1 or 4 RLC
 //   retransmissions are considered here").
 //
-// The resulting retransmission budget, t_PollRetransmit * (maxRtxThreshold+1),
-// is 4.0s for GEO and 400ms for LEO, against the 3.0s / 150ms that TR 38.821
-// clause 7.2.2.2 tabulates. Ours is the more conservative because rounding
-// 541.46ms up to the legal ms800 overshoots; the report's figures were inputs to
-// a supportable-bit-rate calculation rather than timer targets.
-//
-// ntnOrbitProfile is a stopgap, not the intended long-term design. Timer values
-// should follow the serving path, which matters as soon as a UE can attach to
-// either orbit. Two notes for whoever gets there:
-//   - a mixed constellation is blocked by the absence of NTN handover and
-//     dynamic association, not by these timers;
-//   - BearerManagement creates these entities per (peer, DRB) and re-creates
-//     them on teardown, so re-established bearers pick up fresh values at
-//     construction. That is how RRC reconfiguration delivers new timer values in
-//     a real network, and it is preferable to mutating a live entity.
-// When the geometry-derived round-trip delay service arrives, replace the three
-// expressions below with it. They are deliberately the only place these values
-// are produced.
+// Derivation happens in C++ rather than in the expressions below because it needs
+// the geometry, and no radio holds a valid position until
+// inet::INITSTAGE_SINGLE_MOBILITY -- after every Simu5G stage. BearerManagement
+// creates these entities per (peer, DRB) at simulation time and re-creates them on
+// teardown, so the geometry is available when they initialise and a re-established
+// bearer picks up fresh values at construction. That is how RRC reconfiguration
+// delivers new timer values in a real network, and it is preferable to mutating a
+// live entity.
 //
 module NtnNrRlcAmEntity extends NrRlcAmEntity
 {
     parameters:
-        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");   // GEO is the safe worst case
-
-        tx.t_PollRetransmit = default(this.ntnOrbitProfile == "GEO" ? 800ms : 80ms);
-        rx.t_Reassembly = default(this.ntnOrbitProfile == "GEO" ? 2200ms : 150ms);
-        rx.t_StatusProhibit = default(this.ntnOrbitProfile == "GEO" ? 250ms : 50ms);
+        // The NTN profiles of the NR entity types. They derive the three timers above from the
+        // cell round-trip delay; everything else -- segmentation, polling, ARQ, reassembly -- is
+        // the inherited NR behaviour.
+        tx.typename = default("simu5g.stack.rlc.am.NtnNrRlcAmTxEntity");
+        rx.typename = default("simu5g.stack.rlc.am.NtnNrRlcAmRxEntity");
 }

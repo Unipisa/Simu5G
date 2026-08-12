@@ -22,14 +22,12 @@ module NtnNrNic extends NrNicEnb
         mac.typename = default("NrMacGnb");
         phy.typename = default("NtnPhyGnb");
 
-        // Must match the served UEs' profile: RLC is a peer protocol, and a gNodeB whose
-        // reassembly timer is shorter than its UEs' is worse than either alone. Declared
-        // under the same name and default as on ~NtnNrNicUe and on the NTN RLC entity
-        // types, so one "**.ntnOrbitProfile" assignment covers the whole scenario.
-        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");
-
-        // NR bearers over the satellite path get the NTN-dimensioned RLC timers; see
-        // ~NtnNrRlcAmEntity for the derivation from TR 38.821 and TS 38.331.
+        // NR bearers over the satellite path get the NTN-dimensioned RLC timers, each derived
+        // from this cell's own round-trip delay; see ~NtnNrRlcAmEntity for the derivation from
+        // TR 38.821 and TS 38.331. This must match the redirect ~NtnNrNicUe makes: RLC is a peer
+        // protocol, and a gNodeB whose reassembly timer is shorter than its UEs' is worse than
+        // either value alone. Both ends read the same cell round-trip delay, so they agree by
+        // construction.
         rrc.bearerManagement.nrRlcAmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcAmEntity");
         rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcUmEntity");
 
@@ -44,8 +42,9 @@ module NtnNrNic extends NrNicEnb
 
         // RRC re-establishment. The terrestrial 100ms default is well inside one satellite
         // round trip, so a re-establishment attempt would time out before its response
-        // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value.
-        rrc.bearerManagement.t301 = default(this.ntnOrbitProfile == "GEO" ? 2000ms : 1000ms);
+        // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value; see ~NtnNrNicUe
+        // for why this one value is not geometry-derived.
+        rrc.bearerManagement.t301 = default(2000ms);
 
     gates:
         input ntnIn @loose;

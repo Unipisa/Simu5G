@@ -1,0 +1,29 @@
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
+package simu5g.stack.rlc.um;
+
+//
+// ~NrRlcUmRxEntity for a bearer carried over a transparent NTN path: t_Reassembly is derived from
+// the cell's satellite round-trip delay rather than configured. Bound by default inside the
+// ~NtnNrRlcUmEntity compound.
+//
+simple NtnNrRlcUmRxEntity extends NrRlcUmRxEntity like simu5g.stack.rlc.IRlcRxEntity
+{
+    parameters:
+        @class("NtnNrRlcUmRxEntity");
+
+        string binderModule = default("binder");   // holds the NTN geometry this timer is derived from
+
+        // Negative: derive from the cell round-trip delay at bearer setup. An explicit assignment
+        // is positive and wins, which is how a scenario overrides the derivation.
+        t_Reassembly = default(-1s);
+}

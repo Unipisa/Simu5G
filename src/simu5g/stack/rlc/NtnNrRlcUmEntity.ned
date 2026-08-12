@@ -27,16 +27,18 @@ package simu5g.stack.rlc;
 // one timer for both modes, and TR 38.821 clause 7.2.2.1 says so explicitly
 // ("used in RLC AM as well as in RLC UM"):
 //
-//   t-Reassembly = RTD * nrof_HARQ_retrans + scheduling_offset
-//   GEO 541.46*4 = 2166 -> 2200ms;  LEO 25.77*4 = 103 -> 150ms
+//   t-Reassembly = RTD * nrof_HARQ_transmissions, rounded up to a legal value
+//   GEO 541.46*4 = 2166 -> 2200ms
 //
-// See ~NtnNrRlcAmEntity for the full derivation, the spec citations, and the note
-// on why ntnOrbitProfile is a stopgap for mixed constellations.
+// where RTD is this cell's own worst-case round-trip delay, from
+// Binder::getNtnCellRoundTripDelay(). See ~NtnNrRlcAmEntity for the full
+// derivation and the spec citations.
 //
 module NtnNrRlcUmEntity extends NrRlcUmEntity
 {
     parameters:
-        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");   // GEO is the safe worst case
-
-        rx.t_Reassembly = default(this.ntnOrbitProfile == "GEO" ? 2200ms : 150ms);
+        // The NTN profile of the NR receiving entity. It derives t_Reassembly from the cell
+        // round-trip delay; reassembly itself is the inherited NR behaviour. The transmitting
+        // side has no timer to re-dimension, so it is left as the inherited type.
+        rx.typename = default("simu5g.stack.rlc.um.NtnNrRlcUmRxEntity");
 }

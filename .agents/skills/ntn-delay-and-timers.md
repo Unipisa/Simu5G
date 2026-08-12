@@ -2,7 +2,7 @@
 
 This document expands item 2 ("Add Propagation Delay") of `ntn-implementation.md`, and the timer half of item 4.
 
-**Status: steps 1, 3, 4 and 5 of the staging plan are implemented.** Propagation delay, the class-1 timers (RLC, RRC), the class-3 RAC/BSR counters, and HARQ all now exist — see the "as built" sections in Parts 1 and 2 for what landed and the measured results. Still open: step 2 (a geometry-derived round-trip-delay service, which would replace the per-orbit profiles the implemented steps use) and step 6. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
+**Status: steps 1 through 5 of the staging plan are implemented.** Propagation delay, the class-1 timers (RLC, RRC), the class-3 RAC/BSR counters, HARQ, and the geometry-derived round-trip-delay service all now exist — see the "as built" sections in Parts 1, 2 and 4 for what landed and the measured results. `ntnOrbitProfile` is gone: every NTN timer is now derived from the scenario's own geometry. Still open: step 6. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
 
 The short version: adding the delay is mechanical; making the NR stack survive it is not. Simu5G assumes throughout that a frame sent in one TTI is received in the next, and several MAC procedures are timed as counters decremented once per TTI. Those counters conflate "how many of my own slots have passed" with "how long until the peer can possibly answer". Only the second meaning has to grow with propagation delay.
 
@@ -156,17 +156,21 @@ Converting class 3 to `cMessage` timers wholesale would be a large refactor that
 
 With Simu5G's `maxHarqRtx = 3` (4 HARQ transmissions):
 
-| Parameter | Derivation | GEO | LEO |
+| Parameter | Derivation | GEO (RTD 541.46 ms) | LEO smoke (RTD 17.59 ms) |
 |---|---|---|---|
-| `t_Reassembly` (AM RX, UM RX) | RTD x 4 + offset | 2166 → **2200 ms** | 103 → **150 ms** |
-| `t_PollRetransmit` (AM TX) | smallest 38.331 value > RTD | **800 ms** | **80 ms** |
-| `t_StatusProhibit` (AM RX) | < `t_PollRetransmit` − RTD | **250 ms** | **50 ms** |
+| `t_Reassembly` (AM RX, UM RX) | RTD × HARQ transmissions, rounded up | 2166 → **2200 ms** | 70 → **75 ms** |
+| `t_PollRetransmit` (AM TX) | smallest 38.331 value > RTD | **800 ms** | **20 ms** |
+| `t_StatusProhibit` (AM RX) | < `t_PollRetransmit` − RTD, rounded down | **250 ms** | **0 ms** |
 | `maxRtxThreshold` | §7.2.2.2 "1 or 4" | **4** (unchanged) | **4** (unchanged) |
-| `t301` (RRC) | 38.331 T301 enumeration | **2000 ms** | **1000 ms** |
+| `t301` (RRC) | 38.331 T301 enumeration, not derived | **2000 ms** | **2000 ms** |
 
-Two independent cross-checks: GEO `t_Reassembly` lands on 2200 ms, exactly the ceiling RAN2 chose for `t-ReassemblyExt-r17`; and GEO `t_PollRetransmit` = 800 ms matches the GEO profile in Amarisoft's production NR-NTN configuration (which also uses 80 ms for LEO). LEO's 150 ms fits the base TS 38.331 range, so LEO needs no Rel-17 extension — that asymmetry is why there are two profiles.
+Two independent cross-checks on the GEO column: `t_Reassembly` lands on 2200 ms, exactly the ceiling RAN2 chose for `t-ReassemblyExt-r17`; and `t_PollRetransmit` = 800 ms matches the GEO profile in Amarisoft's production NR-NTN configuration.
 
-**Where it lives.** Two new NED types, `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned` and `NtnNrRlcUmEntity.ned`, extend the NR entities and override only timer defaults — no C++ changes. `NtnNrNicUe.ned`/`NtnNrNic.ned` redirect `BearerManagement`'s `nrRlc*EntityModuleType` strings to them and set `t301`. Entities are created with the **NIC** as parent (`BearerManagement.cc:372`), not under `bearerManagement`. A single `**.ntnOrbitProfile = "LEO"` reaches every NIC and every dynamically created entity, because all four declare the parameter under the same name.
+The LEO column is what step 2's geometry produces for the 350 km smoke TLE, and it is *shorter* than the hand-set LEO profile this section originally carried (150 / 80 / 50 ms, which were derived for LEO-600 at 25.77 ms). `t_StatusProhibit` reaching zero is legitimate, not a bug: the relation `< t_PollRetransmit − RTD` only leaves slack when the next legal poll value sits well above the round trip, and the 38.331 enumeration is dense (5 ms steps) down there where it is sparse up at GEO (ms500 → ms800). Zero simply means STATUS reports are never withheld — more control overhead, no correctness cost.
+
+**Where it lives.** Two new NED types, `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned` and `NtnNrRlcUmEntity.ned`, extend the NR entities; `NtnNrNicUe.ned`/`NtnNrNic.ned` redirect `BearerManagement`'s `nrRlc*EntityModuleType` strings to them and set `t301`. Entities are created with the **NIC** as parent (`BearerManagement.cc:372`), not under `bearerManagement`.
+
+*Superseded by step 2:* when this landed, the two compounds carried the timer values themselves as `ntnOrbitProfile`-selected constants. They are now pure `tx.typename`/`rx.typename` redirects to the NTN entity profiles, which derive each value from the cell round-trip delay. The values below are what those derivations produce for GEO — see "Step 2 as built" in Part 4.
 
 **Measured.** UM (what the default configs run) holds or improves: GeoSat DL 4650 → 4950 B/s, LeoSat unchanged. AM is only reachable via the new `[Config GeoSatAm]`, since `Ip2Nic` defaults every class to UM; there, RLF moves from **t = 4.4 s** with terrestrial timers to **t = 25.8 s** with NTN timers, a 5.9x improvement.
 
@@ -182,7 +186,7 @@ The terrestrial `simulations/nr/rlc` `[Config AM-RLF]` never exercises any of th
 
 **Still open on this path:** a `LteMacSduRequest` already sent to the RLC when the teardown lands reaches `RlcMux::fromMacLayer` after its TX entity was deleted, where `lookupRlcTxBuffer()` returns null and the guarding `ASSERT` is compiled out in release builds (`RlcMux.cc:101-104`). The MAC cannot recall a message it has already sent, so the drop has to happen in `RlcMux`. Not reproducible with the default seed; `-c GeoSatAm --seed-set=3` (or `4`) segfaults on it.
 
-**On mixed LEO/GEO.** `ntnOrbitProfile` is a stopgap. Timer values should follow the serving path once a UE can attach to either orbit. What blocks that today is the absence of NTN handover and dynamic association (item 5), not these timers — `Binder::getAssociatedSatelliteForGateway()` throws on a second distinct peer. Note also that `BearerManagement` creates entities per (peer, DRB) and re-creates them on teardown, so re-established bearers pick up fresh values at construction; that is how RRC reconfiguration delivers new timer values in a real network, and it is preferable to mutating a live entity. Each value is produced by exactly one NED expression so that swapping the orbit label for a measured RTD (step 2) is a local edit.
+**On mixed LEO/GEO.** Step 2 removed the orbit label, so timer values now follow the serving cell's actual geometry rather than a scenario-wide constant. What still blocks a genuinely mixed constellation is the absence of NTN handover and dynamic association (item 5), not these timers — `Binder::getAssociatedSatelliteForGateway()` throws on a second distinct peer. Note that `BearerManagement` creates entities per (peer, DRB) and re-creates them on teardown, so re-established bearers pick up fresh values at construction; that is how RRC reconfiguration delivers new timer values in a real network, and it is preferable to mutating a live entity.
 
 ### RAC and BSR as built
 
@@ -196,15 +200,22 @@ TR 38.821 §7.2.1.1.1.2 is explicit that the NTN mechanism is **not** a longer w
 
 so the parameters keep the offset and the window **separate** and sum them only where they are written into the single inherited counter. §7.2.1.3 separately confirms `sr-ProhibitTimer`'s 128 ms cap "is not sufficient" for GEO.
 
-| Parameter | Derivation | GEO | LEO |
+| Parameter | Derivation | GEO (RTD 541.46 ms) | LEO smoke (RTD 17.59 ms) |
 |---|---|---|---|
-| `ntnRaResponseWindowOffset` | = RTD | **542 ms** | **26 ms** |
-| `ntnRaResponseWindow` | 2 × max differential delay (20.6 / 6.36 ms), rounded to a legal `ra-ResponseWindow` | **40 ms** (`sl40`) | **8 ms** (`sl8`) |
-| `ntnRetxBsrTimer` | smallest TS 38.331 `retxBSR-Timer` above the RTD, never below the inherited default | **640 ms** | **320 ms** (unchanged) |
-| `ntnRacBackoffMax` | largest TS 38.321 backoff-indicator value ≤ 2 × RTD | **960 ms** | **40 ms** |
+| `ntnRaResponseWindowOffset` | = RTD, no rounding | **541.46 ms** | **17.59 ms** |
+| `ntnRaResponseWindow` | 2 × max differential delay, a beam property — **not derived** | **40 ms** | **40 ms** |
+| `ntnRetxBsrTimer` | smallest TS 38.331 `retxBSR-Timer` above the RTD | **640 ms** | **20 ms** |
+| `ntnRacBackoffMax` | largest TS 38.321 backoff-indicator value ≤ 2 × RTD | **960 ms** | **30 ms** |
+| `ntnRacBackoffMin` | — | 0 (unchanged) | 0 (unchanged) |
 | `maxRacAttempts` | legal `preambleTransMax` `n10` | 10 (unchanged) | 10 (unchanged) |
 
-**Values are declared in time and converted to slots at `INITSTAGE_SIMU5G_TTI_SETUP`.** This is why `NtnNrMacUe` is C++ and not NED-only like the RLC entities: the inherited counters are *slot counts*, and at µ=0 slots and milliseconds coincide, so a NED-only version would look correct in the smoke scenarios and silently halve every timeout at µ=1. Verified: at µ=0 the counts are 582/640/0..960, at µ=1 they are 1164/1280/0..1920 — exactly doubled, same durations. The stage matters too; the inherited parameters are read at `INITSTAGE_LOCAL`, but `ttiPeriod_` is only known at `TTI_SETUP`. No `checkRAC()` override is needed, since it only ever reads these members.
+The offset and the window are summed into the single inherited counter at the point of use, giving **582 slots** for GEO and **58 slots** for LEO at a 1 ms slot.
+
+`ntnRaResponseWindow` stays a constant rather than becoming geometry-derived because it tracks differential delay across the *beam footprint*, not a path length — that needs the coverage model of item 5. 40 ms is the conservative choice for both orbits, and an over-long window costs nothing on the success path now that `macHandleRac()` clears `raRespTimer_` as soon as the response arrives.
+
+**Values are declared in time and converted to slots against the UE's actual slot duration.** This is why `NtnNrMacUe` is C++ and not NED-only: the inherited counters are *slot counts*, and at µ=0 slots and milliseconds coincide, so a NED-only version would look correct in the smoke scenarios and silently halve every timeout at µ=1. Verified: at µ=0 the counts are 582/640/0..960, at µ=1 they are 1164/1280/0..1920 — exactly doubled, same durations.
+
+*Superseded by step 2:* the conversion originally ran once at `INITSTAGE_SIMU5G_TTI_SETUP`, the first stage where `ttiPeriod_` is known. It now runs in `refreshNtnCounters()`, called from `handleSelfMessage()` and `macHandleRac()` — before every point that latches one of these counters. Two independent reasons force that. The round-trip delay comes from geometry, and no radio holds a valid position until `inet::INITSTAGE_SINGLE_MOBILITY`, which runs *after* every Simu5G stage including `TTI_SETUP`. And a real UE latches these durations when the procedure starts rather than once at configuration — the RAR window length is fixed when the preamble is sent. Still no `checkRAC()` override is needed, since it only ever reads these members.
 
 **Measured**, 2 s runs. GEO preamble count **44 → 2**, with delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL. LEO is unaffected as intended (52 preambles, 29250/28050 B/s unchanged). Delivery is still far below the 58.5/56.4 kB of a zero-delay run because the HARQ pool limit — 5 processes against a 507 ms RTD, about 10 transport blocks per second — is step 4 and untouched.
 
@@ -215,7 +226,9 @@ so the parameters keep the offset and the window **separate** and sum them only 
 - **`maxRacTryouts_` bounds nothing.** The exhaustion branch (`LteMacUe.cc:798-806`) resets the counter and zeroes the backoff, so the UE retries immediately — the `//! TODO flush all buffers here` gap. Pre-existing.
 - **`LteMacEnb::numPreambles_` is dead** (assigned at `LteMacEnb.cc:133`, never read); only the UE parameter has effect.
 
-**Seam.** `ntnRaResponseWindowOffset` is the only value here that becomes per-UE and time-varying under a geometry-derived RTD, because it tracks that UE's own round trip. The window tracks differential delay across the cell (beam size) and stays a cell-level constant, as does the BSR timer. That is the reason for the split, which changes no behaviour on its own.
+**Seam.** `ntnRaResponseWindowOffset` is the only value here that will become per-UE once a scenario has more than one cell, because it tracks that UE's own round trip rather than the cell's worst case. Step 2 deliberately left it on the *cell* value: a per-UE window at random-access time would model a UE that knew its own delay before connecting, which is precisely the assumption the specifications refuse to make. The window tracks differential delay across the beam and stays a cell-level constant, as does the BSR timer. That is the reason for the split.
+
+**Not yet validated on LEO.** Step 2's derived LEO values (17.59 / 20 / 30 ms) differ from the hand-set profile this section originally carried (26 / 320 / 40 ms), and yet `LeoSat` produces byte-identical results. At an 8.3 ms round trip under a 30 kB/s load none of these counters ever binds. They are computed correctly — overriding `ntnRetxBsrTimer` to 50 ms on GEO moves uplink 7650 → 10650 B/s, and `ntnRaResponseWindowOffset` to 5 ms moves delivery 25350/7650 → 15450/14400 B/s, so the path is demonstrably live — but a saturating-load LEO scenario is needed before the LEO column can be said to be exercised at all.
 
 ### HARQ as built
 
@@ -323,6 +336,56 @@ This is the simulation analogue of broadcast assistance data, consistent with th
 
 **Make every use additive and default to zero**, so terrestrial behaviour is bit-identical and the fingerprint suite does not move.
 
+### Step 2 as built
+
+**The result that made this cheap.** The standard slant-range bound at a minimum elevation ε,
+
+```text
+d(ε, h) = sqrt(Re²·sin²ε + h² + 2·Re·h) − Re·sin ε
+```
+
+applied at ε = 10° to *both* the service and the feeder link, reproduces TR 38.821's reference round-trip delays **to the digit**:
+
+| Altitude | Slant range | One-way | RTD (×4) | TR 38.821 |
+|---|---|---|---|---|
+| 35 786 km (GEO) | 40 581.2 km | 135.3642 ms | **541.46 ms** | 541.46 ms |
+| 600 km (LEO-600) | 1 931.6 km | 6.4432 ms | **25.77 ms** | 25.77 ms |
+| 350 km (smoke TLE) | 1 303.3 km | 4.3473 ms | **17.39 ms** | — |
+
+So the cell round-trip delay is not a new approximation of the orbit profile — **it is the profile's own derivation, computed instead of transcribed.** That is why every GEO timer came out unchanged. It also means the bound depends only on the satellite's *altitude*, not its position, so for a circular orbit it is constant for the whole run and the LEO drift concern of Part 3 does not arise for the cell value.
+
+**Where it lives.** No new class: three parameters, a lazily-resolved `GeographicReferenceSystem *`, a per-cell cache and four functions directly on `Binder` (`getNtnCellRoundTripDelay`, `getNtnRoundTripDelay`, plus two private position helpers). The pure geometry is `computeSlantRangeAtElevation()` in `GeoUtils`. `Binder::getPhyByNodeId()` is unusable for satellites and gateways — it hardcodes `cellularNic` — so the helpers descend through `serviceNic`/`feederNic` from the node modules the Binder already holds, and read `ChannelAccess::getRadioPosition()` rather than the mobility module, keeping round-trip delay, per-hop delay and path loss on one geometry.
+
+Three NED parameters on `Binder.ned`: `ntnMinElevation` (10deg), `ntnRoundTripDelayMargin` (0s), `ntnMinSatelliteAltitude` (100km). The last is the guard that catches a query issued before `inet::INITSTAGE_SINGLE_MOBILITY`, where every radio still reports `(0,0,0)` — which converts to a *plausible* point on the geoid, so no range check would notice.
+
+**How the timers reach it.** Not through NED functions. Once a value is `ceil38331(RTD × 4)` rather than a constant, the NED expression is a call into C++ either way — but stringly-typed, with an implicit evaluation point and no debugger. Instead each NTN timer's NED default is a **negative sentinel** meaning "derive me", and the derivation happens in C++ in the profile subclass. An explicit ini assignment is positive and wins untouched, which is what keeps `GeoSatAmTerrestrialTimers` working.
+
+Three new thin subclasses do it — `NtnNrRlcAmTxEntity`, `NtnNrRlcAmRxEntity`, `NtnNrRlcUmRxEntity` — bound by `tx.typename`/`rx.typename` in the two entity compounds, which are now pure typename redirects. Four timer members were promoted from private to `protected` in the three NR entity headers; that is an access-specifier change only, and the same pattern `NtnNrMacUe` already relies on in `LteMacUe`. Rounding to legal values is `ntn38331Ceil`/`ntn38331Floor` over a typed `Ntn38331Timer` enumeration in `common/Ntn38331Timers.{h,cc}`.
+
+`NtnNrMacUe` moved from an eager precompute at `INITSTAGE_SIMU5G_TTI_SETUP` to `refreshNtnCounters()`, called from `handleSelfMessage()` and `macHandleRac()`. Two independent reasons agree on this: the geometry does not exist during any Simu5G init stage, and a real UE latches these durations when the procedure starts rather than once at configuration.
+
+**Not derived, deliberately.** `t301` is pinned to 2000 ms — it is read into a private member of `BearerManagement` at `INITSTAGE_LOCAL`, so deriving it needs an NTN `BearerManagement`, for a timer that in this model is a resume delay after RLF rather than a protocol deadline. `ntnRaResponseWindow` is pinned to 40 ms because it tracks twice the maximum *differential* delay across the beam, which needs the coverage model of item 5, not a path-length bound.
+
+**Measured.** All four smoke configs are **byte-identical on every recorded scalar** to the values the orbit profiles hard-coded, and the terrestrial fingerprint suite is unmoved (158/158 rows identical against a stashed-baseline rebuild). GEO reproduces exactly because the derivation lands on the same six enumerated values that were transcribed by hand:
+
+| Value | Derived at RTD = 541.46 ms | Previous GEO constant |
+|---|---|---|
+| `t_PollRetransmit` | 800 ms | 800 ms |
+| `t_Reassembly` | 2200 ms | 2200 ms |
+| `t_StatusProhibit` | 250 ms | 250 ms |
+| `ntnRaResponseWindowOffset` | 541.46 ms | 542 ms |
+| `ntnRetxBsrTimer` | 640 ms | 640 ms |
+| `ntnRacBackoffMax` | 960 ms | 960 ms |
+
+LEO's derived values *do* differ from the old profile (`t_Reassembly` 75 ms vs 150 ms, `ntnRetxBsrTimer` 20 ms vs 320 ms, `ntnRacBackoffMax` 30 ms vs 40 ms) and yet its results are also identical — at an 8.3 ms round trip with a 30 kB/s load, none of those counters ever binds. Do not read that as evidence the derivation is inert: overriding `ntnRetxBsrTimer` to 50 ms on GEO moves uplink 7650 → 10650 B/s, and `ntnRaResponseWindowOffset` to 5 ms moves it 25350/7650 → 15450/14400 B/s. It does mean **LEO needs a saturating-load scenario before its timer values can be said to be validated at all.**
+
+**Two things the hard errors caught during bring-up**, both worth keeping in mind:
+
+- Adding a 200 ms margin on GEO aborts the run, because `t_Reassembly` would need 2966 ms against the 2200 ms ceiling of `t-ReassemblyExt-r17`. GEO sits close enough to that ceiling that the margin knob is worth only ~8 ms there. A scenario needing more has run out of what the specification can express, which is exactly what the error says.
+- The `tPollRetransmit > rtd` assertion (deferred here from step 5) fires at both ends of every AM bearer and aborts `GeoSatAmTerrestrialTimers`, whose whole purpose is to violate it. That config now sets `ntnCheckTimersCoverRoundTripDelay = false` rather than having its values softened.
+
+**Still a stopgap in one respect.** `getNtnRoundTripDelay(gnbId, ueId)` exists, is verified against the step-1 per-hop measurements (506.57 ms GEO, 8.33 ms LEO at pass peak, reproduced to three decimals by an independent code path), and has no timer consumer: every timer is cell-wide, because a per-UE value at random-access time would model a UE that knew its own delay before connecting. It is there for the Part 8 diagnostics and for step 6.
+
 ## Part 5 — Per-Mechanism Treatment
 
 ### HARQ — the real fight
@@ -391,10 +454,10 @@ Guardrails:
 ## Part 7 — Staging
 
 1. ✓ **Delay only (done).** See "Step 1 as built" in Part 1 for what landed and the measured failure signature: GEO drops from 58.5/56.4 kB to 9.3/2.1 kB while LEO is untouched at an 8.3 ms RTD.
-2. Binder RTD service and NED parameters. No behavioural effect yet.
+2. ✓ **Binder RTD service and NED parameters (done).** See "Step 2 as built" in Part 4: the min-elevation bound reproduces TR 38.821's reference delays to the digit, every timer is derived from it, `ntnOrbitProfile` is deleted, and all four smoke configs are byte-identical to the values the orbit profiles hard-coded.
 3. ✓ **RAC and BSR offsets (done).** See "RAC and BSR as built" in Part 2: GEO preamble count 44 → 2, delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL, LEO unaffected.
 4. ✓ **HARQ (done).** Process count raised to 32 on both ends, and downlink feedback disabled while uplink feedback stays on — see "HARQ as built" below. GEO downlink 8100 → 25350 B/s, 85% of offered load.
-5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301`, spec-derived per orbit — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2. The `tPollRetransmit > rtd` assertion is deferred to step 2, which is where a measured RTD becomes available to assert against.
+5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301` — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2; step 2 then replaced its per-orbit constants with geometry-derived values and added the `tPollRetransmit > rtd` assertion that was deferred to it.
 6. Grant/k2 restructuring, if at all.
 
 ## Part 8 — Diagnostics and Verification

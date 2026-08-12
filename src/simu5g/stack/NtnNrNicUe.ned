@@ -32,18 +32,12 @@ module NtnNrNicUe extends NrNicUe
         phy.typename = default("NtnPhyUe");
         nrPhy.typename = default("NtnPhyUe");
 
-        // Orbit whose round-trip delay the protocol timers are dimensioned for. Declared
-        // under the same name and default here, on ~NtnNrNic, and on the NTN RLC entity
-        // types, so that one "**.ntnOrbitProfile" assignment configures every timer on
-        // both ends of a bearer. RLC is a peer protocol: a UE and a gNodeB on different
-        // profiles is worse than either profile alone.
-        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");
-
-        // NR bearers over the satellite path get the NTN-dimensioned RLC timers. The
-        // entity types are resolved by BearerManagement at bearer setup, so redirecting
-        // these strings is all that is needed -- no NIC topology changes. The entities
-        // themselves are created with the NIC as parent, not under bearerManagement, and
-        // carry their own ntnOrbitProfile default.
+        // NR bearers over the satellite path get the NTN-dimensioned RLC timers, each derived
+        // from this cell's own round-trip delay. The entity types are resolved by
+        // BearerManagement at bearer setup, so redirecting these strings is all that is needed
+        // -- no NIC topology changes. Both ends of a bearer must use them: RLC is a peer
+        // protocol, and a receiver whose reassembly timer is shorter than its transmitter's poll
+        // interval is worse than either value alone. ~NtnNrNic makes the matching redirect.
         rrc.bearerManagement.nrRlcAmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcAmEntity");
         rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.rlc.NtnNrRlcUmEntity");
 
@@ -55,8 +49,12 @@ module NtnNrNicUe extends NrNicUe
 
         // RRC re-establishment. The terrestrial 100ms default is well inside one satellite
         // round trip, so a re-establishment attempt would time out before its response
-        // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value.
-        rrc.bearerManagement.t301 = default(this.ntnOrbitProfile == "GEO" ? 2000ms : 1000ms);
+        // could arrive. ms2000 is the largest TS 38.331 T301 enumerated value, and is used for
+        // every orbit rather than being derived: in this model t301 is a resume delay after
+        // radio link failure rather than a protocol deadline, so an over-long value costs a
+        // little extra outage and nothing else. Deriving it would need an NTN BearerManagement,
+        // because t301 is read into a private member at INITSTAGE_LOCAL.
+        rrc.bearerManagement.t301 = default(2000ms);
 
     submodules:
         // NTN Channel Model

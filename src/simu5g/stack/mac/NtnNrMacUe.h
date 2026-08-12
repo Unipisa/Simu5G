@@ -33,7 +33,13 @@ namespace simu5g {
 class NtnNrMacUe : public NrMacUe
 {
   protected:
-    void initialize(int stage) override;
+    void handleSelfMessage() override;
+    void macHandleRac(omnetpp::cPacket *pkt) override;
+
+    // Re-derives the inherited slot counts from the cell's current round-trip delay. Called at
+    // the start of every TTI and on random-access response, i.e. before any of the points that
+    // latch one of them, so a procedure always starts from a value valid at that moment.
+    void refreshNtnCounters();
 };
 
 } //namespace

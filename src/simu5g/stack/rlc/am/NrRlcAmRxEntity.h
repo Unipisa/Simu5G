@@ -34,13 +34,19 @@ class RlcMux;
  */
 class NrRlcAmRxEntity : public RlcAmRxEntityBase
 {
+  protected:
+    // Protected rather than private so a profile subclass can re-derive them after this class has
+    // read its NED defaults -- see ~NtnNrRlcAmRxEntity, which replaces them with values computed
+    // from the satellite round-trip delay. Nothing else about the timers changes.
+    omnetpp::simtime_t tReassembly_;
+    omnetpp::simtime_t tStatusProhibit_;
+
+  private:
     std::string nameEntity_;
     RlcSduSlidingWindowReceptionBuffer *rxBuffer_ = nullptr;
     std::set<unsigned int> passedUpSdus_;
     omnetpp::cMessage *tReassemblyTimer_ = nullptr;
-    omnetpp::simtime_t tReassembly_;
     omnetpp::cMessage *tStatusProhibitTimer_ = nullptr;
-    omnetpp::simtime_t tStatusProhibit_;
     unsigned int rxNextStatusTrigger_ = 0;
     unsigned int amWindowSize_ = 0;
     bool statusReportPending_ = false;

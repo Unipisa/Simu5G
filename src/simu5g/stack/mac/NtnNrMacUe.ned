@@ -73,20 +73,25 @@ package simu5g.stack.mac;
 //   source with "TODO flush all buffers here".
 //
 // The values are expressed in TIME and converted to slot counts against the
-// actual slot duration in NtnNrMacUe::initialize(). The inherited parameters
-// are slot counts, so a NED-only version would have to assume a slot duration;
-// at numerology 0 slots and milliseconds coincide, which is exactly why such a
-// version would look right in the smoke scenarios and silently halve every
-// timeout at numerology 1.
+// actual slot duration in NtnNrMacUe::refreshNtnCounters(). The inherited
+// parameters are slot counts, so a NED-only version would have to assume a slot
+// duration; at numerology 0 slots and milliseconds coincide, which is exactly
+// why such a version would look right in the smoke scenarios and silently halve
+// every timeout at numerology 1.
 //
-// ntnOrbitProfile is a stopgap, as it is for the RLC timers -- see
-// ~NtnNrRlcAmEntity. When a geometry-derived round-trip delay is available,
-// ntnRaResponseWindowOffset is the one value here that becomes per-UE and
-// time-varying, because it tracks that UE's own round trip;
-// ntnRaResponseWindow tracks differential delay across the cell and stays a
-// cell-level constant, as does ntnRetxBsrTimer. What blocks mixed LEO/GEO
-// scenarios is the absence of handover and dynamic association, not these
-// counters.
+// The conversion runs at the start of every slot rather than during
+// initialisation, for two reasons that happen to agree. The round-trip delay it
+// derives from comes from geometry, and no radio holds a valid position until
+// inet::INITSTAGE_SINGLE_MOBILITY -- after every Simu5G init stage. And a real UE
+// latches these durations when the procedure starts, not once at configuration:
+// the RAR window length is fixed when the preamble is sent.
+//
+// ntnRaResponseWindowOffset is the value here that will become per-UE once a
+// scenario has more than one cell, because it tracks that UE's own round trip
+// rather than the cell's worst case; ntnRaResponseWindow tracks differential
+// delay across the beam and stays a cell-level constant, as does ntnRetxBsrTimer.
+// What blocks mixed LEO/GEO scenarios is the absence of handover and dynamic
+// association, not these counters.
 //
 module NtnNrMacUe extends NrMacUe
 {
@@ -127,11 +132,26 @@ module NtnNrMacUe extends NrMacUe
         harqFeedbackEnabledDl = default(false);
         harqFeedbackEnabledUl = default(true);
 
-        string ntnOrbitProfile @enum("GEO","LEO") = default("GEO");   // GEO is the safe worst case
+        // A negative value means "derive from this cell's round-trip delay"; an explicit
+        // assignment is positive and wins untouched. The derivations are in NtnNrMacUe.cc,
+        // because they need geometry that does not exist until after every Simu5G init stage.
+        //
+        //   ntnRaResponseWindowOffset  = RTD (TR 38.821 clause 7.2.1.1.1.2 introduces an offset
+        //                                for the *start* of the RAR window, rather than a longer
+        //                                window)
+        //   ntnRetxBsrTimer            = smallest legal retxBSR-Timer above the RTD
+        //   ntnRacBackoffMax           = largest TS 38.321 backoff indicator below twice the RTD
+        double ntnRaResponseWindowOffset @unit(s) = default(-1s);
+        double ntnRetxBsrTimer @unit(s) = default(-1s);
+        double ntnRacBackoffMax @unit(s) = default(-1s);
 
-        double ntnRaResponseWindowOffset @unit(s) = default(this.ntnOrbitProfile == "GEO" ? 542ms : 26ms);
-        double ntnRaResponseWindow @unit(s) = default(this.ntnOrbitProfile == "GEO" ? 40ms : 8ms);
-        double ntnRetxBsrTimer @unit(s) = default(this.ntnOrbitProfile == "GEO" ? 640ms : 320ms);
+        // Not geometry-derived. This one covers twice the maximum *differential* delay across the
+        // cell -- a beam-footprint property, not a path length -- so it needs the beam and
+        // coverage model that this branch does not have yet. TR 38.821 clause 7.2.1.1.1.2 gives
+        // 10.3ms for GEO and 3.18ms for LEO, doubled and rounded to a legal ra-ResponseWindow;
+        // 40ms is the conservative choice for both, and an over-long window costs nothing on the
+        // success path because macHandleRac() clears the timer as soon as the response arrives.
+        double ntnRaResponseWindow @unit(s) = default(40ms);
+
         double ntnRacBackoffMin @unit(s) = default(0s);
-        double ntnRacBackoffMax @unit(s) = default(this.ntnOrbitProfile == "GEO" ? 960ms : 40ms);
 }

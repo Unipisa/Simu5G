@@ -35,6 +35,13 @@ using namespace inet;
  */
 class NrRlcAmTxEntity : public RlcAmTxEntityBase
 {
+  protected:
+    // Protected rather than private so a profile subclass can re-derive it after this class has
+    // read its NED default -- see ~NtnNrRlcAmTxEntity, which replaces it with a value computed
+    // from the satellite round-trip delay. Nothing else about the timer changes.
+    omnetpp::simtime_t tPollRetransmit_;
+
+  private:
     unsigned int snFieldLength_ = 12;  // NR-SO AM SN bits, derived from AM_Window_Size (12 or 18)
 
     struct SduInfo {
@@ -56,7 +63,6 @@ class NrRlcAmTxEntity : public RlcAmTxEntityBase
     unsigned int pollSn_ = 0;
     bool pollPending_ = false;
     omnetpp::cMessage *tPollRetransmitTimer_ = nullptr;
-    omnetpp::simtime_t tPollRetransmit_;
     omnetpp::simtime_t lastSduSample_;
     unsigned int sduSampleBytes_ = 0;
     unsigned int receivedSdus_ = 0;
