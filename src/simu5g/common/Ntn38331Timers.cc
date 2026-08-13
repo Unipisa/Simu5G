@@ -117,11 +117,6 @@ simtime_t fromMs(int milliseconds)
 
 } // namespace
 
-const char *ntn38331TimerName(Ntn38331Timer which)
-{
-    return enumerationFor(which).name;
-}
-
 simtime_t ntn38331Ceil(simtime_t value, Ntn38331Timer which)
 {
     const TimerEnumeration& enumeration = enumerationFor(which);

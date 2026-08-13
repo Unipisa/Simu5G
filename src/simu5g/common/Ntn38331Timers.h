@@ -56,11 +56,6 @@ omnetpp::simtime_t ntn38331Ceil(omnetpp::simtime_t value, Ntn38331Timer which);
 //
 omnetpp::simtime_t ntn38331Floor(omnetpp::simtime_t value, Ntn38331Timer which);
 
-//
-// Human-readable name of the enumeration, for diagnostics.
-//
-const char *ntn38331TimerName(Ntn38331Timer which);
-
 } // namespace simu5g
 
 #endif
