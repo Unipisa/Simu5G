@@ -11,7 +11,6 @@
 
 #include "simu5g/stack/rlc/am/NtnNrRlcAmTxEntity.h"
 
-#include "simu5g/common/Ntn38331Timers.h"
 #include "simu5g/common/NtnCommon.h"
 
 namespace simu5g {

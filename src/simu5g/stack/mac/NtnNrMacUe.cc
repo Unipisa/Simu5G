@@ -15,7 +15,6 @@
 
 #include <inet/common/ModuleAccess.h>
 
-#include "simu5g/common/Ntn38331Timers.h"
 #include "simu5g/common/NtnCommon.h"
 #include "simu5g/common/binder/Binder.h"
 
