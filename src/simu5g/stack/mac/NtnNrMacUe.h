@@ -12,9 +12,15 @@
 #ifndef _NTNNRMACUE_H_
 #define _NTNNRMACUE_H_
 
+#include <map>
+
 #include "simu5g/stack/mac/NrMacUe.h"
+#include "simu5g/stack/mac/packet/LteSchedulingGrant.h"
 
 namespace simu5g {
+
+// Grants held for one carrier, not yet valid, ordered by activation time.
+typedef std::map<omnetpp::simtime_t, inet::IntrusivePtr<const LteSchedulingGrant>> PendingGrantsByActivation;
 
 //
 // NR MAC for a UE served through a transparent NTN path. It re-dimensions the
@@ -44,8 +50,33 @@ class NtnNrMacUe : public NrMacUe
     // fraction of usable slots lost to a full pool rather than of wall-clock time.
     static omnetpp::simsignal_t ntnHarqTxStallSignal_;
 
+    // Time a grant spent held before becoming usable, and how many are outstanding.
+    static omnetpp::simsignal_t ntnGrantHoldTimeSignal_;
+    static omnetpp::simsignal_t ntnPendingGrantsSignal_;
+
+    // Grants that arrived already past their activation time, and grants dropped
+    // unused because a later one became due in the same slot. Both should stay at
+    // zero; see promoteDueGrants() and macHandleGrant().
+    static omnetpp::simsignal_t ntnLateGrantsSignal_;
+    static omnetpp::simsignal_t ntnGrantsSkippedSignal_;
+
+    // Grants received but not yet valid, per carrier, ordered by activation time.
+    // A container is needed rather than the single slot schedulingGrant_ offers: the
+    // gNodeB issues one grant per slot while the UE holds each for the better part of
+    // a round trip, so many are outstanding at once and the inherited single slot
+    // would keep only the last.
+    std::map<inet::GHz, PendingGrantsByActivation> pendingGrants_;
+
     void handleSelfMessage() override;
     void macHandleRac(omnetpp::cPacket *pkt) override;
+
+    // Holds a grant that is not yet valid, instead of letting the inherited
+    // implementation make it usable on receipt.
+    void macHandleGrant(omnetpp::cPacket *pkt) override;
+
+    // Installs any held grant whose activation time has arrived. Called at the start
+    // of every slot, before the inherited implementation looks for one.
+    void promoteDueGrants();
 
     // Re-derives the inherited slot counts from the cell's current round-trip delay. Called at
     // the start of every TTI and on random-access response, i.e. before any of the points that
