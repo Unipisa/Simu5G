@@ -25,6 +25,14 @@ namespace simu5g {
 //
 class NtnNrMacGnb : public NrMacGnb
 {
+  public:
+    // The slot that resource blocks booked in this slot are booked FOR, and how far
+    // ahead of the current slot that is. ~NtnSchedulerGnbUl needs both to tell whether
+    // a retransmission it granted earlier has had time to arrive.
+    int64_t ntnTargetSlot() const { return ntnTargetSlot_; }
+    long ntnGrantOffsetSlots() const { return ntnGrantOffsetSlots_; }
+    bool ntnTargetSlotValid() const { return ntnTargetSlotValid_; }
+
   protected:
     // Uplink transport blocks currently inside the receive evaluation window at
     // this gNodeB. NOT a measure of stop-and-wait occupancy: a receive process is

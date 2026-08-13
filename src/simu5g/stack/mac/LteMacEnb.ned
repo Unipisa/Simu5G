@@ -82,7 +82,7 @@ module LteMacEnb extends LteMacBase
         string schedulingDisciplineUl @enum(DRR,PF,MAXCI,MAXCI_MB,MAXCI_OPT_MB,MAXCI_COMP,ALLOCATOR_BESTFIT,QOS_PF) = default("MAXCI");
 
         // Scheduler Types
-        string ulSchedulerType @enum(LteSchedulerEnbUl,NrSchedulerGnbUl) = default("LteSchedulerEnbUl");
+        string ulSchedulerType @enum(LteSchedulerEnbUl,NrSchedulerGnbUl,NtnSchedulerGnbUl) = default("LteSchedulerEnbUl");
         string dlSchedulerType @enum(LteSchedulerEnbDl) = default("LteSchedulerEnbDl");
 
         // Proportional Fair parameters

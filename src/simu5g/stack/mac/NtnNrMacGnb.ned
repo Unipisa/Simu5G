@@ -94,6 +94,12 @@ module NtnNrMacGnb extends NrMacGnb
         // moved further than this they would activate in the wrong slot.
         int ntnGrantTimingMarginSlots = default(2);
 
+        // A receive process stays corrupted until its retransmission arrives, which over
+        // a satellite link is a whole round trip rather than the two slots the inherited
+        // scheduler assumes -- so it would re-grant the same process in every slot of
+        // that round trip. See ~NtnSchedulerGnbUl.
+        ulSchedulerType = default("NtnSchedulerGnbUl");
+
         @signal[ntnGrantActivationLead];
         @statistic[ntnGrantActivationLead](title="Slots between issuing a grant and its activation"; unit=""; source="ntnGrantActivationLead"; record=mean,min,max);
         @signal[ntnTargetSlotSkips];
