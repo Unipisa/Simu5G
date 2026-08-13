@@ -1,9 +1,11 @@
 #include "simu5g/common/GeoUtils.h"
 #include "inet/common/geometry/common/Coord.h"
 
+namespace simu5g {
+
 inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord)
 {
-    Geocentric earth(Constants::WGS84_a(), Constants::WGS84_f());
+    GeographicLib::Geocentric earth(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
 
     inet::Coord ecefCoord;
     earth.Forward(wgs84Coord.latitude.get(), wgs84Coord.longitude.get(), wgs84Coord.altitude.get(), ecefCoord.x, ecefCoord.y, ecefCoord.z);
@@ -40,8 +42,10 @@ double computeSlantRangeAtElevation(double altitude, double elevation)
     //
     // whose positive root is the expression below. Negative elevations are legal and give a
     // longer range, as they must: the satellite is then below the local horizon.
-    double earthRadius = Constants::WGS84_a();
+    double earthRadius = GeographicLib::Constants::WGS84_a();
     double sinElevation = std::sin(inet::math::deg2rad(elevation));
     double reSinElevation = earthRadius * sinElevation;
     return std::sqrt(reSinElevation * reSinElevation + altitude * altitude + 2 * earthRadius * altitude) - reSinElevation;
 }
+
+} // namespace simu5g

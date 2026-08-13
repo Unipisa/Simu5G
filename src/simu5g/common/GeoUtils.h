@@ -31,7 +31,7 @@
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 
-using namespace GeographicLib;
+namespace simu5g {
 
 // converts a WGS84 point into an ECEF Cartesian point
 inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord);
@@ -97,5 +97,7 @@ double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, co
 // Earth radius, the Earth radius + altitude and the slant range, and whose angle at the observer
 // is 90 degrees + elevation.
 double computeSlantRangeAtElevation(double altitude, double elevation);
+
+} // namespace simu5g
 
 #endif
