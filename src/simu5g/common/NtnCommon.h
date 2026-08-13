@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _NTNRLCTIMERS_H_
-#define _NTNRLCTIMERS_H_
+#ifndef _NTNCOMMON_H_
+#define _NTNCOMMON_H_
 
 #include <omnetpp.h>
 

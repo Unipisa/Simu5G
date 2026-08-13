@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/rlc/NtnRlcTimers.h"
+#include "simu5g/common/NtnCommon.h"
 
 #include <inet/common/ModuleAccess.h>
 
