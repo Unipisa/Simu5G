@@ -2,7 +2,9 @@
 
 This document expands item 2 ("Add Propagation Delay") of `ntn-implementation.md`, and the timer half of item 4.
 
-**Status: steps 1 through 5 of the staging plan are implemented.** Propagation delay, the class-1 timers (RLC, RRC), the class-3 RAC/BSR counters, HARQ, and the geometry-derived round-trip-delay service all now exist — see the "as built" sections in Parts 1, 2 and 4 for what landed and the measured results. `ntnOrbitProfile` is gone: every NTN timer is now derived from the scenario's own geometry. Still open: step 6. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
+**Status: the staging plan is complete — steps 1 through 6 are implemented.** Propagation delay, the class-1 timers (RLC, RRC), the class-3 RAC/BSR counters, HARQ, the geometry-derived round-trip-delay service and uplink grant timing all now exist — see the "as built" sections in Parts 1, 2, 4 and 5 for what landed and the measured results. `ntnOrbitProfile` is gone: every NTN timer is now derived from the scenario's own geometry. File and line references describe the state of the code when written and must be re-checked if the branch evolves.
+
+**Two figures in this document were wrong and are corrected below.** The uplink delivery shortfall attributed to the grant loop was measured over a 2 s limit, which is four GEO round trips and mostly startup; over 30 s the same path reaches 75% of offered load rather than 25%. And the future-slot ring buffer that Part 5 called "the largest structural change here" was never needed — see "Step 6 as built" in Part 5.
 
 The short version: adding the delay is mechanical; making the NR stack survive it is not. Simu5G assumes throughout that a frame sent in one TTI is received in the next, and several MAC procedures are timed as counters decremented once per TTI. Those counters conflate "how many of my own slots have passed" with "how long until the peer can possibly answer". Only the second meaning has to grow with propagation delay.
 
@@ -219,6 +221,8 @@ The offset and the window are summed into the single inherited counter at the po
 
 **Measured**, 2 s runs. GEO preamble count **44 → 2**, with delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL. LEO is unaffected as intended (52 preambles, 29250/28050 B/s unchanged). Delivery is still far below the 58.5/56.4 kB of a zero-delay run because the HARQ pool limit — 5 processes against a 507 ms RTD, about 10 transport blocks per second — is step 4 and untouched.
 
+**Caveat on every 2 s uplink figure in this document**, added after step 6 built a 30 s scenario. Two seconds is four GEO round trips and is dominated by attach and the first grant loops, and at a 1.3 s uplink application delay most of what was sent is still in flight when the run ends. The same path over 30 s delivers 75% of offered load where the 2 s run reports about 25%. The 2 s numbers are still valid *as comparisons against each other* — every step measured them the same way — but they must not be read as steady-state throughput. Use `GeoSatMultiUe` for that.
+
 **What deliberately got no offset**, verified so it is not re-investigated:
 
 - **The gNB has no RAC counter.** `pendingRacRequests_` is drained unconditionally at the top of each `LteMacEnb::handleSelfMessage()`, and `signalRac()` feeds `racschedule()` in the *same* TTI. Preamble-to-grant turnaround at the gNB is zero TTIs; all latency is in the air hops. `NtnNrNic.ned` needs no change, and unlike RLC these counters are not a peer protocol — only the UE counts them.
@@ -399,7 +403,7 @@ LEO's derived values *do* differ from the old profile (`t_Reassembly` 75 ms vs 1
 - Inflating the round-trip delay on GEO aborts the run once it passes about 550 ms, because `t_Reassembly` at four round trips would exceed the 2200 ms ceiling of `t-ReassemblyExt-r17`. GEO sits that close to the ceiling. A scenario needing more has run out of what the specification can express, which is exactly what the error says — and it is why the margin knob was dropped rather than kept as a tuning surface it could not usefully provide.
 - The `tPollRetransmit > rtd` assertion (deferred here from step 5) fires at both ends of every AM bearer and aborts `GeoSatAmTerrestrialTimers`, whose whole purpose is to violate it. That config now sets `ntnCheckTimersCoverRoundTripDelay = false` rather than having its values softened.
 
-**Still a stopgap in one respect.** `ntnRoundTripDelay(binder, gnbId, ueId)` exists, is verified against the step-1 per-hop measurements (506.57 ms GEO, 8.33 ms LEO at pass peak, reproduced to three decimals by an independent code path), and has no timer consumer: every timer is cell-wide, because a per-UE value at random-access time would model a UE that knew its own delay before connecting. It is there for the Part 8 diagnostics and for step 6.
+**`ntnRoundTripDelay(binder, gnbId, ueId)` now has its consumer.** It is verified against the step-1 per-hop measurements (506.57 ms GEO, 8.33 ms LEO at pass peak, reproduced to three decimals by an independent code path), and step 6 uses it for grant activation times once the gNodeB has heard from a UE. No *timer* consumes it, and that remains deliberate: every timer is cell-wide, because a per-UE value at random-access time would model a UE that knew its own delay before connecting. Grant timing is the one place a per-UE value is legitimate, and only after attach.
 
 ## Part 5 — Per-Mechanism Treatment
 
@@ -440,11 +444,58 @@ Two pieces of dead or misleading code to remove rather than leave as traps:
 
 ### Uplink interference bookkeeping
 
-`Binder::storeUlTransmissionMap()` keeps a two-slot `CURR_TTI`/`PREV_TTI` window (`src/simu5g/common/binder/Binder.cc:684`), assuming a UL transmission is heard in the same or previous slot. Under NTN delays that window is meaningless. NTN interference is item 6 and unimplemented, so per the branch convention this should abort rather than quietly return the wrong neighbours.
+`Binder::storeUlTransmissionMap()` keeps a two-slot `CURR_TTI`/`PREV_TTI` window (`src/simu5g/common/binder/Binder.cc:684`), assuming a UL transmission is heard in the same or previous slot. Under NTN delays that window is meaningless — it reports the UEs that transmitted recently rather than the ones whose signals are arriving together, which is a wrong neighbour set rather than an imprecise one.
 
-### Grant and resource timing
+**Now guarded.** `NtnChannelModel::initialize()` aborts when `uplinkInterference` is enabled on a satellite link, with `ntnAllowUplinkInterference` as the named opt-out. The check is at configuration time and not on the write, because the map is still *populated* in NTN runs — `LtePhyUe.cc:361` writes it whenever `isD2DInterferenceEnabled()` is set, and that defaults to true — and writing it is harmless; only reading it is wrong. Guarding the write would abort every NTN run. Note `computeUplinkInterference()` is not virtual, so the guard is single-layer.
 
-The gNB allocates RBs for "this TTI" while the UE transmits an RTT/2 later. Harmless with one UE and no interference; wrong as soon as items 5 and 6 land. The correct fix is the 3GPP one: the grant carries an absolute valid slot (k2 + K_offset), the UE holds it until then, and the gNB books resources in a future-slot allocation map. This is the largest structural change here — stage it last, behind a flag.
+When NTN interference is implemented (item 6 of `ntn-implementation.md`), the fix belongs in `ulTransmissionMap_` keyed by **arrival slot at the receiver**, not in the allocator. The reception slot each grant is already booked for is exactly that key. Do not reach for the allocator's `prevAllocatedRbsPerBand_` by analogy with the downlink path: on an NTN cell it now holds the allocation for a reception slot still in the future.
+
+### Grant and resource timing — **done, see "Step 6 as built" below**
+
+The gNB allocated RBs for "this TTI" while the UE transmitted an RTT/2 later. The fix is the 3GPP one: the grant carries the time from which it is valid, the UE holds it until then, and the gNB books resources for the slot the transmission will be heard in.
+
+*Superseded:* this section predicted "the gNB books resources in a future-slot allocation map. This is the largest structural change here — stage it last, behind a flag." **No future-slot map was needed.** Indexing by reception slot rather than transmission slot makes `n -> n + D` a bijection for a cell-wide offset `D`, so each reception slot is booked by exactly one scheduling round and the existing single-TTI allocator already *is* that slot's map. The whole gNodeB change is one stamping hook.
+
+### Step 6 as built
+
+**The result that made this cheap.** The doc expected a ring buffer of depth `ceil(RTD/slot)` — ~1083 entries at GEO/µ=1. That is the depth you need if the allocation map is indexed by the UE's *transmission* slot. Indexed by the gNodeB's *reception* slot with a cell-wide offset `D`, the map `n -> n + D` is a bijection: each reception slot is booked in exactly one scheduling round, so the existing single-TTI `LteAllocationModule` already is that slot's map and only its meaning changes. Verified: every reader of allocator occupancy (`readPerUeAllocatedBlocks`, `readRbOccupation`) runs inside `sendGrants()` in the same TTI as `schedule()`, and `getInterferingBlocks()` — the sole consumer of `prevAllocatedRbsPerBand_` — has one caller, `LteMacEnb.cc:1004`, which reads the *downlink* allocator.
+
+Reception-slot indexing is also the physically right frame. With no timing advance (option A below), orthogonality is a property of the arrival instant, so the per-UE difference belongs in the activation time rather than in a per-UE offset. That is ideal timing advance, not per-UE K_offset.
+
+**The algebra**, in slots of the gNodeB's `ttiPeriod_`:
+
+| symbol | meaning |
+|---|---|
+| `D` | cell-wide lookahead, `ceil(R_cell/slot) + k2` |
+| `r` | reception slot being booked, `n + D` |
+| `a(u)` | activation time in the grant, `r - ceil((R_ue/2)/slot)` |
+
+Hold time is `(D - ceil((R_ue/2)/slot)) * slot - R_ue/2`, which is non-negative for every UE because `R_cell >= R_ue` and the rounding goes the right way — so a late grant is impossible by construction, and none was observed. GEO gives 34.7 ms after attach and 0.27 ms for a cell-edge UE.
+
+**Where it lives.** `NtnNrMacGnb` (the branch's first gNodeB-side NTN MAC) stamps grants; `NtnNrMacUe` holds them in `pendingGrants_`, keyed by carrier then activation time, and promotes them at the start of the slot they name. `NtnSchedulerGnbUl` suppresses a retransmission grant while one is already in flight.
+
+The activation time rides on `UserControlInfo`, not on `LteSchedulingGrant`: that is already the branch's carrier for NTN per-hop metadata, and the UE reads the tag before the grant packet is deleted. `LteSchedulingGrant.msg` is untouched. Terrestrial footprint is three things — one `virtual` keyword on `LteMacBase::sendLowerPackets()`, two zero-defaulted fields on `LteControlInfo.msg`, and one value added to the `ulSchedulerType` `@enum` (mandatory: the parameter is validated against that list).
+
+**Stamping through `sendLowerPackets()` rather than a hook in `sendGrants()`** matters more than it looks. `NrMacGnb` derives from `LteMacEnbD2D`, so `LteMacEnbD2D::sendGrants()` is the live path and `LteMacEnb::sendGrants()` is not; hooking only the latter compiles, passes every gate, and does nothing. Two traps found by measurement rather than reading:
+
+- `sendGrants()` sets the direction on the **grant chunk**, never on the `UserControlInfo` tag, which stays at its `DL` default. A filter on `userInfo->getDirection() == UL` matches nothing. Read the chunk.
+- `mac_` is resolved at `INITSTAGE_SIMU5G_AMC_SETUP`, not `INITSTAGE_LOCAL`, so a scheduler that checks its MAC's type must do it there.
+
+**Measured, and the opposite of what was predicted.** The expectation was that holding a grant would cost throughput and add its hold time to uplink delay. Over 30 s with four UEs:
+
+| | before | after |
+|---|---|---|
+| UL delivered | 89 910 B/s | **101 920 B/s** (+13%) |
+| UL app delay | 1.770 s | **1.028 s** (-42%) |
+| DL delivered | 94 500 B/s | 94 370 B/s (unchanged) |
+
+**The reason is a defect this exposes rather than introduces.** `schedulingGrant_` holds one grant per carrier, and a grant arriving while another is installed overwrites it (`LteMacUeD2D.cc:373-378`). Over a 507 ms round trip the gNodeB issues grants continuously — as many as 25 are outstanding at once here — so most were discarded and the blocks booked for them went unused. Holding each against its own activation slot means each is used in the slot it was booked for. Transmit HARQ occupancy rises from a peak of 13 processes to the full 32, and no grant is ever late or skipped in any configuration.
+
+`GeoSatSpreadUe` demonstrates the per-UE half: its four UEs, spread over 450 km, hold their grants for 33.7, 33.8, 34.0 and 35.1 ms respectively. LEO moves by about 1%, as expected for a ~8 ms hold on an 8.3 ms round trip.
+
+**Duplicate retransmission grants were a much smaller problem than expected.** The concern was that one corrupted process would draw a grant in every slot of a round trip. It does not: `LteMacEnb::signalProcessForRtx()` already counts processes awaiting retransmission and decrements on grant, so the scheduler stops looking until another corruption is signalled. What remains is the residual case where that count is non-zero for a different process and the loop re-finds an already-granted one first — 56 grants over 30 s with four UEs, 50 with them spread out, one in the 2 s single-UE run, none over LEO. Delivery is unaffected; per-UE uplink moves up to 13% either way with totals conserved, which is the scheduler reordering which UE wins a contended slot. `NtnSchedulerGnbUl` is kept as a correctness fix, since the pathology grows with block error rate and load.
+
+**Still open.** A UE the gNodeB has not yet heard from can only be given the cell-wide bound, so its Msg3 arrives slightly *before* the booked slot. Bounded by the beam footprint, invisible in every current scenario, and the one thing in this design that would need a multi-slot allocation map — of depth `Δ + 1` (~21 slots at µ=1 for a large GEO beam), not `ceil(RTD/slot)`. Needs the coverage model of item 5.
 
 ### Frame alignment and timing advance
 
@@ -457,9 +508,9 @@ Do (A) first with an explicit note. Defer (B) until beams exist (item 5), since 
 
 ## Part 6 — Where the Code Should Live
 
-The branch convention is NTN-specific subclasses (`NtnGNodeB`, `NtnIp2Nic`, `NtnPhyGnb`) rather than conditionals in mature terrestrial paths. But there is currently **no `NtnMacUe`/`NtnMacGnb`**, and MAC is exactly where this work lands.
+The branch convention is NTN-specific subclasses (`NtnGNodeB`, `NtnIp2Nic`, `NtnPhyGnb`) rather than conditionals in mature terrestrial paths. MAC is exactly where this work lands.
 
-Add them: thin subclasses of `NrMacUe`/`NrMacGnb` overriding only the counter reload points, with a few members promoted to `protected`/`virtual` in `LteMacUe`. `NtnNrNicUe.ned` and `NtnNrNic.ned` already exist, so the wiring is cheap. This makes the "no effect on terrestrial scenarios" guarantee structural rather than a matter of care.
+**Both now exist**: `NtnNrMacUe` (step 3) and `NtnNrMacGnb` (step 6), plus `NtnSchedulerGnbUl`. They are thin subclasses wired by `NtnNrNicUe.ned` and `NtnNrNic.ned`, which makes the "no effect on terrestrial scenarios" guarantee structural rather than a matter of care — no terrestrial NED type references any of them, and no fingerprint test instantiates one. The whole of steps 3 and 6 needed exactly one access-specifier change in a terrestrial header (`sendLowerPackets()` made virtual) and no member promotions at all.
 
 Guardrails:
 
@@ -473,7 +524,7 @@ Guardrails:
 3. ✓ **RAC and BSR offsets (done).** See "RAC and BSR as built" in Part 2: GEO preamble count 44 → 2, delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL, LEO unaffected.
 4. ✓ **HARQ (done).** Process count raised to 32 on both ends, and downlink feedback disabled while uplink feedback stays on — see "HARQ as built" below. GEO downlink 8100 → 25350 B/s, 85% of offered load.
 5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301` — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2; step 2 then replaced its per-orbit constants with geometry-derived values and added the `tPollRetransmit > rtd` assertion that was deferred to it.
-6. Grant/k2 restructuring, if at all.
+6. ✓ **Grant/k2 restructuring (done).** See "Step 6 as built" in Part 5: the grant carries the time from which it is valid, the UE holds it until then, and the gNodeB books resource blocks for the slot the transmission will be heard in. No future-slot allocation map was needed. GEO uplink 89 910 → 101 920 B/s with application delay 1.770 → 1.028 s over 30 s and four UEs, because the single-slot grant store had been silently discarding grants.
 
 ## Part 8 — Diagnostics and Verification
 
@@ -487,6 +538,19 @@ Guardrails:
 
 Without these, a GEO smoke run that drops from 58 kB to 0 kB gives no way to distinguish a HARQ stall from a RAC storm from an RLC timeout.
 
+**As built (step 6).** Recorded statistics rather than log lines, because what matters about most of them is their distribution over a run; the configuration values that must not be silently wrong are reported at `EV_INFO` on change, following `NtnNrMacUe::refreshNtnCounters()`.
+
+| Statistic | Module | What it settles |
+|---|---|---|
+| `ntnHarqTxOccupancy`, `ntnHarqTxStall` | `NtnNrMacUe` | Whether the uplink is process-limited. Sampled before the slot inserts its own PDU, which is exactly when `firstAvailable()` would fail |
+| `ntnHarqRxOccupancy` | `NtnNrMacGnb` | Whether uplink data is arriving at all. **Not** a stop-and-wait measure: a receive process is held for `harqFbEvaluationTimer` (the k1 budget), which does not scale with delay |
+| `ntnGrantHoldTime`, `ntnPendingGrants` | `NtnNrMacUe` | How long grants wait and how many are outstanding |
+| `ntnLateGrants`, `ntnGrantsSkipped` | `NtnNrMacUe` | Both must stay zero; non-zero means the offset does not cover a UE's delay |
+| `ntnGrantActivationLead`, `ntnTargetSlotSkips` | `NtnNrMacGnb` | The offset actually applied, and whether the reception slot had to be forced forward |
+| `ntnRtxGrantsSuppressed` | `NtnSchedulerGnbUl` | Retransmission grants not issued because one was already in flight |
+
+The occupancy statistics settled a question immediately: with one UE the transmit pool peaks at 13 of 32 processes and never stalls, so the single-UE GEO uplink is grant-limited, not process-limited. It reaches 32 of 32 only once several UEs contend. Two of these are still absent — RAC attempts/outcomes and BSR retransmission counts have no counters, and grant-to-transmission latency is measurable from `ntnGrantIssueTime` but is not yet emitted.
+
 Verification beyond the geometry checks already listed in item 7:
 
 - one-way delay for GEO at nadir and at cell edge, and for the LEO TLE at a known epoch, against the TR 38.821 table above;
@@ -495,3 +559,7 @@ Verification beyond the geometry checks already listed in item 7:
 - **the analytical check that actually validates the timer work**: with feedback-enabled HARQ, delivered throughput should equal `N_proc · TBS / RTT`. If the simulation does not reproduce that number, the HARQ pipelining is wrong regardless of what the delivery counters say.
 
 Note also that the current 2 s smoke runs are no longer adequate: at a 540 ms RTT that is barely four round trips. GEO needs tens of seconds of simulated time, and LEO must still start inside a pass.
+
+**Addressed by step 6**, which added three 30 s configurations to `simulations/nr/ntn_smoke/omnetpp.ini` without touching `GeoSat`: `GeoSatMultiUe` (4 UEs), `GeoSatMultiUeLoad` (8 UEs, past what the cell carries) and `GeoSatSpreadUe` (4 UEs over 450 km, so their one-way delays differ by whole slots). They are what showed the HARQ pool binding at all, and `GeoSatSpreadUe` is where per-UE grant timing is visible.
+
+**A pre-existing defect they exposed, unrelated to the grant work.** `GeoSatMultiUeLoad` at the default seed leaves one UE locked out of uplink for the entire run: it fires a preamble about every RAR window, never obtains a grant, and its downlink meanwhile runs at the full offered rate. At another seed nobody starves but the per-UE uplink share still spreads about fourfold. This is the preamble-collision gap of item 4 in `ntn-implementation.md` — the gNodeB collision window is a fixed one-slot bucket with no round-trip term — and it needs the timing-advance model to close. It is invisible with one UE. **Compare runs of that configuration only at equal seeds.**

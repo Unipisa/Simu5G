@@ -31,12 +31,18 @@ Available now:
 - Two-hop beacon RSSI: a `BEACONPKT` reaches attached UEs through the satellite the same way CSI-RS does, and `NtnChannelModel::computeReceptionRsrp()` combines both hops for `NtnPhyUe::computeReceivedBeaconPacketRssi()`, feeding the (still unimplemented) handover machinery a correct measurement instead of a fictitious direct-geometry one.
 - Geometry-derived per-hop propagation delay, with the frame duration charged once end to end as a bent-pipe transponder requires. See item 2 below and `ntn-delay-and-timers.md`.
 - NTN-aware protocol timers throughout: RLC and RRC (`NtnNrRlcAmEntity`, `NtnNrRlcUmEntity`), the RAC and BSR counters (`NtnNrMacUe`), and HARQ (32 processes, downlink feedback disabled). Every value is derived at runtime from the cell's own round-trip delay, which `ntnCellRoundTripDelay()` computes from the satellite's altitude and the cell's configured minimum elevation, and is then rounded to a value TS 38.331 can actually signal. There is no orbit label to set or to get wrong. See `ntn-delay-and-timers.md`.
+- Uplink grant timing (`NtnNrMacGnb`, `NtnSchedulerGnbUl`): resource blocks are booked for the slot in which the granted transmission will be heard rather than the slot that scheduled it, the grant carries the time from which it is valid, and the UE holds it until then. A UE gets its own delay once the gNodeB has heard from it and the cell-wide bound before that, mirroring how Rel-17 broadcasts a cell-specific K_offset and refines it per UE after access.
+- Multi-UE GEO scenarios at 30s (`GeoSatMultiUe`, `GeoSatMultiUeLoad`, `GeoSatSpreadUe`), which is what makes resource-block contention and per-UE differential delay observable at all.
 - Graceful teardown on a delayed link: MAC and RLC both discard data belonging to bearers released while frames were still in flight, which over a satellite link means for a further round-trip time.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios, plus RLC AM variants.
 
 Not available as a complete model:
 
-- Validation at realistic load. Every measurement so far is one UE at 30 kB/s over 2 s. GEO downlink now reaches 85% of that offered load, but GEO uplink remains grant-limited at about a quarter of it — the BSR/grant round trip, not HARQ — and nothing has been run with many UEs, saturating load, or across a full LEO pass. A UE also never stops retrying random access after its satellite sets, since `LteMacUe::macHandleRac()` resets the attempt counter on exhaustion.
+- Validation at realistic load. GEO has now been run with four and eight UEs over 30 s, where uplink reaches about 85% of offered load and downlink is unchanged by the grant work; nothing has been run across a full LEO pass, and the LEO timer values remain unexercised. A UE also never stops retrying random access after its satellite sets, since `LteMacUe::macHandleRac()` resets the attempt counter on exhaustion.
+
+  Note the frequently quoted "GEO uplink at about a quarter of offered load" was a 2 s artefact: that limit is four GEO round trips, and at a 1.3 s uplink application delay most of what was sent is still in flight when the run ends. The 2 s figures remain valid as comparisons against each other, but not as steady-state throughput.
+- Uplink interference on a satellite path. It is refused rather than approximated: `NtnChannelModel::initialize()` aborts when `uplinkInterference` is enabled, because `Binder::getUlTransmissionMap()` keeps a two-slot window and would report the UEs that transmitted recently rather than the ones whose signals arrive together. See item 6 below.
+- Timing advance, and with it a preamble-collision window that means anything. With several UEs contending, one can be locked out of uplink random access for a whole run; see item 4.
 - Validation of the LEO timer values specifically. They are now derived from geometry rather than hand-set, and the derivation is demonstrably live, but at an 8.3 ms round trip under the smoke load none of the RAC/BSR counters ever binds — `LeoSat` gives identical results whatever they are set to. See "RAC and BSR as built" in `ntn-delay-and-timers.md`.
 - An input-dependent bent-pipe transponder model with payload gain, added noise, bandwidth limits, output backoff, and saturation.
 - Satellite-relative Doppler beyond the carrier-frequency scaling (the terrestrial-endpoint speed is still the only source of relative motion).
@@ -294,11 +300,17 @@ The only current examples are under `simulations/nr/ntn_smoke/`:
 - gNB/gateway/satellite IDs are fixed to 1/16384/17408;
 - local CSI-RS and SRS-based feedback are enabled.
 
-Run from the scenario directory after sourcing the required OMNeT++, INET, and Simu5G environments:
+Three multi-UE configurations extend `GeoSat` without modifying it, so its recorded results stay comparable. All run 30 s, which is about 55 GEO round trips rather than the four a 2 s limit allows:
+
+- `GeoSatMultiUe` — four UEs. The smallest configuration in which resource blocks are actually contended, and the one that first showed the HARQ pool binding at all;
+- `GeoSatMultiUeLoad` — eight UEs, past what the cell can carry. **Not seed-stable**, for the reason in item 4 below; compare runs only at equal seeds;
+- `GeoSatSpreadUe` — four UEs over 450 km, so their one-way delays differ by whole slots. The configuration in which per-UE grant timing is visible.
+
+Run from the scenario directory after sourcing the required OMNeT++, INET, and Simu5G environments. Note there is **no `run` wrapper** in this directory, unlike `simulations/nr/standalone`:
 
 ```sh
-./run -u Cmdenv -c GeoSat
-./run -u Cmdenv -c LeoSat
+simu5g -u Cmdenv -c GeoSat omnetpp.ini
+simu5g -u Cmdenv -c GeoSatMultiUe omnetpp.ini
 ```
 
 **Current delivery status** (2 s runs, with `scenario = "RURAL_MACROCELL"` and `fixedLos = true` defaults):
@@ -310,6 +322,15 @@ Run from the scenario directory after sourcing the required OMNeT++, INET, and S
 | `LeoSat` | 58.5 kB | 56.1 kB | 10 |
 
 Both configurations now deliver in both directions. Uplink CSI derives from the actual satellite path (`9b265962`, with the statistics hook in `6a9188f9`), the link-budget defaults no longer apply NLOS clutter to satellite links (`ebb7a181`), and the feeder hop is evaluated at its own carrier (`94160458`).
+
+Note the table above predates propagation delay: those are zero-delay figures. With delay and the full timer work, `GeoSat` over 2 s delivers 25.4 kB downlink and 11.1 kB uplink, and the 30 s multi-UE configurations are the ones to read for steady-state behaviour:
+
+| Config | UL delivered | DL delivered | UL app delay |
+|---|---|---|---|
+| `GeoSatMultiUe` (4 UEs) | 105.5 kB/s | 94.2 kB/s | 0.96 s |
+| `GeoSatSpreadUe` (4 UEs, 450 km) | 97.8 kB/s | 94.2 kB/s | 1.07 s |
+
+against roughly 120 kB/s offered in each direction. Downlink application delay stays at 0.26 s throughout, essentially the one-way propagation delay, so the downlink does not queue; the uplink residual is the buffer-status-report and grant round trip.
 
 `LeoSat` previously delivered nothing, and the cause was geometric rather than a modelling defect: the configured epoch placed the satellite 22.2 degrees below the local horizon of the ground nodes. **A LEO scenario's start time must be chosen inside a pass.** The TLE in `space_Veins-1.txt` describes a 350 km circular orbit at 70 degrees inclination, whose visibility cap spans 18.56 degrees of arc, i.e. 2.6% of the Earth at any instant, so most instants are not usable. The pass schedule for the current ground-node position is recorded in a comment above `wall_clock_sim_start_time_utc` in `omnetpp.ini`. Satellite placement and visibility are now reported at INFO (see Implementation Conventions), so a badly chosen epoch is self-diagnosing.
 
@@ -330,7 +351,8 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 - ✓ **Geometry-derived per-hop delay (done)**: `NtnPropagationDelay` (`src/simu5g/stack/phy/NtnPropagationDelay.{h,cc}`) computes each radio hop's ECEF slant range divided by light speed and supplies it to all four `sendDirect()` sites in `NtnPhyBase` and `NtnPhyUe`. Enabled by default via `useGeometricPropagationDelay`; `transparentPayloadRelay` additionally charges the frame duration once end to end rather than once per hop, as a bent-pipe transponder requires. Measured GEO round-trip delay is 506.57 ms, inside the TR 38.821 transparent band, and LEO is 8.33 ms. Payload processing delay stays separate in `NtnRelay::relayDelay`.
 - ✓ **NR timers adapted to long RTT (done)**: RLC, RRC, the RAC/BSR counters and HARQ were all re-dimensioned, recovering GEO downlink from the 9.3 kB the raw delay left it at to 85% of offered load. Adding packet delay alone was never sufficient, and this is where most of the work went.
-- ✓ **Geometry-derived round-trip delay service (done)**: `ntnCellRoundTripDelay()` bounds the cell's round trip from the satellite altitude and the cell's own `ntnMinElevation`, reproducing TR 38.821's reference figures exactly. Every NTN timer is now derived from it and rounded to a value TS 38.331 can signal, so there is no orbit label to set or to get wrong. Remaining gap: grant/k2 restructuring (step 6 of `ntn-delay-and-timers.md`), which is what the per-UE `ntnRoundTripDelay()` exists for.
+- ✓ **Geometry-derived round-trip delay service (done)**: `ntnCellRoundTripDelay()` bounds the cell's round trip from the satellite altitude and the cell's own `ntnMinElevation`, reproducing TR 38.821's reference figures exactly. Every NTN timer is now derived from it and rounded to a value TS 38.331 can signal, so there is no orbit label to set or to get wrong.
+- ✓ **Uplink grant timing (done)**: resource blocks are booked for the slot the granted transmission will be heard in, and the grant carries the time from which it is valid. `NtnNrMacGnb` stamps it, `NtnNrMacUe` holds the grant until then, `NtnSchedulerGnbUl` stops re-granting a process whose retransmission is still in flight. No future-slot allocation map was needed: with a cell-wide offset each reception slot is booked by exactly one scheduling round, so the existing allocator already is that slot's map. This is what the per-UE `ntnRoundTripDelay()` was built for. It also exposed a pre-existing defect -- the UE's single grant slot silently discarded grants that arrived while another was installed, which over a 507 ms round trip was most of them.
 - The wired gNB-gateway fronthaul (`simulations/nr/ntn_smoke/NtnGeo.ned:87`) is still a bare NED connection with zero delay and infinite datarate; it needs a channel, not a module parameter. It is also the one leg the round-trip delay service does not account for, deliberately.
 
 **See `ntn-delay-and-timers.md`** (in this directory) for the full design discussion: the four `sendDirect()` call sites and the two traps around them (frame duration charged per hop, and the channel-less fronthaul connection); a taxonomy separating timers that must scale with RTT from the ones that must not; the 3GPP K_offset/`ntn-Config` framing including whether the value is per-UE and how often it must be refreshed; per-mechanism treatment of HARQ, RAC, BSR, CQI aging, and grant timing; and a staging order with the diagnostics needed to debug each step, plus the measured step-1 results. The timer half of item 4 below is covered there as well.
@@ -349,7 +371,9 @@ Complete these items before describing the implementation as a usable bent-pipe 
 - ✓ **CSI-RS and two-hop enforcement (commit 1aa1083d)**: downlink CSI and data decoding both combine the two hops through `computeReceptionSinr()`, and a missing first-hop measurement is now an error rather than a silent single-hop fallback.
 - ✓ **RSRP-based measurement, beacon RSSI**: beacon delivery to attached UEs is fixed (`NtnPhyGnb::sendBroadcast()` fans `BEACONPKT` out over `attachedUes[]`, and `NtnPhyBase::getHopAction()` stores the feeder-hop measurement in the new `relayHopRsrp[]` field), and `NtnPhyUe::computeReceivedBeaconPacketRssi()` now combines both hops through the new `NtnChannelModel::computeReceptionRsrp()`, using the same harmonic-mean formula as `computeReceptionSinr()`, when the beacon's source gNB is a transparent NTN cell. Cell search (`LtePhyUe::findCandidateEnb()`) and handover triggering/switching remain untouched and out of scope; see the note under Known Physical Inconsistencies.
 - ✓ **HARQ, random access, BSR and RLC timers against GEO/LEO RTT (done)**: RLC and RRC timers on the NTN entity types, RAC/BSR counters on `NtnNrMacUe`, and HARQ raised to 32 processes with downlink feedback disabled. All values derived from TR 38.821 and TS 38.331; see `ntn-delay-and-timers.md` for the derivations and measurements. Note Simu5G models no Scheduling Request at all — a backlogged UE fires a RACH preamble instead — so `raResponseWindow` carries the RAR offset, the RAR window and `sr-ProhibitTimer` at once.
-- Model timing advance/common timing reference and NTN assistance data assumptions explicitly. **Still open, and it now matters**: with no timing advance, the gNodeB's preamble-collision window is a fixed one-slot bucket, so under differential delay two UEs transmitting in the same slot arrive slots apart and never collide, while UEs transmitting slots apart can collide spuriously. Invisible with one UE; wrong with many.
+- Model timing advance/common timing reference and NTN assistance data assumptions explicitly. **Still open, and it is now demonstrated rather than predicted**: with no timing advance, the gNodeB's preamble-collision window is a fixed one-slot bucket, so under differential delay two UEs transmitting in the same slot arrive slots apart and never collide, while UEs transmitting slots apart can collide spuriously. In `GeoSatMultiUeLoad` at the default seed this locks one UE out of uplink for the entire 30 s run -- it fires a preamble about every RAR window, never obtains a grant, and its downlink meanwhile runs at the full offered rate. At another seed nobody starves but the per-UE uplink share still spreads about fourfold. Invisible with one UE; wrong with many, and it makes that configuration meaningful only when runs are compared at equal seeds.
+
+  Note the grant timing of item 2 is *ideal* timing advance and does not fix this: it makes each UE's transmission arrive in the slot its resource blocks were booked for, but random access happens before any grant exists.
 
 ### 5. Add Coverage, Beams, and Dynamic Associations
 
@@ -362,7 +386,7 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 6. Complete Propagation Effects and Interference
 
-- Add co-channel interference from UEs, beams, satellites, and gateways.
+- Add co-channel interference from UEs, beams, satellites, and gateways. **The uplink half has a known shape and a guard already in place.** `NtnChannelModel::initialize()` aborts when `uplinkInterference` is enabled, with `ntnAllowUplinkInterference` as the opt-out, because the interferer set comes from `Binder::getUlTransmissionMap()` and that keeps a two-slot `CURR_TTI`/`PREV_TTI` window: it reports the UEs that transmitted in the last two slots, not the ones whose signals are arriving now. The fix is to key that map by **arrival slot at the receiver**; the reception slot each grant is booked for (item 2) is already exactly that key. Do not instead reach for the allocator's `prevAllocatedRbsPerBand_` by analogy with the downlink path -- on an NTN cell that holds the allocation for a reception slot still in the future.
 - Apply polarization mismatch once per hop.
 - Add rain/cloud attenuation and configurable environmental assumptions if Ka-band feeder fidelity is required. The feeder hop now runs at the real Ka carrier, so these are the remaining unmodelled Ka effects.
 - Make thermal-noise bandwidth numerology-aware.
@@ -449,7 +473,10 @@ Round-trip delay and protocol timers:
 - `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned`, `NtnNrRlcUmEntity.ned`
 - `src/simu5g/stack/rlc/am/NtnNrRlcAmTxEntity.{ned,cc,h}`, `NtnNrRlcAmRxEntity.{ned,cc,h}`
 - `src/simu5g/stack/rlc/um/NtnNrRlcUmRxEntity.{ned,cc,h}`
-- `src/simu5g/stack/mac/NtnNrMacUe.{ned,cc,h}`
+- `src/simu5g/stack/mac/NtnNrMacUe.{ned,cc,h}` — RAC/BSR counters, and the grant hold
+- `src/simu5g/stack/mac/NtnNrMacGnb.{ned,cc,h}` — the uplink grant offset and activation times
+- `src/simu5g/stack/mac/scheduler/NtnSchedulerGnbUl.{ned,cc,h}` — one retransmission grant per round trip
+- `src/simu5g/common/LteControlInfo.msg` — `ntnGrantActivationTime`, `ntnGrantIssueTime`
 
 Scenarios:
 
