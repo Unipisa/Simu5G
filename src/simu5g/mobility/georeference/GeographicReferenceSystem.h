@@ -3,7 +3,22 @@
 
 #include <omnetpp.h>
 
-#include "simu5g/common/GeoUtils.h"
+// Temporarily hide INET's NaN macro while parsing GeographicLib headers
+#ifdef NaN
+  #pragma push_macro("NaN")
+  #undef NaN
+  #define GEOREF_RESTORE_NAN
+#endif
+
+#include "GeographicLib/Geocentric.hpp"
+#include "GeographicLib/LocalCartesian.hpp"
+
+// Restore NaN macro if it existed
+#ifdef GEOREF_RESTORE_NAN
+  #pragma pop_macro("NaN")
+  #undef GEOREF_RESTORE_NAN
+#endif
+
 #include "inet/common/INETDefs.h"
 #include "inet/common/InitStages.h"
 #include "inet/common/geometry/common/Coord.h"

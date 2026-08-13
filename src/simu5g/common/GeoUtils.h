@@ -21,7 +21,6 @@
 
 #include <GeographicLib/Constants.hpp>
 #include "GeographicLib/Geocentric.hpp"
-#include "GeographicLib/LocalCartesian.hpp"
 
 // Restore NaN macro if it existed
 #ifdef GEOUTILS_RESTORE_NAN
