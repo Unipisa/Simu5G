@@ -16,6 +16,7 @@
 #include <inet/common/ModuleAccess.h>
 
 #include "simu5g/common/Ntn38331Timers.h"
+#include "simu5g/common/NtnCommon.h"
 #include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
@@ -68,7 +69,7 @@ void NtnNrMacUe::macHandleRac(cPacket *pkt)
 void NtnNrMacUe::refreshNtnCounters()
 {
     // binder_ is the reference LteMacBase already resolves from its own binderModule parameter.
-    simtime_t roundTripDelay = binder_->getNtnCellRoundTripDelay(cellId_);
+    simtime_t roundTripDelay = ntnCellRoundTripDelay(binder_.get(), cellId_);
 
     if (roundTripDelay <= SIMTIME_ZERO)
         throw cRuntimeError("NtnNrMacUe::refreshNtnCounters - UE %hu is served by cell %hu, which has no NTN "

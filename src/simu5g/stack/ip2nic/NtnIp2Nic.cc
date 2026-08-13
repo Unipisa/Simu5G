@@ -13,6 +13,8 @@
 
 #include <inet/common/ModuleAccess.h>
 
+#include "simu5g/common/NtnCommon.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -53,9 +55,9 @@ void NtnIp2Nic::reportNtnPath()
     if (association == nullptr)
         return;
 
-    // Evaluated before the stream expression: the Binder logs its own derivation the first time a
-    // cell is queried, which would otherwise land in the middle of this line.
-    double cellRoundTripDelay = binder_->getNtnCellRoundTripDelay(nodeId_).dbl();
+    // Evaluated before the stream expression: the derivation is logged the first time a cell is
+    // queried, which would otherwise land in the middle of this line.
+    double cellRoundTripDelay = ntnCellRoundTripDelay(binder_.get(), nodeId_).dbl();
 
     EV_INFO << "NtnIp2Nic::reportNtnPath - gNodeB " << nodeId_ << " serves through gateway "
             << association->ntnGatewayId << " and satellite " << association->satelliteId
@@ -64,7 +66,7 @@ void NtnIp2Nic::reportNtnPath()
     // The per-UE delay is the one that tracks satellite motion, so it is worth having beside the
     // cell bound: the bound must always be the larger of the two.
     for (MacNodeId ueId : binder_->getDeployedUes(nodeId_)) {
-        double ueRoundTripDelay = binder_->getNtnRoundTripDelay(nodeId_, ueId).dbl();
+        double ueRoundTripDelay = ntnRoundTripDelay(binder_.get(), nodeId_, ueId).dbl();
         EV_INFO << "NtnIp2Nic::reportNtnPath - UE " << ueId << " round-trip delay["
                 << ueRoundTripDelay * 1000.0 << "ms]" << endl;
     }
