@@ -68,6 +68,39 @@ void NtnChannelModel::initialize(int stage)
             EV_INFO << "NtnChannelModel: NTN_OPEN enforces an outdoor LOS/AWGN channel; "
                     << "dynamicLos, fixedLos, insideBuilding, shadowing, and fading parameters are ignored" << endl;
         }
+
+        // Caught here, at configuration time, rather than where the wrong answer would be
+        // produced. The map is harmless to populate -- it is written whenever D2D
+        // interference is enabled, which is the default -- and only wrong once consumed,
+        // so aborting on the write would abort every NTN run instead.
+        if (isUplinkInterferenceEnabled() && !par("ntnAllowUplinkInterference").boolValue())
+            throw cRuntimeError("NtnChannelModel::initialize - %s has uplinkInterference enabled on a "
+                    "satellite link. Uplink interference is computed from Binder::getUlTransmissionMap(), "
+                    "which keeps a two-slot window and so reports the UEs that transmitted in the last two "
+                    "slots -- not the ones whose signals are arriving now, which over a geostationary link "
+                    "left hundreds of slots ago. The neighbour set it returns would be wrong rather than "
+                    "approximate. NTN interference is item 6 of ntn-implementation.md and is not modelled: "
+                    "it needs that map keyed by arrival slot at the receiver. Set "
+                    "ntnAllowUplinkInterference=true to proceed with a knowingly wrong neighbour set.",
+                    getFullPath().c_str());
+
+        // Same failure on the downlink side, a different mechanism. computeDownlinkInterference()
+        // compares this cell's current- or previous-slot resource-block booking against every
+        // other cell's own booking (LteMacEnb::getDlBandStatus()/getDlPrevBandStatus(), read
+        // directly from each gNodeB's allocator rather than through the Binder), with the same
+        // unstated assumption as the uplink case: a booking from one slot ago is what is
+        // arriving at the UE now. A satellite's downlink transmission from one slot ago is not
+        // what is arriving now. enableDownlinkInterference_ is read directly rather than through
+        // an accessor because LteRealisticChannelModel exposes one for uplink and D2D but never
+        // needed one for downlink before this.
+        if (enableDownlinkInterference_ && !par("ntnAllowDownlinkInterference").boolValue())
+            throw cRuntimeError("NtnChannelModel::initialize - %s has downlinkInterference enabled on a "
+                    "satellite link. Downlink interference is computed by comparing this cell's own "
+                    "resource-block booking against every other cell's current- or previous-slot booking, "
+                    "with no propagation-delay term -- the uplink failure above, on a different mechanism. "
+                    "NTN interference is item 6 of ntn-implementation.md and is not modelled. Set "
+                    "ntnAllowDownlinkInterference=true to proceed with a knowingly wrong result.",
+                    getFullPath().c_str());
     }
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         antennaModel_.reference(this, "antennaModelModule", true);
