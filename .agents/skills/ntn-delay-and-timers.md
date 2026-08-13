@@ -344,7 +344,7 @@ This is the simulation analogue of broadcast assistance data, consistent with th
 d(ε, h) = sqrt(Re²·sin²ε + h² + 2·Re·h) − Re·sin ε
 ```
 
-applied at ε = 10° to *both* the service and the feeder link, reproduces TR 38.821's reference round-trip delays **to the digit**:
+applied at ε = 10° to *both* the service and the feeder link, reproduces TR 38.821's reference round-trip delays **to the digit** when evaluated on the report's own 6371 km sphere:
 
 | Altitude | Slant range | One-way | RTD (×4) | TR 38.821 |
 |---|---|---|---|---|
@@ -352,9 +352,20 @@ applied at ε = 10° to *both* the service and the feeder link, reproduces TR 38
 | 600 km (LEO-600) | 1 931.6 km | 6.4432 ms | **25.77 ms** | 25.77 ms |
 | 350 km (smoke TLE) | 1 303.3 km | 4.3473 ms | **17.39 ms** | — |
 
+The code has since moved to a single Earth model — the WGS84 equatorial radius, the same constant
+`ecefFromWgs84()` converts against — so the values it actually produces are 0.01% longer: GEO
+**541.52 ms** (40 586.1 km), LEO-600 **25.78 ms**, smoke TLE **17.59 ms**. The equatorial radius
+rather than a mean one because the slant range grows monotonically with the Earth radius, so it is
+the choice that keeps the result an upper bound at every latitude. **Every rounded timer in the
+tables below is identical under either radius**, because they all snap to a TS 38.331 enumeration.
+The one unrounded value, `ntnRaResponseWindowOffset` (= RTD), shifts by the same 0.01% and still
+converts to the same slot count — 582 at GEO, 58 at LEO. All four smoke configs are byte-identical
+on every recorded scalar across the change. The tables are left at the TR 38.821 figures, since
+reproducing those is what the derivation is checked against.
+
 So the cell round-trip delay is not a new approximation of the orbit profile — **it is the profile's own derivation, computed instead of transcribed.** That is why every GEO timer came out unchanged. It also means the bound depends only on the satellite's *altitude*, not its position, so for a circular orbit it is constant for the whole run and the LEO drift concern of Part 3 does not arise for the cell value.
 
-**Where it lives.** No new class: free functions in `common/NtnCommon.{h,cc}` — `ntnCellRoundTripDelay()` and `ntnRoundTripDelay()` public, two position helpers and the geometry itself file-static. The pure geometry is `computeSlantRangeAtElevation()` in `GeoUtils`. `Binder::getPhyByNodeId()` is unusable for satellites and gateways — it hardcodes `cellularNic` — so the helpers descend through `serviceNic`/`feederNic` from the node modules the Binder holds, and read `ChannelAccess::getRadioPosition()` rather than the mobility module, keeping round-trip delay, per-hop delay and path loss on one geometry.
+**Where it lives.** No new class: free functions in `common/NtnCommon.{h,cc}` — `ntnCellRoundTripDelay()` and `ntnRoundTripDelay()` public, two position helpers and the geometry itself file-static. The pure geometry is `computeSlantRangeAtElevation()` in `GeoUtils`, which along with `ecefFromWgs84()` and `computeElevationFromEcefEndpoints()` is all that file now holds — nine unused functions were deleted and the three survivors moved into `namespace simu5g`. `Binder::getPhyByNodeId()` is unusable for satellites and gateways — it hardcodes `cellularNic` — so the helpers descend through `serviceNic`/`feederNic` from the node modules the Binder holds, and read `ChannelAccess::getRadioPosition()` rather than the mobility module, keeping round-trip delay, per-hop delay and path loss on one geometry.
 
 The Binder keeps only what is registry work: the satellite/gateway registration and the `GnbNtnAssociation` record. The cell's derived delay is published back onto that record via `Binder::setGnbNtnCellRoundTripDelay()` on the first query, so it is derived once and both ends of every bearer read the same number. The `GeographicReferenceSystem *` is resolved per call rather than cached in a file-scope static — it is only valid for the current run, and Cmdenv executes `-r 0..N` in one process.
 

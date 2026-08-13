@@ -188,7 +188,7 @@ Since commit `1aa1083d` this is enforced rather than merely arranged: `computeRe
 - OMNeT++ `y`: negative north;
 - OMNeT++ `z`: up.
 
-`src/simu5g/common/GeoUtils.{cc,h}` converts WGS84 to ECEF and computes elevation. `NtnChannelModel` uses ECEF endpoint distance, which correctly represents satellite slant range and Earth curvature. A negative local elevation produces `-INFINITY` SINR/RSRP.
+`src/simu5g/common/GeoUtils.{cc,h}` converts WGS84 to ECEF, computes elevation, and bounds the slant range at a given elevation — three free functions in `namespace simu5g`, all on the WGS84 ellipsoid. `NtnChannelModel` uses ECEF endpoint distance, which correctly represents satellite slant range and Earth curvature. A negative local elevation produces `-INFINITY` SINR/RSRP.
 
 The model assumes one authoritative `GeographicReferenceSystem` in the network. Access searches recursively and does not disambiguate multiple instances.
 
