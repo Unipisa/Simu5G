@@ -11,7 +11,6 @@
 
 #include "simu5g/stack/phy/NtnPhyUe.h"
 
-#include "simu5g/common/GeoUtils.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/stack/phy/packet/NtnAirFrame.h"

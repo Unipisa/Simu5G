@@ -13,7 +13,6 @@
 
 #include <inet/common/ModuleAccess.h>
 
-#include "simu5g/common/GeoUtils.h"
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"
 #include "simu5g/stack/phy/packet/NtnAirFrame.h"
 

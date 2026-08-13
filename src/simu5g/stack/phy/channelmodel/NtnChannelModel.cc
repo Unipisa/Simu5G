@@ -10,6 +10,7 @@
 //
 
 #include "simu5g/stack/phy/channelmodel/NtnChannelModel.h"
+#include "simu5g/common/GeoUtils.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/stack/phy/NtnPhyBase.h"
 #include "simu5g/stack/phy/NtnPhyUe.h"

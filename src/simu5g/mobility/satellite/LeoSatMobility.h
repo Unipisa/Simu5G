@@ -36,7 +36,6 @@
 #include "inet/common/geometry/common/GeographicCoordinateSystem.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
 
-#include "simu5g/common/GeoUtils.h"
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 #include "simu5g/mobility/satellite/SGP4.h"
 #include "simu5g/mobility/satellite/TLE.h"
