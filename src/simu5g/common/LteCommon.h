@@ -360,6 +360,11 @@ struct GnbNtnAssociation
     MacNodeId ntnGatewayId = NODEID_NONE;
     MacNodeId satelliteId = NODEID_NONE;
     bool isTransparent = true;
+    // Bounds this cell places on the satellite geometry it is willing to use, published here by the
+    // cell itself so that everything derived from them -- at the gNodeB and at every UE it serves --
+    // reads one set of values. See the parameters of the same name on NtnGNodeB.
+    double minElevation = 0;            // deg
+    double minSatelliteAltitude = 0;    // m
     std::string str() const;
 };
 

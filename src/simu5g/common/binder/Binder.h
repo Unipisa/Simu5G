@@ -85,9 +85,9 @@ class Binder : public cSimpleModule
     std::vector<NtnGatewayInfo *> ntnGatewayList_;
     std::map<MacNodeId, GnbNtnAssociation> gnbNtnAssoc_;
 
-    // NTN round-trip delay service; see getNtnCellRoundTripDelay()
-    double ntnMinElevation_ = 0;            // deg
-    double ntnMinSatelliteAltitude_ = 0;    // m
+    // NTN round-trip delay service; see getNtnCellRoundTripDelay(). The bounds it evaluates against
+    // are per-cell and travel on the association, not here.
+    //
     // Resolved on first use rather than in initialize(): the reference system initializes at
     // inet::INITSTAGE_LOCAL too, with no ordering guarantee against this module, and every
     // round-trip-delay query happens at simulation time anyway.
@@ -315,7 +315,11 @@ class Binder : public cSimpleModule
      */
     virtual void registerMasterNode(MacNodeId masterId, MacNodeId slaveId);
 
-    virtual void setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId, bool transparent = true);
+    // minElevation and minSatelliteAltitude are the cell's own bounds on the geometry it will use;
+    // they are declared on NtnGNodeB and travel here so that the gNodeB and every UE it serves
+    // derive their timers from one set of values.
+    virtual void setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId,
+            double minElevation, double minSatelliteAltitude, bool transparent = true);
 
     virtual const GnbNtnAssociation *getGnbNtnAssociation(MacNodeId gnbId) const;
 

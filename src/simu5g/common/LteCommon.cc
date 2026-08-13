@@ -640,7 +640,9 @@ std::string GnbNtnAssociation::str() const
     oss << "GnbNtnAssociation[gnbId=" << gnbId
         << ", ntnGatewayId=" << ntnGatewayId
         << ", satelliteId=" << satelliteId
-        << ", isTransparent=" << (isTransparent ? "Y" : "N") << "]";
+        << ", isTransparent=" << (isTransparent ? "Y" : "N")
+        << ", minElevation=" << minElevation << "deg"
+        << ", minSatelliteAltitude=" << minSatelliteAltitude / 1000.0 << "km]";
     return oss.str();
 }
 

@@ -23,6 +23,20 @@ module NtnGNodeB extends gNodeB
     parameters:
         int ntnGatewayId = default(0);
         int satelliteId = default(0);
+
+        // Lowest elevation at which this cell is willing to use its satellite. It sets the longest
+        // service and feeder links the cell can have, and therefore the worst-case round-trip delay
+        // that ntnCellRoundTripDelay() reports and the NTN protocol timers are dimensioned
+        // against. TR 38.821 clause 6.1.1 uses 10 degrees, which is what makes the reported delays
+        // reproduce the 541.46ms (GEO) and 25.77ms (LEO-600) of its clause 7.2.
+        double ntnMinElevation @unit(deg) = default(10deg);
+
+        // Sanity guard on the resolved satellite position. Below this altitude the geometry is
+        // rejected rather than used, which catches a round-trip-delay query issued before
+        // inet::INITSTAGE_SINGLE_MOBILITY -- at that point every radio still reports (0,0,0),
+        // which converts to a plausible point on the geoid and would otherwise pass unnoticed.
+        double ntnMinSatelliteAltitude @unit(m) = default(100km);
+
         cellularNic.typename = default("NtnNrNic");
 
     gates:

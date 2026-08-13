@@ -75,6 +75,8 @@ bool NtnIp2Nic::registerNtnAssociation(bool throwOnMissing)
     cModule *bs = inet::getContainingNode(this);
     MacNodeId ntnGatewayId = MacNodeId(bs->par("ntnGatewayId").intValue());
     MacNodeId satelliteId = MacNodeId(bs->par("satelliteId").intValue());
+    double minElevation = bs->par("ntnMinElevation").doubleValue();
+    double minSatelliteAltitude = bs->par("ntnMinSatelliteAltitude").doubleValue();
 
     if (!binder_->nodeExists(ntnGatewayId) || !binder_->nodeExists(satelliteId)) {
         if (throwOnMissing)
@@ -83,7 +85,7 @@ bool NtnIp2Nic::registerNtnAssociation(bool throwOnMissing)
         return false;
     }
 
-    binder_->setGnbNtnAssociation(nodeId_, ntnGatewayId, satelliteId, true);
+    binder_->setGnbNtnAssociation(nodeId_, ntnGatewayId, satelliteId, minElevation, minSatelliteAltitude, true);
     return true;
 }
 

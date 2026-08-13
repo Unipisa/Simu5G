@@ -335,7 +335,8 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     secondaryNodeToMasterNodeOrSelf_[num(slaveId)] = (masterId != NODEID_NONE) ? masterId : slaveId;  // the "or self" bit
 }
 
-void Binder::setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId, bool transparent)
+void Binder::setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId satId,
+        double minElevation, double minSatelliteAltitude, bool transparent)
 {
     Enter_Method_Silent("setGnbNtnAssociation");
 
@@ -353,6 +354,8 @@ void Binder::setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId 
     association.ntnGatewayId = ntnGwId;
     association.satelliteId = satId;
     association.isTransparent = transparent;
+    association.minElevation = minElevation;
+    association.minSatelliteAltitude = minSatelliteAltitude;
     gnbNtnAssoc_[gnbId] = association;
 }
 
@@ -495,11 +498,13 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     // guard that catches a query issued before inet::INITSTAGE_SINGLE_MOBILITY, where every
     // ChannelAccess still reports (0,0,0) -- which converts to a perfectly plausible point on the
     // geoid, so no range check would notice.
-    if (altitude < ntnMinSatelliteAltitude_)
+    if (altitude < association->minSatelliteAltitude)
         throw cRuntimeError("Binder::getNtnCellRoundTripDelay - satellite %hu is at an altitude of %g km, below "
-                "ntnMinSatelliteAltitude (%g km). Either its position was never initialised -- the round-trip "
-                "delay cannot be queried before inet::INITSTAGE_SINGLE_MOBILITY -- or the scenario misplaces it.",
-                num(association->satelliteId), altitude / 1000.0, ntnMinSatelliteAltitude_ / 1000.0);
+                "the ntnMinSatelliteAltitude (%g km) of cell %hu. Either its position was never initialised -- "
+                "the round-trip delay cannot be queried before inet::INITSTAGE_SINGLE_MOBILITY -- or the scenario "
+                "misplaces it.",
+                num(association->satelliteId), altitude / 1000.0, association->minSatelliteAltitude / 1000.0,
+                num(gnbId));
 
     // The longest service link and the longest feeder link this cell will use, both bounded by the
     // lowest elevation it accepts, and both traversed twice per round trip.
@@ -511,7 +516,7 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     // there is barely room for one anyway -- four round trips already sit just inside the 2200ms
     // ceiling of t-ReassemblyExt-r17. A scenario that needs more headroom should set the timer it
     // cares about explicitly.
-    double maxSlantRange = computeSlantRangeAtElevation(altitude, ntnMinElevation_);
+    double maxSlantRange = computeSlantRangeAtElevation(altitude, association->minElevation);
     simtime_t roundTripDelay = 4 * maxSlantRange / SPEED_OF_LIGHT;
     ntnCellRoundTripDelay_[gnbId] = roundTripDelay;
 
@@ -519,7 +524,7 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     // round-trip delay that silently came out wrong is indistinguishable from a channel problem.
     EV_INFO << "Binder::getNtnCellRoundTripDelay - cell " << gnbId << " via satellite "
             << association->satelliteId << " at altitude[" << altitude / 1000.0 << "km]: worst-case slant range["
-            << maxSlantRange / 1000.0 << "km] at elevation[" << ntnMinElevation_ << "deg], round-trip delay["
+            << maxSlantRange / 1000.0 << "km] at elevation[" << association->minElevation << "deg], round-trip delay["
             << roundTripDelay.dbl() * 1000.0 << "ms]" << endl;
 
     return roundTripDelay;
@@ -565,9 +570,6 @@ void Binder::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = getSystemModule()->getName();
-
-        ntnMinElevation_ = par("ntnMinElevation").doubleValue();
-        ntnMinSatelliteAltitude_ = par("ntnMinSatelliteAltitude").doubleValue();
 
         // Add WATCH macros for all member variables
         WATCH(networkName_);
