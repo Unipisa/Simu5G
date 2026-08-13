@@ -33,23 +33,6 @@ simsignal_t NtnNrMacUe::ntnPendingGrantsSignal_ = registerSignal("ntnPendingGran
 simsignal_t NtnNrMacUe::ntnLateGrantsSignal_ = registerSignal("ntnLateGrants");
 simsignal_t NtnNrMacUe::ntnGrantsSkippedSignal_ = registerSignal("ntnGrantsSkipped");
 
-namespace {
-
-// Rounds a duration up to a whole number of slots. The inherited counters are
-// slot counts, while the NTN parameters are expressed in time so that they stay
-// correct under any numerology; rounding up keeps a timer from ever coming out
-// shorter than the delay it is meant to cover.
-unsigned int toSlots(double seconds, double slotDuration)
-{
-    // The epsilon keeps a duration that is already a whole number of slots from being
-    // pushed to the next one by representation error: 0.542 + 0.040 does not divide
-    // exactly by 0.001. At a 1ms slot it is worth a nanosecond, far below anything these
-    // counters can express.
-    return static_cast<unsigned int>(std::ceil(seconds / slotDuration - 1e-6));
-}
-
-} // namespace
-
 void NtnNrMacUe::handleSelfMessage()
 {
     // Refreshed here rather than in initialize(). The counters are derived from the cell's
@@ -114,10 +97,10 @@ void NtnNrMacUe::refreshNtnCounters()
     if (racBackoffMax < SIMTIME_ZERO)
         racBackoffMax = ntn38331Floor(roundTripDelay * 2, Ntn38331Timer::BackoffIndicator);
 
-    unsigned int raRespWinStart = toSlots(responseWindowOffset.dbl() + par("ntnRaResponseWindow").doubleValue(), ttiPeriod_);
-    unsigned int bsrRtxTimerStart = toSlots(retxBsrTimer.dbl(), ttiPeriod_);
-    unsigned int minRacBackoff = toSlots(par("ntnRacBackoffMin").doubleValue(), ttiPeriod_);
-    unsigned int maxRacBackoff = toSlots(racBackoffMax.dbl(), ttiPeriod_);
+    unsigned int raRespWinStart = ntnDurationToSlots(responseWindowOffset.dbl() + par("ntnRaResponseWindow").doubleValue(), ttiPeriod_);
+    unsigned int bsrRtxTimerStart = ntnDurationToSlots(retxBsrTimer.dbl(), ttiPeriod_);
+    unsigned int minRacBackoff = ntnDurationToSlots(par("ntnRacBackoffMin").doubleValue(), ttiPeriod_);
+    unsigned int maxRacBackoff = ntnDurationToSlots(racBackoffMax.dbl(), ttiPeriod_);
 
     bool changed = raRespWinStart != raRespWinStart_ || bsrRtxTimerStart != bsrRtxTimerStart_
         || minRacBackoff != minRacBackoff_ || maxRacBackoff != maxRacBackoff_;
