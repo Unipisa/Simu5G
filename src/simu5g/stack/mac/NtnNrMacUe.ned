@@ -154,4 +154,29 @@ module NtnNrMacUe extends NrMacUe
         double ntnRaResponseWindow @unit(s) = default(40ms);
 
         double ntnRacBackoffMin @unit(s) = default(0s);
+
+        // Attribution for a run that under-delivers. Delivery counters alone cannot tell a
+        // HARQ stall from a RAC storm from an RLC timeout, and over a satellite link all
+        // three look the same from the application. These two separate the first of them:
+        // ntnHarqTxOccupancy is the level, ntnHarqTxStall is the loss it causes.
+        //
+        // This is the occupancy that scales with the round trip. With uplink feedback
+        // enabled a transmit process is held until its feedback returns, so the pool sits
+        // full whenever the N * TBS / RTT ceiling binds. The gNodeB's receive-side
+        // occupancy is a decode budget and does NOT scale; see ~NtnNrMacGnb.
+        //
+        // ntnHarqTxStall is sampled only on slots where the UE holds a grant, so its mean
+        // reads as "fraction of usable slots lost to a full HARQ pool". A UE with no grant
+        // is not stalled on HARQ -- it is waiting on the buffer-status-report and grant
+        // round trip, which is a different problem with a different fix. Note a periodic
+        // grant that skips the slot still counts as a granted slot here; no scenario on
+        // this branch uses periodic grants, since the gNodeB never sets one.
+        //
+        // Recorded as scalars only. Both are sampled every slot, so asking for a vector
+        // costs one point per slot per UE; a scenario that wants the time series should
+        // enable it from the ini rather than paying for it in every run.
+        @signal[ntnHarqTxOccupancy];
+        @statistic[ntnHarqTxOccupancy](title="Occupied transmit HARQ processes at the UE"; unit=""; source="ntnHarqTxOccupancy"; record=mean,max);
+        @signal[ntnHarqTxStall];
+        @statistic[ntnHarqTxStall](title="Granted slots lost to a full transmit HARQ pool"; unit=""; source="ntnHarqTxStall"; record=mean,sum);
 }

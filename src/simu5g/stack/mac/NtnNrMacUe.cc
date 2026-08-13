@@ -17,12 +17,17 @@
 
 #include "simu5g/common/NtnCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqProcessTx.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 Define_Module(NtnNrMacUe);
+
+simsignal_t NtnNrMacUe::ntnHarqTxOccupancySignal_ = registerSignal("ntnHarqTxOccupancy");
+simsignal_t NtnNrMacUe::ntnHarqTxStallSignal_ = registerSignal("ntnHarqTxStall");
 
 namespace {
 
@@ -54,6 +59,17 @@ void NtnNrMacUe::handleSelfMessage()
     refreshNtnCounters();
 
     NrMacUe::handleSelfMessage();
+
+    // Sampled here, which is BEFORE this slot's own transport block is inserted:
+    // macSduRequest() only asks RLC for the SDUs, and the PDU is built and inserted
+    // by handleUpperMessage() in a later event of the same instant. That is the point
+    // worth sampling rather than an accident of placement -- occupancy equal to the
+    // pool size here is exactly the condition under which firstAvailable() will return
+    // no unit and macPduMake() will drop the PDU.
+    //
+    // The grant is still installed: flushHarqBuffers(), which clears it, runs later in
+    // the same instant on the priority-1 self message.
+    emitNtnHarqTxState();
 }
 
 void NtnNrMacUe::macHandleRac(cPacket *pkt)
@@ -116,6 +132,46 @@ void NtnNrMacUe::refreshNtnCounters()
             << par("ntnRaResponseWindow").doubleValue() * 1000.0 << "ms window]"
             << ", retxBsrTimer[" << bsrRtxTimerStart_ << " slots = " << retxBsrTimer.dbl() * 1000.0 << "ms]"
             << ", racBackoff[" << minRacBackoff_ << ".." << maxRacBackoff_ << " slots]" << endl;
+}
+
+void NtnNrMacUe::emitNtnHarqTxState()
+{
+    unsigned int occupied = 0;
+    unsigned int total = 0;
+
+    // Every transmit buffer, summed. harqTxBuffers_ is keyed by destination, so with
+    // D2D enabled it would also hold peer-UE buffers, and with carrier aggregation the
+    // sum spans carriers whose slots do not coincide. Neither happens on the NTN path
+    // -- one carrier, one destination, the serving gNodeB -- and both would need this
+    // split per destination and per carrier to stay meaningful.
+    for (const auto& [carrierFrequency, buffers] : harqTxBuffers_) {
+        for (const auto& [destinationId, buffer] : buffers) {
+            unsigned int processes = buffer->getNumProcesses();
+            total += processes;
+            for (unsigned int process = 0; process < processes; ++process) {
+                // A process counts as occupied whenever it is not empty, which is the
+                // condition under which firstAvailable() will not hand it out.
+                if (!buffer->getProcess(process)->isEmpty())
+                    ++occupied;
+            }
+        }
+    }
+
+    emit(ntnHarqTxOccupancySignal_, occupied);
+
+    // Only meaningful on a slot where the UE actually had something to transmit with.
+    // A UE with no grant is not stalled on HARQ, it is waiting on the grant loop, and
+    // conflating the two is exactly the attribution this statistic exists to make.
+    bool holdsGrant = false;
+    for (const auto& [carrierFrequency, grant] : schedulingGrant_) {
+        if (grant != nullptr) {
+            holdsGrant = true;
+            break;
+        }
+    }
+
+    if (holdsGrant && total > 0)
+        emit(ntnHarqTxStallSignal_, occupied == total ? 1 : 0);
 }
 
 } //namespace
