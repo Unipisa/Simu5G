@@ -365,6 +365,13 @@ struct GnbNtnAssociation
     // reads one set of values. See the parameters of the same name on NtnGNodeB.
     double minElevation = 0;            // deg
     double minSatelliteAltitude = 0;    // m
+    // Worst-case round-trip delay of this cell, derived from the bounds above on first query and
+    // kept here so that every consumer reads one number derived once. Zero until then. The bound
+    // depends on the satellite's altitude but not on where it currently is, so for the circular
+    // orbits modelled here it is constant for the whole run and caching it costs nothing in
+    // accuracy -- while the timers it feeds query it once per slot. An eccentric orbit would need
+    // this re-evaluated on a validity interval.
+    omnetpp::simtime_t cellRoundTripDelay = SIMTIME_ZERO;
     std::string str() const;
 };
 

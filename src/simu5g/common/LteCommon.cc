@@ -642,7 +642,12 @@ std::string GnbNtnAssociation::str() const
         << ", satelliteId=" << satelliteId
         << ", isTransparent=" << (isTransparent ? "Y" : "N")
         << ", minElevation=" << minElevation << "deg"
-        << ", minSatelliteAltitude=" << minSatelliteAltitude / 1000.0 << "km]";
+        << ", minSatelliteAltitude=" << minSatelliteAltitude / 1000.0 << "km"
+        << ", cellRoundTripDelay=";
+    if (cellRoundTripDelay > SIMTIME_ZERO)
+        oss << cellRoundTripDelay.dbl() * 1000.0 << "ms]";
+    else
+        oss << "<not yet derived>]";
     return oss.str();
 }
 

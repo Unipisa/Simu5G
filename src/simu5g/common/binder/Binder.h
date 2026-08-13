@@ -92,11 +92,6 @@ class Binder : public cSimpleModule
     // inet::INITSTAGE_LOCAL too, with no ordering guarantee against this module, and every
     // round-trip-delay query happens at simulation time anyway.
     GeographicReferenceSystem *ntnReferenceSystem_ = nullptr;
-    // Cell round-trip delays, keyed by gNodeB. The bound depends on the satellite's altitude but
-    // not on where it currently is, so for the circular orbits modelled here it is constant for
-    // the whole run and caching it costs nothing in accuracy -- while the timers it feeds query it
-    // once per slot. An eccentric orbit would need this re-evaluated on a validity interval.
-    std::map<MacNodeId, simtime_t> ntnCellRoundTripDelay_;
 
     // list of all background traffic managers. Used for background UEs CQI computation
     std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
@@ -322,6 +317,10 @@ class Binder : public cSimpleModule
             double minElevation, double minSatelliteAltitude, bool transparent = true);
 
     virtual const GnbNtnAssociation *getGnbNtnAssociation(MacNodeId gnbId) const;
+
+    // Publishes the delay derived for this cell onto its association, so that it is derived once
+    // and read by both ends of every bearer. Throws if the cell has no NTN association.
+    virtual void setGnbNtnCellRoundTripDelay(MacNodeId gnbId, simtime_t roundTripDelay);
 
     virtual MacNodeId getAssociatedSatelliteForGateway(MacNodeId ntnGwId) const;
 

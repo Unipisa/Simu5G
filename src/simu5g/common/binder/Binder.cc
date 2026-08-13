@@ -356,7 +356,20 @@ void Binder::setGnbNtnAssociation(MacNodeId gnbId, MacNodeId ntnGwId, MacNodeId 
     association.isTransparent = transparent;
     association.minElevation = minElevation;
     association.minSatelliteAltitude = minSatelliteAltitude;
+    // cellRoundTripDelay is deliberately left at zero: re-associating a cell means new geometry, so
+    // any delay derived from the previous satellite has to be derived again rather than carried over.
     gnbNtnAssoc_[gnbId] = association;
+}
+
+void Binder::setGnbNtnCellRoundTripDelay(MacNodeId gnbId, simtime_t roundTripDelay)
+{
+    Enter_Method_Silent("setGnbNtnCellRoundTripDelay");
+
+    auto it = gnbNtnAssoc_.find(gnbId);
+    if (it == gnbNtnAssoc_.end())
+        throw cRuntimeError("Binder::setGnbNtnCellRoundTripDelay - gNB id %hu has no NTN association", num(gnbId));
+
+    it->second.cellRoundTripDelay = roundTripDelay;
 }
 
 const GnbNtnAssociation *Binder::getGnbNtnAssociation(MacNodeId gnbId) const
@@ -480,9 +493,8 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     if (association == nullptr)
         return SIMTIME_ZERO;
 
-    auto cached = ntnCellRoundTripDelay_.find(gnbId);
-    if (cached != ntnCellRoundTripDelay_.end())
-        return cached->second;
+    if (association->cellRoundTripDelay > SIMTIME_ZERO)
+        return association->cellRoundTripDelay;
 
     if (ntnReferenceSystem_ == nullptr) {
         ntnReferenceSystem_ = GeographicReferenceSystemAccess().get();
@@ -518,7 +530,7 @@ simtime_t Binder::getNtnCellRoundTripDelay(MacNodeId gnbId)
     // cares about explicitly.
     double maxSlantRange = computeSlantRangeAtElevation(altitude, association->minElevation);
     simtime_t roundTripDelay = 4 * maxSlantRange / SPEED_OF_LIGHT;
-    ntnCellRoundTripDelay_[gnbId] = roundTripDelay;
+    setGnbNtnCellRoundTripDelay(gnbId, roundTripDelay);
 
     // Reported once per cell, at INFO because EV_DEBUG is compiled out under NDEBUG and because a
     // round-trip delay that silently came out wrong is indistinguishable from a channel problem.
