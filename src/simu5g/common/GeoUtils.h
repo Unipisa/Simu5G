@@ -33,8 +33,6 @@
 
 using namespace GeographicLib;
 
-const double EARTH_RADIUS = 6371000;   // 6371km (average radius of the geoid)
-
 // converts a WGS84 point into an ECEF Cartesian point
 inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord);
 
@@ -65,16 +63,25 @@ inet::Coord ecefFromWgs84(const inet::GeoCoord& wgs84Coord);
 // (https://gssc.esa.int/navipedia/index.php/Transformations_between_ECEF_and_ENU_coordinates)
 double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, const inet::Coord& observerEcef, const inet::Coord& targetEcef);
 
-// returns the slant range, in metres, from a point on the geoid to a satellite at the given
-// altitude seen at the given elevation angle (in degrees). It is the inverse of
+// returns the slant range, in metres, from a point on the Earth's surface to a satellite at the
+// given altitude seen at the given elevation angle (in degrees). It is the inverse of
 // computeElevationFromEcefEndpoints() for the special case of a spherical Earth, and it is
 // monotonically decreasing in the elevation: the *lowest* elevation a cell is willing to use
 // therefore yields the *longest* link that cell can have.
 //
-// This is how TR 38.821 clause 6.1.1 derives its reference round-trip delays: at a minimum
-// elevation of 10 degrees it gives 40581.2km for a GEO satellite and 1931.6km for a 600km LEO
-// satellite, which over four hops (service and feeder link, each traversed twice) reproduce the
-// 541.46ms and 25.77ms of clause 7.2 exactly.
+// The sphere is taken at the WGS84 equatorial radius, so that this file has a single Earth model
+// and one source of truth for it -- the same GeographicLib constant ecefFromWgs84() converts
+// against. The equatorial radius specifically, rather than a mean one, because the slant range
+// grows monotonically with the Earth radius: it is therefore the value that *maximises* the range
+// and so keeps the result an upper bound at every latitude, which is what the callers need.
+//
+// This is how TR 38.821 clause 6.1.1 derives its reference round-trip delays, and evaluating this
+// formula at a minimum elevation of 10 degrees reproduces them: 40586.1km for a GEO satellite and
+// 1932.3km for a 600km LEO satellite, which over four hops (service and feeder link, each
+// traversed twice) give 541.52ms and 25.78ms against the 541.46ms and 25.77ms of clause 7.2. The
+// residual 0.01% is the Earth model: TR 38.821 works on a 6371km sphere, which fed into this same
+// formula reproduces its figures to the digit. Every timer derived from these delays rounds to a
+// TS 38.331 enumeration and is identical under either radius.
 //
 //                          satellite
 //                              *
@@ -86,9 +93,9 @@ double computeElevationFromEcefEndpoints(const inet::GeoCoord& observerWgs84, co
 //                        *-----+------- local horizontal
 //                   observer
 //
-// Derived by the law of cosines in the triangle observer-geocentre-satellite, whose sides are
-// EARTH_RADIUS, EARTH_RADIUS + altitude and the slant range, and whose angle at the observer is
-// 90 degrees + elevation.
+// Derived by the law of cosines in the triangle observer-geocentre-satellite, whose sides are the
+// Earth radius, the Earth radius + altitude and the slant range, and whose angle at the observer
+// is 90 degrees + elevation.
 double computeSlantRangeAtElevation(double altitude, double elevation);
 
 #endif

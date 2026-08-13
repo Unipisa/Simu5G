@@ -40,7 +40,8 @@ double computeSlantRangeAtElevation(double altitude, double elevation)
     //
     // whose positive root is the expression below. Negative elevations are legal and give a
     // longer range, as they must: the satellite is then below the local horizon.
+    double earthRadius = Constants::WGS84_a();
     double sinElevation = std::sin(inet::math::deg2rad(elevation));
-    double reSinElevation = EARTH_RADIUS * sinElevation;
-    return std::sqrt(reSinElevation * reSinElevation + altitude * altitude + 2 * EARTH_RADIUS * altitude) - reSinElevation;
+    double reSinElevation = earthRadius * sinElevation;
+    return std::sqrt(reSinElevation * reSinElevation + altitude * altitude + 2 * earthRadius * altitude) - reSinElevation;
 }
