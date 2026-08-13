@@ -428,9 +428,15 @@ class LteMacBase : public cSimpleModule
      * sendLowerPackets() is used
      * to send packets to lower layer
      *
+     * Virtual so a subclass can act on everything this MAC emits from one place
+     * rather than from each of the several methods that send. ~NtnNrMacGnb uses it
+     * to stamp uplink grants with the time from which they become valid, which
+     * would otherwise have to be threaded through both ~LteMacEnb::sendGrants()
+     * and its ~LteMacEnbD2D override.
+     *
      * @param pkt Packet to send
      */
-    void sendLowerPackets(cPacket *pkt);
+    virtual void sendLowerPackets(cPacket *pkt);
 
     /**
      * sendUpperPackets() is used

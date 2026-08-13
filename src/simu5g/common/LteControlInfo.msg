@@ -148,6 +148,19 @@ class UserControlInfo extends LteControlInfo {
     inet::Coord radioTransmitterEcefCoord;              // ECEF position of the actual transmitter of the current wireless hop
     MacNodeId radioReceiverId = NODEID_NONE;            // Actual receiver of the current wireless hop
     IAntennaModel* radioTransmitterAntenna;             // Pointer to the radio transmitter antenna (for rx power computation at the receiver side)
+
+    // Uplink grant timing on an NTN path. Zero, the default, means "valid on receipt",
+    // which is the terrestrial semantics and leaves every existing path unchanged.
+    //
+    // A gNodeB books resource blocks for the slot in which it expects to hear the
+    // granted transmission, which over a satellite link is a round trip after the slot
+    // that scheduled it. The grant therefore has to say when it becomes usable, or the
+    // UE would transmit on blocks booked for a different slot. Carried here rather than
+    // on ~LteSchedulingGrant because this is already where the NTN per-hop metadata
+    // lives, and because the UE reads this tag before the grant packet is deleted.
+    simtime_t ntnGrantActivationTime = 0;               // Absolute time from which an uplink grant may be used
+    simtime_t ntnGrantIssueTime = 0;                    // When the gNodeB issued it; lets the UE measure true grant-to-transmission latency
+
     FeedbackRequest feedbackReq;
 }
 
