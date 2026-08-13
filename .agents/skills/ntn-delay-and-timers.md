@@ -325,11 +325,11 @@ Simu5G has no K1/K2/K_offset in the spec sense: there is no explicit DL-to-UL ti
 
 So what is needed is not K_offset but **the RTD expressed in slots, used as an additive term on response-wait durations.** Name it accordingly in code (`ntnRtdSlots_`, not `koffset_`) so nobody later assumes it carries the spec's semantics.
 
-Source it from the Binder, alongside the existing NTN associations:
+Source it from `common/NtnCommon.{h,cc}`, which reads the NTN associations the Binder holds:
 
 ```cpp
-Binder::getNtnRoundTripDelay(gnbId, ueId) -> simtime_t   // same ECEF geometry as the delay itself
-Binder::getNtnCellRoundTripDelay(gnbId)   -> simtime_t   // worst case in cell, for pre-attach use
+ntnRoundTripDelay(binder, gnbId, ueId) -> simtime_t   // same ECEF geometry as the delay itself
+ntnCellRoundTripDelay(binder, gnbId)   -> simtime_t   // worst case in cell, for pre-attach use
 ```
 
 This is the simulation analogue of broadcast assistance data, consistent with the branch's existing assumption of perfect Doppler compensation. Document it as such.
@@ -354,15 +354,17 @@ applied at ε = 10° to *both* the service and the feeder link, reproduces TR 38
 
 So the cell round-trip delay is not a new approximation of the orbit profile — **it is the profile's own derivation, computed instead of transcribed.** That is why every GEO timer came out unchanged. It also means the bound depends only on the satellite's *altitude*, not its position, so for a circular orbit it is constant for the whole run and the LEO drift concern of Part 3 does not arise for the cell value.
 
-**Where it lives.** No new class: three parameters, a lazily-resolved `GeographicReferenceSystem *`, a per-cell cache and four functions directly on `Binder` (`getNtnCellRoundTripDelay`, `getNtnRoundTripDelay`, plus two private position helpers). The pure geometry is `computeSlantRangeAtElevation()` in `GeoUtils`. `Binder::getPhyByNodeId()` is unusable for satellites and gateways — it hardcodes `cellularNic` — so the helpers descend through `serviceNic`/`feederNic` from the node modules the Binder already holds, and read `ChannelAccess::getRadioPosition()` rather than the mobility module, keeping round-trip delay, per-hop delay and path loss on one geometry.
+**Where it lives.** No new class: free functions in `common/NtnCommon.{h,cc}` — `ntnCellRoundTripDelay()` and `ntnRoundTripDelay()` public, two position helpers and the geometry itself file-static. The pure geometry is `computeSlantRangeAtElevation()` in `GeoUtils`. `Binder::getPhyByNodeId()` is unusable for satellites and gateways — it hardcodes `cellularNic` — so the helpers descend through `serviceNic`/`feederNic` from the node modules the Binder holds, and read `ChannelAccess::getRadioPosition()` rather than the mobility module, keeping round-trip delay, per-hop delay and path loss on one geometry.
 
-Two NED parameters on `Binder.ned`: `ntnMinElevation` (10deg) and `ntnMinSatelliteAltitude` (100km). The second is the guard that catches a query issued before `inet::INITSTAGE_SINGLE_MOBILITY`, where every radio still reports `(0,0,0)` — which converts to a *plausible* point on the geoid, so no range check would notice.
+The Binder keeps only what is registry work: the satellite/gateway registration and the `GnbNtnAssociation` record. The cell's derived delay is published back onto that record via `Binder::setGnbNtnCellRoundTripDelay()` on the first query, so it is derived once and both ends of every bearer read the same number. The `GeographicReferenceSystem *` is resolved per call rather than cached in a file-scope static — it is only valid for the current run, and Cmdenv executes `-r 0..N` in one process.
+
+Two NED parameters on `NtnGNodeB.ned`, not on the Binder: `ntnMinElevation` (10deg) and `ntnMinSatelliteAltitude` (100km), both published onto the association at registration by `NtnIp2Nic`. They are per-cell because the elevation a cell will accept is a property of that cell, and a UE must dimension its timers from its serving cell's value rather than a network-wide one. The second is the guard that catches a query issued before `inet::INITSTAGE_SINGLE_MOBILITY`, where every radio still reports `(0,0,0)` — which converts to a *plausible* point on the geoid, so no range check would notice.
 
 **Nothing is added on top of the geometry.** An earlier version carried an `ntnRoundTripDelayMargin` knob; it was removed. The timers need an upper bound rather than an estimate, and their own rounding to the next value TS 38.331 can signal already supplies it — for GEO the `t-PollRetransmit` enumeration jumps ms500 → ms800, so the derived value clears the round trip by 259 ms without anything being added. A separate margin would only shift where in that gap the value lands, and near GEO there is barely room for one: four round trips already sit just inside the 2200 ms ceiling of `t-ReassemblyExt-r17`, leaving about 8 ms of headroom. A scenario that needs more should set the timer it cares about explicitly.
 
 **How the timers reach it.** Not through NED functions. Once a value is `ceil38331(RTD × 4)` rather than a constant, the NED expression is a call into C++ either way — but stringly-typed, with an implicit evaluation point and no debugger. Instead each NTN timer's NED default is a **negative sentinel** meaning "derive me", and the derivation happens in C++ in the profile subclass. An explicit ini assignment is positive and wins untouched, which is what keeps `GeoSatAmTerrestrialTimers` working.
 
-Three new thin subclasses do it — `NtnNrRlcAmTxEntity`, `NtnNrRlcAmRxEntity`, `NtnNrRlcUmRxEntity` — bound by `tx.typename`/`rx.typename` in the two entity compounds, which are now pure typename redirects. Four timer members were promoted from private to `protected` in the three NR entity headers; that is an access-specifier change only, and the same pattern `NtnNrMacUe` already relies on in `LteMacUe`. Rounding to legal values is `ntn38331Ceil`/`ntn38331Floor` over a typed `Ntn38331Timer` enumeration in `common/Ntn38331Timers.{h,cc}`.
+Three new thin subclasses do it — `NtnNrRlcAmTxEntity`, `NtnNrRlcAmRxEntity`, `NtnNrRlcUmRxEntity` — bound by `tx.typename`/`rx.typename` in the two entity compounds, which are now pure typename redirects. Four timer members were promoted from private to `protected` in the three NR entity headers; that is an access-specifier change only, and the same pattern `NtnNrMacUe` already relies on in `LteMacUe`. Rounding to legal values is `ntn38331Ceil`/`ntn38331Floor` over a typed `Ntn38331Timer` enumeration in `common/NtnCommon.{h,cc}`.
 
 `NtnNrMacUe` moved from an eager precompute at `INITSTAGE_SIMU5G_TTI_SETUP` to `refreshNtnCounters()`, called from `handleSelfMessage()` and `macHandleRac()`. Two independent reasons agree on this: the geometry does not exist during any Simu5G init stage, and a real UE latches these durations when the procedure starts rather than once at configuration.
 
@@ -386,7 +388,7 @@ LEO's derived values *do* differ from the old profile (`t_Reassembly` 75 ms vs 1
 - Inflating the round-trip delay on GEO aborts the run once it passes about 550 ms, because `t_Reassembly` at four round trips would exceed the 2200 ms ceiling of `t-ReassemblyExt-r17`. GEO sits that close to the ceiling. A scenario needing more has run out of what the specification can express, which is exactly what the error says — and it is why the margin knob was dropped rather than kept as a tuning surface it could not usefully provide.
 - The `tPollRetransmit > rtd` assertion (deferred here from step 5) fires at both ends of every AM bearer and aborts `GeoSatAmTerrestrialTimers`, whose whole purpose is to violate it. That config now sets `ntnCheckTimersCoverRoundTripDelay = false` rather than having its values softened.
 
-**Still a stopgap in one respect.** `getNtnRoundTripDelay(gnbId, ueId)` exists, is verified against the step-1 per-hop measurements (506.57 ms GEO, 8.33 ms LEO at pass peak, reproduced to three decimals by an independent code path), and has no timer consumer: every timer is cell-wide, because a per-UE value at random-access time would model a UE that knew its own delay before connecting. It is there for the Part 8 diagnostics and for step 6.
+**Still a stopgap in one respect.** `ntnRoundTripDelay(binder, gnbId, ueId)` exists, is verified against the step-1 per-hop measurements (506.57 ms GEO, 8.33 ms LEO at pass peak, reproduced to three decimals by an independent code path), and has no timer consumer: every timer is cell-wide, because a per-UE value at random-access time would model a UE that knew its own delay before connecting. It is there for the Part 8 diagnostics and for step 6.
 
 ## Part 5 — Per-Mechanism Treatment
 
@@ -456,7 +458,7 @@ Guardrails:
 ## Part 7 — Staging
 
 1. ✓ **Delay only (done).** See "Step 1 as built" in Part 1 for what landed and the measured failure signature: GEO drops from 58.5/56.4 kB to 9.3/2.1 kB while LEO is untouched at an 8.3 ms RTD.
-2. ✓ **Binder RTD service and NED parameters (done).** See "Step 2 as built" in Part 4: the min-elevation bound reproduces TR 38.821's reference delays to the digit, every timer is derived from it, `ntnOrbitProfile` is deleted, and all four smoke configs are byte-identical to the values the orbit profiles hard-coded.
+2. ✓ **RTD service and NED parameters (done).** See "Step 2 as built" in Part 4: the min-elevation bound reproduces TR 38.821's reference delays to the digit, every timer is derived from it, `ntnOrbitProfile` is deleted, and all four smoke configs are byte-identical to the values the orbit profiles hard-coded. Originally built on `Binder`; the geometry has since moved to `common/NtnCommon.{h,cc}` and the bounds to `NtnGNodeB.ned`, with no change to any derived value.
 3. ✓ **RAC and BSR offsets (done).** See "RAC and BSR as built" in Part 2: GEO preamble count 44 → 2, delivery 4950 → 8100 B/s DL and 1050 → 3150 B/s UL, LEO unaffected.
 4. ✓ **HARQ (done).** Process count raised to 32 on both ends, and downlink feedback disabled while uplink feedback stays on — see "HARQ as built" below. GEO downlink 8100 → 25350 B/s, 85% of offered load.
 5. ✓ **Class 1 timer values (done, out of order).** RLC AM/UM and RRC `t301` — see "Class 1 as built" in Part 2. Taken early because it needed no C++ and no dependency on step 2; step 2 then replaced its per-orbit constants with geometry-derived values and added the `tPollRetransmit > rtd` assertion that was deferred to it.

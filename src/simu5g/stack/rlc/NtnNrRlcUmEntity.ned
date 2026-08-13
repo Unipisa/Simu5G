@@ -31,7 +31,7 @@ package simu5g.stack.rlc;
 //   GEO 541.46*4 = 2166 -> 2200ms
 //
 // where RTD is this cell's own worst-case round-trip delay, from
-// Binder::getNtnCellRoundTripDelay(). See ~NtnNrRlcAmEntity for the full
+// ntnCellRoundTripDelay(). See ~NtnNrRlcAmEntity for the full
 // derivation and the spec citations.
 //
 module NtnNrRlcUmEntity extends NrRlcUmEntity

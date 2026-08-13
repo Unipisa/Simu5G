@@ -30,7 +30,7 @@ Available now:
 - Enforced two-hop evaluation: a frame that reaches the final receiver without a first-hop measurement, or a hop that cannot be evaluated for want of a channel model, aborts the run rather than degrading silently. This applies to SINR (data, CSI-RS, SRS) and, since the beacon RSSI fix, to RSRP as well.
 - Two-hop beacon RSSI: a `BEACONPKT` reaches attached UEs through the satellite the same way CSI-RS does, and `NtnChannelModel::computeReceptionRsrp()` combines both hops for `NtnPhyUe::computeReceivedBeaconPacketRssi()`, feeding the (still unimplemented) handover machinery a correct measurement instead of a fictitious direct-geometry one.
 - Geometry-derived per-hop propagation delay, with the frame duration charged once end to end as a bent-pipe transponder requires. See item 2 below and `ntn-delay-and-timers.md`.
-- NTN-aware protocol timers throughout: RLC and RRC (`NtnNrRlcAmEntity`, `NtnNrRlcUmEntity`), the RAC and BSR counters (`NtnNrMacUe`), and HARQ (32 processes, downlink feedback disabled). Every value is derived at runtime from the cell's own round-trip delay, which `Binder::getNtnCellRoundTripDelay()` computes from the satellite's altitude and a configured minimum elevation, and is then rounded to a value TS 38.331 can actually signal. There is no orbit label to set or to get wrong. See `ntn-delay-and-timers.md`.
+- NTN-aware protocol timers throughout: RLC and RRC (`NtnNrRlcAmEntity`, `NtnNrRlcUmEntity`), the RAC and BSR counters (`NtnNrMacUe`), and HARQ (32 processes, downlink feedback disabled). Every value is derived at runtime from the cell's own round-trip delay, which `ntnCellRoundTripDelay()` computes from the satellite's altitude and the cell's configured minimum elevation, and is then rounded to a value TS 38.331 can actually signal. There is no orbit label to set or to get wrong. See `ntn-delay-and-timers.md`.
 - Graceful teardown on a delayed link: MAC and RLC both discard data belonging to bearers released while frames were still in flight, which over a satellite link means for a further round-trip time.
 - Minimal GEO and LEO bidirectional CBR smoke scenarios, plus RLC AM variants.
 
@@ -104,10 +104,12 @@ Relevant APIs are in `src/simu5g/common/binder/Binder.{h,cc}`. Current lookup ru
 
 The one-gateway-to-one-satellite and one-satellite-to-one-gateway rules are enforced at runtime, not just by convention: `Binder::getAssociatedSatelliteForGateway()` and `getAssociatedGatewayForSatellite()` linear-scan all associations and `throw cRuntimeError` if they find more than one distinct peer. Any dynamic-association or handover work (item 5 below) must change these lookups, or they will abort the simulation the moment two gNBs briefly reference different satellites through the same gateway.
 
-The Binder is also where the NTN path's geometry is turned into a round-trip delay, which is what every NTN protocol timer is dimensioned from:
+Turning that geometry into a round-trip delay — which is what every NTN protocol timer is dimensioned from — is *not* the Binder's job; it lives in `common/NtnCommon.{h,cc}`, which reads the associations the Binder holds:
 
-- `getNtnCellRoundTripDelay(gnbId)` — the worst case anywhere in the cell, bounded by the `ntnMinElevation` the cell will use rather than by where the satellite currently is. Cached per cell; constant for a circular orbit. This is the value the timers use, and the one to use before a UE has attached.
-- `getNtnRoundTripDelay(gnbId, ueId)` — the instantaneous delay from the actual UE, satellite and gateway positions. Tracks satellite motion. No timer consumes it yet; it exists for per-UE diagnostics and for grant timing (item 6 of `ntn-delay-and-timers.md`).
+- `ntnCellRoundTripDelay(binder, gnbId)` — the worst case anywhere in the cell, bounded by the cell's own `ntnMinElevation` rather than by where the satellite currently is. Derived on first query and published back onto the association, so it is derived once and read identically by the gNodeB and by every UE it serves; constant for a circular orbit. This is the value the timers use, and the one to use before a UE has attached.
+- `ntnRoundTripDelay(binder, gnbId, ueId)` — the instantaneous delay from the actual UE, satellite and gateway positions. Tracks satellite motion, never cached. No timer consumes it yet; it exists for per-UE diagnostics and for grant timing (item 6 of `ntn-delay-and-timers.md`).
+
+`ntnMinElevation` and `ntnMinSatelliteAltitude` are per-cell parameters on `NtnGNodeB`, published onto the association by `NtnIp2Nic` at registration.
 
 Both return zero for a gNodeB with no NTN association, which is what leaves terrestrial scenarios untouched. Positions come from `ChannelAccess::getRadioPosition()` — the same cached snapshot the channel model and `NtnPropagationDelay` use, so delay, path loss and round-trip delay cannot drift apart — and never from a mobility module directly, since `getCurrentPosition()` advances a `MovingMobilityBase` and emits a signal.
 
@@ -328,7 +330,7 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 - ✓ **Geometry-derived per-hop delay (done)**: `NtnPropagationDelay` (`src/simu5g/stack/phy/NtnPropagationDelay.{h,cc}`) computes each radio hop's ECEF slant range divided by light speed and supplies it to all four `sendDirect()` sites in `NtnPhyBase` and `NtnPhyUe`. Enabled by default via `useGeometricPropagationDelay`; `transparentPayloadRelay` additionally charges the frame duration once end to end rather than once per hop, as a bent-pipe transponder requires. Measured GEO round-trip delay is 506.57 ms, inside the TR 38.821 transparent band, and LEO is 8.33 ms. Payload processing delay stays separate in `NtnRelay::relayDelay`.
 - ✓ **NR timers adapted to long RTT (done)**: RLC, RRC, the RAC/BSR counters and HARQ were all re-dimensioned, recovering GEO downlink from the 9.3 kB the raw delay left it at to 85% of offered load. Adding packet delay alone was never sufficient, and this is where most of the work went.
-- ✓ **Geometry-derived round-trip delay service (done)**: `Binder::getNtnCellRoundTripDelay()` bounds the cell's round trip from the satellite altitude and a configured `ntnMinElevation`, reproducing TR 38.821's reference figures exactly. Every NTN timer is now derived from it and rounded to a value TS 38.331 can signal, so there is no orbit label to set or to get wrong. Remaining gap: grant/k2 restructuring (step 6 of `ntn-delay-and-timers.md`), which is what the per-UE `getNtnRoundTripDelay()` exists for.
+- ✓ **Geometry-derived round-trip delay service (done)**: `ntnCellRoundTripDelay()` bounds the cell's round trip from the satellite altitude and the cell's own `ntnMinElevation`, reproducing TR 38.821's reference figures exactly. Every NTN timer is now derived from it and rounded to a value TS 38.331 can signal, so there is no orbit label to set or to get wrong. Remaining gap: grant/k2 restructuring (step 6 of `ntn-delay-and-timers.md`), which is what the per-UE `ntnRoundTripDelay()` exists for.
 - The wired gNB-gateway fronthaul (`simulations/nr/ntn_smoke/NtnGeo.ned:87`) is still a bare NED connection with zero delay and infinite datarate; it needs a channel, not a module parameter. It is also the one leg the round-trip delay service does not account for, deliberately.
 
 **See `ntn-delay-and-timers.md`** (in this directory) for the full design discussion: the four `sendDirect()` call sites and the two traps around them (frame duration charged per hop, and the channel-less fronthaul connection); a taxonomy separating timers that must scale with RTT from the ones that must not; the 3GPP K_offset/`ntn-Config` framing including whether the value is per-UE and how often it must be refreshed; per-mechanism treatment of HARQ, RAC, BSR, CQI aging, and grant timing; and a staging order with the diagnostics needed to debug each step, plus the measured step-1 results. The timer half of item 4 below is covered there as well.
@@ -440,6 +442,14 @@ Mobility, coordinates, and antennas:
 - `src/simu5g/mobility/satellite/SGP4.{cc,h}`
 - `src/simu5g/mobility/satellite/TEME2ITRF.h`
 - `src/simu5g/stack/phy/antennamodel/`
+
+Round-trip delay and protocol timers:
+
+- `src/simu5g/common/NtnCommon.{cc,h}` — every NTN free function: the round-trip delay geometry, the RLC-entity helpers, and the TS 38.331 value rounding
+- `src/simu5g/stack/rlc/NtnNrRlcAmEntity.ned`, `NtnNrRlcUmEntity.ned`
+- `src/simu5g/stack/rlc/am/NtnNrRlcAmTxEntity.{ned,cc,h}`, `NtnNrRlcAmRxEntity.{ned,cc,h}`
+- `src/simu5g/stack/rlc/um/NtnNrRlcUmRxEntity.{ned,cc,h}`
+- `src/simu5g/stack/mac/NtnNrMacUe.{ned,cc,h}`
 
 Scenarios:
 

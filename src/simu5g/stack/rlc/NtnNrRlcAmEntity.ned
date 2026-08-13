@@ -25,7 +25,7 @@ package simu5g.stack.rlc;
 // declareRadioLinkFailure() releases the bearer at both ends.
 //
 // Values are derived from 3GPP and from this cell's own geometry, not chosen by
-// hand. The round-trip delay RTD comes from Binder::getNtnCellRoundTripDelay(),
+// hand. The round-trip delay RTD comes from ntnCellRoundTripDelay(),
 // which bounds it by the lowest elevation the cell will use -- reproducing the
 // 541.46ms (GEO) and 25.77ms (LEO-600) of TR 38.821 clause 7.2.2.2 for those
 // orbits, and giving a real number for any other. Each timer is then rounded to a
