@@ -27,13 +27,90 @@ Define_Module(NtnNrMacGnb);
 
 simsignal_t NtnNrMacGnb::ntnHarqRxOccupancySignal_ = registerSignal("ntnHarqRxOccupancy");
 simsignal_t NtnNrMacGnb::ntnGrantActivationLeadSignal_ = registerSignal("ntnGrantActivationLead");
-simsignal_t NtnNrMacGnb::ntnTargetSlotSkipsSignal_ = registerSignal("ntnTargetSlotSkips");
 
-int64_t NtnNrMacGnb::ntnCurrentSlot() const
+double NtnNrMacGnb::ntnSlotDurationFor(GHz carrierFrequency)
 {
-    // Every MAC schedules its first tick at ttiPeriod_ and every later one a period
-    // apart, so the grid is a whole number of periods from zero.
-    return static_cast<int64_t>(std::llround(NOW.dbl() / ttiPeriod_));
+    auto cached = ntnCarrierSlotDuration_.find(carrierFrequency);
+    if (cached != ntnCarrierSlotDuration_.end())
+        return cached->second;
+
+    // Numerology is a property of the carrier, registered once in the Binder, so the
+    // gNodeB and every UE on that carrier necessarily agree on its slot duration. That
+    // agreement is what lets an activation time computed here be interpreted correctly
+    // at the UE.
+    double slotDuration = binder_->getSlotDurationFromNumerologyIndex(
+            binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
+
+    if (slotDuration <= 0)
+        throw cRuntimeError("NtnNrMacGnb::ntnSlotDurationFor - carrier %gGHz has no registered numerology, "
+                "so the slot its grants are timed against is unknown.", carrierFrequency.get());
+
+    // This module ticks at its shortest carrier's slot, so no carrier may be shorter.
+    if (slotDuration < ttiPeriod_ - 1e-12)
+        throw cRuntimeError("NtnNrMacGnb::ntnSlotDurationFor - carrier %gGHz has a slot of %gms, shorter "
+                "than this MAC's own tick of %gms. The tick is taken from the cell's highest numerology, "
+                "so this means the carrier is not one of the cell's.",
+                carrierFrequency.get(), slotDuration * 1000.0, ttiPeriod_ * 1000.0);
+
+    ntnCarrierSlotDuration_[carrierFrequency] = slotDuration;
+    return slotDuration;
+}
+
+long NtnNrMacGnb::ntnGrantOffsetSlotsFor(GHz carrierFrequency)
+{
+    double slotDuration = ntnSlotDurationFor(carrierFrequency);
+
+    long offset = par("ntnGrantOffsetSlots").intValue();
+    if (offset < 0) {
+        // The blocks booked now are for the slot in which the granted transmission will be
+        // heard. Bounding that by the cell's worst-case round trip is what keeps the offset
+        // one value for the whole carrier, which it has to be: a UE that has not been heard
+        // from yet must still be given a grant, and each of the carrier's slots has to book
+        // a distinct reception slot.
+        offset = ntnDurationToSlots(ntnCellRoundTripDelay_.dbl(), slotDuration)
+               + ntnDurationToSlots(par("ntnGrantProcessingDelay").doubleValue(), slotDuration);
+    }
+
+    auto cached = ntnGrantOffsetSlots_.find(carrierFrequency);
+    if (cached == ntnGrantOffsetSlots_.end()) {
+        // On first use only, at INFO: an offset silently left at zero is indistinguishable
+        // from a working one, and the resulting loss looks like a channel problem.
+        EV_INFO << "NtnNrMacGnb::ntnGrantOffsetSlotsFor - cell " << getMacCellId() << " carrier "
+                << carrierFrequency << ", round-trip delay[" << ntnCellRoundTripDelay_.dbl() * 1000.0
+                << "ms], slot " << slotDuration * 1000.0 << "ms: uplink grant offset[" << offset
+                << " slots]" << endl;
+        ntnGrantOffsetSlots_[carrierFrequency] = offset;
+        return offset;
+    }
+
+    // The offset is what maps a scheduling slot onto the reception slot it books, so
+    // changing it mid-run would point two different slots at one reception slot, or leave
+    // grants already in flight activating against a grid that has moved. It cannot happen
+    // for a circular orbit -- the cell round-trip delay is derived once and cached on the
+    // association -- so a change means the association was rebuilt underneath us.
+    if (offset != cached->second)
+        throw cRuntimeError("NtnNrMacGnb::ntnGrantOffsetSlotsFor - the uplink grant offset of cell %hu on "
+                "carrier %gGHz changed from %ld to %ld slots mid-run. Grants issued from the old value are "
+                "still in flight and would activate against a different reception slot.",
+                num(getMacCellId()), carrierFrequency.get(), cached->second, offset);
+
+    return offset;
+}
+
+int64_t NtnNrMacGnb::ntnTargetSlotFor(GHz carrierFrequency)
+{
+    double slotDuration = ntnSlotDurationFor(carrierFrequency);
+
+    // Which of this carrier's slots the cell is currently in. Floor rather than round:
+    // a carrier whose numerology is lower than the cell's ticks less often than this
+    // module does, so NOW is generally partway through one of its slots rather than on
+    // its boundary. The epsilon absorbs the representation error of dividing a simulation
+    // time that is an exact multiple of one slot length by a different one.
+    int64_t currentSlot = static_cast<int64_t>(std::floor(NOW.dbl() / slotDuration + 1e-9));
+
+    // No state, so it advances exactly when the carrier's own slot advances, and every
+    // caller in a slot gets the same answer whatever order they ask in.
+    return currentSlot + ntnGrantOffsetSlotsFor(carrierFrequency);
 }
 
 void NtnNrMacGnb::handleSelfMessage()
@@ -61,52 +138,11 @@ void NtnNrMacGnb::refreshNtnGrantTiming()
                 "this cell is not on a satellite path -- in which case it should not use this MAC type -- "
                 "or the association was never registered.", num(getMacCellId()));
 
-    long offset = par("ntnGrantOffsetSlots").intValue();
-    if (offset < 0) {
-        // The blocks booked in this slot are for the slot in which the granted
-        // transmission will be heard. Bounding that by the cell's worst-case round trip
-        // is what keeps the offset a single cell-wide value, which it has to be: a UE
-        // that has not been heard from yet must still be given a grant, and the
-        // reception slot has to advance by exactly one per slot (see below).
-        offset = ntnDurationToSlots(ntnCellRoundTripDelay_.dbl(), ttiPeriod_)
-               + ntnDurationToSlots(par("ntnGrantProcessingDelay").doubleValue(), ttiPeriod_);
-    }
-
-    int64_t wanted = ntnCurrentSlot() + offset;
-
-    if (!ntnTargetSlotValid_) {
-        ntnTargetSlot_ = wanted;
-        ntnTargetSlotValid_ = true;
-    }
-    else {
-        // The reception slot must advance by at least one every slot. Two slots
-        // targeting one reception slot would book the same resource blocks twice and
-        // nothing downstream would notice, so a shrinking offset costs a slot of
-        // latency instead; a growing one leaves a slot unbooked.
-        int64_t next = std::max(ntnTargetSlot_ + 1, wanted);
-        if (next != wanted) {
-            EV_INFO << "NtnNrMacGnb::refreshNtnGrantTiming - cell " << getMacCellId()
-                    << " held its target reception slot at " << next << " rather than " << wanted
-                    << "; the derived grant offset shrank" << endl;
-            emit(ntnTargetSlotSkipsSignal_, 1);
-        }
-        ntnTargetSlot_ = next;
-    }
-
-    if (offset == ntnGrantOffsetSlots_)
-        return;
-
-    // On change only, at INFO: an offset silently left at zero is indistinguishable from
-    // a working one, and the resulting loss looks like a channel problem.
-    EV_INFO << "NtnNrMacGnb::refreshNtnGrantTiming - cell " << getMacCellId()
-            << ", round-trip delay[" << ntnCellRoundTripDelay_.dbl() * 1000.0 << "ms], slot "
-            << ttiPeriod_ * 1000.0 << "ms: uplink grant offset[" << offset << " slots], "
-            << "booking reception slot " << ntnTargetSlot_ << endl;
-
-    ntnGrantOffsetSlots_ = offset;
+    // Nothing else to do here: the offset and the reception slot are derived per carrier,
+    // on demand, from this value and the time -- see ntnTargetSlotFor().
 }
 
-simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId)
+simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId, double slotDuration)
 {
     // A UE the gNodeB has never heard from gets the cell-wide bound. Using its own delay
     // earlier would model a network that knew a UE's range before it connected, which is
@@ -132,13 +168,13 @@ simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId)
     if (cached != ntnUeRoundTripDelay_.end()) {
         long margin = par("ntnGrantTimingMarginSlots").intValue();
         double moved = std::fabs((measured - cached->second.first).dbl());
-        if (moved > margin * ttiPeriod_)
+        if (moved > margin * slotDuration)
             throw cRuntimeError("NtnNrMacGnb::ntnRoundTripDelayFor - the round-trip delay of UE %hu moved "
-                    "by %gms (%g slots) over the %gms since it was last read, more than the %ld slots "
-                    "ntnGrantTimingMarginSlots allows. Grants issued from the old value are still in "
+                    "by %gms (%g slots of %gms) over the %gms since it was last read, more than the %ld "
+                    "slots ntnGrantTimingMarginSlots allows. Grants issued from the old value are still in "
                     "flight and would activate in the wrong slot. Shorten ntnUlSyncValidityDuration, or "
                     "raise ntnGrantTimingMarginSlots if the geometry really does move this fast.",
-                    num(ueId), moved * 1000.0, moved / ttiPeriod_,
+                    num(ueId), moved * 1000.0, moved / slotDuration, slotDuration * 1000.0,
                     (NOW - cached->second.second).dbl() * 1000.0, margin);
     }
 
@@ -177,23 +213,31 @@ void NtnNrMacGnb::sendLowerPackets(cPacket *pktAux)
     if (userInfo->getFrameType() == GRANTPKT)
         isUplinkGrant = pkt->peekAtFront<LteSchedulingGrant>()->getDirection() == UL;
 
-    if (isUplinkGrant && ntnTargetSlotValid_) {
+    if (isUplinkGrant && ntnGrantTimingReady()) {
         MacNodeId ueId = userInfo->getDestId();
+
+        // Everything here is counted in the slots of the carrier this grant is for, not in
+        // this module's own tick period. The two coincide only when the cell has a single
+        // carrier, or when all its carriers share the highest numerology.
+        GHz carrierFrequency = userInfo->getCarrierFrequency();
+        double slotDuration = ntnSlotDurationFor(carrierFrequency);
+        int64_t targetSlot = ntnTargetSlotFor(carrierFrequency);
 
         // The UE must transmit this many slots before the reception slot for its signal
         // to arrive in it. Rounding up puts the transmission a fraction of a slot early
         // rather than late, which is the side to err on when the arrival decides which
         // slot's blocks are used.
-        long uplinkSlots = ntnDurationToSlots(ntnRoundTripDelayFor(ueId).dbl() / 2.0, ttiPeriod_);
-        simtime_t activation = (ntnTargetSlot_ - uplinkSlots) * ttiPeriod_;
+        long uplinkSlots = ntnDurationToSlots(ntnRoundTripDelayFor(ueId, slotDuration).dbl() / 2.0, slotDuration);
+        simtime_t activation = (targetSlot - uplinkSlots) * slotDuration;
 
         userInfo->setGrantActivationTime(activation);
         userInfo->setGrantIssueTime(NOW);
 
-        emit(ntnGrantActivationLeadSignal_, (activation - NOW).dbl() / ttiPeriod_);
+        emit(ntnGrantActivationLeadSignal_, (activation - NOW).dbl() / slotDuration);
 
-        EV_DEBUG << "NtnNrMacGnb::sendLowerPackets - grant to UE " << ueId << " books reception slot "
-                 << ntnTargetSlot_ << ", valid from t=" << activation << endl;
+        EV_DEBUG << "NtnNrMacGnb::sendLowerPackets - grant to UE " << ueId << " on carrier "
+                 << carrierFrequency << " books reception slot " << targetSlot << ", valid from t="
+                 << activation << endl;
     }
 
     NrMacGnb::sendLowerPackets(pktAux);

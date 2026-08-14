@@ -58,15 +58,25 @@ module NtnNrMacGnb extends NrMacGnb
         // and the UE holds it until then; see ~NtnNrMacUe.
         //
         // The blocks are booked for the slot the transmission will be HEARD in, not the
-        // slot the UE transmits in. That choice is what keeps this cheap: with a
-        // cell-wide offset each reception slot is booked by exactly one scheduling
-        // round, so the existing single-slot allocator already is that slot's map and no
+        // slot the UE transmits in. That choice is what keeps this cheap: with one offset
+        // per carrier each reception slot is booked by exactly one scheduling round, so
+        // the existing single-slot allocator already is that slot's map and no
         // future-slot structure is needed. It is also the physically right frame, since
         // with no timing advance two transmissions collide according to when they
         // arrive, not when they were sent.
         //
+        // COUNTED IN THE CARRIER'S OWN SLOTS. Numerology is a property of the carrier,
+        // registered once in the Binder, so a gNodeB and the UEs on a carrier cannot
+        // disagree about how long its slots are -- which is what lets an activation time
+        // computed here be interpreted correctly at the UE. It also means the offset is
+        // per carrier rather than per cell: a cell aggregating carriers of different
+        // numerologies needs a different number of slots to cover the same round trip on
+        // each of them. Using this module's own tick period instead would be right only
+        // for a cell whose carriers all share its highest numerology.
+        //
         // Negative means "derive from this cell's round-trip delay"; an explicit
-        // assignment is positive and wins untouched.
+        // assignment is positive and wins untouched, and is then taken to be in the slots
+        // of whichever carrier the grant belongs to.
         int ntnGrantOffsetSlots = default(-1);
 
         // The k2 analogue: time the UE is allowed for preparing a transmission after the
@@ -100,8 +110,8 @@ module NtnNrMacGnb extends NrMacGnb
         // that round trip. See ~NtnSchedulerGnbUl.
         ulSchedulerType = default("NtnSchedulerGnbUl");
 
+        // In slots of the granted carrier, so on a cell aggregating carriers of different
+        // numerologies this mixes units; read it per carrier in that case.
         @signal[ntnGrantActivationLead];
         @statistic[ntnGrantActivationLead](title="Slots between issuing a grant and its activation"; unit=""; source="ntnGrantActivationLead"; record=mean,min,max);
-        @signal[ntnTargetSlotSkips];
-        @statistic[ntnTargetSlotSkips](title="Slots where the booked reception slot had to be forced forward"; unit=""; source="ntnTargetSlotSkips"; record=sum);
 }

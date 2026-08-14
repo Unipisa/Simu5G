@@ -42,10 +42,13 @@ unsigned int NtnSchedulerGnbUl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrier
 {
     auto mac = check_and_cast<NtnNrMacGnb *>(mac_.get());
 
-    if (!mac->ntnTargetSlotValid())
+    if (!mac->ntnGrantTimingReady())
         return NrSchedulerGnbUl::schedulePerAcidRtx(nodeId, carrierFrequency, cw, acid, bandLim, antenna, limitBl);
 
-    int64_t target = mac->ntnTargetSlot();
+    // Counted in this carrier's slots, matching how the grant's activation time will be
+    // computed when it is stamped -- and ntnGrantedRtx_ is already keyed by carrier, so
+    // two carriers never compare slot numbers from different grids.
+    int64_t target = mac->ntnTargetSlotFor(carrierFrequency);
     auto& granted = ntnGrantedRtx_[carrierFrequency][nodeId];
     auto key = std::make_pair(acid, cw);
     auto outstanding = granted.find(key);
@@ -76,7 +79,7 @@ unsigned int NtnSchedulerGnbUl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrier
         // The retransmission arrives in the slot being booked now. The gNodeB only knows
         // whether it succeeded once it has reached that slot, which is a further offset
         // ahead of the slot it is booking today.
-        granted[key] = target + mac->ntnGrantOffsetSlots();
+        granted[key] = target + mac->ntnGrantOffsetSlotsFor(carrierFrequency);
     }
 
     return rtxBytes;

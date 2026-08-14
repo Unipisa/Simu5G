@@ -454,21 +454,26 @@ When NTN interference is implemented (item 6 of `ntn-implementation.md`), the fi
 
 The gNB allocated RBs for "this TTI" while the UE transmitted an RTT/2 later. The fix is the 3GPP one: the grant carries the time from which it is valid, the UE holds it until then, and the gNB books resources for the slot the transmission will be heard in.
 
-*Superseded:* this section predicted "the gNB books resources in a future-slot allocation map. This is the largest structural change here — stage it last, behind a flag." **No future-slot map was needed.** Indexing by reception slot rather than transmission slot makes `n -> n + D` a bijection for a cell-wide offset `D`, so each reception slot is booked by exactly one scheduling round and the existing single-TTI allocator already *is* that slot's map. The whole gNodeB change is one stamping hook.
+*Superseded:* this section predicted "the gNB books resources in a future-slot allocation map. This is the largest structural change here — stage it last, behind a flag." **No future-slot map was needed.** Indexing by reception slot rather than transmission slot makes `n -> n + D` a bijection for a per-carrier offset `D`, so each reception slot is booked by exactly one scheduling round and the existing single-TTI allocator already *is* that slot's map. The whole gNodeB change is one stamping hook.
 
 ### Step 6 as built
 
-**The result that made this cheap.** The doc expected a ring buffer of depth `ceil(RTD/slot)` — ~1083 entries at GEO/µ=1. That is the depth you need if the allocation map is indexed by the UE's *transmission* slot. Indexed by the gNodeB's *reception* slot with a cell-wide offset `D`, the map `n -> n + D` is a bijection: each reception slot is booked in exactly one scheduling round, so the existing single-TTI `LteAllocationModule` already is that slot's map and only its meaning changes. Verified: every reader of allocator occupancy (`readPerUeAllocatedBlocks`, `readRbOccupation`) runs inside `sendGrants()` in the same TTI as `schedule()`, and `getInterferingBlocks()` — the sole consumer of `prevAllocatedRbsPerBand_` — has one caller, `LteMacEnb.cc:1004`, which reads the *downlink* allocator.
+**The result that made this cheap.** The doc expected a ring buffer of depth `ceil(RTD/slot)` — ~1083 entries at GEO/µ=1. That is the depth you need if the allocation map is indexed by the UE's *transmission* slot. Indexed by the gNodeB's *reception* slot with one offset `D` per carrier, the map `n -> n + D` is a bijection: each reception slot is booked in exactly one scheduling round, so the existing single-TTI `LteAllocationModule` already is that slot's map and only its meaning changes. Verified: every reader of allocator occupancy (`readPerUeAllocatedBlocks`, `readRbOccupation`) runs inside `sendGrants()` in the same TTI as `schedule()`, and `getInterferingBlocks()` — the sole consumer of `prevAllocatedRbsPerBand_` — has one caller, `LteMacEnb.cc:1004`, which reads the *downlink* allocator.
 
 Reception-slot indexing is also the physically right frame. With no timing advance (option A below), orthogonality is a property of the arrival instant, so the per-UE difference belongs in the activation time rather than in a per-UE offset. That is ideal timing advance, not per-UE K_offset.
 
-**The algebra**, in slots of the gNodeB's `ttiPeriod_`:
+**The algebra**, in slots of the carrier the grant belongs to:
 
 | symbol | meaning |
 |---|---|
-| `D` | cell-wide lookahead, `ceil(R_cell/slot) + k2` |
+| `slot` | the *carrier's* slot duration, from the numerology the Binder holds for it |
+| `D` | lookahead for that carrier, `ceil(R_cell/slot) + k2` |
 | `r` | reception slot being booked, `n + D` |
 | `a(u)` | activation time in the grant, `r - ceil((R_ue/2)/slot)` |
+
+**Per carrier, not per cell.** Numerology is a property of the carrier — registered once by `Binder::registerCarrier()` and read back through `getNumerologyIndexFromCarrierFreq()` — so a gNodeB and the UEs on a carrier cannot disagree about how long its slots are, which is what lets an activation time computed at one end be interpreted correctly at the other. It also means the lookahead differs per carrier on an aggregating cell: covering the same round trip takes twice as many slots at µ=1 as at µ=0. Using the module's own `ttiPeriod_` (its *highest* numerology, i.e. shortest slot) would be right only when every carrier shares it.
+
+All three quantities are pure functions of the time and the carrier, holding no per-slot state. That is what makes them safe to read from `NtnSchedulerGnbUl` during scheduling *and* from `sendLowerPackets()` after it: both see the same answer regardless of the order they ask in, which a mutable "current target slot" would not have guaranteed.
 
 Hold time is `(D - ceil((R_ue/2)/slot)) * slot - R_ue/2`, which is non-negative for every UE because `R_cell >= R_ue` and the rounding goes the right way — so a late grant is impossible by construction, and none was observed. GEO gives 34.7 ms after attach and 0.27 ms for a cell-edge UE.
 
@@ -546,7 +551,7 @@ Without these, a GEO smoke run that drops from 58 kB to 0 kB gives no way to dis
 | `ntnHarqRxOccupancy` | `NtnNrMacGnb` | Whether uplink data is arriving at all. **Not** a stop-and-wait measure: a receive process is held for `harqFbEvaluationTimer` (the k1 budget), which does not scale with delay |
 | `ntnGrantHoldTime`, `ntnPendingGrants` | `NtnNrMacUe` | How long grants wait and how many are outstanding |
 | `ntnGrantsSkipped` | `NtnNrMacUe` | Must stay zero; non-zero means a UE tick was skipped and a held grant went unused |
-| `ntnGrantActivationLead`, `ntnTargetSlotSkips` | `NtnNrMacGnb` | The offset actually applied, and whether the reception slot had to be forced forward |
+| `ntnGrantActivationLead` | `NtnNrMacGnb` | The offset actually applied, in slots of the granted carrier |
 | `ntnRtxGrantsSuppressed` | `NtnSchedulerGnbUl` | Retransmission grants not issued because one was already in flight |
 
 The occupancy statistics settled a question immediately: with one UE the transmit pool peaks at 13 of 32 processes and never stalls, so the single-UE GEO uplink is grant-limited, not process-limited. It reaches 32 of 32 only once several UEs contend. Two of these are still absent — RAC attempts/outcomes and BSR retransmission counts have no counters, and grant-to-transmission latency is measurable from `grantIssueTime` but is not yet emitted.

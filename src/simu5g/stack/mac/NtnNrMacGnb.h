@@ -26,12 +26,25 @@ namespace simu5g {
 class NtnNrMacGnb : public NrMacGnb
 {
   public:
-    // The slot that resource blocks booked in this slot are booked FOR, and how far
-    // ahead of the current slot that is. ~NtnSchedulerGnbUl needs both to tell whether
-    // a retransmission it granted earlier has had time to arrive.
-    int64_t ntnTargetSlot() const { return ntnTargetSlot_; }
-    long ntnGrantOffsetSlots() const { return ntnGrantOffsetSlots_; }
-    bool ntnTargetSlotValid() const { return ntnTargetSlotValid_; }
+    // GRANT TIMING IS PER CARRIER. A carrier's numerology fixes its slot duration, and
+    // every quantity below is counted in the slots of the carrier the grant belongs to --
+    // not in this module's own tick period, which is the shortest slot across all its
+    // carriers and is therefore only the right unit for a single-carrier cell.
+    //
+    // All three are pure functions of the current time and the carrier, holding no
+    // per-slot state. That is what makes them safe to call from ~NtnSchedulerGnbUl, which
+    // runs during scheduling, and from sendLowerPackets(), which runs after it: both see
+    // the same answer regardless of the order they ask in.
+    bool ntnGrantTimingReady() const { return ntnCellRoundTripDelay_ > SIMTIME_ZERO; }
+
+    // Slot duration of the given carrier, from the numerology the Binder holds for it.
+    double ntnSlotDurationFor(inet::GHz carrierFrequency);
+
+    // How far ahead of the current slot this cell books, in that carrier's slots.
+    long ntnGrantOffsetSlotsFor(inet::GHz carrierFrequency);
+
+    // The slot, on that carrier's grid, that resource blocks booked now are booked FOR.
+    int64_t ntnTargetSlotFor(inet::GHz carrierFrequency);
 
   protected:
     // Uplink transport blocks currently inside the receive evaluation window at
@@ -43,19 +56,18 @@ class NtnNrMacGnb : public NrMacGnb
     // transmitter, and is measured by ~NtnNrMacUe.
     static omnetpp::simsignal_t ntnHarqRxOccupancySignal_;
 
-    // How far ahead of a grant's activation time it was issued, in slots, and how
-    // often the target reception slot had to be forced forward.
+    // How far ahead of a grant's activation time it was issued, in slots.
     static omnetpp::simsignal_t ntnGrantActivationLeadSignal_;
-    static omnetpp::simsignal_t ntnTargetSlotSkipsSignal_;
 
-    // Worst-case round trip of this cell, and the resulting lookahead in slots.
+    // Worst-case round trip of this cell. Constant for a circular orbit, and cached on
+    // the association once derived, so the offsets below are constant too.
     omnetpp::simtime_t ntnCellRoundTripDelay_ = SIMTIME_ZERO;
-    long ntnGrantOffsetSlots_ = 0;
 
-    // The slot the blocks booked in this slot are booked FOR. Must advance by at least
-    // one every slot; see refreshNtnGrantTiming().
-    int64_t ntnTargetSlot_ = 0;
-    bool ntnTargetSlotValid_ = false;
+    // Per carrier, memoised on first use: its slot duration and the resulting lookahead.
+    // Both are checked for stability, since a change would leave grants already in flight
+    // activating against a different slot grid.
+    std::map<inet::GHz, double> ntnCarrierSlotDuration_;
+    std::map<inet::GHz, long> ntnGrantOffsetSlots_;
 
     // UEs this gNodeB has actually heard from, and their latched round-trip delays.
     // Before a UE is in here only the cell-wide bound exists for it.
@@ -71,16 +83,14 @@ class NtnNrMacGnb : public NrMacGnb
     // in place of the cell-wide bound.
     void macPduUnmake(omnetpp::cPacket *pkt) override;
 
-    // Re-derives the lookahead and advances the target reception slot. Called at the
-    // start of every slot, for the same reason ~NtnNrMacUe refreshes there.
+    // Re-reads the cell round-trip delay every slot, for the same reason ~NtnNrMacUe
+    // refreshes there: the geometry it comes from does not exist during any init stage.
     void refreshNtnGrantTiming();
 
-    // The slot this gNodeB is currently in.
-    int64_t ntnCurrentSlot() const;
-
     // Round-trip delay to use for a UE: its own once heard from, latched and refreshed
-    // no more often than ntnUlSyncValidityDuration, and the cell bound before that.
-    omnetpp::simtime_t ntnRoundTripDelayFor(MacNodeId ueId);
+    // no more often than ntnUlSyncValidityDuration, and the cell bound before that. The
+    // slot duration is the carrier's, since the drift margin is expressed in its slots.
+    omnetpp::simtime_t ntnRoundTripDelayFor(MacNodeId ueId, double slotDuration);
 
     // Walks the uplink HARQ receive buffers and emits their occupancy. Read-only:
     // it inspects process status and changes nothing.
