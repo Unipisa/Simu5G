@@ -54,10 +54,9 @@ class NtnNrMacUe : public NrMacUe
     static omnetpp::simsignal_t ntnGrantHoldTimeSignal_;
     static omnetpp::simsignal_t ntnPendingGrantsSignal_;
 
-    // Grants that arrived already past their activation time, and grants dropped
-    // unused because a later one became due in the same slot. Both should stay at
-    // zero; see promoteDueGrants() and macHandleGrant().
-    static omnetpp::simsignal_t ntnLateGrantsSignal_;
+    // Grants dropped unused because a later one became due in the same slot. Should
+    // stay at zero; see promoteDueGrants(). A grant that arrives already past its
+    // activation time is not tracked here: it aborts the run in macHandleGrant().
     static omnetpp::simsignal_t ntnGrantsSkippedSignal_;
 
     // Grants received but not yet valid, per carrier, ordered by activation time.

@@ -180,18 +180,6 @@ module NtnNrMacUe extends NrMacUe
         @signal[ntnHarqTxStall];
         @statistic[ntnHarqTxStall](title="Granted slots lost to a full transmit HARQ pool"; unit=""; source="ntnHarqTxStall"; record=mean,sum);
 
-        // A grant carrying an activation time is held until that time rather than used
-        // on receipt, because the gNodeB booked its resource blocks for the slot in
-        // which it expects to hear the transmission. See ~NtnNrMacGnb for the offset
-        // this is the other half of.
-        //
-        // A grant that arrives already past its activation time is a causality failure,
-        // not a rounding problem: the gNodeB booked blocks the UE cannot reach in time.
-        // It aborts the run, because a UE that quietly used such a grant would transmit
-        // on blocks belonging to another slot and the error would surface much later as
-        // unexplained loss. Set this only to study the failure deliberately.
-        bool ntnAllowLateGrants = default(false);
-
         // Runaway detector for grants issued and never consumed, not a design limit: at
         // a GEO round trip with a grant every slot, of the order of a thousand are
         // legitimately outstanding at once.
@@ -201,8 +189,6 @@ module NtnNrMacUe extends NrMacUe
         @statistic[ntnGrantHoldTime](title="Time a grant is held before it becomes valid"; unit="s"; source="ntnGrantHoldTime"; record=mean,max);
         @signal[ntnPendingGrants];
         @statistic[ntnPendingGrants](title="Grants held and not yet valid"; unit=""; source="ntnPendingGrants"; record=mean,max);
-        @signal[ntnLateGrants];
-        @statistic[ntnLateGrants](title="Grants that arrived after their activation time"; unit=""; source="ntnLateGrants"; record=sum);
         @signal[ntnGrantsSkipped];
         @statistic[ntnGrantsSkipped](title="Held grants whose slot passed unused"; unit=""; source="ntnGrantsSkipped"; record=sum);
 }

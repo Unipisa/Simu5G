@@ -30,7 +30,6 @@ simsignal_t NtnNrMacUe::ntnHarqTxOccupancySignal_ = registerSignal("ntnHarqTxOcc
 simsignal_t NtnNrMacUe::ntnHarqTxStallSignal_ = registerSignal("ntnHarqTxStall");
 simsignal_t NtnNrMacUe::ntnGrantHoldTimeSignal_ = registerSignal("ntnGrantHoldTime");
 simsignal_t NtnNrMacUe::ntnPendingGrantsSignal_ = registerSignal("ntnPendingGrants");
-simsignal_t NtnNrMacUe::ntnLateGrantsSignal_ = registerSignal("ntnLateGrants");
 simsignal_t NtnNrMacUe::ntnGrantsSkippedSignal_ = registerSignal("ntnGrantsSkipped");
 
 void NtnNrMacUe::handleSelfMessage()
@@ -150,20 +149,15 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
     if (activationTime < NOW) {
         // The grant is for a slot that has already gone. This is the causality failure
         // the activation time exists to prevent: the gNodeB booked resource blocks the
-        // UE could not reach in time, so the offset does not cover this UE's delay.
-        if (!par("ntnAllowLateGrants").boolValue())
-            throw cRuntimeError("NtnNrMacUe::macHandleGrant - UE %hu received a grant at t=%gs whose "
-                    "activation time was t=%gs, %gms in the past. The uplink grant offset does not cover "
-                    "this UE's round-trip delay, so the gNodeB is booking resource blocks for a slot the "
-                    "UE cannot transmit in. Raise ntnGrantOffsetSlots on the gNodeB, or set "
-                    "ntnAllowLateGrants=true to use such grants in the next slot instead.",
-                    num(nodeId_), NOW.dbl(), activationTime.dbl(), (NOW - activationTime).dbl() * 1000.0);
-
-        EV_INFO << "NtnNrMacUe::macHandleGrant - UE " << nodeId_ << " received a grant "
-                << (NOW - activationTime).dbl() * 1000.0 << "ms after its activation time; using it now"
-                << endl;
-        emit(ntnLateGrantsSignal_, 1);
-        return;
+        // UE could not reach in time, so the offset does not cover this UE's delay. No
+        // opt-out: a UE that quietly used such a grant would transmit on blocks
+        // belonging to another slot, and the error would surface much later as
+        // unexplained loss.
+        throw cRuntimeError("NtnNrMacUe::macHandleGrant - UE %hu received a grant at t=%gs whose "
+                "activation time was t=%gs, %gms in the past. The uplink grant offset does not cover "
+                "this UE's round-trip delay, so the gNodeB is booking resource blocks for a slot the "
+                "UE cannot transmit in. Raise ntnGrantOffsetSlots on the gNodeB.",
+                 num(nodeId_), NOW.dbl(), activationTime.dbl(), (NOW - activationTime).dbl() * 1000.0);
     }
 
     if (activationTime == NOW)
