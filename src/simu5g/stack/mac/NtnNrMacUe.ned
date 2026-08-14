@@ -183,12 +183,20 @@ module NtnNrMacUe extends NrMacUe
         // Runaway detector for grants issued and never consumed, not a design limit: at
         // a GEO round trip with a grant every slot, of the order of a thousand are
         // legitimately outstanding at once.
+        //
+        // Exactly one held grant may come due per tick, and more than one aborts the run
+        // rather than being arbitrated between. Consecutive grants for a carrier activate
+        // one of that carrier's slots apart -- the gNodeB books one reception slot per
+        // carrier slot and subtracts the same uplink slot count from each -- while this UE
+        // ticks at its own highest numerology, which is at least as often as any carrier
+        // it is on. Two at once therefore means grants were issued out of order, which
+        // ntnGrantTimingMarginSlots on the gNodeB is what bounds. Picking the newest and
+        // discarding the rest would hide that, and would transmit on resource blocks
+        // booked for the slot the discarded grant owned.
         int ntnMaxPendingGrants = default(4096);
 
         @signal[ntnGrantHoldTime];
         @statistic[ntnGrantHoldTime](title="Time a grant is held before it becomes valid"; unit="s"; source="ntnGrantHoldTime"; record=mean,max);
         @signal[ntnPendingGrants];
         @statistic[ntnPendingGrants](title="Grants held and not yet valid"; unit=""; source="ntnPendingGrants"; record=mean,max);
-        @signal[ntnGrantsSkipped];
-        @statistic[ntnGrantsSkipped](title="Held grants whose slot passed unused"; unit=""; source="ntnGrantsSkipped"; record=sum);
 }

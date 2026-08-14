@@ -54,11 +54,6 @@ class NtnNrMacUe : public NrMacUe
     static omnetpp::simsignal_t ntnGrantHoldTimeSignal_;
     static omnetpp::simsignal_t ntnPendingGrantsSignal_;
 
-    // Grants dropped unused because a later one became due in the same slot. Should
-    // stay at zero; see promoteDueGrants(). A grant that arrives already past its
-    // activation time is not tracked here: it aborts the run in macHandleGrant().
-    static omnetpp::simsignal_t ntnGrantsSkippedSignal_;
-
     // Grants received but not yet valid, per carrier, ordered by activation time.
     // A container is needed rather than the single slot schedulingGrant_ offers: the
     // gNodeB issues one grant per slot while the UE holds each for the better part of

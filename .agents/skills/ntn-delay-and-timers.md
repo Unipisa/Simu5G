@@ -550,7 +550,7 @@ Without these, a GEO smoke run that drops from 58 kB to 0 kB gives no way to dis
 | `ntnHarqTxOccupancy`, `ntnHarqTxStall` | `NtnNrMacUe` | Whether the uplink is process-limited. Sampled before the slot inserts its own PDU, which is exactly when `firstAvailable()` would fail |
 | `ntnHarqRxOccupancy` | `NtnNrMacGnb` | Whether uplink data is arriving at all. **Not** a stop-and-wait measure: a receive process is held for `harqFbEvaluationTimer` (the k1 budget), which does not scale with delay |
 | `ntnGrantHoldTime`, `ntnPendingGrants` | `NtnNrMacUe` | How long grants wait and how many are outstanding |
-| `ntnGrantsSkipped` | `NtnNrMacUe` | Must stay zero; non-zero means a UE tick was skipped and a held grant went unused |
+| *(no statistic)* | `NtnNrMacUe` | More than one held grant coming due at once aborts the run: consecutive grants activate one carrier-slot apart and the UE ticks at least that often, so two at once means they were issued out of order |
 | `ntnGrantActivationLead` | `NtnNrMacGnb` | The offset actually applied, in slots of the granted carrier |
 | `ntnRtxGrantsSuppressed` | `NtnSchedulerGnbUl` | Retransmission grants not issued because one was already in flight |
 

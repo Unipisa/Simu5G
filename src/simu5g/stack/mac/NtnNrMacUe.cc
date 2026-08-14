@@ -30,7 +30,6 @@ simsignal_t NtnNrMacUe::ntnHarqTxOccupancySignal_ = registerSignal("ntnHarqTxOcc
 simsignal_t NtnNrMacUe::ntnHarqTxStallSignal_ = registerSignal("ntnHarqTxStall");
 simsignal_t NtnNrMacUe::ntnGrantHoldTimeSignal_ = registerSignal("ntnGrantHoldTime");
 simsignal_t NtnNrMacUe::ntnPendingGrantsSignal_ = registerSignal("ntnPendingGrants");
-simsignal_t NtnNrMacUe::ntnGrantsSkippedSignal_ = registerSignal("ntnGrantsSkipped");
 
 void NtnNrMacUe::handleSelfMessage()
 {
@@ -189,15 +188,30 @@ void NtnNrMacUe::promoteDueGrants()
         if (notYetDue != pending.begin()) {
             auto due = std::prev(notYetDue);
 
-            // Only the newest due grant is usable. An older one names a slot that has
-            // already passed, which can only happen if this UE missed a slot; it is
-            // counted rather than silently dropped.
-            unsigned int skipped = std::distance(pending.begin(), due);
-            if (skipped > 0) {
-                EV_INFO << "NtnNrMacUe::promoteDueGrants - UE " << nodeId_ << " discarded " << skipped
-                        << " grant(s) whose slot passed unused" << endl;
-                emit(ntnGrantsSkippedSignal_, skipped);
-            }
+            // Exactly one grant may come due per tick, and more than one is a defect
+            // rather than something to arbitrate between.
+            //
+            // Consecutive grants for a carrier activate exactly one of that carrier's
+            // slots apart, because the gNodeB books one reception slot per carrier slot
+            // and subtracts the same uplink slot count from each; and this UE ticks at
+            // its own highest numerology, which is at least as often as any carrier it
+            // is on. So two coming due together means one of the assumptions underneath
+            // that has failed -- most likely grants issued out of order, which happens
+            // if this UE's round-trip delay moved far enough between two of the gNodeB's
+            // refreshes to change its uplink slot count by more than one, making a
+            // later-booked grant activate earlier than an earlier-booked one. Using the
+            // newest and discarding the rest would hide that, and would transmit on
+            // resource blocks booked for a slot the discarded grant owned.
+            unsigned int dueCount = std::distance(pending.begin(), notYetDue);
+            if (dueCount > 1)
+                throw cRuntimeError("NtnNrMacUe::promoteDueGrants - UE %hu has %u grants due at once on "
+                        "carrier %gGHz, activating between t=%gs and t=%gs. Only one can be: the gNodeB "
+                        "books one reception slot per slot of that carrier, and this UE ticks at least as "
+                        "often as the carrier does. Either grants were issued out of order -- check "
+                        "ntnGrantTimingMarginSlots on the gNodeB, which bounds how far a UE's round-trip "
+                        "delay may move between refreshes -- or this UE missed a tick.",
+                        num(nodeId_), dueCount, carrierFrequency.get(),
+                        pending.begin()->first.dbl(), due->first.dbl());
 
             schedulingGrant_[carrierFrequency] = due->second;
             pending.erase(pending.begin(), notYetDue);
