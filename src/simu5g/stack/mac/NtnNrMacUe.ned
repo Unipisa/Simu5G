@@ -180,10 +180,6 @@ module NtnNrMacUe extends NrMacUe
         @signal[ntnHarqTxStall];
         @statistic[ntnHarqTxStall](title="Granted slots lost to a full transmit HARQ pool"; unit=""; source="ntnHarqTxStall"; record=mean,sum);
 
-        // Runaway detector for grants issued and never consumed, not a design limit: at
-        // a GEO round trip with a grant every slot, of the order of a thousand are
-        // legitimately outstanding at once.
-        //
         // Exactly one held grant may come due per tick, and more than one aborts the run
         // rather than being arbitrated between. Consecutive grants for a carrier activate
         // one of that carrier's slots apart -- the gNodeB books one reception slot per
@@ -193,7 +189,12 @@ module NtnNrMacUe extends NrMacUe
         // ntnGrantTimingMarginSlots on the gNodeB is what bounds. Picking the newest and
         // discarding the rest would hide that, and would transmit on resource blocks
         // booked for the slot the discarded grant owned.
-        int ntnMaxPendingGrants = default(4096);
+        //
+        // A second check in the same place, promoteDueGrants() in the .cc, catches grants
+        // that are never consumed at all. It has no NED parameter: the legitimate maximum
+        // scales with orbit and numerology, so it is derived from the cell round-trip
+        // delay rather than configured, and a fixed number would eventually be wrong for
+        // one of them.
 
         @signal[ntnGrantHoldTime];
         @statistic[ntnGrantHoldTime](title="Time a grant is held before it becomes valid"; unit="s"; source="ntnGrantHoldTime"; record=mean,max);

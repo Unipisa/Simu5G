@@ -178,6 +178,10 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
 
 void NtnNrMacUe::promoteDueGrants()
 {
+    // Guaranteed positive: refreshNtnCounters(), which throws otherwise, already ran
+    // earlier in this same slot's handleSelfMessage().
+    simtime_t cellRoundTripDelay = ntnCellRoundTripDelay(binder_.get(), cellId_);
+
     unsigned int outstanding = 0;
 
     for (auto& [carrierFrequency, pending] : pendingGrants_) {
@@ -217,17 +221,30 @@ void NtnNrMacUe::promoteDueGrants()
             pending.erase(pending.begin(), notYetDue);
         }
 
+        // Runaway detector, not a design limit, and derived rather than configured: hold
+        // time is bounded by this carrier's grant offset, D slots (see ~NtnNrMacGnb), and
+        // exactly one grant is issued per carrier-slot, so at most D are ever legitimately
+        // outstanding at once -- a sliding window of that size. A fixed number would
+        // eventually be wrong, since the legitimate maximum scales with orbit and
+        // numerology (thousands of slots at GEO, a handful at LEO); doubled for margin --
+        // start-up transients, and the k2 processing delay the gNodeB may add on top of
+        // the round trip, which this UE has no direct visibility into -- rather than
+        // exposed as a parameter, since that margin is an implementation safety factor,
+        // not a scenario choice.
+        double slotDuration = binder_->getSlotDurationFromNumerologyIndex(
+                binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
+        unsigned int limit = 2 * ntnDurationToSlots(cellRoundTripDelay.dbl(), slotDuration);
+
+        if (pending.size() > limit)
+            throw cRuntimeError("NtnNrMacUe::promoteDueGrants - UE %hu holds %u grants on carrier %gGHz "
+                    "that have not become valid, above the %u legitimately possible for a %gms round trip "
+                    "at a %gms slot. Grants are being issued and never consumed, which means their "
+                    "activation times are not arriving -- check the uplink grant offset on the gNodeB.",
+                    num(nodeId_), (unsigned int)pending.size(), carrierFrequency.get(), limit,
+                    cellRoundTripDelay.dbl() * 1000.0, slotDuration * 1000.0);
+
         outstanding += pending.size();
     }
-
-    // A runaway detector, not a design limit: at a GEO round trip with a grant every
-    // slot, of the order of a thousand are legitimately outstanding.
-    unsigned int limit = par("ntnMaxPendingGrants").intValue();
-    if (outstanding > limit)
-        throw cRuntimeError("NtnNrMacUe::promoteDueGrants - UE %hu holds %u grants that have not become "
-                "valid, above ntnMaxPendingGrants (%u). Grants are being issued and never consumed, which "
-                "means their activation times are not arriving -- check the uplink grant offset on the "
-                "gNodeB.", num(nodeId_), outstanding, limit);
 
     emit(ntnPendingGrantsSignal_, outstanding);
 }
