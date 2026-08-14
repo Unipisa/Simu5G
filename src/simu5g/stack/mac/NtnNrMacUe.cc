@@ -130,7 +130,7 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto userInfo = pkt->getTag<UserControlInfo>();
     GHz carrierFrequency = userInfo->getCarrierFrequency();
-    simtime_t activationTime = userInfo->getNtnGrantActivationTime();
+    simtime_t activationTime = userInfo->getGrantActivationTime();
 
     // The parent installs the grant and clears racRequested_. Clearing that on receipt
     // is correct and must not be deferred: the grant is the answer to the preamble

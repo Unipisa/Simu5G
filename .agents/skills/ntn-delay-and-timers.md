@@ -549,7 +549,7 @@ Without these, a GEO smoke run that drops from 58 kB to 0 kB gives no way to dis
 | `ntnGrantActivationLead`, `ntnTargetSlotSkips` | `NtnNrMacGnb` | The offset actually applied, and whether the reception slot had to be forced forward |
 | `ntnRtxGrantsSuppressed` | `NtnSchedulerGnbUl` | Retransmission grants not issued because one was already in flight |
 
-The occupancy statistics settled a question immediately: with one UE the transmit pool peaks at 13 of 32 processes and never stalls, so the single-UE GEO uplink is grant-limited, not process-limited. It reaches 32 of 32 only once several UEs contend. Two of these are still absent — RAC attempts/outcomes and BSR retransmission counts have no counters, and grant-to-transmission latency is measurable from `ntnGrantIssueTime` but is not yet emitted.
+The occupancy statistics settled a question immediately: with one UE the transmit pool peaks at 13 of 32 processes and never stalls, so the single-UE GEO uplink is grant-limited, not process-limited. It reaches 32 of 32 only once several UEs contend. Two of these are still absent — RAC attempts/outcomes and BSR retransmission counts have no counters, and grant-to-transmission latency is measurable from `grantIssueTime` but is not yet emitted.
 
 Verification beyond the geometry checks already listed in item 7:
 

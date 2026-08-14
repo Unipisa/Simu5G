@@ -187,8 +187,8 @@ void NtnNrMacGnb::sendLowerPackets(cPacket *pktAux)
         long uplinkSlots = ntnDurationToSlots(ntnRoundTripDelayFor(ueId).dbl() / 2.0, ttiPeriod_);
         simtime_t activation = (ntnTargetSlot_ - uplinkSlots) * ttiPeriod_;
 
-        userInfo->setNtnGrantActivationTime(activation);
-        userInfo->setNtnGrantIssueTime(NOW);
+        userInfo->setGrantActivationTime(activation);
+        userInfo->setGrantIssueTime(NOW);
 
         emit(ntnGrantActivationLeadSignal_, (activation - NOW).dbl() / ttiPeriod_);
 

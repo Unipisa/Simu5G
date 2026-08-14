@@ -476,7 +476,7 @@ Round-trip delay and protocol timers:
 - `src/simu5g/stack/mac/NtnNrMacUe.{ned,cc,h}` — RAC/BSR counters, and the grant hold
 - `src/simu5g/stack/mac/NtnNrMacGnb.{ned,cc,h}` — the uplink grant offset and activation times
 - `src/simu5g/stack/mac/scheduler/NtnSchedulerGnbUl.{ned,cc,h}` — one retransmission grant per round trip
-- `src/simu5g/common/LteControlInfo.msg` — `ntnGrantActivationTime`, `ntnGrantIssueTime`
+- `src/simu5g/common/LteControlInfo.msg` — `grantActivationTime`, `grantIssueTime` (models 3GPP's K_offset; unprefixed like the neighbouring `radioTransmitterId` fields, since the concept is general and only unused terrestrially)
 
 Scenarios:
 
