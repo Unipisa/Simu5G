@@ -25,10 +25,8 @@ void NtnSchedulerGnbUl::initialize(int stage)
 {
     NrSchedulerGnbUl::initialize(stage);
 
-    // INITSTAGE_SIMU5G_AMC_SETUP is where the parent resolves mac_; it is null before that.
+    // mac_ is null before INITSTAGE_SIMU5G_AMC_SETUP, where the parent resolves it.
     if (stage == INITSTAGE_SIMU5G_AMC_SETUP) {
-        // The suppression window is measured in the reception slots that NtnNrMacGnb
-        // books, so this scheduler is only meaningful under that MAC.
         if (dynamic_cast<NtnNrMacGnb *>(mac_.get()) == nullptr)
             throw cRuntimeError("NtnSchedulerGnbUl::initialize - %s is used by a MAC that is not an "
                     "NtnNrMacGnb. This scheduler suppresses a retransmission grant until the previous "
@@ -45,9 +43,6 @@ unsigned int NtnSchedulerGnbUl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrier
     if (!mac->ntnGrantTimingReady())
         return NrSchedulerGnbUl::schedulePerAcidRtx(nodeId, carrierFrequency, cw, acid, bandLim, antenna, limitBl);
 
-    // Counted in this carrier's slots, matching how the grant's activation time will be
-    // computed when it is stamped -- and ntnGrantedRtx_ is already keyed by carrier, so
-    // two carriers never compare slot numbers from different grids.
     int64_t target = mac->ntnTargetSlotFor(carrierFrequency);
     auto& granted = ntnGrantedRtx_[carrierFrequency][nodeId];
     auto key = std::make_pair(acid, cw);
@@ -55,11 +50,6 @@ unsigned int NtnSchedulerGnbUl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrier
 
     if (outstanding != granted.end()) {
         if (target < outstanding->second) {
-            // A receive process stays corrupted until its retransmission physically
-            // arrives, which over a satellite link is a whole round trip rather than the
-            // two slots this loop was written for. Without this the gNodeB would grant
-            // the same process again in every slot of that round trip -- hundreds of
-            // grants, each booking resource blocks, for one transport block.
             EV << NOW << " NtnSchedulerGnbUl::schedulePerAcidRtx - UE " << nodeId << " acid " << (int)acid
                << " cw " << cw << " already has a retransmission granted; suppressed until reception slot "
                << outstanding->second << endl;
@@ -67,20 +57,14 @@ unsigned int NtnSchedulerGnbUl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrier
             return 0;
         }
 
-        // The outstanding retransmission has been heard by now. If the process is still
-        // corrupted the parent will grant again, and this entry is replaced below.
-        granted.erase(outstanding);
+        granted.erase(outstanding); // heard by now; parent re-grants below if still corrupted
     }
 
     unsigned int rtxBytes = NrSchedulerGnbUl::schedulePerAcidRtx(nodeId, carrierFrequency, cw, acid,
             bandLim, antenna, limitBl);
 
-    if (rtxBytes > 0) {
-        // The retransmission arrives in the slot being booked now. The gNodeB only knows
-        // whether it succeeded once it has reached that slot, which is a further offset
-        // ahead of the slot it is booking today.
-        granted[key] = target + mac->ntnGrantOffsetSlotsFor(carrierFrequency);
-    }
+    if (rtxBytes > 0)
+        granted[key] = target + mac->ntnGrantOffsetSlotsFor(carrierFrequency); // known by one offset later
 
     return rtxBytes;
 }

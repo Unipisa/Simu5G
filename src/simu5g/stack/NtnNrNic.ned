@@ -20,12 +20,7 @@ module NtnNrNic extends NrNicEnb
     parameters:
         ip2nic.typename = default("simu5g.stack.ip2nic.NtnIp2Nic");
 
-        // Measures whether uplink data is reaching this cell at all, which over a
-        // satellite link is the first thing to establish when it under-delivers. The
-        // random-access and buffer-status-report counters need no gNodeB counterpart:
-        // only the UE counts them, and pendingRacRequests_ is drained unconditionally
-        // at the top of every slot, so preamble-to-grant turnaround here is zero slots.
-        // See ~NtnNrMacGnb.
+        // Grant timing and uplink reception measurement; see ~NtnNrMacGnb.
         mac.typename = default("NtnNrMacGnb");
         phy.typename = default("NtnPhyGnb");
 

@@ -149,9 +149,8 @@ class UserControlInfo extends LteControlInfo {
     MacNodeId radioReceiverId = NODEID_NONE;            // Actual receiver of the current wireless hop
     IAntennaModel* radioTransmitterAntenna;             // Pointer to the radio transmitter antenna (for rx power computation at the receiver side)
 
-    // Models 3GPP's K_offset: the time from which a grant becomes usable, separate from
-    // when it was received. Zero, the default, means "valid on receipt" and is what every
-    // terrestrial scenario leaves it at, since propagation delay there is negligible.
+    // Models 3GPP's K_offset (TS 38.213): time from which a grant becomes usable. Zero
+    // means "valid on receipt", the terrestrial default.
     simtime_t grantActivationTime = 0;                  // Absolute time from which an uplink grant may be used
     simtime_t grantIssueTime = 0;                       // When the grant was issued; lets the receiver measure true grant-to-transmission latency
 

@@ -69,10 +69,8 @@ void NtnChannelModel::initialize(int stage)
                     << "dynamicLos, fixedLos, insideBuilding, shadowing, and fading parameters are ignored" << endl;
         }
 
-        // Caught here, at configuration time, rather than where the wrong answer would be
-        // produced. The map is harmless to populate -- it is written whenever D2D
-        // interference is enabled, which is the default -- and only wrong once consumed,
-        // so aborting on the write would abort every NTN run instead.
+        // Caught at configuration time, not on the write: the map is harmless to
+        // populate (D2D interference writes it by default) and only wrong once read.
         if (isUplinkInterferenceEnabled() && !par("ntnAllowUplinkInterference").boolValue())
             throw cRuntimeError("NtnChannelModel::initialize - %s has uplinkInterference enabled on a "
                     "satellite link. Uplink interference is computed from Binder::getUlTransmissionMap(), "
@@ -84,15 +82,10 @@ void NtnChannelModel::initialize(int stage)
                     "ntnAllowUplinkInterference=true to proceed with a knowingly wrong neighbour set.",
                     getFullPath().c_str());
 
-        // Same failure on the downlink side, a different mechanism. computeDownlinkInterference()
-        // compares this cell's current- or previous-slot resource-block booking against every
-        // other cell's own booking (LteMacEnb::getDlBandStatus()/getDlPrevBandStatus(), read
-        // directly from each gNodeB's allocator rather than through the Binder), with the same
-        // unstated assumption as the uplink case: a booking from one slot ago is what is
-        // arriving at the UE now. A satellite's downlink transmission from one slot ago is not
-        // what is arriving now. enableDownlinkInterference_ is read directly rather than through
-        // an accessor because LteRealisticChannelModel exposes one for uplink and D2D but never
-        // needed one for downlink before this.
+        // Same failure, downlink side, different mechanism: computeDownlinkInterference()
+        // compares this cell's booking against other cells' via LteMacEnb::getDlBandStatus()/
+        // getDlPrevBandStatus() rather than the Binder. No accessor exists for this flag
+        // (unlike uplink/D2D), so it is read directly.
         if (enableDownlinkInterference_ && !par("ntnAllowDownlinkInterference").boolValue())
             throw cRuntimeError("NtnChannelModel::initialize - %s has downlinkInterference enabled on a "
                     "satellite link. Downlink interference is computed by comparing this cell's own "

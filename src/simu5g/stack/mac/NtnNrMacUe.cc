@@ -42,22 +42,12 @@ void NtnNrMacUe::handleSelfMessage()
     // coverage structural: this runs before checkRAC() latches raRespTimer_, and before all
     // three sites that latch bsrRtxTimer_, in the same slot.
     refreshNtnCounters();
-
-    // Before the parent, so a grant that becomes valid in this slot is already
-    // installed when the parent looks for one.
     promoteDueGrants();
 
     NrMacUe::handleSelfMessage();
 
-    // Sampled here, which is BEFORE this slot's own transport block is inserted:
-    // macSduRequest() only asks RLC for the SDUs, and the PDU is built and inserted
-    // by handleUpperMessage() in a later event of the same instant. That is the point
-    // worth sampling rather than an accident of placement -- occupancy equal to the
-    // pool size here is exactly the condition under which firstAvailable() will return
-    // no unit and macPduMake() will drop the PDU.
-    //
-    // The grant is still installed: flushHarqBuffers(), which clears it, runs later in
-    // the same instant on the priority-1 self message.
+    // Before this slot's own PDU is inserted (macSduRequest() only requests it; the
+    // grant is still installed until flushHarqBuffers() later this instant).
     emitNtnHarqTxState();
 }
 
@@ -125,19 +115,15 @@ void NtnNrMacUe::refreshNtnCounters()
 
 void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
 {
-    // Read before the parent runs: it deletes the packet, and the tag with it.
+    // Read before the parent deletes the packet.
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto userInfo = pkt->getTag<UserControlInfo>();
     GHz carrierFrequency = userInfo->getCarrierFrequency();
     simtime_t activationTime = userInfo->getGrantActivationTime();
 
-    // The parent installs the grant and clears racRequested_. Clearing that on receipt
-    // is correct and must not be deferred: the grant is the answer to the preamble
-    // whatever slot it turns out to be valid for.
     NrMacUe::macHandleGrant(pktAux);
 
-    // Zero means "valid on receipt", which is the terrestrial semantics and what every
-    // gNodeB sends until the uplink grant offset is switched on. Nothing to hold.
+    // Zero = valid on receipt, the terrestrial default. Nothing to hold.
     if (activationTime == SIMTIME_ZERO)
         return;
 
@@ -146,12 +132,8 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
         return;
 
     if (activationTime < NOW) {
-        // The grant is for a slot that has already gone. This is the causality failure
-        // the activation time exists to prevent: the gNodeB booked resource blocks the
-        // UE could not reach in time, so the offset does not cover this UE's delay. No
-        // opt-out: a UE that quietly used such a grant would transmit on blocks
-        // belonging to another slot, and the error would surface much later as
-        // unexplained loss.
+        // Causality failure: the gNodeB booked blocks this UE could not reach in time.
+        // No opt-out -- using it would transmit on another slot's blocks.
         throw cRuntimeError("NtnNrMacUe::macHandleGrant - UE %hu received a grant at t=%gs whose "
                 "activation time was t=%gs, %gms in the past. The uplink grant offset does not cover "
                 "this UE's round-trip delay, so the gNodeB is booking resource blocks for a slot the "
@@ -160,7 +142,7 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
     }
 
     if (activationTime == NOW)
-        return; // usable in this very slot, no need to hold it
+        return; // usable now, no need to hold it
 
     auto& pending = pendingGrants_[carrierFrequency];
 
@@ -169,41 +151,29 @@ void NtnNrMacUe::macHandleGrant(cPacket *pktAux)
                 "t=%gs. Two grants cannot be valid in the same slot on one carrier: the gNodeB booked "
                 "one reception slot twice.", num(nodeId_), activationTime.dbl());
 
-    // Held out of the active slot until its time. flushHarqBuffers() clears only the
-    // active grant, so what is parked here survives the slot.
-    it->second = nullptr;
+    it->second = nullptr; // parked here; flushHarqBuffers() only clears the active slot
 
     emit(ntnGrantHoldTimeSignal_, activationTime - NOW);
 }
 
 void NtnNrMacUe::promoteDueGrants()
 {
-    // Guaranteed positive: refreshNtnCounters(), which throws otherwise, already ran
-    // earlier in this same slot's handleSelfMessage().
+    // Positive: refreshNtnCounters() already validated the NTN association this slot.
     simtime_t cellRoundTripDelay = ntnCellRoundTripDelay(binder_.get(), cellId_);
 
     unsigned int outstanding = 0;
 
     for (auto& [carrierFrequency, pending] : pendingGrants_) {
-        // upper_bound(NOW) is the first grant that is still in the future, so everything
-        // before it is due.
+        // Everything before upper_bound(NOW) is due.
         auto notYetDue = pending.upper_bound(NOW);
 
         if (notYetDue != pending.begin()) {
             auto due = std::prev(notYetDue);
 
-            // Exactly one grant may come due per tick, and more than one is a defect
-            // rather than something to arbitrate between.
-            //
-            // Consecutive grants for a carrier activate exactly one of that carrier's
-            // slots apart, because the gNodeB books one reception slot per carrier slot
-            // and subtracts the same uplink slot count from each, computed fresh from
-            // this UE's exact current geometry every time -- so a later-booked grant
-            // cannot activate earlier than an earlier one. This UE ticks at its own
-            // highest numerology, which is at least as often as any carrier it is on. Two
-            // coming due together therefore means this UE missed a tick. Using the newest
-            // and discarding the rest would hide that, and would transmit on resource
-            // blocks booked for a slot the discarded grant owned.
+            // Exactly one grant may come due per tick: consecutive grants for a carrier
+            // activate one carrier-slot apart, and this UE ticks at least that often.
+            // More than one means a missed tick, not something to arbitrate between --
+            // using the newest would transmit on blocks a discarded grant owned.
             unsigned int dueCount = std::distance(pending.begin(), notYetDue);
             if (dueCount > 1)
                 throw cRuntimeError("NtnNrMacUe::promoteDueGrants - UE %hu has %u grants due at once on "
@@ -218,16 +188,9 @@ void NtnNrMacUe::promoteDueGrants()
             pending.erase(pending.begin(), notYetDue);
         }
 
-        // Runaway detector, not a design limit, and derived rather than configured: hold
-        // time is bounded by this carrier's grant offset, D slots (see ~NtnNrMacGnb), and
-        // exactly one grant is issued per carrier-slot, so at most D are ever legitimately
-        // outstanding at once -- a sliding window of that size. A fixed number would
-        // eventually be wrong, since the legitimate maximum scales with orbit and
-        // numerology (thousands of slots at GEO, a handful at LEO); doubled for margin --
-        // start-up transients, and the k2 processing delay the gNodeB may add on top of
-        // the round trip, which this UE has no direct visibility into -- rather than
-        // exposed as a parameter, since that margin is an implementation safety factor,
-        // not a scenario choice.
+        // Runaway detector, derived not configured: at most D grants (the carrier's
+        // offset, ~NtnNrMacGnb) are ever legitimately outstanding, doubled for margin
+        // (start-up transients, k2 this UE cannot see directly).
         double slotDuration = binder_->getSlotDurationFromNumerologyIndex(
                 binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
         unsigned int limit = 2 * ntnDurationToSlots(cellRoundTripDelay.dbl(), slotDuration);
@@ -251,18 +214,13 @@ void NtnNrMacUe::emitNtnHarqTxState()
     unsigned int occupied = 0;
     unsigned int total = 0;
 
-    // Every transmit buffer, summed. harqTxBuffers_ is keyed by destination, so with
-    // D2D enabled it would also hold peer-UE buffers, and with carrier aggregation the
-    // sum spans carriers whose slots do not coincide. Neither happens on the NTN path
-    // -- one carrier, one destination, the serving gNodeB -- and both would need this
-    // split per destination and per carrier to stay meaningful.
+    // Summed over all transmit buffers; fine on the NTN path (one carrier, one
+    // destination -- would need splitting for D2D or carrier aggregation).
     for (const auto& [carrierFrequency, buffers] : harqTxBuffers_) {
         for (const auto& [destinationId, buffer] : buffers) {
             unsigned int processes = buffer->getNumProcesses();
             total += processes;
             for (unsigned int process = 0; process < processes; ++process) {
-                // A process counts as occupied whenever it is not empty, which is the
-                // condition under which firstAvailable() will not hand it out.
                 if (!buffer->getProcess(process)->isEmpty())
                     ++occupied;
             }
@@ -271,9 +229,7 @@ void NtnNrMacUe::emitNtnHarqTxState()
 
     emit(ntnHarqTxOccupancySignal_, occupied);
 
-    // Only meaningful on a slot where the UE actually had something to transmit with.
-    // A UE with no grant is not stalled on HARQ, it is waiting on the grant loop, and
-    // conflating the two is exactly the attribution this statistic exists to make.
+    // A UE with no grant is waiting on the grant loop, not stalled on HARQ.
     bool holdsGrant = false;
     for (const auto& [carrierFrequency, grant] : schedulingGrant_) {
         if (grant != nullptr) {

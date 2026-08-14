@@ -89,14 +89,9 @@ int ntnHarqTransmissions(omnetpp::cSimpleModule *entity);
 inline bool ntnTimerIsDerived(omnetpp::simtime_t value) { return value < SIMTIME_ZERO; }
 
 //
-// Rounds a duration up to a whole number of slots.
-//
-// The NTN parameters are expressed in time so that they stay correct under any numerology, while
-// the MAC counts slots; rounding up keeps a value from ever coming out shorter than the delay it
-// has to cover. The epsilon keeps a duration that is already a whole number of slots from being
-// pushed to the next one by representation error -- 0.542 + 0.040 does not divide exactly by
-// 0.001. At a 1ms slot it is worth a nanosecond, far below anything these values express.
-//
+// Rounds a duration up to a whole number of slots, so a derived value never comes out
+// shorter than the delay it has to cover. The epsilon absorbs representation error at
+// exact slot-count boundaries.
 inline unsigned int ntnDurationToSlots(double seconds, double slotDuration)
 {
     return static_cast<unsigned int>(std::ceil(seconds / slotDuration - 1e-6));

@@ -155,46 +155,21 @@ module NtnNrMacUe extends NrMacUe
 
         double ntnRacBackoffMin @unit(s) = default(0s);
 
-        // Attribution for a run that under-delivers. Delivery counters alone cannot tell a
-        // HARQ stall from a RAC storm from an RLC timeout, and over a satellite link all
-        // three look the same from the application. These two separate the first of them:
-        // ntnHarqTxOccupancy is the level, ntnHarqTxStall is the loss it causes.
-        //
-        // This is the occupancy that scales with the round trip. With uplink feedback
-        // enabled a transmit process is held until its feedback returns, so the pool sits
-        // full whenever the N * TBS / RTT ceiling binds. The gNodeB's receive-side
-        // occupancy is a decode budget and does NOT scale; see ~NtnNrMacGnb.
-        //
-        // ntnHarqTxStall is sampled only on slots where the UE holds a grant, so its mean
-        // reads as "fraction of usable slots lost to a full HARQ pool". A UE with no grant
-        // is not stalled on HARQ -- it is waiting on the buffer-status-report and grant
-        // round trip, which is a different problem with a different fix. Note a periodic
-        // grant that skips the slot still counts as a granted slot here; no scenario on
-        // this branch uses periodic grants, since the gNodeB never sets one.
-        //
-        // Recorded as scalars only. Both are sampled every slot, so asking for a vector
-        // costs one point per slot per UE; a scenario that wants the time series should
-        // enable it from the ini rather than paying for it in every run.
+        // Distinguishes a HARQ stall from a RAC storm or RLC timeout, which otherwise
+        // look identical from delivery counters alone. ntnHarqTxOccupancy is the level
+        // (scales with the round trip while a process awaits feedback; the gNodeB's
+        // receive-side occupancy, ~NtnNrMacGnb, does not); ntnHarqTxStall is the loss it
+        // causes, sampled only on granted slots so its mean is the fraction lost to a
+        // full pool. Scalars only -- both are sampled every slot.
         @signal[ntnHarqTxOccupancy];
         @statistic[ntnHarqTxOccupancy](title="Occupied transmit HARQ processes at the UE"; unit=""; source="ntnHarqTxOccupancy"; record=mean,max);
         @signal[ntnHarqTxStall];
         @statistic[ntnHarqTxStall](title="Granted slots lost to a full transmit HARQ pool"; unit=""; source="ntnHarqTxStall"; record=mean,sum);
 
-        // Exactly one held grant may come due per tick, and more than one aborts the run
-        // rather than being arbitrated between. Consecutive grants for a carrier activate
-        // one of that carrier's slots apart -- the gNodeB books one reception slot per
-        // carrier slot and subtracts the same uplink slot count from each, computed fresh
-        // from this UE's exact current geometry every time -- while this UE ticks at its
-        // own highest numerology, which is at least as often as any carrier it is on. Two
-        // at once therefore means this UE missed a tick. Picking the newest and discarding
-        // the rest would hide that, and would transmit on resource blocks booked for the
-        // slot the discarded grant owned.
-        //
-        // A second check in the same place, promoteDueGrants() in the .cc, catches grants
-        // that are never consumed at all. It has no NED parameter: the legitimate maximum
-        // scales with orbit and numerology, so it is derived from the cell round-trip
-        // delay rather than configured, and a fixed number would eventually be wrong for
-        // one of them.
+        // promoteDueGrants() (.cc) aborts if more than one held grant comes due per tick
+        // (a missed tick, not something to arbitrate between) or if more accumulate than
+        // a round trip can legitimately hold (derived from the cell round-trip delay,
+        // not configured, since the legitimate maximum scales with orbit and numerology).
 
         @signal[ntnGrantHoldTime];
         @statistic[ntnGrantHoldTime](title="Time a grant is held before it becomes valid"; unit="s"; source="ntnGrantHoldTime"; record=mean,max);

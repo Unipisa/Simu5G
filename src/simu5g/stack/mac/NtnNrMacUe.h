@@ -39,37 +39,28 @@ typedef std::map<omnetpp::simtime_t, inet::IntrusivePtr<const LteSchedulingGrant
 class NtnNrMacUe : public NrMacUe
 {
   protected:
-    // Transmit HARQ processes at this UE holding a transport block. With uplink feedback
-    // enabled a process stays occupied until its feedback returns, i.e. for a whole round
-    // trip, so this is the occupancy that decides whether the uplink is process-limited.
-    // Sampled before this slot's own PDU is inserted; see emitNtnHarqTxState().
+    // Transmit HARQ occupancy: scales with the round trip, unlike the gNodeB's
+    // receive-side occupancy (~NtnNrMacGnb). Sampled before this slot's own PDU is
+    // inserted, i.e. exactly when firstAvailable() would fail.
     static omnetpp::simsignal_t ntnHarqTxOccupancySignal_;
-
-    // Emitted once per slot in which the UE holds a grant: 1 if every transmit process
-    // was busy, 0 otherwise. Sampled only on granted slots, so its mean reads as the
-    // fraction of usable slots lost to a full pool rather than of wall-clock time.
     static omnetpp::simsignal_t ntnHarqTxStallSignal_;
 
-    // Time a grant spent held before becoming usable, and how many are outstanding.
     static omnetpp::simsignal_t ntnGrantHoldTimeSignal_;
     static omnetpp::simsignal_t ntnPendingGrantsSignal_;
 
-    // Grants received but not yet valid, per carrier, ordered by activation time.
-    // A container is needed rather than the single slot schedulingGrant_ offers: the
-    // gNodeB issues one grant per slot while the UE holds each for the better part of
-    // a round trip, so many are outstanding at once and the inherited single slot
-    // would keep only the last.
+    // Grants received but not yet valid, per carrier, ordered by activation time. The
+    // gNodeB issues one grant per slot and holds each for most of a round trip, so many
+    // are outstanding; the inherited schedulingGrant_ keeps only the last.
     std::map<inet::GHz, PendingGrantsByActivation> pendingGrants_;
 
     void handleSelfMessage() override;
     void macHandleRac(omnetpp::cPacket *pkt) override;
 
-    // Holds a grant that is not yet valid, instead of letting the inherited
-    // implementation make it usable on receipt.
+    // Holds a grant until its activation time instead of using it on receipt.
     void macHandleGrant(omnetpp::cPacket *pkt) override;
 
-    // Installs any held grant whose activation time has arrived. Called at the start
-    // of every slot, before the inherited implementation looks for one.
+    // Installs any held grant whose activation time has arrived, before the inherited
+    // implementation looks for one.
     void promoteDueGrants();
 
     // Re-derives the inherited slot counts from the cell's current round-trip delay. Called at
@@ -77,8 +68,6 @@ class NtnNrMacUe : public NrMacUe
     // latch one of them, so a procedure always starts from a value valid at that moment.
     void refreshNtnCounters();
 
-    // Walks the uplink HARQ transmit buffers and emits their occupancy, and whether a
-    // grant went unused because the pool was full. Read-only.
     void emitNtnHarqTxState();
 };
 

@@ -31,15 +31,14 @@ class NtnSchedulerGnbUl : public NrSchedulerGnbUl
   protected:
     static omnetpp::simsignal_t ntnRtxGrantsSuppressedSignal_;
 
-    // Per carrier, per UE, per (process, codeword): the earliest reception slot at
-    // which a further retransmission grant may be issued, i.e. the first slot by which
-    // the outstanding one will have been heard.
+    // Per carrier, per UE, per (process, codeword): earliest reception slot at which a
+    // further retransmission grant may be issued.
     std::map<inet::GHz, std::map<MacNodeId, std::map<std::pair<unsigned char, Codeword>, int64_t>>> ntnGrantedRtx_;
 
     void initialize(int stage) override;
 
-    // Returns zero -- which the caller reads as "not scheduled" -- while this process
-    // already has a retransmission grant that has not had time to arrive.
+    // Returns zero ("not scheduled") while a retransmission grant for this process is
+    // already in flight.
     unsigned int schedulePerAcidRtx(MacNodeId nodeId, GHz carrierFrequency, Codeword cw, unsigned char acid,
             std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false) override;
 };

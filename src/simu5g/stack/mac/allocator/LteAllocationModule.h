@@ -171,15 +171,12 @@ class LteAllocationModule
     std::vector<std::vector<AllocatedRbsPerBandMap>> allocatedRbsPerBand_;
 
     /*
-     * Stores the block-allocation info of the previous TTI in order to use it for interference computation
+     * Stores the block-allocation info of the previous TTI in order to use it for interference computation.
      *
-     * Read only through getInterferingBlocks(), whose one caller reads the DOWNLINK
-     * allocator. Do not extend that pattern to the uplink by analogy: on an NTN cell the
-     * uplink allocator books each slot for the slot in which the granted transmission
-     * will be heard, a round trip ahead (see ~NtnNrMacGnb), so "the previous TTI" here
-     * means the allocation for a reception slot still in the future. Uplink interference
-     * is computed from Binder::getUlTransmissionMap() instead, and making that correct
-     * over a satellite link is item 6 of ntn-implementation.md.
+     * Only read via getInterferingBlocks(), whose one caller reads the DOWNLINK allocator.
+     * Do not copy that pattern to uplink: on an NTN cell the uplink allocator books each
+     * slot for a reception slot a round trip ahead (see ~NtnNrMacGnb), so this is not
+     * "the previous TTI" there. Uplink interference uses Binder::getUlTransmissionMap().
      */
     std::vector<std::vector<AllocatedRbsPerBandMap>> prevAllocatedRbsPerBand_;
 
