@@ -91,18 +91,11 @@ module NtnNrMacGnb extends NrMacGnb
         // only the broadcast bound exists, and using a per-UE value there would model a
         // network that knew a UE's range before it connected. Set false to use the cell
         // bound throughout.
+        //
+        // Read fresh every time a grant is stamped rather than latched: this is exact
+        // geometry available on demand, not real assistance data with a validity window
+        // to respect, so caching it would only make it possible to use a stale value.
         bool ntnPerUeGrantTiming = default(true);
-
-        // How long a per-UE delay stays usable before it is read again, after the
-        // specification's ntn-UlSyncValidityDuration. Latching rather than reading every
-        // slot is what a real UE does; a geostationary cell never needs the refresh, and
-        // a low-orbit one drifts slowly enough that one second is ample.
-        double ntnUlSyncValidityDuration @unit(s) = default(1s);
-
-        // How far a UE's delay may move between two reads before the run aborts. Grants
-        // issued from the previous value are still in flight, and if the geometry has
-        // moved further than this they would activate in the wrong slot.
-        int ntnGrantTimingMarginSlots = default(2);
 
         // A receive process stays corrupted until its retransmission arrives, which over
         // a satellite link is a whole round trip rather than the two slots the inherited

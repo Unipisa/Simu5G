@@ -142,7 +142,7 @@ void NtnNrMacGnb::refreshNtnGrantTiming()
     // on demand, from this value and the time -- see ntnTargetSlotFor().
 }
 
-simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId, double slotDuration)
+simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId)
 {
     // A UE the gNodeB has never heard from gets the cell-wide bound. Using its own delay
     // earlier would model a network that knew a UE's range before it connected, which is
@@ -151,40 +151,13 @@ simtime_t NtnNrMacGnb::ntnRoundTripDelayFor(MacNodeId ueId, double slotDuration)
     if (!par("ntnPerUeGrantTiming").boolValue() || ntnHeardFrom_.find(ueId) == ntnHeardFrom_.end())
         return ntnCellRoundTripDelay_;
 
-    simtime_t validity = par("ntnUlSyncValidityDuration").doubleValue();
-    auto cached = ntnUeRoundTripDelay_.find(ueId);
-
-    if (cached != ntnUeRoundTripDelay_.end() && NOW - cached->second.second < validity)
-        return cached->second.first;
-
-    // Latched rather than read every slot. A real UE fixes these durations when the
-    // procedure starts, and ntn-UlSyncValidityDuration is the specification's own bound
-    // on how long assistance data stays usable.
+    // Read fresh on every call rather than latched. A real UE would fix this at the start
+    // of a procedure and rely on assistance data staying valid for a while, but this is
+    // exact geometry available on demand: nothing is gained by caching it, and a cached
+    // value could only be less accurate than reading it again.
     simtime_t measured = ntnRoundTripDelay(binder_.get(), getMacCellId(), ueId);
 
-    if (measured <= SIMTIME_ZERO)
-        return ntnCellRoundTripDelay_;
-
-    if (cached != ntnUeRoundTripDelay_.end()) {
-        long margin = par("ntnGrantTimingMarginSlots").intValue();
-        double moved = std::fabs((measured - cached->second.first).dbl());
-        if (moved > margin * slotDuration)
-            throw cRuntimeError("NtnNrMacGnb::ntnRoundTripDelayFor - the round-trip delay of UE %hu moved "
-                    "by %gms (%g slots of %gms) over the %gms since it was last read, more than the %ld "
-                    "slots ntnGrantTimingMarginSlots allows. Grants issued from the old value are still in "
-                    "flight and would activate in the wrong slot. Shorten ntnUlSyncValidityDuration, or "
-                    "raise ntnGrantTimingMarginSlots if the geometry really does move this fast.",
-                    num(ueId), moved * 1000.0, moved / slotDuration, slotDuration * 1000.0,
-                    (NOW - cached->second.second).dbl() * 1000.0, margin);
-    }
-
-    ntnUeRoundTripDelay_[ueId] = {measured, NOW};
-
-    EV_INFO << "NtnNrMacGnb::ntnRoundTripDelayFor - cell " << getMacCellId() << " read UE " << ueId
-            << " round-trip delay[" << measured.dbl() * 1000.0 << "ms] against cell bound["
-            << ntnCellRoundTripDelay_.dbl() * 1000.0 << "ms]" << endl;
-
-    return measured;
+    return measured > SIMTIME_ZERO ? measured : ntnCellRoundTripDelay_;
 }
 
 void NtnNrMacGnb::macPduUnmake(cPacket *pktAux)
@@ -227,7 +200,7 @@ void NtnNrMacGnb::sendLowerPackets(cPacket *pktAux)
         // to arrive in it. Rounding up puts the transmission a fraction of a slot early
         // rather than late, which is the side to err on when the arrival decides which
         // slot's blocks are used.
-        long uplinkSlots = ntnDurationToSlots(ntnRoundTripDelayFor(ueId, slotDuration).dbl() / 2.0, slotDuration);
+        long uplinkSlots = ntnDurationToSlots(ntnRoundTripDelayFor(ueId).dbl() / 2.0, slotDuration);
         simtime_t activation = (targetSlot - uplinkSlots) * slotDuration;
 
         userInfo->setGrantActivationTime(activation);

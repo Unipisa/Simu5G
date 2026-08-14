@@ -197,23 +197,20 @@ void NtnNrMacUe::promoteDueGrants()
             //
             // Consecutive grants for a carrier activate exactly one of that carrier's
             // slots apart, because the gNodeB books one reception slot per carrier slot
-            // and subtracts the same uplink slot count from each; and this UE ticks at
-            // its own highest numerology, which is at least as often as any carrier it
-            // is on. So two coming due together means one of the assumptions underneath
-            // that has failed -- most likely grants issued out of order, which happens
-            // if this UE's round-trip delay moved far enough between two of the gNodeB's
-            // refreshes to change its uplink slot count by more than one, making a
-            // later-booked grant activate earlier than an earlier-booked one. Using the
-            // newest and discarding the rest would hide that, and would transmit on
-            // resource blocks booked for a slot the discarded grant owned.
+            // and subtracts the same uplink slot count from each, computed fresh from
+            // this UE's exact current geometry every time -- so a later-booked grant
+            // cannot activate earlier than an earlier one. This UE ticks at its own
+            // highest numerology, which is at least as often as any carrier it is on. Two
+            // coming due together therefore means this UE missed a tick. Using the newest
+            // and discarding the rest would hide that, and would transmit on resource
+            // blocks booked for a slot the discarded grant owned.
             unsigned int dueCount = std::distance(pending.begin(), notYetDue);
             if (dueCount > 1)
                 throw cRuntimeError("NtnNrMacUe::promoteDueGrants - UE %hu has %u grants due at once on "
                         "carrier %gGHz, activating between t=%gs and t=%gs. Only one can be: the gNodeB "
-                        "books one reception slot per slot of that carrier, and this UE ticks at least as "
-                        "often as the carrier does. Either grants were issued out of order -- check "
-                        "ntnGrantTimingMarginSlots on the gNodeB, which bounds how far a UE's round-trip "
-                        "delay may move between refreshes -- or this UE missed a tick.",
+                        "books one reception slot per slot of that carrier, using that carrier's exact "
+                        "current geometry each time, and this UE ticks at least as often as the carrier "
+                        "does. This UE most likely missed a tick.",
                         num(nodeId_), dueCount, carrierFrequency.get(),
                         pending.begin()->first.dbl(), due->first.dbl());
 

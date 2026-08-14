@@ -69,10 +69,9 @@ class NtnNrMacGnb : public NrMacGnb
     std::map<inet::GHz, double> ntnCarrierSlotDuration_;
     std::map<inet::GHz, long> ntnGrantOffsetSlots_;
 
-    // UEs this gNodeB has actually heard from, and their latched round-trip delays.
-    // Before a UE is in here only the cell-wide bound exists for it.
+    // UEs this gNodeB has actually heard from. Before a UE is in here only the cell-wide
+    // bound exists for it.
     std::set<MacNodeId> ntnHeardFrom_;
-    std::map<MacNodeId, std::pair<omnetpp::simtime_t, omnetpp::simtime_t>> ntnUeRoundTripDelay_;
 
     void handleSelfMessage() override;
 
@@ -87,10 +86,9 @@ class NtnNrMacGnb : public NrMacGnb
     // refreshes there: the geometry it comes from does not exist during any init stage.
     void refreshNtnGrantTiming();
 
-    // Round-trip delay to use for a UE: its own once heard from, latched and refreshed
-    // no more often than ntnUlSyncValidityDuration, and the cell bound before that. The
-    // slot duration is the carrier's, since the drift margin is expressed in its slots.
-    omnetpp::simtime_t ntnRoundTripDelayFor(MacNodeId ueId, double slotDuration);
+    // Round-trip delay to use for a UE: its own once heard from, read fresh every call,
+    // and the cell bound before that.
+    omnetpp::simtime_t ntnRoundTripDelayFor(MacNodeId ueId);
 
     // Walks the uplink HARQ receive buffers and emits their occupancy. Read-only:
     // it inspects process status and changes nothing.

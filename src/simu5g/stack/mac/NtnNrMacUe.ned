@@ -183,12 +183,12 @@ module NtnNrMacUe extends NrMacUe
         // Exactly one held grant may come due per tick, and more than one aborts the run
         // rather than being arbitrated between. Consecutive grants for a carrier activate
         // one of that carrier's slots apart -- the gNodeB books one reception slot per
-        // carrier slot and subtracts the same uplink slot count from each -- while this UE
-        // ticks at its own highest numerology, which is at least as often as any carrier
-        // it is on. Two at once therefore means grants were issued out of order, which
-        // ntnGrantTimingMarginSlots on the gNodeB is what bounds. Picking the newest and
-        // discarding the rest would hide that, and would transmit on resource blocks
-        // booked for the slot the discarded grant owned.
+        // carrier slot and subtracts the same uplink slot count from each, computed fresh
+        // from this UE's exact current geometry every time -- while this UE ticks at its
+        // own highest numerology, which is at least as often as any carrier it is on. Two
+        // at once therefore means this UE missed a tick. Picking the newest and discarding
+        // the rest would hide that, and would transmit on resource blocks booked for the
+        // slot the discarded grant owned.
         //
         // A second check in the same place, promoteDueGrants() in the .cc, catches grants
         // that are never consumed at all. It has no NED parameter: the legitimate maximum
