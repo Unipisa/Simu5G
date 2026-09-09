@@ -284,7 +284,8 @@ double MecRTVideoStreamingReceiver::playoutFrame()
             EV << "The expected frame with number [" << expectedFrameDisplayed_ << "] is missing, the first frame number in the buffer has number [" << frameData.frameNumber << "]" << endl;
         }
         else if (frameData.frameNumber < expectedFrameDisplayed_) {
-            // for now it is a debug
+            // processPacket() discards segments of frames older than expectedFrameDisplayed_,
+            // so a frame below it can never reach the buffer
             throw cRuntimeError("The first frame in the buffer has a frame number [%d] lower than the expected one [%d]. This should not happen.", frameData.frameNumber, expectedFrameDisplayed_);
         }
     }
@@ -330,6 +331,14 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
 
     if (frameNumber <= lastFrameDisplayed_) {
         EV << "MecRTVideoStreamingReceiver::processPacket - received packet related to frame [" << frameNumber << "], but the last frame displayed is [" << lastFrameDisplayed_ << "] discarded" << endl;
+        return;
+    }
+    if (firstFrameDisplayed && frameNumber < expectedFrameDisplayed_) {
+        // The playout clock has already moved past this frame's slot (it was missing when
+        // its turn came, so expectedFrameDisplayed_ advanced while lastFrameDisplayed_
+        // did not). A late segment can no longer be displayed: buffering it would put a
+        // frame older than the next expected one at the head of the playout buffer.
+        EV << "MecRTVideoStreamingReceiver::processPacket - received packet related to frame [" << frameNumber << "], but the playout already expects frame [" << expectedFrameDisplayed_ << "]; late segment discarded" << endl;
         return;
     }
     else {
