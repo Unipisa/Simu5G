@@ -91,9 +91,14 @@ const LteSummaryFeedback& D2dAmcHelper::getFeedbackD2D(MacNodeId id, Remote ante
         EV << NOW << " LteAmc::getFeedbackD2D detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
+    // The per-carrier history is created lazily, as LteAmc::getHistory() does for UL/DL:
+    // before the first D2D feedback is pushed on this carrier there is no entry at all,
+    // and the first mode selection period can come before the first report.
+    std::map<MacNodeId, History_>& carrierHistory = d2dFeedbackHistory_[carrierFrequency];
+
     if (peerId == NODEID_NONE) {
         // we return the first feedback stored in the structure
-        for (const auto& [histNodeId, history] : d2dFeedbackHistory_.at(carrierFrequency)) {
+        for (const auto& [histNodeId, history] : carrierHistory) {
             if (histNodeId == NODEID_NONE) // skip fake UE 0
                 continue;
 
@@ -114,9 +119,28 @@ const LteSummaryFeedback& D2dAmcHelper::getFeedbackD2D(MacNodeId id, Remote ante
 
         // default feedback: when there is no feedback from peers yet (NOSIGNALCQI)
         if (peerId == NODEID_NONE)
-            return d2dFeedbackHistory_.at(carrierFrequency).at(NODEID_NONE).at(MACRO).at(0).at(txMode).get();
+            return noFeedbackD2D(carrierHistory, txMode);
     }
-    return d2dFeedbackHistory_.at(carrierFrequency).at(peerId).at(antenna).at(d2dNodeIndex_.at(id)).at(txMode).get();
+
+    auto peerIt = carrierHistory.find(peerId);
+    if (peerIt == carrierHistory.end() || peerIt->second.count(antenna) == 0)
+        throw cRuntimeError("D2dAmcHelper::getFeedbackD2D(): no D2D feedback history for peer %hu (antenna %s) on carrier %g GHz", num(peerId), dasToA(antenna).c_str(), carrierFrequency.get());
+    auto indexIt = d2dNodeIndex_.find(id);
+    if (indexIt == d2dNodeIndex_.end())
+        throw cRuntimeError("D2dAmcHelper::getFeedbackD2D(): node %hu is not attached to this D2D AMC", num(id));
+    return peerIt->second.at(antenna).at(indexIt->second).at(txMode).get();
+}
+
+const LteSummaryFeedback& D2dAmcHelper::noFeedbackD2D(std::map<MacNodeId, History_>& carrierHistory, TxMode txMode)
+{
+    // The fake UE 0 entry holds one never-filled summary buffer, whose get() reports
+    // NOSIGNALCQI. attachUserD2D() also creates it (with the rest of the peer histories);
+    // here it is created on demand for a carrier that has seen neither an attach nor a
+    // feedback yet.
+    std::vector<std::vector<LteSummaryBuffer>>& noneHistory = carrierHistory[NODEID_NONE][MACRO];
+    if (noneHistory.empty())
+        noneHistory.push_back(std::vector<LteSummaryBuffer>(UL_NUM_TXMODE, LteSummaryBuffer(fbhbCapacityD2D_, MAXCW, amc_->getSystemNumBands(), lb_, ub_)));
+    return noneHistory.at(0).at(txMode).get();
 }
 
 bool D2dAmcHelper::existTxParamsD2D(MacNodeId id, GHz carrierFrequency)

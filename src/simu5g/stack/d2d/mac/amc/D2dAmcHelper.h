@@ -61,6 +61,8 @@ class D2dAmcHelper
     // feedback management (ID2dAmc surface)
     void pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, GHz carrierFrequency);
     const LteSummaryFeedback& getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, GHz carrierFrequency);
+    // the NOSIGNALCQI summary handed out while a carrier has no D2D feedback yet
+    const LteSummaryFeedback& noFeedbackD2D(std::map<MacNodeId, History_>& carrierHistory, TxMode txMode);
 
     // D2D branch of the base tx-param routing seams
     bool existTxParamsD2D(MacNodeId id, GHz carrierFrequency);
