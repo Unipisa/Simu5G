@@ -23,9 +23,6 @@
 #include "simu5g/nodes/ExtCell.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 
-// Forward declaration
-class FlowDescriptor;
-
 namespace simu5g {
 
 using namespace omnetpp;
