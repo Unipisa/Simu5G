@@ -189,15 +189,20 @@ void QoSAwareScheduler::prepareSchedule()
     for (const auto& [node, cid] : bestCidPerNode)
         totalScore += cidInfo[cid].score;
 
-    std::map<MacCid, unsigned int> grantQuota;
+    // The quota is the NODE's, not the winning CID's: a node has one quota and
+    // any of its CIDs may be the one that consumes it. Keying it by CID left
+    // every other CID of a multi-CID node -- routine since uplink backlog is
+    // tracked per (UE, LCG) -- with no quota to be found, and Phase 3 then
+    // granted it uncapped.
+    std::map<MacNodeId, unsigned int> grantQuota;
     for (const auto& [node, cid] : bestCidPerNode) {
         double share = (totalScore > scoreEpsilon_)
             ? cidInfo[cid].score / totalScore
             : 1.0 / bestCidPerNode.size();
-        grantQuota[cid] = std::max(1u, static_cast<unsigned int>(cidInfo[cid].availableBytes * share));
+        grantQuota[node] = std::max(1u, static_cast<unsigned int>(cidInfo[cid].availableBytes * share));
         EV << NOW << " QoSAwareScheduler::Quota node=" << node << " cid=" << cid
            << " score=" << cidInfo[cid].score << " share=" << share
-           << " quota=" << grantQuota[cid] << "B" << endl;
+           << " quota=" << grantQuota[node] << "B" << endl;
     }
 
     // --- Phase 3: Grant in score order, capped to proportional quota ---
@@ -212,8 +217,8 @@ void QoSAwareScheduler::prepareSchedule()
         grantQueue.pop();
         MacCid cid = current.first;
 
-        auto qIt = grantQuota.find(cid);
-        unsigned int limit = (qIt != grantQuota.end()) ? qIt->second : UINT32_MAX;
+        // every scored CID's node has a quota: bestCidPerNode covers the nodes of cidInfo
+        unsigned int limit = grantQuota.at(cid.getNodeId());
 
         bool terminate = false, active = true, eligible = true;
         unsigned int granted = requestGrant(cid, limit, terminate, active, eligible);
