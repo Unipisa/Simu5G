@@ -88,7 +88,7 @@
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         f343-0300/tplx;c95b-10d2/tilx;8d56-10dc/~tNl;7ec4-11fd/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi -r 0,                5s,         7afe-164d/tplx;249b-a9f3/tilx;07ae-1dfe/~tNl;15f0-4dbc/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-5qiProfiles -r 0,    5s,         1bd3-d9e3/tplx;f922-c373/tilx;4fb3-41fd/~tNl;40d0-c514/sz, PASS,
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-Heavy -r 0,          5s,         e66e-a5b6/tplx;3f8e-7c9c/tilx;18e4-ff51/~tNl;fddc-7df6/sz, PASS,
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-Heavy -r 0,          5s,         f1e6-0d03/tplx;a421-515b/tilx;11c2-15c8/~tNl;7eae-1e58/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-NoOnDemand -r 0,     5s,         7afe-164d/tplx;249b-a9f3/tilx;07ae-1dfe/~tNl;15f0-4dbc/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-OnDemandDrb -r 0,    5s,         7afe-164d/tplx;1552-7aea/tilx;07ae-1dfe/~tNl;15f0-4dbc/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         8d9a-52cf/tplx;b1be-0ce5/tilx;6e58-411e/~tNl;b096-2a1f/sz, PASS,

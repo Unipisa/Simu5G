@@ -45,7 +45,7 @@ class QoSAwareScheduler : public LteScheduler
 
     // QoS weight parameters  TODO initialize from NED parameters
     double gbrMultiplier_ = 2.0;
-    double priorityBase_ = 10.0;       // weight contribution = priorityBase_ / (priorityLevel + 1)
+    double priorityBase_ = 10.0;       // weight contribution = priorityBase_ / priorityLevel (scale-free: only priority ratios matter)
     double delayUrgentMs_ = 10.0;      // delay budget thresholds (ms)
     double delayTightMs_ = 50.0;
     double delayLooseMs_ = 100.0;

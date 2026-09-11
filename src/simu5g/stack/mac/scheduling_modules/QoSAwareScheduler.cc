@@ -22,9 +22,23 @@ QoSAwareScheduler::QoSAwareScheduler(Binder* binder, double pfAlpha)
 
 double QoSAwareScheduler::computeQosWeight(const DrbQosProfile& e)
 {
+    // The scheduler weighs by the priority level, so a profile without a usable
+    // one cannot be scheduled meaningfully -- and the field's default 0 would
+    // otherwise silently outrank every legitimate priority.
+    if (e.priorityLevel < 1) {
+        std::ostringstream os;
+        os << e;
+        throw cRuntimeError("QoSAwareScheduler: DRB QoS profile {%s} has no usable priority level "
+                            "(the 3GPP range is 1..127): state qosPriorityLevel in the bearer's "
+                            "QoS profile, or use a predefined qci-*/5qi-* profile", os.str().c_str());
+    }
     double weight = 1.0;
     if (e.gbr) weight *= gbrMultiplier_;
-    weight *= priorityBase_ / (e.priorityLevel + 1);  // Lower priority level = higher weight
+    // Reciprocal in the priority level: lower level = higher weight, and the
+    // weight RATIO of two bearers depends only on the ratio of their priority
+    // values, so the QCI priority scale (1..9) and the 5QI scale (10..90, the
+    // same relative standing at 10x the numbers) discriminate identically.
+    weight *= priorityBase_ / e.priorityLevel;
     if (e.delayBudgetMs <= delayUrgentMs_) weight *= delayUrgentMultiplier_;
     else if (e.delayBudgetMs <= delayTightMs_) weight *= delayTightMultiplier_;
     else if (e.delayBudgetMs <= delayLooseMs_) weight *= delayLooseMultiplier_;

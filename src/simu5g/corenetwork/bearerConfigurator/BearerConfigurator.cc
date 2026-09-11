@@ -462,8 +462,13 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
             drb.qos.delayBudgetMs = v->doubleValue();
         if (const cValue *v = field("packetErrorRate"))
             drb.qos.packetErrorRate = v->doubleValue();
-        if (const cValue *v = field("qosPriorityLevel"))
-            drb.qos.priorityLevel = v->intValue();
+        if (const cValue *v = field("qosPriorityLevel")) {
+            long p = (long)v->intValue();
+            if (p < 1 || p > 127)
+                throw cRuntimeError("%s entry %d: invalid qosPriorityLevel %ld, must be 1..127 "
+                        "(the 3GPP priority level range; lower = more important)", paramName, i, p);
+            drb.qos.priorityLevel = (int)p;
+        }
 
         // rlcMode: stated by the definition, or derived from its QoS profile's packet
         // error rate -- a PER target HARQ alone cannot meet gets ARQ, the RAN-side

@@ -175,10 +175,12 @@ package simu5g.corenetwork.bearerConfigurator;
 // {coreNetwork: "5gc", ue: "ue[*]", drbId: 1, mappedQfis: [1, 2], profile: "5qi-1"}.
 // A drbProfiles entry may not redefine a predefined name. NOTE the spec's priority
 // scales (QCI 1..9, 5QI 10..90) differ from each other and from the small hand-picked
-// values older configurations use; the QoS-aware scheduler weights bearers by
-// 1/(qosPriorityLevel+1), and the default lcgPriorityBounds suit the 5QI scale
-// (single-digit priorities all land in LCG 0), so profiles from different scales
-// should not be mixed within one network.
+// values older configurations use. The QoS-aware scheduler weights bearers by
+// 1/qosPriorityLevel, so only priority RATIOS matter to it and the two spec catalogs
+// discriminate identically; but the absolute values still drive the lcgPriorityBounds
+// bucketing (whose defaults suit the 5QI scale: single-digit priorities all land in
+// LCG 0), so profiles from different scales still should not be mixed within one
+// network.
 //
 // Example (in an ini file):
 //
