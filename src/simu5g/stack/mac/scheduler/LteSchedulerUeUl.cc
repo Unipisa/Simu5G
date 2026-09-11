@@ -36,6 +36,7 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
 
     // clean up old scheduling decisions
     scheduleList_.clear();
+    scheduledBytesList_.clear();
 
     // get the grant
     const LteSchedulingGrant *grant = mac_->getSchedulingGrant(carrierFrequency_);
