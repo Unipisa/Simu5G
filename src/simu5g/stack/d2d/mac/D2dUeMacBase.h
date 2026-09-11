@@ -102,10 +102,11 @@ class D2dUeMacBase : public Base, public ID2dMacUe
 
     /// Extends the base by also clearing the D2D-multicast trigger, so that one
     /// appended BSR consumes whichever of the two triggers was pending.
-    void appendBsr(inet::Ptr<LteMacPdu> macPdu) override
+    int64_t appendBsr(inet::Ptr<LteMacPdu> macPdu) override
     {
-        Base::appendBsr(macPdu);
+        int64_t size = Base::appendBsr(macPdu);
         d2dUeHelper_.setBsrD2DMulticastTriggered(false);
+        return size;
     }
 
     /// A UE in D2D mode that is granted UL resources with nothing scheduled answers

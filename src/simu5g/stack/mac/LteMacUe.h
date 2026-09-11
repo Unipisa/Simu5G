@@ -164,9 +164,11 @@ class LteMacUe : public LteMacBase
     virtual inet::Packet *createUlMacPdu(MacCid destCid, GHz carrierFreq, MacNodeId destId);
 
     /// Appends a BSR control element reporting the UE's uplink backlog (fillBsr())
-    /// to the MAC PDU and resets the BSR trigger state. Called from macPduMake()
-    /// when isBsrPending().
-    virtual void appendBsr(inet::Ptr<LteMacPdu> macPdu);
+    /// to the MAC PDU and resets the BSR trigger state. Returns the total the
+    /// report states, so a caller that needs it reads what was reported instead of
+    /// computing the backlog a second time. Called from macPduMake() when
+    /// isBsrPending().
+    virtual int64_t appendBsr(inet::Ptr<LteMacPdu> macPdu);
 
     /// Whether it is this carrier's turn in the current TTI. The LTE MAC serves
     /// every carrier every TTI; the NR MAC overrides this with the numerology

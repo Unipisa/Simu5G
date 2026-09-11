@@ -632,8 +632,7 @@ void LteMacUe::macPduMake(MacCid cid)
                 // report the WHOLE remaining backlog, scheduled connections or not:
                 // this TTI's scheduling has already drained the virtual buffers, so
                 // what they hold now is exactly what the eNB still has to grant for
-                bsrSize = computeUlBsrSize();
-                appendBsr(macPdu);
+                bsrSize = appendBsr(macPdu);
                 bsrAlreadyMade = true;
             }
 
@@ -687,15 +686,17 @@ LteHarqBufferTx *LteMacUe::createTxHarqBuffer(MacNodeId destId, Direction dir)
 // commented-out block in v1.5.1:src/simu5g/stack/mac/LteMacUe.cc. It is written
 // against the old LteSchedulerUeUl::schedule and the pre-INET-packet-API data model,
 // so none of it compiles today: a record of the decision structure, not reusable code.
-void LteMacUe::appendBsr(inet::Ptr<LteMacPdu> macPdu)
+int64_t LteMacUe::appendBsr(inet::Ptr<LteMacPdu> macPdu)
 {
     MacBsr *bsr = new MacBsr();
     fillBsr(bsr);
+    int64_t size = bsr->getSize();
     macPdu->pushCe(bsr);
 
     bsrTriggered_ = false;
 
-    EV << "LteMacUe::macPduMake - BSR with size " << bsr->getSize() << " created" << endl;
+    EV << "LteMacUe::macPduMake - BSR with size " << size << " created" << endl;
+    return size;
 }
 
 void LteMacUe::macPduUnmake(cPacket *cpkt)
