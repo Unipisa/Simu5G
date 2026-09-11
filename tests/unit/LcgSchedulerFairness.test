@@ -1,0 +1,297 @@
+%description:
+
+Grant division of the UE-side uplink LCP scheduler (LcgScheduler): how one
+TTI's grant is split among the UE's outgoing connections. The graded
+properties are the LCP rules of TS 36.321/38.321 sec 5.4.3.1 at the
+granularity Simu5G models (the logical channel group is the priority level;
+lower LCG index is served first) plus the model's own byte-accounting
+contracts. There is no reference formula, so every check is decided in the
+test.
+
+The spec rules:
+- strict priority across groups: a lower-index LCG's backlog is served before
+  a higher-index LCG sees any of the grant (the cross-priority protection of
+  the full LCP, the PBR token bucket, is not modeled);
+- equal service within a group: "logical channels ... with equal priority
+  should be served equally" -- a connection's share of the grant must not
+  depend on where bearer-establishment order happened to place it in the
+  registration map, and no same-LCG connection starves while another one is
+  served the whole grant.
+
+The byte-accounting contracts pin the single-connection schedule exactly (LTE
+FI concatenation: whole backlog plus one RLC header when the grant covers it,
+grant minus the MAC header when it does not, and ONE schedule-list entry --
+macPduMake pops that many real MAC SDUs and FI concatenation delivers exactly
+one). The fingerprint suite's single-flow rows ride on this schedule being
+stable, so these checks guard any rework of the division loop.
+
+The stub MAC is never initialize()d: connections are registered through the
+real API (configureLogicalChannel + createOutgoingConnection), whose call
+order is exactly the lcgMap registration order the scheduler iterates, and
+the virtual buffers are filled directly.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/mac/scheduler/LcgScheduler.h"
+#include "simu5g/stack/mac/LteMacUe.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// A bare LteMacUe carrying LcgScheduler's inputs.
+class StubUeMac : public LteMacUe
+{
+  public:
+    StubUeMac()
+    {
+        nodeId_ = MacNodeId(1025);
+        queueSize_ = 1 << 20; // real-buffer cap, read by createOutgoingConnection
+    }
+
+    MacCid addConnection(unsigned short lcid, Lcg lcg, Direction dir, bool soFraming = false)
+    {
+        MacCid cid(MacNodeId(1), LogicalCid(lcid));
+        LogicalChannelConfig cfg;
+        cfg.rlcMode = UM;
+        cfg.soFraming = soFraming;
+        cfg.snFieldLength = 12;
+        cfg.lcg = lcg;
+        configureLogicalChannel(cid, cfg);
+        // qualified: Binder.h leaks a stray global-scope forward declaration
+        // of the name, which makes the unqualified use ambiguous here
+        simu5g::FlowDescriptor flow;
+        flow.setSourceId(nodeId_);
+        flow.setDestId(MacNodeId(1));
+        flow.setDirection(dir);
+        createOutgoingConnection(cid, flow);
+        return cid;
+    }
+
+    void queueSdus(MacCid cid, int count, int bytes)
+    {
+        LteMacBuffer *vq = connDescOut_.at(cid).buffer;
+        for (int i = 0; i < count; i++)
+            vq->pushBack(PacketInfo(bytes, omnetpp::simTime()));
+    }
+
+    unsigned int occupancy(MacCid cid)
+    {
+        return connDescOut_.at(cid).buffer->getQueueOccupancy();
+    }
+};
+
+static unsigned int scheduledBytes(LcgScheduler& sched, MacCid cid)
+{
+    ScheduleList& bytes = sched.getScheduledBytesList();
+    auto it = bytes.find(cid);
+    return it != bytes.end() ? it->second : 0;
+}
+
+static unsigned int scheduledSdus(ScheduleList& list, MacCid cid)
+{
+    auto it = list.find(cid);
+    return it != list.end() ? it->second : 0;
+}
+
+%activity:
+Checker c;
+
+const int SDU = 100;      // bytes per queued SDU
+const int NSDUS = 10;     // per connection where the case says nothing else
+const unsigned int GRANT = 1000;  // half of a two-connection backlog
+// fairness granularity: the split is at SDU boundaries and per-connection
+// headers may fall on either side
+const unsigned int SLACK = SDU + RLC_HEADER_UM + MAC_HEADER + 4;
+
+// Serves two same-LCG UL connections -- flow A is always lcid 1, flow B always
+// lcid 2; only the registration order varies -- from one grant that covers
+// half their combined backlog. Returns per-flow scheduled bytes and the
+// backlog both leave behind.
+struct PairResult { unsigned int a, b, backlogLeft; };
+auto runPair = [&](bool aFirst, bool soFraming) -> PairResult {
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid a, b;
+    if (aFirst) {
+        a = mac->addConnection(1, Lcg(0), UL, soFraming);
+        b = mac->addConnection(2, Lcg(0), UL, soFraming);
+    }
+    else {
+        b = mac->addConnection(2, Lcg(0), UL, soFraming);
+        a = mac->addConnection(1, Lcg(0), UL, soFraming);
+    }
+    mac->queueSdus(a, NSDUS, SDU);
+    mac->queueSdus(b, NSDUS, SDU);
+    sched.schedule(GRANT, UL);
+    PairResult r;
+    r.a = scheduledBytes(sched, a);
+    r.b = scheduledBytes(sched, b);
+    r.backlogLeft = mac->occupancy(a) + mac->occupancy(b);
+    delete mac;
+    return r;
+};
+
+// ==== equal service within an LCG (LTE FI concatenation) =================
+
+PairResult fi1 = runPair(true, false);
+c.check("both same-LCG connections are served (A registered first)",
+        fi1.a > 0 && fi1.b > 0,
+        "A=" + std::to_string(fi1.a) + "B B=" + std::to_string(fi1.b) + "B");
+c.expectNear("near-equal split (A registered first)", fi1.a, fi1.b, SLACK);
+
+PairResult fi2 = runPair(false, false);
+c.check("both same-LCG connections are served (B registered first)",
+        fi2.a > 0 && fi2.b > 0,
+        "A=" + std::to_string(fi2.a) + "B B=" + std::to_string(fi2.b) + "B");
+c.expectNear("near-equal split (B registered first)", fi2.a, fi2.b, SLACK);
+
+c.check("a flow's service does not depend on its registration position",
+        std::llabs((long long)fi1.a - (long long)fi2.a) <= SLACK
+        && std::llabs((long long)fi1.b - (long long)fi2.b) <= SLACK,
+        "A=" + std::to_string(fi1.a) + "B/" + std::to_string(fi2.a) + "B"
+        + " B=" + std::to_string(fi1.b) + "B/" + std::to_string(fi2.b) + "B");
+
+// ==== work conservation ===================================================
+
+// scheduled bytes exclude the MAC header the grant also has to carry
+c.check("the schedule does not oversubscribe the grant",
+        fi1.a + fi1.b + MAC_HEADER <= GRANT,
+        "A+B=" + std::to_string(fi1.a + fi1.b) + "B grant=" + std::to_string(GRANT) + "B");
+c.check("no usable grant is left while backlog remains",
+        fi1.backlogLeft == 0 || GRANT - (fi1.a + fi1.b + MAC_HEADER) <= SLACK,
+        "leftover=" + std::to_string(GRANT - (fi1.a + fi1.b + MAC_HEADER)) + "B"
+        + " backlog=" + std::to_string(fi1.backlogLeft) + "B");
+
+// ==== equal service within an LCG (NR SO framing) =========================
+
+PairResult so1 = runPair(true, true);
+c.check("both same-LCG SO connections are served (A registered first)",
+        so1.a > 0 && so1.b > 0,
+        "A=" + std::to_string(so1.a) + "B B=" + std::to_string(so1.b) + "B");
+c.expectNear("near-equal SO split (A registered first)", so1.a, so1.b, SLACK);
+
+PairResult so2 = runPair(false, true);
+c.check("both same-LCG SO connections are served (B registered first)",
+        so2.a > 0 && so2.b > 0,
+        "A=" + std::to_string(so2.a) + "B B=" + std::to_string(so2.b) + "B");
+c.expectNear("near-equal SO split (B registered first)", so2.a, so2.b, SLACK);
+
+c.check("an SO flow's service does not depend on its registration position",
+        std::llabs((long long)so1.a - (long long)so2.a) <= SLACK
+        && std::llabs((long long)so1.b - (long long)so2.b) <= SLACK,
+        "A=" + std::to_string(so1.a) + "B/" + std::to_string(so2.a) + "B"
+        + " B=" + std::to_string(so1.b) + "B/" + std::to_string(so2.b) + "B");
+
+// ==== strict priority across LCGs =========================================
+
+{
+    // grant smaller than LCG 0's backlog: LCG 1 sees nothing
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid hi = mac->addConnection(1, Lcg(0), UL);
+    MacCid lo = mac->addConnection(2, Lcg(1), UL);
+    mac->queueSdus(hi, NSDUS, SDU);
+    mac->queueSdus(lo, NSDUS, SDU);
+    sched.schedule(500, UL);
+    c.expectValue("a lower-priority LCG gets nothing while a higher one is backlogged",
+            scheduledBytes(sched, lo), 0);
+    c.expectValue("the higher-priority LCG gets the whole grant net of the MAC header",
+            scheduledBytes(sched, hi), 500 - MAC_HEADER);
+    delete mac;
+}
+{
+    // grant larger than LCG 0's backlog: the remainder spills to LCG 1
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid hi = mac->addConnection(1, Lcg(0), UL);
+    MacCid lo = mac->addConnection(2, Lcg(1), UL);
+    mac->queueSdus(hi, NSDUS, SDU);
+    mac->queueSdus(lo, NSDUS, SDU);
+    sched.schedule(2000, UL);
+    c.expectValue("the higher-priority LCG is served in full",
+            scheduledBytes(sched, hi), NSDUS * SDU + RLC_HEADER_UM);
+    c.check("the remainder spills to the lower-priority LCG",
+            scheduledBytes(sched, lo) > 0,
+            std::to_string(scheduledBytes(sched, lo)) + "B");
+    delete mac;
+}
+
+// ==== direction filter ====================================================
+
+{
+    // the DL-direction connection is registered FIRST, so surviving the
+    // filter is not an artifact of iteration order
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid dl = mac->addConnection(1, Lcg(0), DL);
+    MacCid ul = mac->addConnection(2, Lcg(0), UL);
+    mac->queueSdus(dl, 5, SDU);
+    mac->queueSdus(ul, 5, SDU);
+    sched.schedule(GRANT, UL);
+    c.expectValue("a DL-direction connection is not served from a UL grant",
+            scheduledBytes(sched, dl), 0);
+    c.expectValue("the UL connection is served in full",
+            scheduledBytes(sched, ul), 5 * SDU + RLC_HEADER_UM);
+    delete mac;
+}
+
+// ==== single-connection byte contracts (LTE FI) ===========================
+
+{
+    // full service: whole backlog concatenates into one RLC PDU
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid cid = mac->addConnection(1, Lcg(0), UL);
+    mac->queueSdus(cid, 5, SDU);
+    ScheduleList& list = sched.schedule(2000, UL);
+    c.expectValue("full service schedules the backlog plus one RLC header",
+            scheduledBytes(sched, cid), 5 * SDU + RLC_HEADER_UM);
+    c.expectValue("FI full service is one MAC SDU", scheduledSdus(list, cid), 1);
+    c.expectValue("full service drains the virtual buffer", mac->occupancy(cid), 0);
+    delete mac;
+}
+{
+    // partial service: the grant is filled to the byte, the rest stays queued
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid cid = mac->addConnection(1, Lcg(0), UL);
+    mac->queueSdus(cid, NSDUS, SDU);
+    ScheduleList& list = sched.schedule(600, UL);
+    c.expectValue("partial service schedules the grant net of the MAC header",
+            scheduledBytes(sched, cid), 600 - MAC_HEADER);
+    c.expectValue("FI partial service is one MAC SDU", scheduledSdus(list, cid), 1);
+    c.expectValue("partial service leaves the unserved bytes queued",
+            mac->occupancy(cid), NSDUS * SDU - (600 - MAC_HEADER - RLC_HEADER_UM));
+    delete mac;
+}
+
+// ==== single-connection contract (NR SO framing) ==========================
+
+{
+    // SO framing emits one PDU per SDU, each with its own RLC header, and the
+    // schedule-list count is the number of planned PDUs
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid cid = mac->addConnection(1, Lcg(0), UL, true);
+    mac->queueSdus(cid, 5, SDU);
+    ScheduleList& list = sched.schedule(2000, UL);
+    unsigned int hdr = nrUmHeaderBytes(NRUM_COMPLETE, 12);
+    c.expectValue("SO full service is one planned PDU per SDU", scheduledSdus(list, cid), 5);
+    c.expectValue("SO full service schedules the backlog plus per-PDU RLC headers",
+            scheduledBytes(sched, cid), 5 * (SDU + hdr) + MAC_HEADER);
+    const std::vector<unsigned int> *sizes = sched.getScheduledSoPduSizes(cid);
+    c.check("each planned SO PDU carries one whole SDU plus its RLC header",
+            sizes != nullptr && sizes->size() == 5
+            && (*sizes)[0] == SDU + hdr && (*sizes)[4] == SDU + hdr);
+    delete mac;
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=27 modelfailures=0
+
+%not-contains: stdout
+FAILED

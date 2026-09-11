@@ -85,6 +85,25 @@ distance outside the validity range, expectValue() for a convention of the
 model such as the 1000 dB tolerated-violation sentinel. Those are counted
 separately, in the modelchecks= line on stdout.
 
+The scheduler tests
+-------------------
+
+The MAC scheduler tests (QosSchedulerWeight, LcgSchedulerFairness) consist of
+such decided-in-the-test checks entirely, because no specification gives a
+formula for what they grade: the QoS weighting of a proportional-fair
+scheduler is a modeling decision, and the LCP rules of TS 36.321/38.321 are
+qualitative ("served equally", priority order). What the checks pin down are
+those qualitative rules plus the model's own stated contracts -- the
+byte-for-byte schedule of a single connection, the invariance of the QoS
+weight ratio across the QCI and 5QI priority scales. The Checker of
+lib/SchedulerTestUtil.h prints one verdict line per check and the
+"modelchecks=N modelfailures=M" summary the .test files match on.
+
+The scheduler classes are exercised on a bare, never-initialize()d stub of
+the MAC module they read from, with connections registered through the real
+registration API -- so what a test calls "registration order" is exactly the
+order bearer establishment produces in the running model.
+
 When the model and the script disagree, the script is right until the
 specification says otherwise. Do not adjust it to make a test pass.
 

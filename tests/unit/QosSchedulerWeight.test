@@ -1,0 +1,125 @@
+%description:
+
+QoS weight function of the QoS-aware proportional-fair scheduler
+(QoSAwareScheduler::computeQosWeight). No specification gives a formula for
+PF QoS weighting -- the weight is a modeling decision -- so every check here
+is decided in the test; what is graded are the properties the model states:
+the weight discriminates by the profile's GBR flag, delay budget and priority
+level, and the priority discrimination is consistent across the standardized
+priority scales.
+
+The scale-consistency requirement is where the two shipped catalogs meet: the
+QCI table (TS 23.203 Table 6.1.7-A, priorities 1..9) and the 5QI table
+(TS 23.501 Table 5.7.4-1, priorities 10..90) state the same relative standing
+of the same services at ten times the numeric scale. The weight ratio of two
+bearers must therefore depend only on the RATIO of their priority values --
+otherwise the same two-service network schedules differently depending on
+which catalog vocabulary the configuration author picked, which is exactly
+the "profiles from different priority scales must not be mixed in one
+network" wart documented at the drbProfiles parameter.
+
+A profile whose priority level is absent (the field defaults to 0) or
+negative must be rejected, not silently ranked above every legitimate
+priority 1..127.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/mac/scheduling_modules/QoSAwareScheduler.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// Exposes the protected weight function. The scheduler object is otherwise
+// unused: the weight path touches neither the Binder nor the eNB scheduler.
+class TestableQosScheduler : public QoSAwareScheduler
+{
+  public:
+    TestableQosScheduler() : QoSAwareScheduler(nullptr, 0.1) {}
+    double weight(const DrbQosProfile& p) { return computeQosWeight(p); }
+};
+
+// Delay 300 ms sits above every delay tier, so unless a case says otherwise
+// its weight carries no delay multiplier.
+static DrbQosProfile profile(int priority, double delayMs = 300, bool gbr = false)
+{
+    DrbQosProfile p;
+    p.priorityLevel = priority;
+    p.delayBudgetMs = delayMs;
+    p.gbr = gbr;
+    p.packetErrorRate = 1e-6;
+    return p;
+}
+
+%activity:
+Checker c;
+TestableQosScheduler s;
+
+// ---- monotonicity: numerically higher priority value = less important =
+// strictly lower weight, over the QCI scale, the 5QI scale, and the ends of
+// the full 3GPP 1..127 range
+{
+    int prios[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 127 };
+    bool strict = true;
+    double prev = s.weight(profile(prios[0]));
+    for (size_t i = 1; i < sizeof(prios) / sizeof(prios[0]); i++) {
+        double w = s.weight(profile(prios[i]));
+        if (w >= prev)
+            strict = false;
+        prev = w;
+    }
+    c.check("weight strictly decreasing over priorities 1..127", strict);
+}
+
+// ---- scale invariance: the discrimination between two priorities must not
+// depend on their absolute size, only on their ratio -- the property that
+// makes the QCI and 5QI scales behave alike
+{
+    int pairs[][2] = { { 1, 2 }, { 2, 3 }, { 1, 9 } };
+    for (auto& pr : pairs) {
+        double r = s.weight(profile(pr[0])) / s.weight(profile(pr[1]));
+        double r10 = s.weight(profile(10 * pr[0])) / s.weight(profile(10 * pr[1]));
+        c.expectNear("priorities " + std::to_string(pr[0]) + ":" + std::to_string(pr[1])
+                + " and " + std::to_string(10 * pr[0]) + ":" + std::to_string(10 * pr[1])
+                + " give the same weight ratio", r / r10, 1.0, 1e-9);
+    }
+}
+
+// ---- catalog equivalence: conversational voice vs real-time gaming, with the
+// shipped predefined rows' values verbatim -- qci-1 {gbr, prio 2, delay 100}
+// vs qci-3 {gbr, prio 3, delay 50}, and 5qi-1 {gbr, prio 20, delay 100} vs
+// 5qi-3 {gbr, prio 30, delay 50}. The delay tiers apply equally on both
+// scales, so the full-profile weight ratio must also be equal.
+{
+    double qciRatio = s.weight(profile(3, 50, true)) / s.weight(profile(2, 100, true));
+    double fqiRatio = s.weight(profile(30, 50, true)) / s.weight(profile(20, 100, true));
+    c.expectNear("qci-1/qci-3 and 5qi-1/5qi-3 discriminate equally",
+            qciRatio / fqiRatio, 1.0, 1e-9);
+}
+
+// ---- the GBR factor (model contract: gbrMultiplier_ = 2)
+c.expectNear("gbr doubles the weight",
+        s.weight(profile(5, 300, true)) / s.weight(profile(5, 300, false)), 2.0, 1e-9);
+
+// ---- the delay tiers (model contract: <=10/<=50/<=100 ms -> x5/x3/x1.5,
+// boundaries inclusive, no multiplier above)
+{
+    double base = s.weight(profile(5, 300));
+    c.expectNear("delay budget 10 ms boosts x5", s.weight(profile(5, 10)) / base, 5.0, 1e-9);
+    c.expectNear("delay budget 50 ms boosts x3", s.weight(profile(5, 50)) / base, 3.0, 1e-9);
+    c.expectNear("delay budget 100 ms boosts x1.5", s.weight(profile(5, 100)) / base, 1.5, 1e-9);
+    c.expectNear("delay budget 101 ms boosts nothing", s.weight(profile(5, 101)) / base, 1.0, 1e-9);
+}
+
+// ---- an absent priority level (the field's default 0) or a negative one must
+// be rejected, not silently ranked above every legitimate priority
+c.expectRejected("priority level 0 (the unauthored default)", [&] { s.weight(profile(0)); });
+c.expectRejected("negative priority level", [&] { s.weight(profile(-3)); });
+
+c.summary();
+
+%contains: stdout
+modelchecks=12 modelfailures=0
+
+%not-contains: stdout
+FAILED
