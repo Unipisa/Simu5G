@@ -70,6 +70,13 @@ class StubUeMac : public LteMacUe
     {
         return connDescOut_.at(cid).buffer->getQueueOccupancy();
     }
+
+    void clearQueue(MacCid cid)
+    {
+        LteMacBuffer *vq = connDescOut_.at(cid).buffer;
+        while (!vq->isEmpty())
+            vq->popFront();
+    }
 };
 
 } //namespace unittest

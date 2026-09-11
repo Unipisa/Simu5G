@@ -110,6 +110,39 @@ c.check("a flow's service does not depend on its registration position",
         "A=" + std::to_string(fi1.a) + "B/" + std::to_string(fi2.a) + "B"
         + " B=" + std::to_string(fi1.b) + "B/" + std::to_string(fi2.b) + "B");
 
+// ==== rotation across TTIs ================================================
+
+// The per-turn round-robin leaves a granularity bias: whoever is served first
+// in a TTI gets the odd SDU when the grant splits unevenly. Over consecutive
+// TTIs the starting position must rotate, so the bias averages out instead of
+// sticking to the first-registered connection forever.
+{
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid a = mac->addConnection(1, Lcg(0), UL);
+    MacCid b = mac->addConnection(2, Lcg(0), UL);
+
+    mac->queueSdus(a, NSDUS, SDU);
+    mac->queueSdus(b, NSDUS, SDU);
+    sched.schedule(GRANT, UL);
+    unsigned int a1 = scheduledBytes(sched, a), b1 = scheduledBytes(sched, b);
+
+    // next TTI: identical fresh backlog (cleared, so no partial-SDU fragment
+    // from the first TTI skews the byte totals)
+    mac->clearQueue(a);
+    mac->clearQueue(b);
+    mac->queueSdus(a, NSDUS, SDU);
+    mac->queueSdus(b, NSDUS, SDU);
+    sched.schedule(GRANT, UL);
+    unsigned int a2 = scheduledBytes(sched, a), b2 = scheduledBytes(sched, b);
+
+    c.check("the first-served role alternates between consecutive TTIs",
+            a1 > b1 && b2 > a2,
+            "TTI1 A=" + std::to_string(a1) + "B B=" + std::to_string(b1) + "B"
+            + " TTI2 A=" + std::to_string(a2) + "B B=" + std::to_string(b2) + "B");
+    delete mac;
+}
+
 // ==== work conservation ===================================================
 
 // scheduled bytes exclude the MAC header the grant also has to carry
@@ -248,7 +281,7 @@ c.check("an SO flow's service does not depend on its registration position",
 c.summary();
 
 %contains: stdout
-modelchecks=27 modelfailures=0
+modelchecks=28 modelfailures=0
 
 %not-contains: stdout
 FAILED
