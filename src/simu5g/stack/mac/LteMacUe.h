@@ -127,6 +127,14 @@ class LteMacUe : public LteMacBase
     /// element), which must agree on what "the UE's backlog" means.
     virtual int64_t computeUlBsrSize() const;
 
+    /// The per-LCG split of computeUlBsrSize(): sizes[g] is the backlog of the UL
+    /// connections in logical channel group g, RLC headers included per connection
+    /// with backlog. The groups sum to computeUlBsrSize().
+    virtual void computeUlBsrSizes(int64_t sizes[NUM_LCGS]) const;
+
+    /// Fills a BSR control element: timestamp, per-LCG sizes, and their total.
+    virtual void fillBsr(MacBsr *bsr) const;
+
     // ---- macPduMake() seams ----
     // macPduMake() is shared by every UE MAC (LTE, NR and the D2D mixin); the
     // points where those differ are the virtuals below. Each default is the plain
@@ -147,9 +155,10 @@ class LteMacUe : public LteMacBase
     /// Creates an UL MAC PDU and fills in its control info.
     virtual inet::Packet *createUlMacPdu(MacCid destCid, GHz carrierFreq, MacNodeId destId);
 
-    /// Appends a BSR control element reporting the given buffer occupancy to the MAC PDU
-    /// and resets the BSR trigger state. Called from macPduMake() when isBsrPending().
-    virtual void appendBsr(inet::Ptr<LteMacPdu> macPdu, int size);
+    /// Appends a BSR control element reporting the UE's uplink backlog (fillBsr())
+    /// to the MAC PDU and resets the BSR trigger state. Called from macPduMake()
+    /// when isBsrPending().
+    virtual void appendBsr(inet::Ptr<LteMacPdu> macPdu);
 
     /// Whether it is this carrier's turn in the current TTI. The LTE MAC serves
     /// every carrier every TTI; the NR MAC overrides this with the numerology

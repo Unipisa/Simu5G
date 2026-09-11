@@ -348,26 +348,51 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
 
 int64_t LteMacUe::computeUlBsrSize() const
 {
-    // The backlog to report to the eNB: EVERY uplink connection's virtual-buffer
-    // occupancy -- whether or not the connection was scheduled in this TTI -- plus,
-    // for each connection with backlog, the RLC header the requested grant also has
-    // to cover (reporting the bare occupancy would ask for systematically undersized
-    // grants).
-    int64_t size = 0;
+    int64_t sizes[NUM_LCGS];
+    computeUlBsrSizes(sizes);
+    int64_t total = 0;
+    for (unsigned short g = 0; g < NUM_LCGS; g++)
+        total += sizes[g];
+    return total;
+}
+
+void LteMacUe::computeUlBsrSizes(int64_t sizes[NUM_LCGS]) const
+{
+    // The backlog to report to the eNB, by logical channel group: EVERY uplink
+    // connection's virtual-buffer occupancy -- whether or not the connection was
+    // scheduled in this TTI -- plus, for each connection with backlog, the RLC
+    // header the requested grant also has to cover (reporting the bare occupancy
+    // would ask for systematically undersized grants).
+    std::fill(sizes, sizes + NUM_LCGS, 0);
     for (const auto& [cid, connInfo] : connDescOut_) {
         if (connInfo.flowInfo.getDirection() != UL)
             continue;
         unsigned int occupancy = connInfo.buffer->getQueueOccupancy();
         if (occupancy == 0)
             continue;
+        const LogicalChannelConfig& lcConfig = getLogicalChannelConfig(cid);
+        ASSERT(num(lcConfig.lcg) < NUM_LCGS);
+        int64_t& size = sizes[num(lcConfig.lcg)];
         size += occupancy;
-        RlcMode rlcMode = getLogicalChannelConfig(cid).rlcMode;
-        if (rlcMode == UM)
+        if (lcConfig.rlcMode == UM)
             size += RLC_HEADER_UM;
-        else if (rlcMode == AM)
+        else if (lcConfig.rlcMode == AM)
             size += RLC_HEADER_AM;
     }
-    return size;
+}
+
+void LteMacUe::fillBsr(MacBsr *bsr) const
+{
+    int64_t sizes[NUM_LCGS];
+    computeUlBsrSizes(sizes);
+    int64_t total = 0;
+    bsr->setLcgSizeArraySize(NUM_LCGS);
+    for (unsigned short g = 0; g < NUM_LCGS; g++) {
+        bsr->setLcgSize(g, sizes[g]);
+        total += sizes[g];
+    }
+    bsr->setSize(total);
+    bsr->setTimestamp(simTime().dbl());
 }
 
 bool LteMacUe::buildStandaloneBsr()
@@ -388,8 +413,6 @@ bool LteMacUe::buildStandaloneBsr()
         if (!isBsrPending())
             return false;
 
-        int64_t size = computeUlBsrSize();
-
         // Reported whatever the size: a zero report is the defined way to tell the
         // scheduler the buffers are empty (TS 36.321 / TS 38.321 5.4.5), and the
         // specs cancel a BSR on inclusion in a PDU, never because it would be zero.
@@ -398,8 +421,8 @@ bool LteMacUe::buildStandaloneBsr()
         header->setHeaderLength(MAC_HEADER);
 
         MacBsr *bsr = new MacBsr();
-        bsr->setTimestamp(simTime().dbl());
-        bsr->setSize(size);
+        fillBsr(bsr);
+        int64_t size = bsr->getSize();
         header->pushCe(bsr);
         macPkt->insertAtFront(header);
 
@@ -604,7 +627,7 @@ void LteMacUe::macPduMake(MacCid cid)
                 // this TTI's scheduling has already drained the virtual buffers, so
                 // what they hold now is exactly what the eNB still has to grant for
                 bsrSize = computeUlBsrSize();
-                appendBsr(macPdu, bsrSize);
+                appendBsr(macPdu);
                 bsrAlreadyMade = true;
             }
 
@@ -658,17 +681,15 @@ LteHarqBufferTx *LteMacUe::createTxHarqBuffer(MacNodeId destId, Direction dir)
 // commented-out block in v1.5.1:src/simu5g/stack/mac/LteMacUe.cc. It is written
 // against the old LteSchedulerUeUl::schedule and the pre-INET-packet-API data model,
 // so none of it compiles today: a record of the decision structure, not reusable code.
-void LteMacUe::appendBsr(inet::Ptr<LteMacPdu> macPdu, int size)
+void LteMacUe::appendBsr(inet::Ptr<LteMacPdu> macPdu)
 {
     MacBsr *bsr = new MacBsr();
-
-    bsr->setTimestamp(simTime().dbl());
-    bsr->setSize(size);
+    fillBsr(bsr);
     macPdu->pushCe(bsr);
 
     bsrTriggered_ = false;
 
-    EV << "LteMacUe::macPduMake - BSR with size " << size << " created" << endl;
+    EV << "LteMacUe::macPduMake - BSR with size " << bsr->getSize() << " created" << endl;
 }
 
 void LteMacUe::macPduUnmake(cPacket *cpkt)

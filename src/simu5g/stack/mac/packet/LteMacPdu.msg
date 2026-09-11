@@ -167,5 +167,6 @@ class MacControlElement extends cObject
 //
 class MacBsr extends MacControlElement
 {
-    int size;
+    int size;       // total queued bytes across the reported groups
+    int lcgSize[];  // per-LCG queued bytes (uplink reports; empty for D2D-typed reports)
 }

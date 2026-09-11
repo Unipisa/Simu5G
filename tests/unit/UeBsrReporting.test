@@ -81,10 +81,33 @@ const int SDU = 100;
     delete mac;
 }
 
+// ==== the per-LCG split (what a group-granular report carries) ============
+
+{
+    // each group reports its own connections' backlog and headers; connections
+    // of one group do not leak into another's figure
+    StubUeMac *mac = new StubUeMac();
+    MacCid a = mac->addConnection(1, Lcg(0), UL);
+    MacCid b = mac->addConnection(2, Lcg(1), UL);
+    MacCid bam = mac->addConnection(3, Lcg(1), UL, false, AM);
+    mac->queueSdus(a, 3, SDU);
+    mac->queueSdus(b, 5, SDU);
+    mac->queueSdus(bam, 2, SDU);
+    int64_t sizes[NUM_LCGS];
+    mac->computeUlBsrSizes(sizes);
+    c.expectValue("group 0 reports its own backlog", sizes[0], 3 * SDU + RLC_HEADER_UM);
+    c.expectValue("group 1 reports both of its connections",
+            sizes[1], 5 * SDU + RLC_HEADER_UM + 2 * SDU + RLC_HEADER_AM);
+    c.expectValue("groups without connections report zero", sizes[2] + sizes[3], 0);
+    c.expectValue("the groups sum to the aggregate report",
+            sizes[0] + sizes[1] + sizes[2] + sizes[3], mac->computeUlBsrSize());
+    delete mac;
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=5 modelfailures=0
+modelchecks=9 modelfailures=0
 
 %not-contains: stdout
 FAILED
