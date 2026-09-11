@@ -104,6 +104,16 @@ constexpr LogicalCid SHORT_BSR = LogicalCid(0); // should be 62 (NR)
 constexpr LogicalCid D2D_SHORT_BSR = LogicalCid(1); // Simu5G-specific
 constexpr LogicalCid D2D_MULTI_SHORT_BSR = LogicalCid(2); // Simu5G-specific
 
+/// eNB-side uplink backlog mirror keys: an uplink BSR reports per-LCG figures, and
+/// the eNB tracks each group as a pseudo-connection MacCid(ueId, BSR_UL_LCID_BASE+g).
+/// The block is an internal reserved range sitting above the real DRB LCID range
+/// (1..MAX_DRB_ID) and outside the BSR type markers above; directionFromBsrLcid()
+/// falls through to its UL fallback for it.
+constexpr unsigned short BSR_UL_LCID_BASE = 64;
+inline LogicalCid bsrLcidForLcg(Lcg lcg) { return LogicalCid(BSR_UL_LCID_BASE + num(lcg)); }
+inline bool isUlBsrLcid(LogicalCid lcid) { return num(lcid) >= BSR_UL_LCID_BASE && num(lcid) < BSR_UL_LCID_BASE + NUM_LCGS; }
+inline Lcg lcgFromBsrLcid(LogicalCid lcid) { ASSERT(isUlBsrLcid(lcid)); return Lcg(num(lcid) - BSR_UL_LCID_BASE); }
+
 /// Connection Identifier: <MacNodeId,LogicalCid>
 // MacCid is now a class with separate fields instead of a packed integer
 

@@ -1,0 +1,98 @@
+%description:
+
+The eNB-side uplink backlog registry (UlBacklogRegistry) and the pseudo-LCID
+block its keys use. The registry holds what buffer status reports have told
+the eNB about each UE's queues -- one mirror per (UE, LCG) for uplink
+reports, one per D2D report type -- and the UL scheduler treats the keys as
+its active connections. All checks are decided in the test: the graded
+properties are the registry's replace/drain/lifecycle semantics and the key
+block's disjointness from every LCID space already in use.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/mac/UlBacklogRegistry.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+
+// ==== the pseudo-LCID block ==============================================
+
+{
+    bool roundTrip = true, ulDirection = true;
+    for (unsigned short g = 0; g < NUM_LCGS; g++) {
+        LogicalCid lcid = bsrLcidForLcg(Lcg(g));
+        if (!isUlBsrLcid(lcid) || num(lcgFromBsrLcid(lcid)) != g)
+            roundTrip = false;
+        if (directionFromBsrLcid(lcid, UL) != UL)
+            ulDirection = false;
+    }
+    c.check("every group's key encodes and decodes to itself", roundTrip);
+    c.check("the block reads as UL to the direction promotion", ulDirection);
+    c.check("the block is disjoint from the BSR type markers and DRB LCIDs",
+            !isUlBsrLcid(SHORT_BSR) && !isUlBsrLcid(D2D_SHORT_BSR)
+            && !isUlBsrLcid(D2D_MULTI_SHORT_BSR) && !isUlBsrLcid(LogicalCid(1))
+            && !isUlBsrLcid(LogicalCid(MAX_DRB_ID)));
+}
+
+// ==== report application =================================================
+
+MacCid keyA(MacNodeId(1025), bsrLcidForLcg(Lcg(0)));
+MacCid keyB(MacNodeId(1025), bsrLcidForLcg(Lcg(1)));
+MacCid keyOther(MacNodeId(1026), bsrLcidForLcg(Lcg(0)));
+
+{
+    UlBacklogRegistry reg;
+    std::vector<MacCid> notified;
+    reg.setBacklogCallback([&](MacCid cid) { notified.push_back(cid); });
+
+    reg.update(keyA, 500, 1.0);
+    c.expectValue("a report creates the key's mirror with the reported figure",
+            reg.mirror(keyA)->getQueueOccupancy(), 500);
+    c.check("backlog fires the callback with the key",
+            notified.size() == 1 && notified[0] == keyA);
+
+    reg.update(keyA, 300, 2.0);
+    c.expectValue("a newer report REPLACES the figure (mirrors do not accumulate)",
+            reg.mirror(keyA)->getQueueOccupancy(), 300);
+    c.expectValue("the mirror carries the newest report's timestamp",
+            (long long)(reg.mirror(keyA)->getHolTimestamp().dbl() * 1000), 2000);
+
+    notified.clear();
+    reg.update(keyA, 0, 3.0);
+    c.check("a zero report empties the mirror and fires no callback",
+            reg.mirror(keyA)->isEmpty() && notified.empty());
+}
+
+// ==== lifecycle ==========================================================
+
+{
+    UlBacklogRegistry reg;
+    reg.update(keyA, 100, 1.0);
+    reg.update(keyB, 200, 1.0);
+    reg.update(keyOther, 300, 1.0);
+
+    reg.clearForNode(MacNodeId(1025));
+    c.check("clearForNode empties the node's mirrors but keeps them registered",
+            reg.hasMirror(keyA) && reg.hasMirror(keyB)
+            && reg.mirror(keyA)->isEmpty() && reg.mirror(keyB)->isEmpty());
+    c.expectValue("another node's mirror is untouched",
+            reg.mirror(keyOther)->getQueueOccupancy(), 300);
+
+    reg.eraseForNode(MacNodeId(1025));
+    c.check("eraseForNode removes the node's mirrors outright",
+            !reg.hasMirror(keyA) && !reg.hasMirror(keyB) && reg.hasMirror(keyOther));
+    c.expectValue("keys() reflects what reports have created", (long long)reg.keys().size(), 1);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=12 modelfailures=0
+
+%not-contains: stdout
+FAILED

@@ -27,7 +27,7 @@ class NrMacGnb : public LteMacEnb
     // sendGrants()/macPduUnmake() rather than plain LteMacEnb, and carried three
     // seams to preserve it: the grant direction, the grant header length and the
     // BSR buffer key. All three are now the base's own behavior, so this class
-    // overrides nothing -- see LteMacEnb::grantDirection/grantChunkLength/bsrCeCid.
+    // overrides nothing -- see LteMacEnb::grantDirection/grantChunkLength/bufferizeBsr.
 };
 
 } //namespace

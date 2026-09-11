@@ -21,6 +21,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 #include "simu5g/stack/mac/DrbQosProfile.h"
+#include "simu5g/stack/mac/UlBacklogRegistry.h"
 
 namespace simu5g {
 
@@ -63,9 +64,11 @@ class LteMacEnb : public LteMacBase
     /// Resolved at the start of handleSelfMessage() to detect collisions.
     std::map<int, std::vector<inet::Packet *>> pendingRacRequests_;
 
-    /// Buffer for the BSRs
-    /// In the key (MacCid), lcid is a BsrType: one of SHORT_BSR, D2D_SHORT_BSR, D2D_MULTI_SHORT_BSR.
-    std::map<MacCid, LteMacBuffer*> bsrbuf_;
+    /// Reported uplink backlog, as buffer status reports deliver it. Keys are
+    /// pseudo-connections: (ueId, BSR_UL_LCID_BASE + lcg) for the per-LCG figures
+    /// of an uplink report, (ueId, D2D_SHORT_BSR / D2D_MULTI_SHORT_BSR) for the
+    /// single figure of a D2D-typed report.
+    UlBacklogRegistry ulBacklog_;
 
     /// Lte Mac Scheduler - Downlink
     LteSchedulerEnbDl *enbSchedulerDl_ = nullptr;
@@ -111,13 +114,6 @@ class LteMacEnb : public LteMacBase
     /// not a spec value. Sizing it properly belongs with control-channel realism.
     virtual inet::b grantChunkLength() const { return inet::B(1); }
 
-    /// BSR buffer key for a received BSR control element: keyed by the packet LCID,
-    /// which is what bsrbuf_ documents its key's lcid to be (a BsrType), so UL and
-    /// D2D BSRs from one UE stay separate and the LCID can be recovered from the
-    /// key. For a non-D2D UE the packet LCID is always SHORT_BSR, which is
-    /// LogicalCid(0) -- the same key the direction-agnostic variant produced.
-    virtual MacCid bsrCeCid(const UserControlInfo *lteInfo) const { return MacCid(lteInfo->getSourceId(), lteInfo->getPacketLcid()); }
-
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
      * by extracting SDUs from Real Mac Buffers according
@@ -146,23 +142,15 @@ class LteMacEnb : public LteMacBase
     virtual void macSduRequest();
 
     /**
-     * bufferizeBsr() works much like bufferizePacket()
-     * but only saves the BSR in the corresponding virtual
-     * buffer, eventually creating it if a queue for that
-     * cid does not exist yet.
+     * bufferizeBsr() applies a received BSR control element to the UL backlog
+     * registry. An uplink report (packet LCID SHORT_BSR) carries per-LCG figures
+     * and updates one mirror per group; a D2D-typed report carries one figure
+     * and updates its type's single mirror.
      *
-     * @param bsr bsr to store
-     * @param cid connection id for this bsr
+     * @param bsr the received BSR control element (not retained)
+     * @param lteInfo control info of the PDU that carried it (source, packet LCID)
      */
-    virtual void bufferizeBsr(MacBsr *bsr, MacCid cid);
-
-    /**
-     * createBsrBuffer() creates a new BSR buffer for the given CID
-     *
-     * @param cid connection id for this bsr
-     * @return pointer to the newly created LteMacBuffer
-     */
-    virtual LteMacBuffer *createBsrBuffer(MacCid cid);
+    virtual void bufferizeBsr(const MacBsr *bsr, const UserControlInfo *lteInfo);
 
     /**
      * bufferizePacket() is called every time a packet is
@@ -214,26 +202,13 @@ class LteMacEnb : public LteMacBase
     LteMacEnb();
     ~LteMacEnb() override;
 
-    /// Returns the BSR virtual buffers.
-    LteMacBuffer *getBsrVirtualBuffer(MacCid cid)
-    {
-        auto it = bsrbuf_.find(cid);
-        if (it == bsrbuf_.end())
-            throw cRuntimeError("LteMacBase::getBsrVirtualBuffer - Buffer for CID %s not found", cid.str().c_str());
-        return it->second;
-    }
+    /// Returns the backlog mirror of a reported pseudo-connection.
+    LteMacBuffer *getBsrVirtualBuffer(MacCid cid) { return ulBacklog_.mirror(cid); }
 
-    // Returns list of active buffer CIDs
-    std::vector<MacCid> getActiveBsrVirtualBufferCids()
-    {
-        std::vector<MacCid> activeCids;
-        activeCids.reserve(bsrbuf_.size());
-        for (const auto& [cid,_] : bsrbuf_)
-            activeCids.push_back(cid);
-        return activeCids;
-    }
+    /// Returns the pseudo-connections reports have created so far.
+    std::vector<MacCid> getActiveBsrVirtualBufferCids() { return ulBacklog_.keys(); }
 
-    /// Empties all BSR virtual buffers belonging to the given UE.
+    /// Empties all backlog mirrors belonging to the given UE.
     virtual void clearBsrBuffers(MacNodeId ueId);
 
     /**

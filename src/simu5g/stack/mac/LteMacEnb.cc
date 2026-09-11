@@ -58,9 +58,6 @@ LteMacEnb::LteMacEnb() :
 
 LteMacEnb::~LteMacEnb()
 {
-    for (auto &[key, value] : bsrbuf_)
-        delete value;
-
     for (auto &[preamble, pkts] : pendingRacRequests_)
         for (auto *pkt : pkts)
             delete pkt;
@@ -101,15 +98,7 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
 
     LteMacBase::deleteQueues(nodeId);
 
-    for (auto bit = bsrbuf_.begin(); bit != bsrbuf_.end(); ) {
-        if (bit->first.getNodeId() == nodeId) {
-            delete bit->second;
-            bit = bsrbuf_.erase(bit);
-        }
-        else {
-            ++bit;
-        }
-    }
+    ulBacklog_.eraseForNode(nodeId);
 
     // remove active connections from the schedulers
     enbSchedulerDl_->removeActiveConnections(nodeId);
@@ -135,7 +124,6 @@ void LteMacEnb::initialize(int stage)
         cellInfo_.reference(this, "cellInfoModule", true);
 
         eNodeBCount = par("eNodeBCount");
-        WATCH_MAP(bsrbuf_);
         WATCH_MAP(drbQosMap_);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
@@ -156,6 +144,9 @@ void LteMacEnb::initialize(int stage)
         // Cache pointers to scheduler submodules (they initialize themselves)
         enbSchedulerDl_ = check_and_cast<LteSchedulerEnbDl *>(getSubmodule("schedulerDl"));
         enbSchedulerUl_ = check_and_cast<LteSchedulerEnbUl *>(getSubmodule("schedulerUl"));
+
+        // reported backlog wakes the UL scheduler's interest in the pseudo-connection
+        ulBacklog_.setBacklogCallback([this](MacCid cid) { enbSchedulerUl_->backlog(cid); });
 
         const CarrierInfoMap& carriers = cellInfo_->getCarrierInfoMap();
         int i = 0;
@@ -267,57 +258,19 @@ void LteMacEnb::macSduRequest()
     EV << "------ END LteMacEnb::macSduRequest ------\n";
 }
 
-LteMacBuffer* LteMacEnb::createBsrBuffer(MacCid cid)
+void LteMacEnb::bufferizeBsr(const MacBsr *bsr, const UserControlInfo *lteInfo)
 {
-    // Create new BSR buffer
-    LteMacBuffer *bsrqueue = new LteMacBuffer();
-    bsrbuf_[cid] = bsrqueue;
+    MacNodeId ueId = lteInfo->getSourceId();
+    LogicalCid reportType = lteInfo->getPacketLcid();
 
-    EV << "LteBsrBuffers : Added new BSR buffer for node: "
-       << cid.getNodeId() << " for LCID: " << cid.getLcid() << "\n";
-
-    return bsrqueue;
-}
-
-void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
-{
-    auto it = bsrbuf_.find(cid);
-    LteMacBuffer *bsrqueue = nullptr;
-
-    // If connection not found, create it
-    if (it == bsrbuf_.end()) {
-        bsrqueue = createBsrBuffer(cid);
+    if (reportType == SHORT_BSR && bsr->getLcgSizeArraySize() == NUM_LCGS) {
+        // uplink report: one figure per logical channel group, one mirror each
+        for (unsigned short g = 0; g < NUM_LCGS; g++)
+            ulBacklog_.update(MacCid(ueId, bsrLcidForLcg(Lcg(g))), bsr->getLcgSize(g), bsr->getTimestamp());
     }
     else {
-        bsrqueue = it->second;
-    }
-
-    // Insert into queue
-    if (bsr->getSize() > 0) {
-        // Update buffer with new BSR data
-        PacketInfo queuedBsr;
-        if (!bsrqueue->isEmpty())
-            queuedBsr = bsrqueue->popFront();
-
-        queuedBsr.first = bsr->getSize();
-        queuedBsr.second = bsr->getTimestamp();
-        bsrqueue->pushBack(queuedBsr);
-
-        EV << "LteBsrBuffers : BSR buffer for node: " << cid.getNodeId()
-           << " for LCID: " << cid.getLcid()
-           << " Current BSR size: " << bsr->getSize() << "\n";
-
-        // Signal backlog to Uplink scheduler
-        enbSchedulerUl_->backlog(cid);
-    }
-    else {
-        // The UE has no backlog, remove BSR
-        if (!bsrqueue->isEmpty())
-            bsrqueue->popFront();
-
-        EV << "LteBsrBuffers : BSR buffer for node: " << cid.getNodeId()
-           << " for LCID: " << cid.getLcid()
-           << " - now empty" << "\n";
+        // D2D-typed report: a single figure under the report type's own key
+        ulBacklog_.update(MacCid(ueId, reportType), bsr->getSize(), bsr->getTimestamp());
     }
 }
 
@@ -326,39 +279,39 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
     EV << NOW << "LteMacEnb::sendGrants " << endl;
 
     for (auto& [carrierFreq, carrierScheduleList] : *scheduleList) {
-        while (!carrierScheduleList.empty()) {
-            LteMacScheduleList::iterator it, ot;
-            it = carrierScheduleList.begin();
+        // Fold the schedule entries into per-UE grants: a grant is the UE's UL-SCH
+        // allocation for the TTI -- the UE holds ONE grant per carrier and its own
+        // LCP divides it among its channels -- while the schedule list's entries
+        // are the eNB's bookkeeping: one per backlog group, plus the RAC entry of
+        // a grant issued for a BSR. Entries of different grant directions (the
+        // D2D report types) stay separate, since their grants differ.
+        std::map<std::pair<MacNodeId, Direction>, std::map<Codeword, unsigned int>> perUeGrants;
+        for (const auto& [scListId, blocks] : carrierScheduleList) {
+            MacCid cid = scListId.first;
+            Direction dir = grantDirection(cid.getLcid());
+            perUeGrants[{ cid.getNodeId(), dir }][scListId.second] += blocks;
+        }
+        carrierScheduleList.clear();
 
-            Codeword cw = it->first.second;
-            Codeword otherCw = MAX_CODEWORDS - cw;
-            MacCid cid = it->first.first;
-            LogicalCid lcid = cid.getLcid();
-            MacNodeId nodeId = cid.getNodeId();
-            unsigned int granted = it->second;
+        for (const auto& [ueDir, cwBlocks] : perUeGrants) {
+            MacNodeId nodeId = ueDir.first;
+            Direction dir = ueDir.second;
+
+            // the primary codeword is the first one with granted blocks; codewords
+            // counts those with blocks
+            Codeword cw = 0;
+            unsigned int granted = 0;
             unsigned int codewords = 0;
-
-            // removing visited element from scheduleList.
-            carrierScheduleList.erase(it);
-
-            if (granted > 0) {
-                // increment number of allocated Cw
-                ++codewords;
+            for (const auto& [cwIt, blocks] : cwBlocks) {
+                if (blocks > 0) {
+                    if (codewords == 0) {
+                        cw = cwIt;
+                        granted = blocks;
+                    }
+                    ++codewords;
+                }
             }
-            else {
-                // active cw becomes the "other one"
-                cw = otherCw;
-            }
-
-            std::pair<MacCid, Codeword> otherPair(MacCid(nodeId, LogicalCid(0)), otherCw);
-
-            if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
-                // increment number of allocated Cw
-                ++codewords;
-
-                // removing visited element from scheduleList.
-                carrierScheduleList.erase(ot);
-            }
+            Codeword otherCw = MAX_CODEWORDS - cw;
 
             if (granted == 0)
                 continue; // avoiding transmission of 0 grant (0 grant should not be created)
@@ -366,9 +319,6 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
             EV << NOW << " LteMacEnb::sendGrants Node[" << getMacNodeId() << "] - "
                << granted << " blocks to grant for user " << nodeId << " on "
                << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << carrierFreq << "]" << endl;
-
-            // get the direction of the grant, depending on which connection has been scheduled by the eNB
-            Direction dir = grantDirection(lcid);
 
             // TODO Grant is set aperiodic as default
             // TODO: change to tag instead of header
@@ -684,14 +634,11 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
     }
 
     while (macPdu->hasCe()) {
-        // Extract CE
+        // Extract CE. bufferizeBsr() copies what it needs and never retains
+        // the CE, so it is deleted here on every path.
         MacBsr *bsr = check_and_cast<MacBsr *>(macPdu->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
-        // BSR buffer key: the historical fork variants key by the packet LCID
-        // (see bsrCeCid()). bufferizeBsr() copies size and timestamp and never
-        // retains the CE, so it is deleted here on every path.
-        MacCid cid = bsrCeCid(lteInfo.get());
-        bufferizeBsr(bsr, cid);
+        bufferizeBsr(bsr, lteInfo.get());
         delete bsr;
     }
     pkt->insertAtFront(macPdu);
@@ -1105,23 +1052,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 void LteMacEnb::clearBsrBuffers(MacNodeId ueId)
 {
     EV << NOW << "LteMacEnb::clearBsrBuffers - Clear BSR buffers of UE " << ueId << endl;
-
-    // empty all BSR buffers belonging to the UE
-    for (auto& [cid, buf] : bsrbuf_) {
-        // check if this buffer is for this UE
-        if (cid.getNodeId() != ueId)
-            continue;
-
-        EV << NOW << "LteMacEnb::clearBsrBuffers - Clear BSR buffer for cid " << cid << endl;
-
-        // empty its BSR buffer
-        EV << NOW << "LteMacEnb::clearBsrBuffers - Length was " << buf->getQueueOccupancy() << endl;
-
-        while (!buf->isEmpty())
-            buf->popFront();
-
-        EV << NOW << "LteMacEnb::clearBsrBuffers - New length is " << buf->getQueueOccupancy() << endl;
-    }
+    ulBacklog_.clearForNode(ueId);
 }
 
 } //namespace
