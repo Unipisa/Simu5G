@@ -99,6 +99,21 @@ class LteMacEnb : public LteMacBase
      */
     virtual void sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList);
 
+    /// Blocks granted to one UE in one direction, by codeword: what the schedule
+    /// entries of one carrier fold into, one map entry per grant to be sent.
+    typedef std::map<std::pair<MacNodeId, Direction>, std::map<Codeword, unsigned int>> PerUeGrantBlocks;
+
+    /**
+     * foldScheduleEntries() folds one carrier's schedule entries into the grants
+     * they stand for. A grant is the UE's allocation for the TTI -- the UE holds
+     * ONE grant per carrier and its own LCP divides it among its channels -- while
+     * the entries are the eNB's bookkeeping: one per backlog group, plus the RAC
+     * entry of a grant issued for a BSR. Entries of one UE and one grant direction
+     * therefore accumulate; entries of different directions (the D2D report types)
+     * stay separate, since their grants differ.
+     */
+    virtual PerUeGrantBlocks foldScheduleEntries(const LteMacScheduleList& entries) const;
+
     /// direction of the grant created by sendGrants() for a scheduled connection:
     /// derived from the BSR's logical CID, so that a grant answering a D2D BSR is
     /// issued for the D2D direction. Absent the D2D BSR LCIDs this is always UL,

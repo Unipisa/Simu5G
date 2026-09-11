@@ -274,23 +274,23 @@ void LteMacEnb::bufferizeBsr(const MacBsr *bsr, const UserControlInfo *lteInfo)
     }
 }
 
+LteMacEnb::PerUeGrantBlocks LteMacEnb::foldScheduleEntries(const LteMacScheduleList& entries) const
+{
+    PerUeGrantBlocks perUeGrants;
+    for (const auto& [scListId, blocks] : entries) {
+        MacCid cid = scListId.first;
+        Direction dir = grantDirection(cid.getLcid());
+        perUeGrants[{ cid.getNodeId(), dir }][scListId.second] += blocks;
+    }
+    return perUeGrants;
+}
+
 void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
 {
     EV << NOW << "LteMacEnb::sendGrants " << endl;
 
     for (auto& [carrierFreq, carrierScheduleList] : *scheduleList) {
-        // Fold the schedule entries into per-UE grants: a grant is the UE's UL-SCH
-        // allocation for the TTI -- the UE holds ONE grant per carrier and its own
-        // LCP divides it among its channels -- while the schedule list's entries
-        // are the eNB's bookkeeping: one per backlog group, plus the RAC entry of
-        // a grant issued for a BSR. Entries of different grant directions (the
-        // D2D report types) stay separate, since their grants differ.
-        std::map<std::pair<MacNodeId, Direction>, std::map<Codeword, unsigned int>> perUeGrants;
-        for (const auto& [scListId, blocks] : carrierScheduleList) {
-            MacCid cid = scListId.first;
-            Direction dir = grantDirection(cid.getLcid());
-            perUeGrants[{ cid.getNodeId(), dir }][scListId.second] += blocks;
-        }
+        PerUeGrantBlocks perUeGrants = foldScheduleEntries(carrierScheduleList);
         carrierScheduleList.clear();
 
         for (const auto& [ueDir, cwBlocks] : perUeGrants) {
