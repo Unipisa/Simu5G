@@ -57,13 +57,9 @@ class LcgScheduler
     struct StatusElem
     {
         unsigned int occupancy_;
-        unsigned int bucket_;
         unsigned int sentData_;
         unsigned int sentSdus_;
     };
-
-    // last execution time
-    simtime_t lastExecutionTime_;
 
     /// MAC module, used to get parameters from NED
     opp_component_ptr<LteMacUe> mac_;

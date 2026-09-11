@@ -17,7 +17,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LcgScheduler::LcgScheduler(LteMacUe *mac) : lastExecutionTime_(0), mac_(mac)
+LcgScheduler::LcgScheduler(LteMacUe *mac) : mac_(mac)
 {
 }
 
@@ -26,7 +26,6 @@ LcgScheduler& LcgScheduler::operator=(const LcgScheduler& other)
     if (&other == this)
         return *this;
 
-    lastExecutionTime_ = other.lastExecutionTime_;
     mac_ = other.mac_;
     ueScheduler_ = other.ueScheduler_;
     scheduleList_ = other.scheduleList_;
@@ -54,10 +53,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
     // Clean up scheduling support status map
     statusMap_.clear();
 
-    // If true, assure a minimum reserved rate to all connections (LCP first
-    // phase), if false, provide a best effort service (LCP second phase)
-    bool priorityService = true;
-
     bool firstSdu = true;
 
     const LcgMap& lcgMap = mac_->getLcgMap();
@@ -71,7 +66,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         auto it_pair = lcgMap.equal_range(Lcg(i));
         auto it = it_pair.first, et = it_pair.second;
 
-        EV << NOW << " LcgScheduler::schedule - Node  " << mac_->getMacNodeId() << ", Starting priority service for LCG " << i << endl;
+        EV << NOW << " LcgScheduler::schedule - Node  " << mac_->getMacNodeId() << ", serving LCG " << i << endl;
 
         // -------------------------------------------------------------------------------------------------- //
         // A D2D-capable UE with both UL and D2D active connections may need to withhold
@@ -132,8 +127,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 elem->occupancy_ = vQueue->getQueueLength();
                 elem->sentData_ = 0;
                 elem->sentSdus_ = 0;
-                // TODO set bucket from QoS parameters
-                elem->bucket_ = 1000;
             }
             else {
                 elem = &statusMap_[cid];
@@ -142,58 +135,13 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             EV << NOW << " LcgScheduler::schedule Node " << mac_->getMacNodeId() << " , Parameters:" << endl;
             EV << "\t Logical Channel ID: " << cid.getLcid() << endl;
             EV << "\t CID: " << cid << endl;
-            if (priorityService) {
-                // Update bucket value for this connection
-
-                // get the actual bucket value and the configured max size
-                double bucket = elem->bucket_; // TODO parameters -> bucket ;
-                double maximumBucketSize = 10000.0; // TODO  parameters -> maxBurst;
-
-                EV << NOW << " LcgScheduler::schedule Bucket size: " << bucket << " bytes (max size " << maximumBucketSize << " bytes) - BEFORE SERVICE " << endl;
-
-                // if the connection started before the last scheduling event, use the
-                // global time interval
-                if (lastExecutionTime_ > 0) { // TODO desc->parameters_.startTime_) {
-                    // PBR*(n*TTI) where n is the number of TTI from last update
-                    bucket += /* TODO desc->parameters_.minReservedRate_*/ 100.0 * TTI;
-                }
-                // otherwise, set the bucket value accordingly to the start time
-                else {
-                    simtime_t localTimeInterval = NOW - 0 /* TODO desc->parameters_.startTime_ */;
-                    if (localTimeInterval < 0)
-                        localTimeInterval = 0;
-
-                    bucket = /* TODO desc->parameters_.minReservedRate_*/ 100.0 * localTimeInterval.dbl();
-                }
-
-                // do not overflow the maximum bucket size
-                if (bucket > maximumBucketSize)
-                    bucket = maximumBucketSize;
-
-                // update connection's bucket
-// TODO                desc->parameters_.bucket_ = bucket;
-
-                // update the tracing element accordingly
-                elem->bucket_ = 100.0; // TODO desc->parameters_.bucket_;
-                EV << NOW << " LcgScheduler::schedule Bucket size: " << bucket << " bytes (max size " << maximumBucketSize << " bytes) - AFTER SERVICE " << endl;
-            }
 
             EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes " << endl;
             EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes " << endl;
 
             int minBytes = firstSdu ? MAC_HEADER + RLC_HEADER_UM : RLC_HEADER_UM;
 
-            // If priority service: (availableBytes>0) && (desc->buffer_.occupancy() > 0) && (desc->parameters_.bucket_ > 0)
-            // If best effort service: (availableBytes>0) && (desc->buffer_.occupancy() > 0)
-            if ((availableBytes > minBytes) && (toServe > 0)
-                && (!priorityService || true /*TODO (desc->parameters_.bucket_ > 0)*/))
-            {
-                // Check if it is possible to serve the sdu, depending on the constraint
-                // of the type of service
-                // Priority service:
-                //    ( sdu->size() <= availableBytes) && ( sdu->size() <= desc->parameters_.bucket_)
-                // Best Effort service:
-                //    ( sdu->size() <= availableBytes) && (!priorityService_)
+            if ((availableBytes > minBytes) && (toServe > 0)) {
                 if (lcConfig.soFraming) {
                     // NR-SO: the RLC emits one SDU/segment per PDU (no concatenation),
                     // so fill the grant by multiplexing several PDUs into it. Record
@@ -262,12 +210,9 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                     if (pduSizes.empty())
                         scheduledSoPduSizes_.erase(cid);
                 }
-                else if ((toServe <= availableBytes) /*&& ( !priorityService || ( sduSize <= 0) ) // TODO desc->parameters_.bucket_*/) {
+                else if (toServe <= availableBytes) {
                     // remove SDU from virtual buffer
                     vQueue->popFront();
-
-                    if (priorityService) {
-                    }
 
                     // check if there is space for a SDU
                     int alloc = toServe;
@@ -302,10 +247,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                     EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes" << endl;
                 }
                 else {
-
-                    if (priorityService) {
-                    }
-
                     int alloc = availableBytes;
                     if (firstSdu) {
                         alloc -= MAC_HEADER;
@@ -348,15 +289,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 }
             }
 
-            // check if flow is still backlogged
-            if (availableBytes > minBytes) {
-                // TODO the priority is higher when the associated integer is lower ( e.g. priority 2 is
-                // greater than 4 )
-            }
             if (elem->sentSdus_ > 0) {
-                // update the last schedule time
-                lastExecutionTime_ = NOW;
-
                 // signal service for current connection
                 unsigned int *servicedSdu = nullptr;
 
@@ -377,15 +310,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 else {
                     scheduledBytesList_[cid] += elem->sentData_;
                 }
-            }
-            // If the end of the connections map is reached and we were on priority and on the last LCG
-            if (priorityService && (it == et) && ((i + 1) == NUM_LCGS)) {
-                // the first phase of the LCP algorithm has completed ...
-                // ... switch to best effort allocation!
-                priorityService = false;
-                //  reset the LCG index
-                i = 0;
-                EV << "LcgScheduler::schedule - Node" << mac_->getMacNodeId() << ", Starting best effort service" << endl;
             }
         } // END of connections cycle
     } // END of LCG cycle
