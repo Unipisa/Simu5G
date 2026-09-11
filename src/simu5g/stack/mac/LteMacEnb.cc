@@ -285,6 +285,22 @@ LteMacEnb::PerUeGrantBlocks LteMacEnb::foldScheduleEntries(const LteMacScheduleL
     return perUeGrants;
 }
 
+LteMacEnb::GrantBlocks LteMacEnb::grantBlocksOf(MacNodeId nodeId, const std::map<Codeword, unsigned int>& cwBlocks) const
+{
+    GrantBlocks granted;
+    for (const auto& [cw, blocks] : cwBlocks) {
+        if (blocks == 0)
+            continue;
+        if (cw != granted.codewords)
+            throw cRuntimeError("LteMacEnb::grantBlocksOf - UE %hu was allocated %u blocks on codeword "
+                    "%hu while codeword %u got none: a grant can only carry a dense codeword range",
+                    num(nodeId), blocks, cw, granted.codewords);
+        granted.totalBlocks += blocks;
+        ++granted.codewords;
+    }
+    return granted;
+}
+
 void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
 {
     EV << NOW << "LteMacEnb::sendGrants " << endl;
@@ -297,38 +313,24 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
             MacNodeId nodeId = ueDir.first;
             Direction dir = ueDir.second;
 
-            // the primary codeword is the first one with granted blocks; codewords
-            // counts those with blocks
-            Codeword cw = 0;
-            unsigned int granted = 0;
-            unsigned int codewords = 0;
-            for (const auto& [cwIt, blocks] : cwBlocks) {
-                if (blocks > 0) {
-                    if (codewords == 0) {
-                        cw = cwIt;
-                        granted = blocks;
-                    }
-                    ++codewords;
-                }
-            }
-            Codeword otherCw = MAX_CODEWORDS - cw;
+            GrantBlocks granted = grantBlocksOf(nodeId, cwBlocks);
 
-            if (granted == 0)
+            if (granted.totalBlocks == 0)
                 continue; // avoiding transmission of 0 grant (0 grant should not be created)
 
             EV << NOW << " LteMacEnb::sendGrants Node[" << getMacNodeId() << "] - "
-               << granted << " blocks to grant for user " << nodeId << " on "
-               << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << carrierFreq << "]" << endl;
+               << granted.totalBlocks << " blocks to grant for user " << nodeId << " on "
+               << granted.codewords << " codewords, carrier[" << carrierFreq << "]" << endl;
 
             // TODO Grant is set aperiodic as default
             // TODO: change to tag instead of header
             auto pkt = new Packet("LteGrant");
             auto grant = makeShared<LteSchedulingGrant>();
             grant->setDirection(dir);
-            grant->setCodewords(codewords);
+            grant->setCodewords(granted.codewords);
 
-            // set total granted blocks
-            grant->setTotalGrantedBlocks(granted);
+            // the blocks of every codeword the UE was allocated, not just the first's
+            grant->setTotalGrantedBlocks(granted.totalBlocks);
             grant->setChunkLength(grantChunkLength());
 
             pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
@@ -349,7 +351,7 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
             const unsigned int lastBand = cellInfo_->getCarrierLastBand(carrierFreq);
 
             //  HANDLE MULTICW
-            for ( ; cw < codewords; ++cw) {
+            for (Codeword cw = 0; cw < granted.codewords; ++cw) {
                 unsigned int grantedBytes = 0;
 
                 for (Band b = firstBand; b <= lastBand; ++b) {

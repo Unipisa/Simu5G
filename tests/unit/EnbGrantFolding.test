@@ -1,7 +1,8 @@
 %description:
 
 The eNB's fold of a TTI's schedule entries into the grants they stand for
-(LteMacEnb::foldScheduleEntries, the first half of sendGrants).
+(LteMacEnb::foldScheduleEntries), and the block figures one folded entry
+grants (LteMacEnb::grantBlocksOf) -- together the first half of sendGrants.
 
 The two sides mean different things, and the fold is where they meet. A
 schedule ENTRY is the eNB's own bookkeeping, one per thing it allocated for:
@@ -17,6 +18,14 @@ hardcoded key (ueId, lcid 0), so scheduleGrant's own accumulation did the
 folding. With per-group keys that accident is gone and the fold is explicit --
 which is what these checks grade. All are decided in the test: what a grant
 is, is a modeling statement, not a formula.
+
+The second half is the codeword arithmetic. A grant's blocks are the blocks
+of EVERY codeword the UE was allocated, and its codewords are dense, because
+the UE reads granted bytes for cw 0..codewords-1: an allocation that skipped
+a codeword has no grant that expresses it, and must be rejected rather than
+silently truncated. Neither holds by accident either -- the uplink allocates
+on codeword 0 only today (scheduleGrant pins numCodewords to 1), so these
+checks are what the multi-codeword path will land on.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -139,11 +148,48 @@ auto blocks = [](const StubEnbMac::PerUeGrantBlocks& grants, MacNodeId ue, Direc
             blocks(grants, ueA, UL, Codeword(0)), 0);
 }
 
+// ==== the block figures one folded entry grants ==========================
+
+{
+    // one codeword: the grant's blocks are that codeword's
+    StubEnbMac::GrantBlocks g = mac->grantBlocksOf(ueA, { { Codeword(0), 5 } });
+    c.expectValue("a single-codeword allocation grants its blocks", g.totalBlocks, 5);
+    c.expectValue("on one codeword", g.codewords, 1);
+}
+
+{
+    // two codewords: the grant's blocks are BOTH codewords', not just the first's
+    StubEnbMac::GrantBlocks g = mac->grantBlocksOf(ueA, { { Codeword(0), 5 }, { Codeword(1), 4 } });
+    c.expectValue("a two-codeword allocation grants the blocks of both", g.totalBlocks, 9);
+    c.expectValue("on two codewords", g.codewords, 2);
+}
+
+{
+    // a codeword that got nothing is not a codeword of the grant
+    StubEnbMac::GrantBlocks g = mac->grantBlocksOf(ueA, { { Codeword(0), 5 }, { Codeword(1), 0 } });
+    c.expectValue("an empty codeword adds no blocks", g.totalBlocks, 5);
+    c.expectValue("and is not counted as a codeword", g.codewords, 1);
+}
+
+{
+    StubEnbMac::GrantBlocks g = mac->grantBlocksOf(ueA, {});
+    c.expectValue("no allocation grants nothing", g.totalBlocks, 0);
+    c.expectValue("on no codewords", g.codewords, 0);
+}
+
+// An allocation that skipped a codeword cannot be expressed: the UE would read
+// granted bytes for cw 0..codewords-1 and find the wrong codeword's figures, so
+// this is rejected rather than turned into a quietly truncated grant.
+c.expectRejected("an allocation on codeword 1 alone",
+        [&] { mac->grantBlocksOf(ueA, { { Codeword(1), 4 } }); });
+c.expectRejected("an allocation that skips codeword 0",
+        [&] { mac->grantBlocksOf(ueA, { { Codeword(0), 0 }, { Codeword(1), 4 } }); });
+
 delete mac;
 c.summary();
 
 %contains: stdout
-modelchecks=16 modelfailures=0
+modelchecks=26 modelfailures=0
 
 %not-contains: stdout
 FAILED

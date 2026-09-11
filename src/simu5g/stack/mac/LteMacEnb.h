@@ -114,6 +114,19 @@ class LteMacEnb : public LteMacBase
      */
     virtual PerUeGrantBlocks foldScheduleEntries(const LteMacScheduleList& entries) const;
 
+    /// What one folded (UE, direction) entry grants: the blocks of every codeword
+    /// the UE was allocated, and how many codewords they span.
+    struct GrantBlocks { unsigned int totalBlocks = 0; unsigned int codewords = 0; };
+
+    /**
+     * grantBlocksOf() sums one UE's per-codeword blocks into the two figures a
+     * grant carries. A grant's codewords are dense: the UE reads granted bytes for
+     * cw 0..codewords-1 (LteSchedulerUeUl::schedule), so an allocation that skipped
+     * a codeword has no grant that expresses it, and is an error rather than a
+     * silently truncated grant.
+     */
+    virtual GrantBlocks grantBlocksOf(MacNodeId nodeId, const std::map<Codeword, unsigned int>& cwBlocks) const;
+
     /// direction of the grant created by sendGrants() for a scheduled connection:
     /// derived from the BSR's logical CID, so that a grant answering a D2D BSR is
     /// issued for the D2D direction. Absent the D2D BSR LCIDs this is always UL,

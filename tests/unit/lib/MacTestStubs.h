@@ -92,7 +92,9 @@ class StubEnbMac : public LteMacEnb
   public:
     // protected seam under test, exposed
     using LteMacEnb::PerUeGrantBlocks;
+    using LteMacEnb::GrantBlocks;
     using LteMacEnb::foldScheduleEntries;
+    using LteMacEnb::grantBlocksOf;
 
     StubEnbMac()
     {
