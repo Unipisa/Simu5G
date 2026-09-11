@@ -85,27 +85,42 @@ distance outside the validity range, expectValue() for a convention of the
 model such as the 1000 dB tolerated-violation sentinel. Those are counted
 separately, in the modelchecks= line on stdout.
 
-The scheduler tests
--------------------
-
-The MAC scheduler tests (QosSchedulerWeight, LcgSchedulerFairness) consist of
-such decided-in-the-test checks entirely, because no specification gives a
-formula for what they grade: the QoS weighting of a proportional-fair
-scheduler is a modeling decision, and the LCP rules of TS 36.321/38.321 are
-qualitative ("served equally", priority order). What the checks pin down are
-those qualitative rules plus the model's own stated contracts -- the
-byte-for-byte schedule of a single connection, the invariance of the QoS
-weight ratio across the QCI and 5QI priority scales. The Checker of
-lib/SchedulerTestUtil.h prints one verdict line per check and the
-"modelchecks=N modelfailures=M" summary the .test files match on.
-
-The scheduler classes are exercised on a bare, never-initialize()d stub of
-the MAC module they read from, with connections registered through the real
-registration API -- so what a test calls "registration order" is exactly the
-order bearer establishment produces in the running model.
-
 When the model and the script disagree, the script is right until the
 specification says otherwise. Do not adjust it to make a test pass.
+
+The scheduler and BSR tests
+---------------------------
+
+The MAC scheduler and buffer-status-report tests (QosSchedulerWeight,
+LcgSchedulerFairness, UeBsrReporting, EnbUlBacklog, EnbGrantFolding) consist
+of such decided-in-the-test checks entirely, because no specification gives a
+formula for what they grade: the QoS weighting of a proportional-fair
+scheduler is a modeling decision, and the LCP and BSR rules of
+TS 36.321/38.321 are qualitative ("served equally", priority order, report
+per logical channel group). What the checks pin down are those qualitative
+rules plus the model's own stated contracts -- the byte-for-byte schedule of
+a single connection, the invariance of the QoS weight ratio across the QCI
+and 5QI priority scales, what a grant is as against what a schedule entry is.
+The Checker of lib/SchedulerTestUtil.h prints one verdict line per check and
+the "modelchecks=N modelfailures=M" summary the .test files match on.
+
+The classes under test are exercised on bare, never-initialize()d stubs of
+the MAC modules they read from (lib/MacTestStubs.h), with connections and
+logical channels registered through the real registration API -- so what a
+test calls "registration order" is exactly the order bearer establishment
+produces in the running model, and a group's membership is the one the
+running model would join.
+
+Tripwires
+---------
+
+Some checks grade nothing about the model: they assert a precondition that
+other checks in the same file silently depend on, so that the day it stops
+holding is the day a test fails rather than the day a check quietly stops
+discriminating. UeBsrReporting asserts that the flat LTE AM and UM RLC header
+sizes are still equal, because while they are, its AM figures are also what a
+model that ignored the RLC mode would produce. A tripwire's name says so, and
+it goes away when the checks it guards become real.
 
 Expected failures
 -----------------

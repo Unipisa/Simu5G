@@ -104,10 +104,19 @@ const int SDU = 100;
     delete mac;
 }
 
+// A tripwire, not a property. The flat LTE AM and UM header sizes are equal
+// today, so every AM-vs-UM figure in this file is also what a model that
+// hardcoded the UM size would produce: those checks are asserting the arithmetic,
+// not the mode dispatch. This check fails on the day the two sizes diverge --
+// which is the day the AM figures start discriminating and this check can go.
+c.check("RLC_HEADER_AM still equals RLC_HEADER_UM, so the AM figures here do not yet discriminate",
+        RLC_HEADER_AM == RLC_HEADER_UM,
+        "AM=" + std::to_string(RLC_HEADER_AM) + "B UM=" + std::to_string(RLC_HEADER_UM) + "B");
+
 c.summary();
 
 %contains: stdout
-modelchecks=9 modelfailures=0
+modelchecks=10 modelfailures=0
 
 %not-contains: stdout
 FAILED

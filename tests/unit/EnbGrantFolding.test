@@ -1,0 +1,149 @@
+%description:
+
+The eNB's fold of a TTI's schedule entries into the grants they stand for
+(LteMacEnb::foldScheduleEntries, the first half of sendGrants).
+
+The two sides mean different things, and the fold is where they meet. A
+schedule ENTRY is the eNB's own bookkeeping, one per thing it allocated for:
+one per uplink backlog group of a UE since the per-(UE, LCG) re-key, plus the
+RAC entry of a grant issued so a UE can send a BSR. A GRANT is what the UE
+receives -- its allocation for the TTI on this carrier, ONE per carrier and
+direction, which the UE's own LCP then divides among its channels. So the
+entries of one UE and one grant direction must accumulate into a single
+grant, per codeword.
+
+This used to hold by accident: every uplink entry was filed under the
+hardcoded key (ueId, lcid 0), so scheduleGrant's own accumulation did the
+folding. With per-group keys that accident is gone and the fold is explicit --
+which is what these checks grade. All are decided in the test: what a grant
+is, is a modeling statement, not a formula.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+
+StubEnbMac *mac = new StubEnbMac();
+MacNodeId ueA = MacNodeId(1025);
+MacNodeId ueB = MacNodeId(1026);
+
+// blocks folded onto one (UE, direction) grant for one codeword, or -1 when the
+// fold produced no such grant at all
+auto blocks = [](const StubEnbMac::PerUeGrantBlocks& grants, MacNodeId ue, Direction dir, Codeword cw) -> long long {
+    auto it = grants.find({ ue, dir });
+    if (it == grants.end())
+        return -1;
+    auto cwIt = it->second.find(cw);
+    return cwIt == it->second.end() ? -1 : (long long)cwIt->second;
+};
+
+// ==== one UE's uplink entries are one grant ==============================
+
+{
+    // the two backlog groups and the RAC entry of the same UE: three entries,
+    // one UL-SCH allocation
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 3;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(1))), Codeword(0) }] = 2;
+    entries[{ MacCid(ueA, SHORT_BSR), Codeword(0) }] = 1;   // the RAC entry
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+
+    c.expectValue("one UE's uplink entries fold into one grant", (long long)grants.size(), 1);
+    c.expectValue("the grant carries the sum of its entries' blocks",
+            blocks(grants, ueA, UL, Codeword(0)), 6);
+}
+
+{
+    // the accident this replaces: a RAC allocation and a data allocation in the
+    // same TTI used to accumulate under one key. They still must.
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, SHORT_BSR), Codeword(0) }] = 4;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(2))), Codeword(0) }] = 5;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+
+    c.expectValue("a RAC entry joins the UE's uplink grant rather than forming a second one",
+            (long long)grants.size(), 1);
+    c.expectValue("and its blocks are added to it", blocks(grants, ueA, UL, Codeword(0)), 9);
+}
+
+{
+    // different UEs hold different grants
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 3;
+    entries[{ MacCid(ueB, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 7;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+
+    c.expectValue("two UEs' entries stay two grants", (long long)grants.size(), 2);
+    c.expectValue("each UE keeps its own blocks", blocks(grants, ueA, UL, Codeword(0)), 3);
+    c.expectValue("and the other UE's are untouched", blocks(grants, ueB, UL, Codeword(0)), 7);
+}
+
+// ==== grant direction separates ==========================================
+
+{
+    // A D2D-typed report key promotes to its own grant direction, and a grant of
+    // another direction is a different grant even for the same UE -- so these
+    // must NOT accumulate with the uplink entries.
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 3;
+    entries[{ MacCid(ueA, D2D_SHORT_BSR), Codeword(0) }] = 4;
+    entries[{ MacCid(ueA, D2D_MULTI_SHORT_BSR), Codeword(0) }] = 5;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+
+    c.expectValue("one UE's three grant directions stay three grants", (long long)grants.size(), 3);
+    c.expectValue("the uplink grant carries only the uplink entry",
+            blocks(grants, ueA, UL, Codeword(0)), 3);
+    c.expectValue("the D2D grant carries the D2D entry",
+            blocks(grants, ueA, D2D, Codeword(0)), 4);
+    c.expectValue("the D2D multicast grant carries its own",
+            blocks(grants, ueA, D2D_MULTI, Codeword(0)), 5);
+}
+
+// ==== codewords stay apart within one grant ==============================
+
+{
+    // a grant is per (UE, direction), but its blocks are counted per codeword:
+    // folding must not collapse the codewords into each other
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 3;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(1))), Codeword(1) }] = 7;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+
+    c.expectValue("entries of different codewords stay in one grant", (long long)grants.size(), 1);
+    c.expectValue("codeword 0 keeps its own blocks", blocks(grants, ueA, UL, Codeword(0)), 3);
+    c.expectValue("codeword 1 keeps its own blocks", blocks(grants, ueA, UL, Codeword(1)), 7);
+}
+
+// ==== degenerate inputs ==================================================
+
+{
+    LteMacScheduleList entries;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+    c.expectValue("an empty schedule folds into no grants", (long long)grants.size(), 0);
+}
+
+{
+    // A zero-block entry is still an entry, so it still names a grant; dropping
+    // the resulting empty grant is sendGrants' job (it skips a grant of zero
+    // blocks rather than transmitting it).
+    LteMacScheduleList entries;
+    entries[{ MacCid(ueA, bsrLcidForLcg(Lcg(0))), Codeword(0) }] = 0;
+    StubEnbMac::PerUeGrantBlocks grants = mac->foldScheduleEntries(entries);
+    c.expectValue("a zero-block entry folds to a zero-block grant, not to nothing",
+            blocks(grants, ueA, UL, Codeword(0)), 0);
+}
+
+delete mac;
+c.summary();
+
+%contains: stdout
+modelchecks=16 modelfailures=0
+
+%not-contains: stdout
+FAILED

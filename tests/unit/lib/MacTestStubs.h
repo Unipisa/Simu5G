@@ -12,6 +12,7 @@
 #ifndef TESTS_UNIT_LIB_MACTESTSTUBS_H_
 #define TESTS_UNIT_LIB_MACTESTSTUBS_H_
 
+#include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/mac/LteMacUe.h"
 #include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 
@@ -76,6 +77,38 @@ class StubUeMac : public LteMacUe
         LteMacBuffer *vq = connDescOut_.at(cid).buffer;
         while (!vq->isEmpty())
             vq->popFront();
+    }
+};
+
+/**
+ * A bare LteMacEnb carrying the inputs of eNB-side MAC components under unit
+ * test (the schedule-entry fold, the uplink group's QoS join). Never
+ * initialize()d: logical channels are registered through the REAL API
+ * (configureLogicalChannel), the way RRC pushes them at bearer establishment,
+ * and the folded schedule entries are handed in directly.
+ */
+class StubEnbMac : public LteMacEnb
+{
+  public:
+    // protected seam under test, exposed
+    using LteMacEnb::PerUeGrantBlocks;
+    using LteMacEnb::foldScheduleEntries;
+
+    StubEnbMac()
+    {
+        nodeId_ = MacNodeId(1);
+    }
+
+    /// Registers a UE's channel the way bearer establishment does: at the eNB an
+    /// uplink flow's channel is keyed by the SENDER's node id.
+    void configureChannel(MacNodeId ueId, DrbId drbId, Lcg lcg, RlcMode rlcMode = UM)
+    {
+        LogicalChannelConfig cfg;
+        cfg.rlcMode = rlcMode;
+        cfg.soFraming = false;
+        cfg.snFieldLength = 12;
+        cfg.lcg = lcg;
+        configureLogicalChannel(MacCid(ueId, drbIdToLcid(drbId)), cfg);
     }
 };
 

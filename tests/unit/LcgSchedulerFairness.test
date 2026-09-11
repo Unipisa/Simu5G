@@ -31,6 +31,9 @@ order is exactly the lcgMap registration order the scheduler iterates, and
 the virtual buffers are filled directly.
 
 %includes:
+#include <algorithm>
+#include <vector>
+
 #include "SchedulerTestUtil.h"
 #include "MacTestStubs.h"
 #include "simu5g/stack/mac/scheduler/LcgScheduler.h"
@@ -140,6 +143,64 @@ c.check("a flow's service does not depend on its registration position",
             a1 > b1 && b2 > a2,
             "TTI1 A=" + std::to_string(a1) + "B B=" + std::to_string(b1) + "B"
             + " TTI2 A=" + std::to_string(a2) + "B B=" + std::to_string(b2) + "B");
+    delete mac;
+}
+
+// A grant too small to give everyone a turn is where the starting position
+// decides who eats at all: with five backlogged connections and a grant that
+// covers two SDUs, three of them leave a TTI with (almost) nothing. Whoever is
+// passed over must be a different connection each TTI, so that over one full
+// rotation -- five TTIs, each connection visiting each position once -- the
+// service evens out EXACTLY. Without the rotation the last three starve forever.
+{
+    const int NCONNS = 5;
+    // MAC header + two whole SDUs with their RLC headers + a third connection's
+    // RLC header and two payload bytes: a grant that is consumed exactly, so a
+    // connection served in full, one served a scrap, and two served nothing
+    const unsigned int TIGHT = MAC_HEADER + 2 * (SDU + RLC_HEADER_UM) + RLC_HEADER_UM + 2;
+
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    std::vector<MacCid> cids;
+    for (int i = 0; i < NCONNS; i++)
+        cids.push_back(mac->addConnection(i + 1, Lcg(0), UL));
+
+    std::vector<unsigned int> total(NCONNS, 0);
+    std::vector<int> wholeSdus(NCONNS, 0);
+    bool grantFullyUsed = true;
+    for (int tti = 0; tti < NCONNS; tti++) {
+        // one fresh SDU each, so the fragment a partial service leaves behind
+        // cannot carry over and skew the next TTI's byte totals
+        for (int i = 0; i < NCONNS; i++) {
+            mac->clearQueue(cids[i]);
+            mac->queueSdus(cids[i], 1, SDU);
+        }
+        sched.schedule(TIGHT, UL);
+        unsigned int servedThisTti = 0;
+        for (int i = 0; i < NCONNS; i++) {
+            unsigned int served = scheduledBytes(sched, cids[i]);
+            total[i] += served;
+            servedThisTti += served;
+            if (served == SDU + RLC_HEADER_UM)
+                wholeSdus[i]++;
+        }
+        if (servedThisTti + MAC_HEADER != TIGHT)
+            grantFullyUsed = false;
+    }
+
+    std::string detail;
+    for (int i = 0; i < NCONNS; i++)
+        detail += (i ? " " : "") + std::to_string(total[i]) + "B";
+    unsigned int lo = *std::min_element(total.begin(), total.end());
+    unsigned int hi = *std::max_element(total.begin(), total.end());
+    c.check("under a grant too small for everyone, no connection starves over a full rotation",
+            lo > 0, detail);
+    c.expectValue("a full rotation serves every connection exactly equally", hi - lo, 0);
+    c.check("each connection gets a whole SDU in the same number of TTIs",
+            (int)std::count(wholeSdus.begin(), wholeSdus.end(), wholeSdus[0]) == NCONNS,
+            std::to_string(wholeSdus[0]) + " of " + std::to_string(NCONNS) + " TTIs each");
+    c.check("every TTI's grant is used to the byte", grantFullyUsed,
+            "grant=" + std::to_string(TIGHT) + "B");
     delete mac;
 }
 
@@ -278,10 +339,59 @@ c.check("an SO flow's service does not depend on its registration position",
     delete mac;
 }
 
+// ==== SO segmentation across TTIs =========================================
+
+{
+    // A grant that cannot carry a whole SDU segments it. The scheduler reserves
+    // the exact header the RLC TX will emit for each state (TS 38.322 6.2.1.3):
+    // a FIRST segment this TTI, and -- because the remainder is a continuation --
+    // the LARGER continuation header, carrying the segment offset, next TTI. Get
+    // that wrong and the carve and the drain disagree by the SO field's bytes.
+    const int BIG = 300;
+    const unsigned int firstHdr = nrUmHeaderBytes(NRUM_FIRST, 12);
+    const unsigned int contHdr = nrUmHeaderBytes(NRUM_CONTINUATION, 12);
+    const unsigned int TIGHT = 100;   // less than BIG, so the SDU must be cut
+    const unsigned int head = TIGHT - MAC_HEADER - firstHdr;
+
+    StubUeMac *mac = new StubUeMac();
+    LcgScheduler sched(mac);
+    MacCid cid = mac->addConnection(1, Lcg(0), UL, true);
+    mac->queueSdus(cid, 1, BIG);
+
+    ScheduleList& list1 = sched.schedule(TIGHT, UL);
+    c.expectValue("a segmenting TTI plans one PDU", scheduledSdus(list1, cid), 1);
+    c.expectValue("the first segment fills the grant to the byte",
+            scheduledBytes(sched, cid), TIGHT);
+    const std::vector<unsigned int> *sizes1 = sched.getScheduledSoPduSizes(cid);
+    c.check("the planned PDU is the segment plus a FIRST-segment header",
+            sizes1 != nullptr && sizes1->size() == 1 && (*sizes1)[0] == head + firstHdr,
+            sizes1 != nullptr && !sizes1->empty()
+                ? std::to_string((*sizes1)[0]) + "B expected "
+                  + std::to_string(head + firstHdr) + "B"
+                : "no plan");
+    c.expectValue("the unsent tail stays queued", mac->occupancy(cid), BIG - head);
+
+    ScheduleList& list2 = sched.schedule(2000, UL);
+    c.expectValue("the remainder goes out in the next TTI", scheduledSdus(list2, cid), 1);
+    const std::vector<unsigned int> *sizes2 = sched.getScheduledSoPduSizes(cid);
+    c.check("the continuation PDU reserves the larger CONTINUATION header",
+            sizes2 != nullptr && sizes2->size() == 1 && (*sizes2)[0] == (BIG - head) + contHdr,
+            sizes2 != nullptr && !sizes2->empty()
+                ? std::to_string((*sizes2)[0]) + "B expected "
+                  + std::to_string((BIG - head) + contHdr) + "B"
+                : "no plan");
+    c.expectValue("the SDU is fully sent", mac->occupancy(cid), 0);
+    // the two headers differ, so the check above really does grade the state
+    c.check("a continuation header is larger than a first-segment one",
+            contHdr > firstHdr,
+            "first=" + std::to_string(firstHdr) + "B continuation=" + std::to_string(contHdr) + "B");
+    delete mac;
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=28 modelfailures=0
+modelchecks=40 modelfailures=0
 
 %not-contains: stdout
 FAILED

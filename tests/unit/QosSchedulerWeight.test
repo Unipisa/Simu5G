@@ -24,6 +24,7 @@ priority 1..127.
 
 %includes:
 #include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
 #include "simu5g/stack/mac/scheduling_modules/QoSAwareScheduler.h"
 
 %global:
@@ -134,10 +135,57 @@ c.expectRejected("negative priority level", [&] { s.weight(profile(-3)); });
             single.priorityLevel == 20 && single.gbr && single.delayBudgetMs == 100);
 }
 
+// ---- the group join: WHICH DRBs stand behind an uplink (UE, LCG)
+// pseudo-connection. At the eNB an uplink flow's logical channel is keyed by the
+// SENDING UE and the drbId is that channel's LCID, so the membership is a join
+// of the MAC's own two tables: the configured DRBs' QoS profiles, and the
+// established channels' group assignment.
+{
+    StubEnbMac *mac = new StubEnbMac();
+    MacNodeId ue = MacNodeId(1025);
+    MacNodeId otherUe = MacNodeId(1026);
+
+    std::map<DrbKey, DrbQosProfile> qosMap;
+    qosMap[DrbKey(ue, DrbId(1))] = profile(20, 100, true);
+    qosMap[DrbKey(ue, DrbId(2))] = profile(30, 50);
+    qosMap[DrbKey(ue, DrbId(3))] = profile(40);
+    qosMap[DrbKey(ue, DrbId(4))] = profile(10, 10, true);      // configured, never established
+    qosMap[DrbKey(otherUe, DrbId(1))] = profile(10, 10, true);
+    mac->configureChannel(ue, DrbId(1), Lcg(0));
+    mac->configureChannel(ue, DrbId(2), Lcg(1));
+    mac->configureChannel(ue, DrbId(3), Lcg(1));
+    mac->configureChannel(otherUe, DrbId(1), Lcg(0));
+
+    auto members = [&](MacNodeId id, Lcg lcg) {
+        return QoSAwareScheduler::collectUlGroupMembers(qosMap, mac, id, lcg);
+    };
+
+    c.expectValue("a group collects every established DRB assigned to it",
+            (long long)members(ue, Lcg(1)).size(), 2);
+    c.check("and collects exactly those, in the map's order",
+            members(ue, Lcg(1))[0] == &qosMap[DrbKey(ue, DrbId(2))]
+            && members(ue, Lcg(1))[1] == &qosMap[DrbKey(ue, DrbId(3))]);
+    c.expectValue("another UE's DRB does not join this UE's group",
+            (long long)members(ue, Lcg(0)).size(), 1);
+    c.check("the member of group 0 is this UE's own DRB",
+            members(ue, Lcg(0))[0] == &qosMap[DrbKey(ue, DrbId(1))]);
+    long long joined = 0;
+    for (unsigned short g = 0; g < NUM_LCGS; g++)
+        joined += (long long)members(ue, Lcg(g)).size();
+    c.expectValue("a configured but unestablished DRB joins no group at all", joined, 3);
+    c.expectValue("a group no established DRB belongs to collects nothing -- what makes "
+            "the caller fall back to a neutral weight",
+            (long long)members(ue, Lcg(3)).size(), 0);
+    c.expectNear("a group's weight is the weight of its members' aggregate",
+            s.weight(TestableQosScheduler::aggregateQosProfiles(members(ue, Lcg(1)))),
+            s.weight(profile(30, 50)), 1e-9);
+    delete mac;
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=16 modelfailures=0
+modelchecks=23 modelfailures=0
 
 %not-contains: stdout
 FAILED
