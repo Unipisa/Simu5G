@@ -48,12 +48,55 @@ double QoSAwareScheduler::computeQosWeight(const DrbQosProfile& e)
 const DrbQosProfile *QoSAwareScheduler::getDrbQosForCid(MacCid cid)
 {
     if (!drbQosMap_) return nullptr;
+
+    // an uplink pseudo-connection stands for a whole logical channel group;
+    // weigh it by the DRBs behind it
+    if (isUlBsrLcid(cid.getLcid()))
+        return getQosForUlGroup(cid.getNodeId(), lcgFromBsrLcid(cid.getLcid()));
+
     DrbKey key(cid.getNodeId(), eNbScheduler_->mac_->lcidToDrbId(cid.getLcid()));
     auto it = drbQosMap_->find(key);
     if (it != drbQosMap_->end())
         return &it->second;
     EV_WARN << "QoSAwareScheduler: No DRB QoS profile for CID " << cid << " (" << key << ")\n";
     return nullptr;
+}
+
+const DrbQosProfile *QoSAwareScheduler::getQosForUlGroup(MacNodeId ueId, Lcg lcg)
+{
+    // The MAC knows each configured DRB's QoS profile (the RRC push behind
+    // drbQosMap_) and each established channel's group (lcConfig_); their join
+    // is the group's membership. A configured-but-unestablished DRB has no
+    // channel config yet and is skipped.
+    std::vector<const DrbQosProfile *> members;
+    for (const auto& [key, profile] : *drbQosMap_) {
+        if (key.getNodeId() != ueId)
+            continue;
+        MacCid channel(ueId, LogicalCid(num(key.getDrbId())));
+        const LogicalChannelConfig *lcConfig = eNbScheduler_->mac_->findLogicalChannelConfig(channel);
+        if (lcConfig == nullptr || lcConfig->lcg != lcg)
+            continue;
+        members.push_back(&profile);
+    }
+    if (members.empty()) {
+        EV_WARN << "QoSAwareScheduler: no DRB QoS profile behind LCG " << (int)num(lcg)
+                << " of node " << ueId << "\n";
+        return nullptr;
+    }
+    groupQos_ = aggregateQosProfiles(members);
+    return &groupQos_;
+}
+
+DrbQosProfile QoSAwareScheduler::aggregateQosProfiles(const std::vector<const DrbQosProfile *>& members)
+{
+    DrbQosProfile aggregate = *members.front();
+    for (const DrbQosProfile *member : members) {
+        aggregate.priorityLevel = std::min(aggregate.priorityLevel, member->priorityLevel);
+        aggregate.gbr = aggregate.gbr || member->gbr;
+        aggregate.delayBudgetMs = std::min(aggregate.delayBudgetMs, member->delayBudgetMs);
+        aggregate.packetErrorRate = std::min(aggregate.packetErrorRate, member->packetErrorRate);
+    }
+    return aggregate;
 }
 
 void QoSAwareScheduler::prepareSchedule()

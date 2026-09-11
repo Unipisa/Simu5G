@@ -520,6 +520,17 @@ class LteMacBase : public cSimpleModule
     virtual void configureLogicalChannel(MacCid cid, const LogicalChannelConfig& cfg);
 
     /**
+     * findLogicalChannelConfig() returns the configuration pushed for a channel,
+     * or nullptr if the channel has none (e.g. a configured bearer that is not
+     * established yet).
+     */
+    const LogicalChannelConfig *findLogicalChannelConfig(MacCid cid) const
+    {
+        auto it = lcConfig_.find(cid);
+        return it != lcConfig_.end() ? &it->second : nullptr;
+    }
+
+    /**
      * getLogicalChannelConfig() returns the configuration pushed for a channel.
      *
      * @throw cRuntimeError if the channel has no configuration (a push path was missed)

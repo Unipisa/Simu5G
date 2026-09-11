@@ -53,11 +53,23 @@ class QoSAwareScheduler : public LteScheduler
     double delayTightMultiplier_ = 3.0;
     double delayLooseMultiplier_ = 1.5;
 
+    // scratch for the aggregated profile getQosForUlGroup() returns a pointer to
+    DrbQosProfile groupQos_;
+
     // Helpers
     virtual double computeQosWeight(const DrbQosProfile& e);
     virtual const DrbQosProfile *getDrbQosForCid(MacCid cid);
+    virtual const DrbQosProfile *getQosForUlGroup(MacNodeId ueId, Lcg lcg);
 
   public:
+    /**
+     * The weight-relevant profile of a group of bearers: the most demanding
+     * member on each axis -- the lowest (= most important) priority level, GBR
+     * if any member is GBR, the tightest delay budget and error target. Used to
+     * weigh an uplink (UE, LCG) pseudo-connection by the DRBs behind it.
+     */
+    static DrbQosProfile aggregateQosProfiles(const std::vector<const DrbQosProfile *>& members);
+
     double& pfAlpha() { return pfAlpha_; }
 
     QoSAwareScheduler(Binder* binder, double pfAlpha);

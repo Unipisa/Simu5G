@@ -116,10 +116,28 @@ c.expectNear("gbr doubles the weight",
 c.expectRejected("priority level 0 (the unauthored default)", [&] { s.weight(profile(0)); });
 c.expectRejected("negative priority level", [&] { s.weight(profile(-3)); });
 
+// ---- group aggregation: an uplink (UE, LCG) pseudo-connection is weighed by
+// the DRBs behind it, taking the most demanding member on each axis
+{
+    DrbQosProfile voice = profile(20, 100, true);
+    voice.packetErrorRate = 1e-2;
+    DrbQosProfile gaming = profile(30, 50, false);
+    DrbQosProfile agg = TestableQosScheduler::aggregateQosProfiles({ &voice, &gaming });
+    c.check("a group takes the most important priority level and gbr from any member",
+            agg.priorityLevel == 20 && agg.gbr);
+    c.check("a group takes the tightest delay budget and error target",
+            agg.delayBudgetMs == 50 && agg.packetErrorRate == 1e-6);
+    c.check("a group's weight is at least each member's",
+            s.weight(agg) >= s.weight(voice) && s.weight(agg) >= s.weight(gaming));
+    DrbQosProfile single = TestableQosScheduler::aggregateQosProfiles({ &voice });
+    c.check("a single-member group is that member",
+            single.priorityLevel == 20 && single.gbr && single.delayBudgetMs == 100);
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=12 modelfailures=0
+modelchecks=16 modelfailures=0
 
 %not-contains: stdout
 FAILED
