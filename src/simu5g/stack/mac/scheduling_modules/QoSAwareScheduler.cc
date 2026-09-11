@@ -62,22 +62,30 @@ const DrbQosProfile *QoSAwareScheduler::getDrbQosForCid(MacCid cid)
     return nullptr;
 }
 
-const DrbQosProfile *QoSAwareScheduler::getQosForUlGroup(MacNodeId ueId, Lcg lcg)
+std::vector<const DrbQosProfile *> QoSAwareScheduler::collectUlGroupMembers(
+        const std::map<DrbKey, DrbQosProfile>& drbQosMap, LteMacBase *mac, MacNodeId ueId, Lcg lcg)
 {
     // The MAC knows each configured DRB's QoS profile (the RRC push behind
     // drbQosMap_) and each established channel's group (lcConfig_); their join
     // is the group's membership. A configured-but-unestablished DRB has no
     // channel config yet and is skipped.
     std::vector<const DrbQosProfile *> members;
-    for (const auto& [key, profile] : *drbQosMap_) {
+    for (const auto& [key, profile] : drbQosMap) {
         if (key.getNodeId() != ueId)
             continue;
-        MacCid channel(ueId, LogicalCid(num(key.getDrbId())));
-        const LogicalChannelConfig *lcConfig = eNbScheduler_->mac_->findLogicalChannelConfig(channel);
+        MacCid channel(ueId, mac->drbIdToLcid(key.getDrbId()));
+        const LogicalChannelConfig *lcConfig = mac->findLogicalChannelConfig(channel);
         if (lcConfig == nullptr || lcConfig->lcg != lcg)
             continue;
         members.push_back(&profile);
     }
+    return members;
+}
+
+const DrbQosProfile *QoSAwareScheduler::getQosForUlGroup(MacNodeId ueId, Lcg lcg)
+{
+    std::vector<const DrbQosProfile *> members =
+            collectUlGroupMembers(*drbQosMap_, eNbScheduler_->mac_.get(), ueId, lcg);
     if (members.empty()) {
         EV_WARN << "QoSAwareScheduler: no DRB QoS profile behind LCG " << (int)num(lcg)
                 << " of node " << ueId << "\n";

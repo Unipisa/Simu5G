@@ -17,8 +17,11 @@
 #include "simu5g/stack/mac/DrbQosProfile.h"
 #include <map>
 #include <queue>
+#include <vector>
 
 namespace simu5g {
+
+class LteMacBase;
 
 /**
  * QoS-aware proportional-fair scheduler: scores active CIDs with QoS weights
@@ -62,6 +65,16 @@ class QoSAwareScheduler : public LteScheduler
     virtual const DrbQosProfile *getQosForUlGroup(MacNodeId ueId, Lcg lcg);
 
   public:
+    /**
+     * The QoS profiles of the DRBs behind one uplink logical channel group: the
+     * join of the MAC's configured-DRB profiles with its established channels'
+     * group assignment. A configured-but-unestablished DRB has no channel config
+     * yet and is skipped, so the result is empty when no established DRB of the UE
+     * belongs to the group.
+     */
+    static std::vector<const DrbQosProfile *> collectUlGroupMembers(
+            const std::map<DrbKey, DrbQosProfile>& drbQosMap, LteMacBase *mac, MacNodeId ueId, Lcg lcg);
+
     /**
      * The weight-relevant profile of a group of bearers: the most demanding
      * member on each axis -- the lowest (= most important) priority level, GBR
