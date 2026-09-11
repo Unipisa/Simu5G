@@ -32,55 +32,12 @@ the virtual buffers are filled directly.
 
 %includes:
 #include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
 #include "simu5g/stack/mac/scheduler/LcgScheduler.h"
-#include "simu5g/stack/mac/LteMacUe.h"
-#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 
 %global:
 using namespace simu5g;
 using namespace simu5g::unittest;
-
-// A bare LteMacUe carrying LcgScheduler's inputs.
-class StubUeMac : public LteMacUe
-{
-  public:
-    StubUeMac()
-    {
-        nodeId_ = MacNodeId(1025);
-        queueSize_ = 1 << 20; // real-buffer cap, read by createOutgoingConnection
-    }
-
-    MacCid addConnection(unsigned short lcid, Lcg lcg, Direction dir, bool soFraming = false)
-    {
-        MacCid cid(MacNodeId(1), LogicalCid(lcid));
-        LogicalChannelConfig cfg;
-        cfg.rlcMode = UM;
-        cfg.soFraming = soFraming;
-        cfg.snFieldLength = 12;
-        cfg.lcg = lcg;
-        configureLogicalChannel(cid, cfg);
-        // qualified: Binder.h leaks a stray global-scope forward declaration
-        // of the name, which makes the unqualified use ambiguous here
-        simu5g::FlowDescriptor flow;
-        flow.setSourceId(nodeId_);
-        flow.setDestId(MacNodeId(1));
-        flow.setDirection(dir);
-        createOutgoingConnection(cid, flow);
-        return cid;
-    }
-
-    void queueSdus(MacCid cid, int count, int bytes)
-    {
-        LteMacBuffer *vq = connDescOut_.at(cid).buffer;
-        for (int i = 0; i < count; i++)
-            vq->pushBack(PacketInfo(bytes, omnetpp::simTime()));
-    }
-
-    unsigned int occupancy(MacCid cid)
-    {
-        return connDescOut_.at(cid).buffer->getQueueOccupancy();
-    }
-};
 
 static unsigned int scheduledBytes(LcgScheduler& sched, MacCid cid)
 {
