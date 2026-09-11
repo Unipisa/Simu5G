@@ -96,6 +96,10 @@ class LcgScheduler
     // scheduling status map
     std::map<MacCid, StatusElem> statusMap_;
 
+    // per-LCG rotation of the round-robin's starting position across schedule()
+    // calls, so the first-served granularity bias does not stick to one connection
+    std::map<unsigned short, size_t> rrStart_;
+
   public:
 
     /**

@@ -32,6 +32,7 @@ LcgScheduler& LcgScheduler::operator=(const LcgScheduler& other)
     scheduledBytesList_ = other.scheduledBytesList_;
     scheduledSoPduSizes_ = other.scheduledSoPduSizes_;
     statusMap_ = other.statusMap_;
+    rrStart_ = other.rrStart_;
 
     return *this;
 }
@@ -210,6 +211,15 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         }
         if (conns.empty())
             continue;
+
+        // Rotate the starting position across schedule() calls: the first-served
+        // connection gets the odd SDU of an uneven split, so a fixed start would
+        // hand the same connection that granularity bias every TTI.
+        if (conns.size() > 1) {
+            size_t& start = rrStart_[i];
+            std::rotate(conns.begin(), conns.begin() + (start % conns.size()), conns.end());
+            ++start;
+        }
 
         EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", serving LCG " << i
            << " (" << conns.size() << " backlogged connections), remaining grant: " << availableBytes << " bytes" << endl;
