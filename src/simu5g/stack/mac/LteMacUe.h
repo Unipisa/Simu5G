@@ -121,6 +121,12 @@ class LteMacUe : public LteMacBase
     /// Whether a BSR is waiting to be sent (checked in macPduMake() before appending a BSR control element).
     virtual bool isBsrPending() const { return bsrTriggered_; }
 
+    /// The buffer occupancy a BSR reports: every UL connection's virtual-buffer
+    /// backlog plus, per connection with backlog, its RLC header. Used by both
+    /// reporting paths (the standalone BSR-only PDU and the piggybacked control
+    /// element), which must agree on what "the UE's backlog" means.
+    virtual int64_t computeUlBsrSize() const;
+
     // ---- macPduMake() seams ----
     // macPduMake() is shared by every UE MAC (LTE, NR and the D2D mixin); the
     // points where those differ are the virtuals below. Each default is the plain

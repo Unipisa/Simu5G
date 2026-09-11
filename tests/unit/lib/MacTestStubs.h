@@ -30,6 +30,9 @@ namespace unittest {
 class StubUeMac : public LteMacUe
 {
   public:
+    // protected seams under test, exposed
+    using LteMacUe::computeUlBsrSize;
+
     StubUeMac()
     {
         nodeId_ = MacNodeId(1025);

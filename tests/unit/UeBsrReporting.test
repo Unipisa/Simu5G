@@ -1,0 +1,90 @@
+%description:
+
+The BSR size computation of the UE MAC (LteMacUe::computeUlBsrSize): the
+backlog a buffer status report announces to the eNB. Both reporting paths --
+the standalone BSR-only PDU and the control element piggybacked on a data
+PDU -- draw on this one function, so what it returns IS the eNB's picture of
+the UE's uplink backlog, and grants are sized from that picture.
+
+The contract, decided in this test: EVERY uplink connection's virtual-buffer
+occupancy counts, whether or not the connection was scheduled in the current
+TTI -- the eNB can only grant for what it is told about, and a report
+limited to the TTI's scheduled connections permanently hides any connection
+that scheduling passes over. Each connection with backlog also reports the
+RLC header of its mode (the grant has to cover those bytes; omitting them
+asks for systematically undersized grants). Connections of other directions
+(DL, D2D) and idle connections contribute nothing, headers included.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+const int SDU = 100;
+
+{
+    // every backlogged UL connection counts -- also across LCGs, where the
+    // scheduler may well serve only one group in a TTI
+    StubUeMac *mac = new StubUeMac();
+    MacCid a = mac->addConnection(1, Lcg(0), UL);
+    MacCid b = mac->addConnection(2, Lcg(1), UL);
+    mac->queueSdus(a, 3, SDU);
+    mac->queueSdus(b, 5, SDU);
+    c.expectValue("all uplink backlog is reported, one RLC header per backlogged connection",
+            mac->computeUlBsrSize(), 3 * SDU + RLC_HEADER_UM + 5 * SDU + RLC_HEADER_UM);
+    delete mac;
+}
+{
+    // other directions do not belong in an uplink report
+    StubUeMac *mac = new StubUeMac();
+    MacCid ul = mac->addConnection(1, Lcg(0), UL);
+    MacCid dl = mac->addConnection(2, Lcg(0), DL);
+    MacCid d2d = mac->addConnection(3, Lcg(0), D2D);
+    mac->queueSdus(ul, 2, SDU);
+    mac->queueSdus(dl, 4, SDU);
+    mac->queueSdus(d2d, 4, SDU);
+    c.expectValue("DL and D2D backlog is not reported",
+            mac->computeUlBsrSize(), 2 * SDU + RLC_HEADER_UM);
+    delete mac;
+}
+{
+    // an idle connection contributes nothing, its RLC header included
+    StubUeMac *mac = new StubUeMac();
+    MacCid a = mac->addConnection(1, Lcg(0), UL);
+    mac->addConnection(2, Lcg(0), UL);
+    mac->queueSdus(a, 3, SDU);
+    c.expectValue("an idle connection adds neither backlog nor header",
+            mac->computeUlBsrSize(), 3 * SDU + RLC_HEADER_UM);
+    delete mac;
+}
+{
+    // the reported header follows the connection's RLC mode
+    StubUeMac *mac = new StubUeMac();
+    MacCid am = mac->addConnection(1, Lcg(0), UL, false, AM);
+    mac->queueSdus(am, 1, SDU);
+    c.expectValue("an AM connection reports its AM header",
+            mac->computeUlBsrSize(), SDU + RLC_HEADER_AM);
+    delete mac;
+}
+{
+    // all drained = zero report (the defined way to say "buffers empty",
+    // TS 36.321 / TS 38.321 5.4.5)
+    StubUeMac *mac = new StubUeMac();
+    mac->addConnection(1, Lcg(0), UL);
+    mac->addConnection(2, Lcg(1), UL);
+    c.expectValue("no backlog = zero report", mac->computeUlBsrSize(), 0);
+    delete mac;
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=5 modelfailures=0
+
+%not-contains: stdout
+FAILED

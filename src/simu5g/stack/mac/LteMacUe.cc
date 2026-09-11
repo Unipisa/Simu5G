@@ -346,6 +346,30 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
     return true;
 }
 
+int64_t LteMacUe::computeUlBsrSize() const
+{
+    // The backlog to report to the eNB: EVERY uplink connection's virtual-buffer
+    // occupancy -- whether or not the connection was scheduled in this TTI -- plus,
+    // for each connection with backlog, the RLC header the requested grant also has
+    // to cover (reporting the bare occupancy would ask for systematically undersized
+    // grants).
+    int64_t size = 0;
+    for (const auto& [cid, connInfo] : connDescOut_) {
+        if (connInfo.flowInfo.getDirection() != UL)
+            continue;
+        unsigned int occupancy = connInfo.buffer->getQueueOccupancy();
+        if (occupancy == 0)
+            continue;
+        size += occupancy;
+        RlcMode rlcMode = getLogicalChannelConfig(cid).rlcMode;
+        if (rlcMode == UM)
+            size += RLC_HEADER_UM;
+        else if (rlcMode == AM)
+            size += RLC_HEADER_AM;
+    }
+    return size;
+}
+
 bool LteMacUe::buildStandaloneBsr()
 {
     // handleSelfMessage() calls macPduMake() when a grant arrives with nothing
@@ -364,20 +388,7 @@ bool LteMacUe::buildStandaloneBsr()
         if (!isBsrPending())
             return false;
 
-        // report what is still queued across this UE's uplink flows, including the
-        // RLC header bytes the grant would have to cover
-        int64_t size = 0;
-        for (auto& [cid, connInfo] : connDescOut_) {
-            if (connInfo.flowInfo.getDirection() != UL)
-                continue;
-            size += connInfo.buffer->getQueueOccupancy();
-            if (size > 0) {
-                if (getLogicalChannelConfig(cid).rlcMode == UM)
-                    size += RLC_HEADER_UM;
-                else if (getLogicalChannelConfig(cid).rlcMode == AM)
-                    size += RLC_HEADER_AM;
-            }
-        }
+        int64_t size = computeUlBsrSize();
 
         // Reported whatever the size: a zero report is the defined way to tell the
         // scheduler the buffers are empty (TS 36.321 / TS 38.321 5.4.5), and the
@@ -442,11 +453,12 @@ Packet *LteMacUe::createUlMacPdu(MacCid destCid, GHz carrierFreq, MacNodeId dest
 
 void LteMacUe::macPduMake(MacCid cid)
 {
-    int64_t size = 0;
+    int64_t bsrSize = 0;
 
     macPduList_.clear();
 
     bool bsrAlreadyMade = buildStandaloneBsr();
+    const bool standaloneBsr = bsrAlreadyMade;
 
     // Build a MAC PDU for each scheduled user on each codeword
     if (!bsrAlreadyMade) {
@@ -523,18 +535,6 @@ void LteMacUe::macPduMake(MacCid cid)
                     macPkt->insertAtFront(macPdu);
                     sduPerCid--;
                 }
-                // consider virtual buffers to compute BSR size
-                size += connDescOut_.at(destCid).buffer->getQueueOccupancy();
-
-                if (size > 0) {
-                    // take into account the RLC header size: those are real bytes the
-                    // grant has to cover, so reporting the bare queue occupancy asks for
-                    // systematically undersized grants
-                    if (getLogicalChannelConfig(destCid).rlcMode == UM)
-                        size += RLC_HEADER_UM;
-                    else if (getLogicalChannelConfig(destCid).rlcMode == AM)
-                        size += RLC_HEADER_AM;
-                }
             }
         }
     }
@@ -600,11 +600,19 @@ void LteMacUe::macPduMake(MacCid cid)
             // BSR only once it has been included in a PDU, or when the grant cannot fit
             // the CE -- never because the buffer is empty.
             if (isBsrPending() && !bsrAlreadyMade) {
-                appendBsr(macPdu, size);
+                // report the WHOLE remaining backlog, scheduled connections or not:
+                // this TTI's scheduling has already drained the virtual buffers, so
+                // what they hold now is exactly what the eNB still has to grant for
+                bsrSize = computeUlBsrSize();
+                appendBsr(macPdu, bsrSize);
                 bsrAlreadyMade = true;
             }
 
-            if (bsrAlreadyMade && size > 0)                                              // this prevents the UE from sending an unnecessary RAC request
+            // While backlog remains after a piggybacked report, keep the BSR
+            // retransmission timer armed so checkRAC() waits for a grant instead of
+            // issuing an unnecessary RAC request. A standalone BSR-only PDU leaves
+            // the timer unarmed.
+            if (bsrAlreadyMade && !standaloneBsr && bsrSize > 0)
                 bsrRtxTimer_ = bsrRtxTimerStart_;
             else
                 bsrRtxTimer_ = 0;
@@ -644,8 +652,7 @@ LteHarqBufferTx *LteMacUe::createTxHarqBuffer(MacNodeId destId, Direction dir)
 // TODO: implement differentiated BSR attach (TS 36.321 / TS 38.321 5.4.5).
 // This always emits one fixed-size BSR and never looks at how much of the grant is
 // left, so there is no long-vs-short/truncated selection, no "grant too small, BSR
-// suppressed" accounting and no wasted-grant statistic. The NR and D2D UE MACs build
-// the control element inline in their own macPduMake() and share the gap.
+// suppressed" accounting and no wasted-grant statistic.
 // A sketch of the intended branching (long/short/truncated by remaining available
 // bytes, plus the suppressed and wasted-byte statistics) survives upstream as the
 // commented-out block in v1.5.1:src/simu5g/stack/mac/LteMacUe.cc. It is written
