@@ -191,8 +191,8 @@ bool D2dUeMacBase<Base>::buildStandaloneBsr()
         if (grant != nullptr && grant->getDirection() == UL && this->emptyScheduleList_) {
             if (this->bsrTriggered_ || d2dUeHelper_.getBsrD2DMulticastTriggered()) {
                 // Compute BSR size taking into account only DM flows
-                int sizeBsr = 0;
-                for (auto [cid, connInfo] : this->connDescOut_) {
+                int64_t sizeBsr = 0;
+                for (const auto& [cid, connInfo] : this->connDescOut_) {
                     Direction connDir = connInfo.flowInfo.getDirection();
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
@@ -201,15 +201,7 @@ bool D2dUeMacBase<Base>::buildStandaloneBsr()
                     if (d2dUeHelper_.getBsrD2DMulticastTriggered() && connDir != D2D_MULTI)
                         continue;
 
-                    sizeBsr += connInfo.buffer->getQueueOccupancy();
-
-                    // take into account the RLC header size
-                    if (sizeBsr > 0) {
-                        if (this->getLogicalChannelConfig(cid).rlcMode == UM)
-                            sizeBsr += RLC_HEADER_UM;
-                        else if (this->getLogicalChannelConfig(cid).rlcMode == AM)
-                            sizeBsr += RLC_HEADER_AM;
-                    }
+                    sizeBsr += this->computeConnectionBacklog(cid);
                 }
 
                 if (sizeBsr > 0) {

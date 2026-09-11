@@ -132,6 +132,14 @@ class LteMacUe : public LteMacBase
     /// with backlog. The groups sum to computeUlBsrSize().
     virtual void computeUlBsrSizes(int64_t sizes[NUM_LCGS]) const;
 
+    /// The backlog one outgoing connection contributes to a buffer status report:
+    /// its virtual-buffer occupancy plus the RLC header the requested grant also
+    /// has to cover (reporting the bare occupancy would ask for systematically
+    /// undersized grants), or zero when the connection is idle -- an idle
+    /// connection needs no grant, its header included. Direction-agnostic: which
+    /// connections belong in a report is the caller's question.
+    virtual int64_t computeConnectionBacklog(MacCid cid) const;
+
     /// Fills a BSR control element: timestamp, per-LCG sizes, and their total.
     virtual void fillBsr(MacBsr *bsr) const;
 

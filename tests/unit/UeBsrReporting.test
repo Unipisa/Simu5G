@@ -15,6 +15,12 @@ RLC header of its mode (the grant has to cover those bytes; omitting them
 asks for systematically undersized grants). Connections of other directions
 (DL, D2D) and idle connections contribute nothing, headers included.
 
+What one connection contributes is computeConnectionBacklog(), the single
+rule every reporting path draws on -- the uplink report here, and the D2D
+report the D2D mixin builds. It is direction-agnostic on purpose: WHICH
+connections belong in a report is the caller's question, and answering it
+inside the rule is what let a second, divergent copy exist.
+
 %includes:
 #include "SchedulerTestUtil.h"
 #include "MacTestStubs.h"
@@ -104,6 +110,24 @@ const int SDU = 100;
     delete mac;
 }
 
+// ==== the one rule the reporting paths share =============================
+
+{
+    StubUeMac *mac = new StubUeMac();
+    MacCid busy = mac->addConnection(1, Lcg(0), UL);
+    MacCid idle = mac->addConnection(2, Lcg(0), UL);
+    MacCid d2d = mac->addConnection(3, Lcg(0), D2D);
+    mac->queueSdus(busy, 3, SDU);
+    mac->queueSdus(d2d, 2, SDU);
+    c.expectValue("a backlogged connection contributes its occupancy and its RLC header",
+            mac->computeConnectionBacklog(busy), 3 * SDU + RLC_HEADER_UM);
+    c.expectValue("an idle connection contributes nothing, its header included",
+            mac->computeConnectionBacklog(idle), 0);
+    c.expectValue("the rule does not filter by direction -- its callers do",
+            mac->computeConnectionBacklog(d2d), 2 * SDU + RLC_HEADER_UM);
+    delete mac;
+}
+
 // A tripwire, not a property. The flat LTE AM and UM header sizes are equal
 // today, so every AM-vs-UM figure in this file is also what a model that
 // hardcoded the UM size would produce: those checks are asserting the arithmetic,
@@ -116,7 +140,7 @@ c.check("RLC_HEADER_AM still equals RLC_HEADER_UM, so the AM figures here do not
 c.summary();
 
 %contains: stdout
-modelchecks=10 modelfailures=0
+modelchecks=13 modelfailures=0
 
 %not-contains: stdout
 FAILED

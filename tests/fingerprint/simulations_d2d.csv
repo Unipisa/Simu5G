@@ -10,7 +10,7 @@
 /simulations/lte/d2d/,                   -f omnetpp.ini -c MultiplePairs-TCP-D2D-wReuse -r 0,    5s,         0cbd-b0d9/tplx;6511-1d1d/tilx;b80e-62ce/~tNl;a9e2-72f6/sz, PASS,
 /simulations/lte/d2d/,                   -f omnetpp.ini -c MultiplePairs-TCP-Infra -r 0,         5s,         27c2-b00e/tplx;b61e-c18e/tilx;ee07-80e3/~tNl;f794-a08e/sz, PASS,
 /simulations/lte/d2d/,                   -f omnetpp.ini -c MultiplePairs-UDP-D2D -r 0,           5s,         a1d9-8916/tplx;2b75-7236/tilx;f4f0-a0cc/~tNl;9d65-3273/sz, PASS,
-/simulations/lte/d2d/,                   -f omnetpp.ini -c OneToMany-UDP-D2D -r 0,              5s,         caac-12f3/tplx;c6a8-7bb1/tilx;362d-3cdd/~tNl;4f8e-6a62/sz, PASS,
+/simulations/lte/d2d/,                   -f omnetpp.ini -c OneToMany-UDP-D2D -r 0,              5s,         bada-71d1/tplx;98f1-474b/tilx;ed07-bc45/~tNl;2ab1-19f3/sz, PASS,
 /simulations/lte/d2d/,                   -f omnetpp.ini -c MultiplePairs-UDP-D2D-wReuse -r 0,    5s,         a179-0991/tplx;855d-9f8f/tilx;e4ea-a2a4/~tNl;7149-11bd/sz, PASS,
 /simulations/lte/d2d/,                   -f omnetpp.ini -c MultiplePairs-UDP-Infra -r 0,         5s,         be02-843e/tplx;e654-7154/tilx;44ac-d0df/~tNl;ab93-6d3c/sz, PASS,
 /simulations/lte/d2d/,                   -f omnetpp.ini -c SinglePair-modeSwitching -r 0,       20s,         0203-359d/tplx;5f05-98ef/tilx;dc87-dc87/~tNl;54d7-c46a/sz, PASS,

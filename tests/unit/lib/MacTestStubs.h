@@ -34,6 +34,7 @@ class StubUeMac : public LteMacUe
     // protected seams under test, exposed
     using LteMacUe::computeUlBsrSize;
     using LteMacUe::computeUlBsrSizes;
+    using LteMacUe::computeConnectionBacklog;
 
     StubUeMac()
     {

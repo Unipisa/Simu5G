@@ -356,28 +356,34 @@ int64_t LteMacUe::computeUlBsrSize() const
     return total;
 }
 
+int64_t LteMacUe::computeConnectionBacklog(MacCid cid) const
+{
+    unsigned int occupancy = connDescOut_.at(cid).buffer->getQueueOccupancy();
+    if (occupancy == 0)
+        return 0;
+    RlcMode rlcMode = getLogicalChannelConfig(cid).rlcMode;
+    if (rlcMode == UM)
+        return occupancy + RLC_HEADER_UM;
+    if (rlcMode == AM)
+        return occupancy + RLC_HEADER_AM;
+    return occupancy;
+}
+
 void LteMacUe::computeUlBsrSizes(int64_t sizes[NUM_LCGS]) const
 {
     // The backlog to report to the eNB, by logical channel group: EVERY uplink
-    // connection's virtual-buffer occupancy -- whether or not the connection was
-    // scheduled in this TTI -- plus, for each connection with backlog, the RLC
-    // header the requested grant also has to cover (reporting the bare occupancy
-    // would ask for systematically undersized grants).
+    // connection's backlog -- whether or not the connection was scheduled in this
+    // TTI -- under the group its logical channel belongs to.
     std::fill(sizes, sizes + NUM_LCGS, 0);
     for (const auto& [cid, connInfo] : connDescOut_) {
         if (connInfo.flowInfo.getDirection() != UL)
             continue;
-        unsigned int occupancy = connInfo.buffer->getQueueOccupancy();
-        if (occupancy == 0)
+        int64_t backlog = computeConnectionBacklog(cid);
+        if (backlog == 0)
             continue;
         const LogicalChannelConfig& lcConfig = getLogicalChannelConfig(cid);
         ASSERT(num(lcConfig.lcg) < NUM_LCGS);
-        int64_t& size = sizes[num(lcConfig.lcg)];
-        size += occupancy;
-        if (lcConfig.rlcMode == UM)
-            size += RLC_HEADER_UM;
-        else if (lcConfig.rlcMode == AM)
-            size += RLC_HEADER_AM;
+        sizes[num(lcConfig.lcg)] += backlog;
     }
 }
 
