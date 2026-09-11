@@ -60,14 +60,127 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
     if (lcgMap.empty())
         return scheduleList_;
 
-    // for all LCGs, in increasing-index priority order
-    for (unsigned short i = 0; i < NUM_LCGS; ++i) {
-        // Prepare the iterators to cycle the entire scheduling set
-        auto it_pair = lcgMap.equal_range(Lcg(i));
-        auto it = it_pair.first, et = it_pair.second;
+    // Per-connection service state for the round-robin within one LCG.
+    struct ServedConn {
+        MacCid cid;
+        LteMacBuffer *vQueue;
+        const LogicalChannelConfig *lcConfig;
+        StatusElem *elem;
+        bool rlcHeaderCharged = false; // FI: the connection's one RLC header, charged at its first served SDU
+    };
 
-        EV << NOW << " LcgScheduler::schedule - Node  " << mac_->getMacNodeId() << ", serving LCG " << i << endl;
+    // Serves one unit from the connection: one SDU (FI) or one PDU carve (SO).
+    // Returns false when the connection cannot make progress -- drained, or the
+    // remaining grant does not cover its next unit's headers plus one payload
+    // byte.
+    auto serveOne = [&](ServedConn& c) -> bool {
+        const LogicalChannelConfig& lcConfig = *c.lcConfig;
 
+        if (c.vQueue->isEmpty())
+            return false;
+
+        if (lcConfig.soFraming) {
+            // NR-SO: the RLC emits one SDU/segment per PDU (no concatenation),
+            // so the grant is filled by multiplexing several PDUs into it. Record
+            // each PDU's payload size; the MAC issues one SDU request per entry.
+            // Continuation state is shared across this UE's per-carrier schedulers
+            // (they all drain the same RLC TX buffer), so a carrier reserves the
+            // header matching segmentation another carrier already did this TTI.
+            std::map<MacCid, bool>& soFrontIsContinuation = mac_->getSoContinuationMap();
+            int macHdr = (firstSdu ? MAC_HEADER : 0);
+            // RLC header for this PDU: the exact segment-state header the RLC TX
+            // will emit, so the carve and drain match byte-for-byte (sized for the
+            // flow's SN field length). Only the front SDU can be a continuation.
+            // UM: complete=1B (no SN) if the whole remaining SDU fits, else
+            // first/continuation per nrUmHeaderBytes. AM always carries the SN
+            // (nrAmHeaderBytes). TS 38.322 6.2.1.3/6.2.1.4.
+            unsigned int snBits = lcConfig.snFieldLength;
+            unsigned int rlcHdr;
+            if (lcConfig.rlcMode == AM) {
+                rlcHdr = nrAmHeaderBytes(soFrontIsContinuation[c.cid] ? NRUM_CONTINUATION : NRUM_FIRST, snBits);
+            }
+            else {
+                int remaining = c.vQueue->front().first;
+                NrUmSegState st = soFrontIsContinuation[c.cid] ? NRUM_CONTINUATION
+                                : (remaining + 1 <= (int)availableBytes - macHdr) ? NRUM_COMPLETE
+                                : NRUM_FIRST;
+                rlcHdr = nrUmHeaderBytes(st, snBits);
+            }
+            int hdr = (int)rlcHdr + macHdr;
+            if ((int)availableBytes <= hdr)
+                return false; // no room for another PDU (header + at least 1 payload byte)
+            int room = (int)availableBytes - hdr;
+            PacketInfo info = c.vQueue->popFront();
+            unsigned int payload;
+            if ((int)info.first <= room) {
+                payload = info.first; // whole (remaining) SDU fits in this PDU
+                soFrontIsContinuation[c.cid] = false; // SDU fully sent
+            }
+            else {
+                payload = (unsigned int)room; // segment; remainder stays queued
+                info.first -= room;
+                c.vQueue->pushFront(info);
+                soFrontIsContinuation[c.cid] = true; // remainder is a continuation
+            }
+            // The MAC request size includes the RLC header (rlcPduMakeNr
+            // subtracts it before segmenting), so add it back here so the
+            // RLC carves exactly this payload.
+            scheduledSoPduSizes_[c.cid].push_back(payload + rlcHdr);
+            availableBytes -= hdr + payload;
+            c.elem->sentData_ += hdr + payload;
+            c.elem->sentSdus_++;
+            firstSdu = false;
+            if (c.vQueue->isEmpty())
+                soFrontIsContinuation[c.cid] = false; // buffer drained; next SDU is fresh
+
+            EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", " << c.cid
+               << ": PDU of " << (hdr + payload) << " bytes, remaining grant: " << availableBytes << " bytes" << endl;
+            return true;
+        }
+        else {
+            // LTE FI: the connection's served SDUs concatenate into ONE RLC PDU
+            // (and one MAC SDU) per TTI, so the RLC header is charged once, at
+            // the connection's first served SDU.
+            int macHdr = (firstSdu ? MAC_HEADER : 0);
+            unsigned int rlcHdrSize = (lcConfig.rlcMode == AM) ? RLC_HEADER_AM : RLC_HEADER_UM;
+            int rlcHdr = c.rlcHeaderCharged ? 0 : (int)rlcHdrSize;
+            int overhead = macHdr + rlcHdr;
+            if ((int)availableBytes <= overhead)
+                return false; // no room for a payload byte
+
+            int sduSize = c.vQueue->front().first;
+            unsigned int served;
+            if (sduSize + overhead <= (int)availableBytes) {
+                // the whole SDU fits
+                c.vQueue->popFront();
+                served = sduSize;
+                availableBytes -= sduSize + overhead;
+            }
+            else {
+                // the SDU's head fills the rest of the grant; the tail stays queued
+                int room = (int)availableBytes - overhead;
+                PacketInfo info = c.vQueue->popFront();
+                info.first -= room;
+                c.vQueue->pushFront(info);
+                served = room;
+                availableBytes = 0;
+            }
+            // scheduled bytes carry the RLC header but not the MAC header
+            c.elem->sentData_ += served + rlcHdr;
+            c.elem->sentSdus_ = 1; // one concatenated MAC SDU per connection per TTI
+            c.rlcHeaderCharged = true;
+            firstSdu = false;
+
+            EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", " << c.cid
+               << ": " << served << " bytes of an SDU, remaining grant: " << availableBytes << " bytes" << endl;
+            return true;
+        }
+    };
+
+    // for all LCGs, in increasing-index priority order (strict priority across
+    // groups; the cross-priority protection of the full LCP, the PBR token
+    // bucket, is not modeled)
+    for (unsigned short i = 0; i < NUM_LCGS && availableBytes > 0; ++i) {
         // -------------------------------------------------------------------------------------------------- //
         // A D2D-capable UE with both UL and D2D active connections may need to withhold
         // this UL grant so that it carries the BSR of an active D2D connection instead.
@@ -76,242 +189,54 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             return scheduleList_;
         // -------------------------------------------------------------------------------------------------- //
 
-        //! FIXME Allocation of the same resource to flows with the same priority not implemented
-        for (it = it_pair.first; it != et; ++it) {
-            // processing all connections of the same LCG
-
-            // get the connection virtual buffer
+        // collect the group's serviceable connections, in registration order
+        std::vector<ServedConn> conns;
+        auto it_pair = lcgMap.equal_range(Lcg(i));
+        for (auto it = it_pair.first; it != it_pair.second; ++it) {
+            MacCid cid = it->second.first;
             LteMacBuffer *vQueue = it->second.second;
 
-            // get the buffer size
-            unsigned int queueLength = vQueue->getQueueOccupancy(); // in bytes
-
-            // connection id of the processed connection
-            MacCid cid = it->second.first;
-
-            // get the Flow descriptor
-            const FlowDescriptor& connDesc = mac_->getConnDesc(cid);
-            // get the channel's RLC/logical-channel configuration, as pushed by RRC
-            const LogicalChannelConfig& lcConfig = mac_->getLogicalChannelConfig(cid);
-            // TODO get the QoS parameters
-
             // connection must have the same direction as the grant
-            if (connDesc.getDirection() != grantDir)
+            if (mac_->getConnDesc(cid).getDirection() != grantDir)
+                continue;
+            if (vQueue->getQueueOccupancy() == 0)
                 continue;
 
-            unsigned int toServe = queueLength;
-            // Check whether the virtual buffer is empty
-            if (queueLength == 0) {
-                EV << "LcgScheduler::schedule scheduled connection is no longer active " << endl;
-                continue; // go to next connection
+            StatusElem *elem = &statusMap_[cid];
+            elem->occupancy_ = vQueue->getQueueLength();
+            elem->sentData_ = 0;
+            elem->sentSdus_ = 0;
+            conns.push_back(ServedConn{ cid, vQueue, &mac_->getLogicalChannelConfig(cid), elem });
+        }
+        if (conns.empty())
+            continue;
+
+        EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", serving LCG " << i
+           << " (" << conns.size() << " backlogged connections), remaining grant: " << availableBytes << " bytes" << endl;
+
+        // Serve the group round-robin, one SDU (FI) or one PDU carve (SO) per
+        // turn: connections of the same LCG have equal priority, and equal
+        // priority means equal service (TS 36.321/38.321 sec 5.4.3.1), so a
+        // connection's share must not depend on where bearer-establishment
+        // order happened to place it in the registration map.
+        bool progress = true;
+        while (progress && availableBytes > 0) {
+            progress = false;
+            for (auto& c : conns) {
+                if (availableBytes == 0)
+                    break;
+                if (serveOne(c))
+                    progress = true;
             }
-            else {
-                // we need to consider also the size of RLC and MAC headers
-                if (lcConfig.rlcMode == UM)
-                    toServe += RLC_HEADER_UM;
-                else if (lcConfig.rlcMode == AM)
-                    toServe += RLC_HEADER_AM;
+        }
 
-                if (firstSdu)
-                    toServe += MAC_HEADER;
+        // record the group's schedule
+        for (auto& c : conns) {
+            if (c.elem->sentSdus_ > 0) {
+                scheduleList_[c.cid] = c.elem->sentSdus_;
+                scheduledBytesList_[c.cid] = c.elem->sentData_;
             }
-
-            // get a pointer to the appropriate status element: we need a tracing element
-            // in order to store information about connections and data transmitted. These
-            // information may be consulted at the end of the LCP algorithm
-            StatusElem *elem;
-
-            if (statusMap_.find(cid) == statusMap_.end()) {
-                // the element does not exist, initialize it
-                elem = &statusMap_[cid];
-                elem->occupancy_ = vQueue->getQueueLength();
-                elem->sentData_ = 0;
-                elem->sentSdus_ = 0;
-            }
-            else {
-                elem = &statusMap_[cid];
-            }
-
-            EV << NOW << " LcgScheduler::schedule Node " << mac_->getMacNodeId() << " , Parameters:" << endl;
-            EV << "\t Logical Channel ID: " << cid.getLcid() << endl;
-            EV << "\t CID: " << cid << endl;
-
-            EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes " << endl;
-            EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes " << endl;
-
-            int minBytes = firstSdu ? MAC_HEADER + RLC_HEADER_UM : RLC_HEADER_UM;
-
-            if ((availableBytes > minBytes) && (toServe > 0)) {
-                if (lcConfig.soFraming) {
-                    // NR-SO: the RLC emits one SDU/segment per PDU (no concatenation),
-                    // so fill the grant by multiplexing several PDUs into it. Record
-                    // each PDU's payload size; the MAC issues one SDU request per entry.
-                    // Continuation state is shared across this UE's per-carrier schedulers
-                    // (they all drain the same RLC TX buffer), so a carrier reserves the
-                    // header matching segmentation another carrier already did this TTI.
-                    std::map<MacCid, bool>& soFrontIsContinuation = mac_->getSoContinuationMap();
-                    std::vector<unsigned int>& pduSizes = scheduledSoPduSizes_[cid];
-                    int budget = (int)availableBytes;
-                    while (!vQueue->isEmpty()) {
-                        int macHdr = (firstSdu ? MAC_HEADER : 0);
-                        // RLC header for this PDU: the exact segment-state header the RLC TX
-                        // will emit, so the carve and drain match byte-for-byte (sized for the
-                        // flow's SN field length). Only the front SDU can be a continuation.
-                        // UM: complete=1B (no SN) if the whole remaining SDU fits, else
-                        // first/continuation per nrUmHeaderBytes. AM always carries the SN
-                        // (nrAmHeaderBytes). TS 38.322 6.2.1.3/6.2.1.4.
-                        unsigned int snBits = lcConfig.snFieldLength;
-                        unsigned int rlcHdr;
-                        if (lcConfig.rlcMode == AM) {
-                            rlcHdr = nrAmHeaderBytes(soFrontIsContinuation[cid] ? NRUM_CONTINUATION : NRUM_FIRST, snBits);
-                        }
-                        else {
-                            int remaining = vQueue->front().first;
-                            NrUmSegState st = soFrontIsContinuation[cid] ? NRUM_CONTINUATION
-                                            : (remaining + 1 <= budget - macHdr) ? NRUM_COMPLETE
-                                            : NRUM_FIRST;
-                            rlcHdr = nrUmHeaderBytes(st, snBits);
-                        }
-                        int hdr = (int)rlcHdr + macHdr;
-                        if (budget <= hdr)
-                            break; // no room for another PDU (header + at least 1 payload byte)
-                        int room = budget - hdr;
-                        PacketInfo info = vQueue->popFront();
-                        unsigned int payload;
-                        bool segmented = false;
-                        if ((int)info.first <= room) {
-                            payload = info.first; // whole (remaining) SDU fits in this PDU
-                            soFrontIsContinuation[cid] = false; // SDU fully sent
-                        }
-                        else {
-                            payload = (unsigned int)room; // segment; remainder stays queued
-                            info.first -= room;
-                            vQueue->pushFront(info);
-                            segmented = true;
-                            soFrontIsContinuation[cid] = true; // remainder is a continuation
-                        }
-                        // The MAC request size includes the RLC header (rlcPduMakeNr
-                        // subtracts it before segmenting), so add it back here so the
-                        // RLC carves exactly this payload.
-                        pduSizes.push_back(payload + rlcHdr);
-                        int pduBytes = hdr + (int)payload;
-                        budget -= pduBytes;
-                        elem->sentData_ += pduBytes;
-                        elem->sentSdus_++;
-                        firstSdu = false;
-                        if (segmented)
-                            break; // grant exhausted by the segment
-                    }
-                    elem->occupancy_ = vQueue->getQueueOccupancy();
-                    availableBytes = budget > 0 ? (unsigned int)budget : 0;
-                    toServe = 0;
-                    if (vQueue->isEmpty())
-                        soFrontIsContinuation[cid] = false; // buffer drained; next SDU is fresh
-                    if (pduSizes.empty())
-                        scheduledSoPduSizes_.erase(cid);
-                }
-                else if (toServe <= availableBytes) {
-                    // remove SDU from virtual buffer
-                    vQueue->popFront();
-
-                    // check if there is space for a SDU
-                    int alloc = toServe;
-                    if (firstSdu) {
-                        alloc -= MAC_HEADER;
-                        firstSdu = false;
-                    }
-
-                    // update the tracing element
-                    elem->occupancy_ = vQueue->getQueueOccupancy();
-                    elem->sentData_ += alloc;
-
-                    if (lcConfig.rlcMode == UM)
-                        alloc -= RLC_HEADER_UM;
-                    else if (lcConfig.rlcMode == AM)
-                        alloc -= RLC_HEADER_AM;
-
-                    if (alloc > 0)
-                        elem->sentSdus_++;
-
-                    availableBytes -= toServe;
-
-                    while (!vQueue->isEmpty()) {
-                        // remove SDUs from virtual buffer
-                        vQueue->popFront();
-                    }
-
-                    toServe = 0;
-
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ",  SDU of size " << elem->sentData_ << " selected for transmission" << endl;
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes" << endl;
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes" << endl;
-                }
-                else {
-                    int alloc = availableBytes;
-                    if (firstSdu) {
-                        alloc -= MAC_HEADER;
-                        firstSdu = false;
-                    }
-
-                    // update the tracing element
-                    elem->occupancy_ = vQueue->getQueueOccupancy();
-                    elem->sentData_ += alloc;
-
-                    if (lcConfig.rlcMode == UM)
-                        alloc -= RLC_HEADER_UM;
-                    else if (lcConfig.rlcMode == AM)
-                        alloc -= RLC_HEADER_AM;
-
-                    // check if there is space for a SDU
-                    if (alloc > 0)
-                        elem->sentSdus_++;
-
-                    // update buffer
-                    while (alloc > 0) {
-                        // update pkt info
-                        PacketInfo newPktInfo = vQueue->popFront();
-                        if (newPktInfo.first > alloc) {
-                            newPktInfo.first = newPktInfo.first - alloc;
-                            vQueue->pushFront(newPktInfo);
-                            alloc = 0;
-                        }
-                        else {
-                            alloc -= newPktInfo.first;
-                        }
-                    }
-
-                    toServe -= availableBytes;
-                    availableBytes = 0;
-
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ",  SDU of size " << elem->sentData_ << " selected for transmission" << endl;
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes" << endl;
-                    EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes" << endl;
-                }
-            }
-
-            if (elem->sentSdus_ > 0) {
-                // signal service for current connection
-                unsigned int *servicedSdu = nullptr;
-
-                if (scheduleList_.find(cid) == scheduleList_.end()) {
-                    // the element does not exist, initialize it
-                    servicedSdu = &scheduleList_[cid];
-                    *servicedSdu = elem->sentSdus_;
-                }
-                else {
-                    // connection already scheduled during this TTI
-                    servicedSdu = &scheduleList_.at(cid);
-                }
-
-                // update scheduled bytes
-                if (scheduledBytesList_.find(cid) == scheduledBytesList_.end()) {
-                    scheduledBytesList_[cid] = elem->sentData_;
-                }
-                else {
-                    scheduledBytesList_[cid] += elem->sentData_;
-                }
-            }
-        } // END of connections cycle
+        }
     } // END of LCG cycle
 
     return scheduleList_;

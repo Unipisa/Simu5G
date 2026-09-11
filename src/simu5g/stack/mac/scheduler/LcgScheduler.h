@@ -27,6 +27,18 @@ class LteMacPdu;
  */
 typedef std::map<MacCid, unsigned int> ScheduleList;
 
+/**
+ * UE-side logical channel prioritization (LCP): divides one TTI's UL grant
+ * among the UE's outgoing connections, at the granularity Simu5G models --
+ * the logical channel group stands in for the per-channel priority of
+ * TS 36.321/38.321 sec 5.4.3.1. Groups are served in increasing LCG-index
+ * order (strict priority; the PBR token bucket, the full LCP's protection
+ * of lower priorities, is not modeled). Within a group the backlogged
+ * connections are served round-robin, one SDU (LTE FI) or one PDU carve
+ * (NR SO) per turn, so equal-priority connections are served equally and a
+ * connection's share does not depend on where bearer-establishment order
+ * placed it in the registration map.
+ */
 class LcgScheduler
 {
 
