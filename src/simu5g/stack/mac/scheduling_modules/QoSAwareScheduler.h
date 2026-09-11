@@ -25,8 +25,10 @@ class LteMacBase;
 
 /**
  * QoS-aware proportional-fair scheduler: scores active CIDs with QoS weights
- * derived from the per-DRB QoS profile (GBR flag, packet delay budget, packet
- * error rate, priority level). The profiles come from the MAC's DRB QoS map
+ * derived from the per-DRB QoS profile. The weight reads the GBR flag, the
+ * packet delay budget and the priority level; the profile's packet error rate
+ * reaches the scheduler and is carried through a group's aggregate, but does not
+ * enter the weight. The profiles come from the MAC's DRB QoS map
  * (see LteMacEnb::getDrbQosMap()), which RRC fills from the bearer configuration
  * delivered to it (the staticDrbs parameter of the ~BearerConfigurator module).
  *
