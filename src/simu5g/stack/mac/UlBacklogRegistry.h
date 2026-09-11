@@ -69,6 +69,15 @@ class UlBacklogRegistry
     /// All keys reports have created so far (drained ones included).
     std::vector<MacCid> keys() const;
 
+    /**
+     * The node's per-LCG uplink mirrors, in logical channel group order. Their
+     * occupancies together are the node's reported uplink backlog, which is what
+     * an uplink grant is sized from: a grant is one transport block for the whole
+     * UE. The D2D-typed mirrors carry a different direction's backlog and are
+     * left out.
+     */
+    std::vector<LteMacBuffer *> ulMirrorsOf(MacNodeId nodeId) const;
+
     /// Empties the node's mirrors, keeping them registered (bearer teardown).
     void clearForNode(MacNodeId nodeId);
 

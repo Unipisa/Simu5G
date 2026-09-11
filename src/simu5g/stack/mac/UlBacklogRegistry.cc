@@ -76,6 +76,18 @@ std::vector<MacCid> UlBacklogRegistry::keys() const
     return result;
 }
 
+std::vector<LteMacBuffer *> UlBacklogRegistry::ulMirrorsOf(MacNodeId nodeId) const
+{
+    // mirrors_ is keyed by (nodeId, lcid), so one node's keys come out in increasing
+    // pseudo-LCID, which for the uplink block is increasing logical channel group
+    std::vector<LteMacBuffer *> result;
+    for (const auto& [key, mirror] : mirrors_) {
+        if (key.getNodeId() == nodeId && isUlBsrLcid(key.getLcid()))
+            result.push_back(mirror);
+    }
+    return result;
+}
+
 void UlBacklogRegistry::clearForNode(MacNodeId nodeId)
 {
     for (auto& [key, mirror] : mirrors_) {

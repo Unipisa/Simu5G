@@ -236,6 +236,9 @@ class LteMacEnb : public LteMacBase
     /// Returns the pseudo-connections reports have created so far.
     std::vector<MacCid> getActiveBsrVirtualBufferCids() { return ulBacklog_.keys(); }
 
+    /// The UE's uplink backlog mirrors, in logical channel group order.
+    std::vector<LteMacBuffer *> getUlBacklogMirrors(MacNodeId nodeId) const { return ulBacklog_.ulMirrorsOf(nodeId); }
+
     /// Empties all backlog mirrors belonging to the given UE.
     virtual void clearBsrBuffers(MacNodeId ueId);
 

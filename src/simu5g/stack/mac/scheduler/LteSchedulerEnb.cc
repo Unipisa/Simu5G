@@ -278,13 +278,32 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     // Get virtual buffer reference
     LteMacBuffer *conn = (dir == DL) ? mac_->getMacBuffer(cid) : mac_->getBsrVirtualBuffer(cid);
 
-    // get the buffer size
+    // get the buffer size -- the scheduled connection's own, which is what says
+    // whether it is still an active candidate
     unsigned int queueLength = conn->getQueueOccupancy(); // in bytes
     if (queueLength == 0) {
         active = false;
         EV << "LteSchedulerEnb::scheduleGrant - scheduled connection is no longer active. Exiting grant " << endl;
         EV << "LteSchedulerEnb::grant --------------------::[  END GRANT  ]::--------------------" << endl;
         return totalAllocatedBytes;
+    }
+
+    // An uplink grant is ONE transport block for the whole UE, which the UE's own
+    // LCP then divides among its channels, so it is sized from everything the UE
+    // has reported -- not from the single logical channel group whose
+    // pseudo-connection won this scheduling round. The groups remain separate
+    // candidates: they decide WHICH UE is served and how urgently, while the UE's
+    // total decides how big its transport block is.
+    //
+    // The block is still drained from the scheduled group's mirror alone. The eNB
+    // cannot know how the UE's LCP will actually divide the block, and crediting
+    // another group with bytes the UE may not have sent from it would hide that
+    // group's backlog until the next report -- the very blindness per-group
+    // reporting exists to remove. A report replaces every mirror anyway.
+    if (dir == UL && isUlBsrLcid(flowId)) {
+        queueLength = 0;
+        for (LteMacBuffer *mirror : mac_->getUlBacklogMirrors(nodeId))
+            queueLength += mirror->getQueueOccupancy();
     }
 
     bool stop = false;

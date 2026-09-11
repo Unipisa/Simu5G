@@ -89,10 +89,40 @@ MacCid keyOther(MacNodeId(1026), bsrLcidForLcg(Lcg(0)));
     c.expectValue("keys() reflects what reports have created", (long long)reg.keys().size(), 1);
 }
 
+// ==== the per-node uplink mirror list ====================================
+
+{
+    // A UE's grant is one transport block sized from everything it reported, so
+    // the list is the node's uplink mirrors -- lowest logical channel group
+    // first, whatever order reports created them -- and the D2D-typed mirrors,
+    // which carry another direction's backlog, stay out of it.
+    UlBacklogRegistry reg;
+    MacCid d2d(MacNodeId(1025), D2D_SHORT_BSR);
+    reg.update(keyB, 200, 1.0);        // group 1 registered FIRST
+    reg.update(keyA, 100, 1.0);        // group 0 second
+    reg.update(d2d, 400, 1.0);
+    reg.update(keyOther, 300, 1.0);
+
+    std::vector<LteMacBuffer *> mirrors = reg.ulMirrorsOf(MacNodeId(1025));
+    c.expectValue("the list holds the node's uplink mirrors only", (long long)mirrors.size(), 2);
+    c.check("in logical channel group order, whatever order reports created them",
+            mirrors.size() == 2 && mirrors[0] == reg.mirror(keyA) && mirrors[1] == reg.mirror(keyB));
+    c.expectValue("their occupancies together are what a grant for the UE is sized from",
+            (long long)(mirrors[0]->getQueueOccupancy() + mirrors[1]->getQueueOccupancy()), 300);
+    c.expectValue("another node's mirrors are not in this node's list",
+            (long long)reg.ulMirrorsOf(MacNodeId(1026)).size(), 1);
+    c.expectValue("a node no report has created has no mirrors",
+            (long long)reg.ulMirrorsOf(MacNodeId(1099)).size(), 0);
+
+    // a drained group keeps its place: it is still one of the UE's groups
+    reg.update(keyA, 0, 2.0);
+    c.expectValue("a drained group stays in the list", (long long)reg.ulMirrorsOf(MacNodeId(1025)).size(), 2);
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=12 modelfailures=0
+modelchecks=18 modelfailures=0
 
 %not-contains: stdout
 FAILED
