@@ -18,7 +18,7 @@ import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.corenetwork.smf.Smf;
+import simu5g.corenetwork.bearerConfigurator.BearerConfigurator;
 import simu5g.nodes.ExtCell;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
@@ -51,7 +51,7 @@ network ExtClientServerExample
         binder: Binder {
             @display("p=73,261;is=s");
         }
-        smf: Smf {
+        bearerConfigurator: BearerConfigurator {
             @display("p=133,261;is=s");
         }
         carrierAggregation: CarrierAggregation {
