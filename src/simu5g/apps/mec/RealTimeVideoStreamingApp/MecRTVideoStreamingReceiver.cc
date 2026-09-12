@@ -341,39 +341,37 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
         EV << "MecRTVideoStreamingReceiver::processPacket - received packet related to frame [" << frameNumber << "], but the playout already expects frame [" << expectedFrameDisplayed_ << "]; late segment discarded" << endl;
         return;
     }
+    // check if the frame structure is already present in the buffer. Or create a new one
+    auto frameStruct = playoutBuffer_.find(frameNumber);
+    if (frameStruct == playoutBuffer_.end()) {
+        ReceivingFrameStatus newFrame;
+        newFrame.frameSize = header->getFrameLength();
+        newFrame.currentSize = header->getPayloadLength();
+        //newFrame.playoutTime = simTime().dbl() + playoutTime;
+        newFrame.frameNumber = frameNumber;
+        newFrame.numberOfFragments = header->getTotalFrags();
+        newFrame.numberOfFragmentsReceived = 1;
+
+        playoutBuffer_.insert({ frameNumber, newFrame });
+        int size = playoutBuffer_.size();
+        ueAppModule_->emit(playoutBufferLengthSignal_, size);
+
+        EV << "MecRTVideoStreamingReceiver::processPacket - store new frame [" << newFrame.frameNumber << "], packet with seqNum [" << header->getSequenceNumber() << "] contains "
+           << header->getPayloadLength() << " bytes.\nThe current size of the frame is " << newFrame.currentSize << " of "
+           << newFrame.frameSize << " bytes" << endl;
+    }
     else {
-        // check if the frame structure is already present in the buffer. Or create a new one
-        auto frameStruct = playoutBuffer_.find(frameNumber);
-        if (frameStruct == playoutBuffer_.end()) {
-            ReceivingFrameStatus newFrame;
-            newFrame.frameSize = header->getFrameLength();
-            newFrame.currentSize = header->getPayloadLength();
-            //newFrame.playoutTime = simTime().dbl() + playoutTime;
-            newFrame.frameNumber = frameNumber;
-            newFrame.numberOfFragments = header->getTotalFrags();
-            newFrame.numberOfFragmentsReceived = 1;
+        frameStruct->second.currentSize += header->getPayloadLength();
+        frameStruct->second.numberOfFragmentsReceived += 1;
 
-            playoutBuffer_.insert({ frameNumber, newFrame });
-            int size = playoutBuffer_.size();
-            ueAppModule_->emit(playoutBufferLengthSignal_, size);
+        EV << "MecRTVideoStreamingReceiver::processPacket - packet with seqNum [" << header->getSequenceNumber() << "] relative to frame ["
+           << frameStruct->second.frameNumber << "] contains " << header->getPayloadLength() << " bytes.\nThe current size of the frame is " << frameStruct->second.currentSize << " of "
+           << frameStruct->second.frameSize << " bytes" << endl;
 
-            EV << "MecRTVideoStreamingReceiver::processPacket - store new frame [" << newFrame.frameNumber << "], packet with seqNum [" << header->getSequenceNumber() << "] contains "
-               << header->getPayloadLength() << " bytes.\nThe current size of the frame is " << newFrame.currentSize << " of "
-               << newFrame.frameSize << " bytes" << endl;
-        }
-        else {
-            frameStruct->second.currentSize += header->getPayloadLength();
-            frameStruct->second.numberOfFragmentsReceived += 1;
-
-            EV << "MecRTVideoStreamingReceiver::processPacket - packet with seqNum [" << header->getSequenceNumber() << "] relative to frame ["
-               << frameStruct->second.frameNumber << "] contains " << header->getPayloadLength() << " bytes.\nThe current size of the frame is " << frameStruct->second.currentSize << " of "
-               << frameStruct->second.frameSize << " bytes" << endl;
-
-            if (frameStruct->second.currentSize > frameStruct->second.frameSize) {
-                // just a debug
-                // this should not happen
-                throw cRuntimeError("MecRTVideoStreamingReceiver::processPacket - frame has a current size [%d], bigger than the expected [%d]", frameStruct->second.currentSize, frameStruct->second.frameSize);
-            }
+        if (frameStruct->second.currentSize > frameStruct->second.frameSize) {
+            // just a debug
+            // this should not happen
+            throw cRuntimeError("MecRTVideoStreamingReceiver::processPacket - frame has a current size [%d], bigger than the expected [%d]", frameStruct->second.currentSize, frameStruct->second.frameSize);
         }
     }
 }
