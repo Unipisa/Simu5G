@@ -50,16 +50,16 @@ network UrbanNetwork
             @display("p=114,82;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=115,143;is=s");
+            @display("p=114,132;is=s");
         }
         binder: Binder {
-            @display("p=115,242;is=s");
+            @display("p=114,182;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=175,242;is=s");
+            @display("p=114,232;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=114,337;is=s");
+            @display("p=114,282;is=s");
         }
 
         //# traffic lights

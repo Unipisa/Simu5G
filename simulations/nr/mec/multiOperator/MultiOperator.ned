@@ -62,10 +62,10 @@ network MultiOperator
             @display("p=50,175;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=110,175;is=s");
+            @display("p=50,225;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50,258;is=s");
+            @display("p=50,275;is=s");
         }
         router: Router {
             @display("p=750,73");

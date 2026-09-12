@@ -51,16 +51,16 @@ network MultiMecHost_delay
             @display("p=50,75;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,125");
+            @display("p=50,125;is=s");
         }
         binder: Binder {
             @display("p=50,175;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=110,175;is=s");
+            @display("p=50,225;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50,258;is=s");
+            @display("p=50,275;is=s");
         }
         upf: Upf {
             @display("p=495,132");

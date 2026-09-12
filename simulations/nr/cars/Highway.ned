@@ -45,13 +45,13 @@ network Highway
             @display("p=50,75;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,125");
+            @display("p=50,125;is=s");
             config = xmldoc("demo.xml");
         }
 
         //# Veins manager module
         veinsManager: VeinsInetManager {
-            @display("p=50,227;is=s");
+            @display("p=50,325;is=s");
         }
 
         //# LTE modules
@@ -62,10 +62,10 @@ network Highway
             @display("p=50,175;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=110,175;is=s");
+            @display("p=50,225;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50,258;is=s");
+            @display("p=50,275;is=s");
         }
         server: StandardHost {
             @display("p=660,136;is=n;i=device/server");

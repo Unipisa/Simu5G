@@ -41,22 +41,22 @@ network MultiCell_withSecondaryGnb
         @display("i=block/network2;bgb=1100,800;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=104,62;is=s");
+            @display("p=106,62;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=106,131;is=s");
+            @display("p=106,112;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,172");
+            @display("p=106,162;is=s");
         }
         binder: Binder {
-            @display("p=106,334;is=s");
+            @display("p=106,212;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=166,334;is=s");
+            @display("p=106,262;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=106,418;is=s");
+            @display("p=106,312;is=s");
         }
         server: StandardHost {
             @display("p=273,48;is=n;i=device/server");

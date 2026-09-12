@@ -40,22 +40,22 @@ network ExtClientServerExample
         @display("i=block/network2;bgb=800,554;bgi=background/pisa");
     submodules:
         routingRecorder: RoutingTableRecorder {
-            @display("p=73,130;is=s");
+            @display("p=73,122;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=73,72");
+            @display("p=73,172;is=s");
         }
         channelControl: LteChannelControl {
-            @display("p=70,190;is=s");
+            @display("p=73,72;is=s");
         }
         binder: Binder {
-            @display("p=73,261;is=s");
+            @display("p=73,222;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=133,261;is=s");
+            @display("p=73,272;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=72,343;is=s");
+            @display("p=73,322;is=s");
         }
         router: Router {
             @display("p=223,175;i=device/smallrouter");

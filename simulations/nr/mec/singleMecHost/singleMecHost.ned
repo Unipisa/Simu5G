@@ -44,22 +44,22 @@ network SingleMecHost
     submodules:
 
         routingRecorder: RoutingTableRecorder {
-            @display("p=690,104;is=s");
+            @display("p=690,74;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=690,184;is=s");
+            @display("p=690,124;is=s");
         }
         channelControl: LteChannelControl {
             @display("p=690,24;is=s");
         }
         binder: Binder {
-            @display("p=690,264;is=s");
+            @display("p=690,174;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=750,264;is=s");
+            @display("p=690,224;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=691,342;is=s");
+            @display("p=690,274;is=s");
         }
         upf: Upf {
             @display("p=545,250");

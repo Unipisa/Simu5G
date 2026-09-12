@@ -41,19 +41,19 @@ network MultiCell_D2DMultihop
             @display("p=90,24;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=90,70;is=s");
+            @display("p=90,74;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=90,121");
+            @display("p=90,124;is=s");
         }
         binder: Binder {
-            @display("p=90,171;is=s");
+            @display("p=90,174;is=s");
         }
         bearerConfigurator: BearerConfigurator {
-            @display("p=150,171;is=s");
+            @display("p=90,224;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50,258;is=s");
+            @display("p=90,274;is=s");
         }
         server: StandardHost {
             @display("p=500,50;is=n;i=device/server");
@@ -110,10 +110,10 @@ network MultiCell_D2DMultihop
             @display("p=1900,450;is=s");
         }
         eventGenerator: EventGenerator {
-            @display("p=90,222;is=s");
+            @display("p=90,324;is=s");
         }
         d2dMultihopStatistics: MultihopD2DStatistics {
-            @display("p=90,272;is=s");
+            @display("p=90,374;is=s");
         }
     connections:
         router1.pppg++ <--> Eth10G <--> eNodeB1.ppp;
