@@ -79,6 +79,8 @@ void NrPdcpRxEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
         rxWindowDesc_.rxNext_ = rcvdSno + 1;
 
     if (rcvdSno == rxWindowDesc_.rxDeliv_) {
+        unsigned int oldRxDeliv = rxWindowDesc_.rxDeliv_;
+
         // this SDU is the next one to be delivered
         EV << NOW << " NrPdcpRxEntity::handlePdcpSdu - Deliver SDU SN[" << rcvdSno << "] to upper layer" << endl;
         pdcpSdu->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
@@ -100,9 +102,14 @@ void NrPdcpRxEntity::handlePdcpSdu(Packet *pdcpSdu, unsigned int sequenceNumber)
             pos++;
         }
 
-        // shift window by 'i' positions
+        // Shift the window down by 'pos'. The slots still holding state are those of the
+        // SNs below rxNext_, i.e. old indices [pos, rxNext_ - oldRxDeliv): the bound is
+        // relative to rxDeliv_ as it was before the deliveries above advanced it. Slots at
+        // or above that bound are empty already -- nothing beyond rxNext_ has been received
+        // -- so the vacated span needs no separate clearing pass.
         EV << NOW << " NrPdcpRxEntity::handlePdcpSdu - shifting window by " << pos << " positions" << endl;
-        for (unsigned int i = pos; i < rxWindowDesc_.rxNext_ - rxWindowDesc_.rxDeliv_; ++i) {
+        ASSERT(rxWindowDesc_.rxNext_ >= rxWindowDesc_.rxDeliv_);
+        for (unsigned int i = pos; i < rxWindowDesc_.rxNext_ - oldRxDeliv; ++i) {
             if (sduBuffer_.get(i) != nullptr)
                 sduBuffer_.addAt(i - pos, sduBuffer_.remove(i));
             received_.at(i - pos) = received_.at(i);
