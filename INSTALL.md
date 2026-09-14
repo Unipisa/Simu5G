@@ -1,92 +1,141 @@
 INSTALLATION INSTRUCTIONS
 =========================
 
-The Simu5G Framework can be compiled on any platform supported by the INET Framework.
+Simu5G can be compiled on any platform supported by OMNeT++ and the INET
+Framework.
 
 Prerequisites
 -------------
 
-You should have a
+Simu5G requires OMNeT++ (https://omnetpp.org) and the INET Framework
+(https://inet.omnetpp.org). The versions a given Simu5G release was tested
+with, and is compatible with, are listed in that release's entry in
+WHATSNEW.md. Always check it before installing: Simu5G releases are tied to
+specific INET versions.
 
-- working OMNeT++ v6.0.3 (or later) installation. (Download from http://omnetpp.org)
-- working INET-Framework (v4.5) installation. (Download from http://inet.omnetpp.org)
+If you install Simu5G with opp_env (see below), the matching OMNeT++ and INET
+versions are installed automatically. Otherwise, install OMNeT++ and INET
+first, following their own installation instructions, and make sure that
+they work (e.g. try running some INET examples) before continuing.
 
-Make sure your OMNeT++ installation works OK (e.g. try running the samples)
-and it is in the path (to test, try the command "which nedtool"). On
-Windows, open a console with the "mingwenv.cmd" command. The PATH and other
-variables will be automatically adjusted for you. Use this console to compile
-and run INET and Simu5G.
+Installing Simu5G using opp_env (recommended)
+---------------------------------------------
 
-Install and test INET according to the installation instructions found in the archive.
-Be sure to check if the INET examples are running fine before continuing.
+opp_env (https://github.com/omnetpp/opp_env) installs Simu5G together with
+the OMNeT++ and INET versions it needs. It supports Linux and macOS; on
+Windows, it can be used in WSL2.
 
-Installing Simu5G using opp_env
--------------------------------
-
-1. Make sure that [opp_env](https://github.com/omnetpp/opp_env) is correctly
-   installed on your machine (only macOS and Linux are supported,
-   but you can also use `opp_env` in a Windows WSL2 VM just fine).
+1. Install opp_env, following its instructions.
 
 2. Create an opp_env workspace in an empty directory with the command
-   `opp_env init`
+   `opp_env init`.
 
-3. Install Simu5G and its dependencies (inc. OMNeT++) with the command
-   `opp_env install simu5g-latest`
+3. Install Simu5G and its dependencies with the command
+   `opp_env install simu5g-latest`. This will download and build OMNeT++,
+   INET, and Simu5G. Use `opp_env list` to see the available versions;
+   `simu5g-git` installs the current development version from the git
+   repository.
 
-4. Open a development shell with the command `opp_env shell simulte-latest`
-   then start the IDE from there or continue working from the command line.
+4. Open a shell with the command `opp_env shell simu5g-latest`. Everything
+   is built and the environment is set up, so you can run simulations right
+   away (see "Running the examples" below). The IDE can also be started
+   from this shell, with the `omnetpp` command.
 
-Building Simu5G from the IDE (automatically)
---------------------------------------------
+Building Simu5G from the command line
+-------------------------------------
 
-1. Make sure that the INET project is open and correctly built in your workspace.
+This section, and the next one, are for the case when OMNeT++ and INET are
+already installed (in whatever way), and you obtained Simu5G separately, as
+a source archive or a git clone. If you installed Simu5G with opp_env,
+skip them: it has already been built, and the environment is set up by
+`opp_env shell`.
 
-2. In `Help | Install Simulation Models...`, select the `Simu5G` project and click
-   `Install Project`.
+1. Extract the Simu5G source archive (or clone the git repository), e.g.
+   next to the INET directory.
 
-3. Make sure that INET is correctly referenced in the project by right-clicking on
-   the Simu5G folder and selecting `Properties | Project References`. Tick the
-   "inet4.5" box and click "Apply and Close".
+2. Make sure that `. setenv` was executed both in the OMNeT++ and in the
+   INET root directory.
 
-Building Simu5G from the IDE (manually)
----------------------------------------
+3. Change to the Simu5G root directory, and type `. setenv`. This sets
+   `SIMU5G_ROOT`, and adds Simu5G's `bin` directory to the `PATH`.
 
-1. Extract the downloaded Simu5G tarball next to the INET directory
-   (i.e. into your workspace directory, if you are using the IDE).
+4. Type `make` to build Simu5G in release mode, or `make MODE=debug` to
+   build the debug version. The makefiles are generated automatically.
+   INET must have been built in the same mode.
 
-2. Start the IDE, and ensure that the 'inet4.5' project is open and correctly built.
+The debug build keeps the internal consistency checks (`ASSERT`) enabled,
+which are compiled out of the release build. When developing or extending
+the model, run your simulations with the debug build too.
 
-3. Import the project using: `File | Import | General | Existing projects into Workspace`.
-   Then select the workspace dir as the root directory, and be sure NOT to check the
-   "Copy projects into workspace" box. Click Finish.
+Building Simu5G from the IDE
+----------------------------
 
-4. Make sure that INET is correctly referenced in the project by right-clicking on
-   the Simu5G folder and selecting `Properties | Project References`. Tick the
-   "inet4.5" box and click "Apply and Close".
+1. Extract the Simu5G source archive into your workspace directory, next to
+   the INET directory.
 
-5. You can build the project by pressing CTRL-B (Project | Build all)
+2. Start the IDE, and make sure that the INET project is open and has been
+   built.
 
-6. To run an example from the IDE, select the simulation example's folder under 
-   'simulations/NR', and click 'Run' on the toolbar.
+3. Import the project using `File | Import | General | Existing projects into
+   Workspace`. Select the workspace directory as the root directory, and
+   make sure that the "Copy projects into workspace" box is NOT checked.
+   Click Finish.
 
-Building Simu5G from the command line (manually)
-------------------------------------------------
+4. Make sure that INET is referenced by the Simu5G project: right-click the
+   Simu5G project, select `Properties | Project References`, tick the INET
+   project, and click "Apply and Close".
 
-1. Extract the downloaded Simu5G tarball next to the INET directory.
+5. Build the project by pressing Ctrl+B (`Project | Build All`).
 
-2. Make sure that `. setenv` was executed both for OMNeT++ and INET.
+Project features
+----------------
 
-3. Change to the Simu5G directory.
+Parts of Simu5G are optional project features, which can be enabled or
+disabled in the IDE (`Properties | OMNeT++ | Project Features`) or with the
+`opp_featuretool` command in the Simu5G root directory:
 
-4. Type `. setenv`. This will add the `simu5G/bin` directory to the PATH environment variable.
+- **Simu5G D2D** (`Simu5G_D2D`, enabled by default): device-to-device
+  communication support and the D2D examples.
 
-5. Type `make makefiles`. This should generate the `src/Makefile`.
+- **Simu5G Cars** (`Simu5G_Cars`, disabled by default): 5G-enabled vehicular
+  networks, which require Veins (https://veins.car2x.org) and its
+  `veins_inet` subproject. To use it, import the `veins` and `veins_inet`
+  projects into the workspace, add `veins_inet` to the project references
+  of Simu5G, and enable the feature (e.g. `opp_featuretool enable
+  Simu5G_Cars`). The `cars` examples also need the SUMO road traffic
+  simulator (https://eclipse.dev/sumo/), launched through Veins'
+  `veins-launchd` script before the simulation is started. Refer to the
+  Veins documentation for the Veins and SUMO versions that match your INET
+  version.
 
-6. Type "make" to build the Simu5G executable (release version). Use "`make MODE=debug`
-   to build debug version.
+Running the examples
+--------------------
 
-7. You can run examples by changing into a directory under 'simulations/NR', and
-   executing `./run`
+Example simulations are under `simulations/` (grouped into `lte/` and
+`nr/`), and emulation examples are under `emulation/`.
 
-Enjoy,
-The Simu5G Team
+- From the IDE: select an example folder or its `omnetpp.ini` file, and click
+  Run on the toolbar.
+
+- From the command line: change into an example directory, and run
+  `./run`, or invoke `simu5g` directly, e.g.
+  `simu5g -c <config-name> omnetpp.ini`. Add `-u Cmdenv` to run without the
+  graphical user interface. `simu5g_dbg` runs the debug build.
+
+The `simu5g` and `simu5g_dbg` scripts set up the NED path for Simu5G and
+INET; they need `SIMU5G_ROOT` and `INET_ROOT` to be set (see `setenv`).
+
+Running the tests
+-----------------
+
+In the Simu5G root directory:
+
+- `make tests` runs the fingerprint tests (see `tests/fingerprint/README`).
+  To run them with the debug build, use `tests/fingerprint/fingerprints -d`.
+- `make unittests` runs the unit tests (see `tests/unit/README`);
+  `make MODE=debug unittests` runs them against the debug build.
+
+Generating the documentation
+----------------------------
+
+`make neddoc` generates the NED reference documentation of the model.
