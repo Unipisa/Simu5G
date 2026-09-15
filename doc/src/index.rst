@@ -43,8 +43,8 @@ Simu5G: Simulator for 5G New Radio Networks
 
 Simu5G is the evolution of the popular `SimuLTE 4G network simulator
 <https://simulte.omnetpp.org>`__ that incorporates 5G New Radio access. Based
-on the OMNeT++ framework and the INET Framework, it is written in C++ and is
-fully customizable with a simple pluggable interface. One can also develop new
+on OMNeT++ and the INET Framework, it is written in C++ and is fully
+customizable with a simple pluggable interface. One can also develop new
 modules implementing new algorithms and protocols.
 
 Using Simu5G
@@ -126,8 +126,6 @@ Main Features
 | application endpoints with 5G transport and MEC services based on          |
 | information coming from the 5G network.                                    |
 +----------------------------------------------------------------------------+
-
-For what Simu5G does not model, see the :doc:`FAQ <faq>`.
 
 Development Since v1.3
 ----------------------

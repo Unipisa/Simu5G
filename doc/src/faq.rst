@@ -51,6 +51,9 @@ Frequently Asked Questions
 
    Features that set Simu5G apart include:
 
+   -  a detailed, standards-based representation of the protocol layers above
+      the MAC: SDAP with QoS flows, PDCP, RLC per TS 38.322 (NR) and TS 36.322
+      (LTE), and GTP-U tunneling in the core network;
    -  network-controlled device-to-device communications;
    -  Multi-access edge computing, with ETSI-compliant interfaces towards
       real MEC applications;
@@ -70,11 +73,16 @@ Frequently Asked Questions
 .. question:: Is Simu5G compatible with SimuLTE? Can I run simulations
    with both 4G and 5G nodes?
 
-   Yes and yes. Simu5G contains the LTE models of SimuLTE, so 4G and 5G nodes
-   can be part of the same simulation. You can also run Dual Connectivity
-   deployments: EN-DC (a 4G eNB acting as the master node and a 5G gNB as the
-   secondary node) and NE-DC (a gNB master with an eNB secondary). See the
+   Simu5G grew out of SimuLTE and contains its LTE models, so 4G and 5G nodes
+   can be part of the same simulation, also in Dual Connectivity deployments:
+   EN-DC (a 4G eNB acting as the master node and a 5G gNB as the secondary
+   node) and NE-DC (a gNB master with an eNB secondary). See the
    :doc:`users-guide/overview` page.
+
+   Simu5G is not a drop-in replacement for SimuLTE, however. The models have
+   been substantially revised since, and modules and parameters have been
+   renamed, added and removed, so SimuLTE simulations need to be ported to
+   run in Simu5G.
 
 .. question:: Does Simu5G model the control plane?
 
@@ -83,20 +91,9 @@ Frequently Asked Questions
    modeled, but RRC signaling between the UE and the base station, and
    control-plane signaling towards the core network, are not simulated:
    procedures take effect through direct function calls between the modules
-   involved, and where the duration of a
-   procedure matters (handover, re-establishment), it is modeled with timers.
-   Bearers come from configuration rather than from session management
-   signaling.
-
-.. question:: What are the other main modeling limitations?
-
-   -  No MIMO support.
-   -  The user plane is IPv4 only.
-   -  Device-to-device communication is a research prototype, not based on
-      the 3GPP sidelink specifications.
-   -  There is no scheduling request: a UE without an uplink grant obtains one
-      through the random access procedure.
-   -  Logical channel prioritization at the UE has no prioritized bit rate.
+   involved, and where the duration of a procedure matters (handover,
+   re-establishment), it is modeled with timers. Bearers come from
+   configuration rather than from session management signaling.
 
 .. question:: What hardware is required to run Simu5G as an emulator?
 

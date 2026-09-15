@@ -6,6 +6,7 @@ Contacts
 | *Giovanni Nardini*:  giovanni.nardini\ :si-icon:`material/at`\ unipi.it
 | *Giovanni Stea*:  giovanni.stea\ :si-icon:`material/at`\ unipi.it
 | *Antonio Virdis*:  antonio.virdis\ :si-icon:`material/at`\ unipi.it
+| *Andras Varga*:  andras\ :si-icon:`material/at`\ omnetpp.org
 
 Follow Simu5G updates on `Twitter <https://twitter.com/Simu5G>`__. The changes
 in each release are described in the `release notes
