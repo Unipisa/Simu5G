@@ -18,3 +18,31 @@ automatically on the first use)
 - Use 'make html' or 'make pdf' to build the documentation.
 - Use 'make clean all' to build both the html and pdf version from scratch.
 
+Deploying the website
+---------------------
+
+The website (https://simu5g.org) is served by GitHub Pages from the
+Unipisa/Simu5G repository. It is deployed by pushing to the 'deployed-website'
+branch of that repository:
+
+$ git push <unipisa-remote> <commit>:deployed-website
+
+The push triggers the "Build and deploy sphinx docs to GitHub Pages from site
+branch" workflow (.github/workflows/sphinx-doc-build-deploy.yml), which runs
+'make html' in doc/src and publishes doc/src/_build/html/. The workflow file
+is taken from the pushed commit itself. Pages is only configured on the
+Unipisa/Simu5G repository; pushing a 'deployed-website' branch to a fork does
+not deploy anything.
+
+The NED documentation (neddoc/) is NOT built by the workflow. It is copied from
+the simu5g-X.Y.Z-doc.tgz asset of the vX.Y.Z GitHub release on Unipisa/Simu5G.
+On a push the version is hardcoded as 1.3.0 in the workflow. To publish the
+neddoc of another release, either update the default in the workflow file, or
+run the workflow manually from the Actions tab ("Run workflow" on the
+'deployed-website' branch) and enter the version. The release and its -doc.tgz
+asset must exist before that.
+
+The 'deployed-website' branch may carry commits that are not on the main
+branches (e.g. site-only doc fixes). Merge the new content into it rather than
+force-pushing over it, or bring those commits over first.
+
