@@ -33,7 +33,7 @@ simple AlertSender like IApp
         double stopTime @unit("s") = default(0s); // 0 means "never stops"
         string interfaceTableModule;
         string multicastInterface = default("cellular");  // If not empty, set the multicast output interface option on the socket (interface name expected)
-        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         @signal[alertSentMsg];
         @statistic[alertSentMsg](title="Alert messages sent"; unit=""; source="alertSentMsg"; record=sum,vector);

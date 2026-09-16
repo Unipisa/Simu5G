@@ -33,7 +33,7 @@ simple BurstSender like IApp
         int packetSize @unit(B) = default(40B);             // Size of one packet, in bytes
         double intraBurstTime @unit("s") = default(0.01s);  // Time interval between packets within a burst
 
-        int tos = default(-1);                              // Type Of Service/Traffic Class for the sent packets (-1 means no specific TOS/Traffic Class is set)
+        int tos = default(-1);                              // Type of Service/Traffic Class for the sent packets (-1 means no specific TOS/Traffic Class is set)
 
         @signal[burstSentPkt];
         @statistic[burstSentPkt](title="Sent packet ID"; unit=""; source="burstSentPkt"; record=vector);

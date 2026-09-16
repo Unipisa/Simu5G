@@ -36,7 +36,7 @@ simple UeRnisTestApp like IApp
 
         double queryingPeriod @unit("s") = default(1s);   // RNIS querying period
 
-        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         // Auto-scheduling parameters
         double period @unit("s") = default(1s);

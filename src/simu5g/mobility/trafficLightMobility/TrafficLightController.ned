@@ -29,7 +29,7 @@ simple TrafficLightController
     double yellowPeriod @unit(s) = default(1s);
     double redPeriod @unit(s) = default(1s);
     double startTime @unit(s) = default(1s);
-    string startState @enum(OFF,GREEN,YELLOW,RED) = default("RED"); // do not use OFF or YELLOW for now
+    string startState @enum(OFF,GREEN,YELLOW,RED) = default("RED"); // Do not use OFF or YELLOW for now
     double meanCarLength @unit(m) = default(4m);
     double areaWidth @unit(m) = default(1m);
     bool bidirectional = default(false);

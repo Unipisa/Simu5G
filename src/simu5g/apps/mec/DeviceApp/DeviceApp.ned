@@ -28,18 +28,18 @@ import inet.applications.contract.IApp;
 //
 simple DeviceApp like IApp
 {
-    string ualcmpAddress = default(""); // UALCMP connect address to connect to, may be left empty ("")
+    string ualcmpAddress = default(""); // UALCMP address to connect to, may be left empty ("")
     int ualcmpPort = default(-1); // UALCMP port number to connect to
     int ualcmpLocalPort = default(8740); // UALCMP local port number
 
     string appProvider = default("");
     string appPackageSource = default("");
 
-    string localAddress = default(""); // used local address for UE and UALCMP, may be left empty ("")
+    string localAddress = default(""); // Local address used for the UE and the UALCMP, may be left empty ("")
     int localPort = default(-1); // UE port number to listen on
-    int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
-    int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
-    int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+    int timeToLive = default(-1); // If not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
+    int dscp = default(-1); // If not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
+    int tos = default(-1); // If not -1, set the Type of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
     @display("i=block/app");
 
     gates:

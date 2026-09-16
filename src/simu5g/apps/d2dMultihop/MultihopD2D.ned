@@ -64,7 +64,7 @@ simple MultihopD2D like IApp
         string lteMacModule = default("^.cellularNic.mac");
         string ltePhyModule = default("^.cellularNic.phy");
 
-        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         //# Statistics
         @signal[d2dMultihopGeneratedMsg];
