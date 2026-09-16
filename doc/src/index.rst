@@ -19,6 +19,11 @@
    install
 
 .. toctree::
+   :hidden:
+
+   Releases <https://github.com/Unipisa/Simu5G/releases>
+
+.. toctree::
    :caption: FAQ
    :hidden:
 
