@@ -41,6 +41,19 @@
 // advanced visualization through OMNeT++, and comprehensive statistics
 // collection for performance analysis.
 //
+// Starting points for browsing:
+//
+// - ~eNodeB and ~gNodeB -- the LTE and 5G NR base stations
+// - ~LteUe and ~NrUe -- the LTE and 5G NR user equipment
+// - ~LteCar and ~NrCar -- UE variants with vehicular mobility
+// - ~Upf and ~PgwStandard -- the core network nodes: the 5G Core User Plane
+//   Function, and the PDN Gateway of a 4G EPC
+// - ~MecHost -- the ETSI MEC host that runs MEC applications and services
+// - ~BackgroundCell and ~ExtCell -- lightweight cell models that create
+//   inter-cell interference without simulating the traffic behind it
+// - ~SingleCell and ~MultiCell (LTE), and ~SingleCell_Standalone and
+//   ~MultiCell_Standalone (5G) -- selected networks used in example simulations
+//
 // See the <tt><a href="whatsnew.html">WHATSNEW</a></tt> file in the distribution
 // for the list of recent changes and new features.
 //

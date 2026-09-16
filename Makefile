@@ -41,4 +41,5 @@ dist:
 	releng/makedist
 
 neddoc:
-	@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/simulations,/*/tests,/*/showcases" .
+	#@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/simulations,/*/tests,/*/showcases" .
+	@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/tests" .
