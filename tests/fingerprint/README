@@ -14,3 +14,40 @@ Fingerprints are fragile to NED changes and parameter value changes.
 When a fingerprint test fails, the simulation's correctness has to be
 verified by some other means, and the fingerprints in the tests
 updated.
+
+
+Notes for Simu5G-1.7.0:
+
+- **Fingerprints and INET/OMNeT++ versions**: the fingerprints recorded in
+  `simulations.csv` and `simulations_d2d.csv` are tied to the versions CI
+  records them with, INET-4.5.4 and OMNeT++ 6.3.0 (see
+  `.github/workflows/fingerprint-tests.yml`). Running the suite against a
+  different INET or OMNeT++ version reports mismatches, and those mismatches
+  do not indicate a problem. All 202 configurations were re-run against
+  INET-4.6.0 and INET-4.7.0, under OMNeT++ 6.3.0 and 6.4.0; every
+  configuration ran to completion in every combination, with no errors. The
+  `~tNl` ingredient -- the packets that cross between network nodes, their
+  times and their lengths -- is identical in all 202 configurations in every
+  combination tested, so the simulated network traffic itself is unaffected
+  by the INET and OMNeT++ version. What moves is intra-node event scheduling
+  (`tplx`, `tilx`) and recorded statistics (`sz`):
+
+  - **INET-4.5.4 to INET-4.6.0** is the substantial step: `sz` moves in all
+    202 configurations, and `tplx` and `tilx` in 18 and 45 of them.
+
+  - **INET-4.6.0 to INET-4.7.0** is nearly inert: 197 of the 202
+    configurations are unchanged in all four ingredients. The five that
+    differ -- `SchedulersTest` runs 0 and 12 in `simulations/lte/demo`, and
+    `checkMulticastRange`, `D2DMulticast-1to2` and `D2DMulticast-1toM` in
+    `simulations/lte/d2d_multicast` -- move only `tplx` and `tilx`, leaving
+    both `sz` and `~tNl` untouched.
+
+  - **OMNeT++ 6.3.0 to 6.4.0** moves no behavioral ingredient at all:
+    `tplx`, `tilx` and `~tNl` are identical in all 202 configurations. Only
+    `sz` moves, and only in the 181 configurations that record an empty
+    statistic, because 6.3.0 writes the mean of an empty statistic as `-nan`
+    while 6.4.0 writes `nan`, and the differing sign bit changes the hash.
+    (6.4.0 also prints scalars with one more significant digit; the
+    underlying values are the same, and fingerprints are computed from the
+    values, not from the recorded text.)
+

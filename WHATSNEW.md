@@ -610,6 +610,17 @@ None of this changes behavior; the full fingerprint suite is byte-identical.
   multi-peer D2D configurations. Changes meant to preserve behavior had to
   leave the simulated traffic unchanged, as captured by the fingerprints.
 
+- **Fingerprints are INET/OMNeT++ version specific**: the CSVs hold the
+  values for INET-4.5.4 + OMNeT++ 6.3.0, the versions CI uses; other
+  versions report mismatches, and they are expected. Over all 202
+  configurations: OMNeT++ 6.4.0 moves `sz` in 181 and nothing else, as it
+  writes the mean of an empty statistic as `nan` rather than `-nan`;
+  INET-4.6.0 moves `sz` in all of them and `tplx`/`tilx` in 18 and 45; and
+  INET-4.7.0 is then nearly inert (197 of 202 identical to 4.6.0, the other
+  five `tplx`/`tilx` only). `~tNl` never moves, so the traffic between
+  network nodes is unaffected by either version; and no combination
+  produced errors. [This section was added post-release]
+
 - **Statistical tests**: changes that alter behavior were validated by
   evaluating how they move the simulation results. The scalar results of
   the example simulations are kept as baselines in the
