@@ -26,7 +26,7 @@ simple D2dChannelModel extends StochasticChannelModel
     parameters:
         @class("D2dChannelModel");
 
-        // If true, enables the interference computation for D2D connections
+        // Whether interference from other D2D transmissions is included in the D2D SINR
         bool d2dInterference = default(true);
 
         // Statistics

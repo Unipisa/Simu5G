@@ -38,7 +38,7 @@ simple HandoverController like IHandoverController
         double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);
         double handoverAttachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency-handoverDetachmentTime : handoverDetachmentTime);
 
-        // If true, gets minRssi from PhyPisaData
+        // Whether minRssi is taken from PhyPisaData instead of the minRssi parameter
         bool minRssiDefault = default(true);
 
         // Configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)

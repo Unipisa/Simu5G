@@ -61,7 +61,7 @@ simple BackgroundCellChannelModel
         // Cable loss
         double cableLoss @unit(dB) = default(2dB);
 
-        // If true, LOS/NLOS is drawn per link from the scenario's LOS probability; if false, it is fixed to fixedLos
+        // Whether LOS/NLOS is drawn per link from the scenario's LOS probability; when false, it is fixed to fixedLos
         bool dynamicLos = default(false);
         // LOS state of every link when dynamicLos is false: true = LOS, false = NLOS
         bool fixedLos = default(false);
@@ -73,10 +73,10 @@ simple BackgroundCellChannelModel
         int numFadingPaths = default(6);
         double delayRms @unit(s) = default(363ns);
 
-        // If true, enables the inter-cell interference computation for UL and DL connections from background cells
+        // Whether interference from the other background cells is included in the SINR, in both UL and DL
         bool bgCellInterference = default(true);
-        // If true, enables the inter-cell interference computation for DL connections
+        // Whether interference from other base stations is included in the DL SINR
         bool downlinkInterference = default(true);
-        // If true, enables the interference computation for UL connections
+        // Whether interference from the UEs of other cells is included in the UL SINR
         bool uplinkInterference = default(true);
 }

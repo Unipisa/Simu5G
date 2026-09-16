@@ -37,7 +37,7 @@ simple LteDlFeedbackGenerator
         // Time interval between sensing and transmission in TTI
         int fbDelay @unit(tti) = default(1tti);
 
-        // True if we want to use also periodic feedback
+        // Whether periodic feedback is used in addition to aperiodic feedback
         bool usePeriodic = default(true);
 
         // Initial txMode (see LteCommon.h)
