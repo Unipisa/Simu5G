@@ -27,7 +27,7 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 // transmission or reception of data packets to or from User Equipments (UEs).
 // Therefore, it is significantly more efficient from a simulation speed perspective.
 // To achieve this, it includes a ~BackgroundTrafficGenerator to customize the level of background
-// traffic to be simulated, a ~BackgroundChannelModel to configure channel parameters, and a
+// traffic to be simulated, a ~BackgroundCellChannelModel to configure channel parameters, and a
 // ~BackgroundScheduler that manages the allocation of time-frequency resources based on the traffic
 // generator.
 // Note that this module can generate interference on only one Component Carrier, as configured

@@ -22,7 +22,7 @@ package simu5g.stack.phy.channelmodel;
 //
 // It covers:
 // - path loss per deployment scenario, LOS/NLOS state and log-normal shadowing,
-//   with the formulas of the 3GPP propagation study selected by ~pathLossType~
+//   with the formulas of the 3GPP propagation study selected by pathLossType
 //   (TR 36.814, TR 36.873 or TR 38.901);
 // - multipath fading, Jakes or Rayleigh;
 // - the antenna pattern attenuation and the link budget (antenna gains, cable

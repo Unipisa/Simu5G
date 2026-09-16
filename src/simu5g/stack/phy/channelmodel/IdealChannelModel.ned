@@ -24,9 +24,9 @@ package simu5g.stack.phy.channelmodel;
 //
 //     per * harqReduction^(n-1)
 //
-// so with the default ~harqReduction~ below 1 each HARQ retransmission is more
+// so with the default harqReduction below 1 each HARQ retransmission is more
 // likely to succeed than the previous attempt, as it would be with soft combining.
-// Setting ~harqReduction~ to 1 makes the attempts independent and identically
+// Setting harqReduction to 1 makes the attempts independent and identically
 // distributed, in which case a frame that exhausts its HARQ retransmissions -- and
 // is therefore lost as far as RLC is concerned -- has probability
 // per^(maxHarqRtx+1). That makes the residual loss rate seen by RLC an exact,

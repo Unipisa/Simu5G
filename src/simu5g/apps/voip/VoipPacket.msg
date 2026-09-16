@@ -16,7 +16,7 @@ import inet.common.packet.chunk.Chunk;
 namespace simu5g;
 
 //
-// Packet used by the ~VoPSender and ~VoipReceiver modules.
+// Packet used by the ~VoipSender and ~VoipReceiver modules.
 //
 class VoipPacket extends inet::FieldsChunk {
     unsigned int IDtalk;
