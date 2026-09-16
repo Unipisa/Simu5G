@@ -40,9 +40,7 @@ module LteMacEnb extends LteMacBase
 
         //# volatile xml optSolution = default(xmldoc("solution.sol"));
 
-        //#
         //# AMC Parameters
-        //#
 
         // AMC Type:  "LteAmc", "NrAmc" (the D2D NICs swap in the "LteAmcD2D"/"NrAmcD2D" leaves)
         string amcType @enum(LteAmc,NrAmc,LteAmcD2D,NrAmcD2D) = default("LteAmc");
@@ -50,13 +48,13 @@ module LteMacEnb extends LteMacBase
         // AMC pilot mode; supported values depend on the AMC implementation (LteAmc: "AUTO", "D2D")
         string amcMode = default("AUTO");
 
-        // resource allocation type ("distributed" or "localized")
+        // Resource allocation type ("distributed" or "localized")
         string rbAllocationType @enum(distributed,localized) = default("localized");
 
-        // summary feedback confidence function lower bound
+        // Summary feedback confidence function lower bound
         double summaryLowerBound @unit(s) = default(5ms);
 
-        // summary feedback confidence function upper bound
+        // Summary feedback confidence function upper bound
         double summaryUpperBound @unit(s) = default(20ms);
 
         // FeedBack Historical Base capacity in DL (number of stored feedback samples per UE)
@@ -65,15 +63,13 @@ module LteMacEnb extends LteMacBase
         // FeedBack Historical Base capacity in UL (number of stored feedback samples per UE)
         int fbhbCapacityUl = default(5);
 
-        // wideband CQI generation parameter (0.0 means "use the mean value" )
+        // Wideband CQI generation parameter (0.0 means "use the mean value")
         double cqiWeight = default(0.0);
 
-        // number of eNodeBs - set to 0 if unknown
+        // Number of eNodeBs - set to 0 if unknown
         int eNodeBCount = default(0);
 
-        //#
         //# eNb Scheduler Parameters
-        //#
         // Scheduling discipline. See LteCommon.h for discipline meaning.
         // ALLOCATOR_BESTFIT is the D2D frequency-reuse allocator: it is only
         // constructible by the D2D uplink schedulers, so selecting it requires
@@ -91,11 +87,10 @@ module LteMacEnb extends LteMacBase
 
         string pilotMode @enum(IN_CQI,MAX_CQI,AVG_CQI,MEDIAN_CQI,ROBUST_CQI) = default("ROBUST_CQI");
 
-        int numPreambles = default(64);        // number of RACH preambles available for contention-based random access
+        int numPreambles = default(64);        // Number of RACH preambles available for contention-based random access
 
         string cellInfoModule;
 
-        //#
         //# Statistics related to resource blocks occupancy
         @signal[avgServedBlocksDl];
         @statistic[avgServedBlocksDl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksDl"; record=mean,vector);

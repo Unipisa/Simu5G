@@ -26,10 +26,10 @@ simple D2dChannelModel extends StochasticChannelModel
     parameters:
         @class("D2dChannelModel");
 
-        // if true, enables the interference computation for D2D connections
+        // If true, enables the interference computation for D2D connections
         bool d2dInterference = default(true);
 
-        // statistics
+        // Statistics
         @signal[rcvdSinrD2D];
         @statistic[rcvdSinrD2D](title="SINR measured at packet reception, D2D"; unit="dB"; source="rcvdSinrD2D"; record=mean,vector);
 }

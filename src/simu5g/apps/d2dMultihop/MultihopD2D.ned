@@ -50,7 +50,7 @@ simple MultihopD2D like IApp
         double maxBroadcastRadius @unit(m) = default(-1m);
         int ttl = default(3);
         double maxTransmissionDelay @unit("s") = default(0.01s);
-        double selfishProbability = default(0.0);  // probability that the app does not relay the received message
+        double selfishProbability = default(0.0);  // Probability that the app does not relay the received message
         string eventGeneratorModule = default("eventGenerator");
         string multihopD2DStatisticsModule = default("d2dMultihopStatistics");
 
@@ -64,7 +64,7 @@ simple MultihopD2D like IApp
         string lteMacModule = default("^.cellularNic.mac");
         string ltePhyModule = default("^.cellularNic.phy");
 
-        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         //# Statistics
         @signal[d2dMultihopGeneratedMsg];

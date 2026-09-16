@@ -315,6 +315,6 @@ simple BearerConfigurator
         // (operator policy, not spec-mandated: 3GPP standardizes the QoS characteristics,
         // the RAN chooses what to make of them)
         double amPerThreshold = default(1e-4);  // rlcMode derivation: a definition whose QoS profile has packetErrorRate <= this gets "AM", else "UM"
-        object lcgPriorityBounds = default([25, 50, 75]);  // lcg derivation: qosPriorityLevel < bounds[k] -> LCG k, else LCG 3; strictly ascending, one bound between each pair of adjacent LCGs
+        object lcgPriorityBounds = default([25, 50, 75]);  // Lcg derivation: qosPriorityLevel < bounds[k] -> LCG k, else LCG 3; strictly ascending, one bound between each pair of adjacent LCGs
         @display("i=block/cogwheel");
 }

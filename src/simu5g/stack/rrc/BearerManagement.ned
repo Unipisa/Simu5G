@@ -20,8 +20,8 @@ simple BearerManagement like IBearerManagement
     parameters:
         @display("i=block/control");
         @class(BearerManagement);
-        string binderModule = default("binder");   // to reach a peer's BearerManagement on RLF
-        string bearerConfiguratorModule = default("bearerConfigurator");   // to return a torn-down bearer's DRB identity to its pool
+        string binderModule = default("binder");   // To reach a peer's BearerManagement on RLF
+        string bearerConfiguratorModule = default("bearerConfigurator");   // To return a torn-down bearer's DRB identity to its pool
 
         // RRC re-establishment after a radio link failure (TS 38.331 5.3.7). On RLF the peer's
         // link is released (Ip2Nic drops its traffic); t311 = cell-(re)selection timer, and when
@@ -43,7 +43,7 @@ simple BearerManagement like IBearerManagement
         string pdcpEntityModuleType = default("simu5g.stack.pdcp.LtePdcpEntity");
         string pdcpRelayEntityModuleType = default("simu5g.stack.pdcp.PdcpRelayEntity");
 
-        bool dualConnectivityEnabled = default(false);   // set by the NIC; two-leg (split-capable) bearers
+        bool dualConnectivityEnabled = default(false);   // Set by the NIC; two-leg (split-capable) bearers
 
         // RLC entity types (compound modules): lteRlc* = LTE-FI bearers (TS 36.322),
         // nrRlc* = NR bearers (SI/SO wire format, TS 38.322)
@@ -60,7 +60,7 @@ simple BearerManagement like IBearerManagement
         string registrationModule = default("^.registration");
         string drbTableModule = default("^.drbTable");
         string ip2nicModule = default("^.^.ip2nic");
-        string handoverPacketHolderModule = default("^.^.handoverPacketHolder");   // attachment-ledger push target (UE only)
+        string handoverPacketHolderModule = default("^.^.handoverPacketHolder");   // Attachment-ledger push target (UE only)
         string pdcpMuxModule = default("^.^.pdcpMux");
         string pdcpDcMuxModule = default("^.^.pdcpDcMux");
         string d2dModeControllerModule = default("^.d2dModeController");
@@ -68,6 +68,6 @@ simple BearerManagement like IBearerManagement
         string nrRlcMuxModule = default("^.^.nrRlcMux");
         string macModule = default("^.^.mac");
         string nrMacModule = default("^.^.nrMac");
-        string sdapModule = default("^.^.sdap");   // configuration push target; unresolvable (no SDAP on the NIC) = no pushes
-        string qosFlowClassifierModule = default("^.^.qosFlowClassifier");   // uplink QFI rule push target; unresolvable (not a UE stack with SDAP) = no pushes
+        string sdapModule = default("^.^.sdap");   // Configuration push target; unresolvable (no SDAP on the NIC) = no pushes
+        string qosFlowClassifierModule = default("^.^.qosFlowClassifier");   // Uplink QFI rule push target; unresolvable (not a UE stack with SDAP) = no pushes
 }

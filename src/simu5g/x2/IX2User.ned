@@ -22,7 +22,7 @@ moduleinterface IX2User
     parameters:
         @display("i=block/cogwheel");
     gates:
-        //# connections to the X2 Manager
+        //# Connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
 }

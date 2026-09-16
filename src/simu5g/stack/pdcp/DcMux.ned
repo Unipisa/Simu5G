@@ -24,7 +24,7 @@ simple DcMux
     gates:
         input dcManagerIn @loose;
         output dcManagerOut @loose;
-        input fromEntity[];       // from a secondary's PDCP relay (UL) or a master leg's remote side (DL out)
-        output toRelayEntity[];   // to a secondary's PDCP relay (DL, PdcpRelayEntity)
-        output toRxEntity[];      // to a master PDCP entity's remote (X2) leg (UL in)
+        input fromEntity[];       // From a secondary's PDCP relay (UL) or a master leg's remote side (DL out)
+        output toRelayEntity[];   // To a secondary's PDCP relay (DL, PdcpRelayEntity)
+        output toRxEntity[];      // To a master PDCP entity's remote (X2) leg (UL in)
 }

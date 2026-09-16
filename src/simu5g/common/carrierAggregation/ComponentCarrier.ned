@@ -30,13 +30,13 @@ simple ComponentCarrier
 
         string binderModule = default("binder");
 
-        // Carrier Frequency (GHz) -->
+        // Carrier Frequency (GHz)
         double carrierFrequency @unit("GHz") = default(2GHz);
 
-        // number of bands for this channel
+        // Number of bands for this channel
         int numBands = default(6);
 
-        // numerology index
+        // Numerology index
         int numerologyIndex = default(0);
 
     // TDD slot format index

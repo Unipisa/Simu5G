@@ -26,12 +26,12 @@ simple MecOrchestrator
         @display("i=device/mainframe;bgb=1006,692");
         string binderModule = default("binder");
 
-        string selectionPolicy @enum(MecHostBased,MecServiceBased,AvailableResourcesBased) = default("MecServiceBased"); // available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"
-        int mecHostIndex = default(0); // to be used with the MecHostBased policybased
+        string selectionPolicy @enum(MecHostBased,MecServiceBased,AvailableResourcesBased) = default("MecServiceBased"); // Available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"
+        int mecHostIndex = default(0); // To be used with the MecHostBased policybased
         object mecHostList = default([]);
         object mecApplicationPackageList = default([]);
 
-        // times to simulate lifecycle operations
+        // Times to simulate lifecycle operations
         double onboardingTime @unit(s) = default(50ms);
         double instantiationTime @unit(s) = default(50ms);
         double terminationTime @unit(s) = default(50ms);

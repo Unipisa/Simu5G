@@ -28,7 +28,7 @@ moduleinterface IMecApp
         string mp1Address;
         int mp1Port;
 
-		//resource required infos
+		// Resource required infos
         double requiredRam @unit("B");
         double requiredDisk @unit("B");
         double requiredCpu;

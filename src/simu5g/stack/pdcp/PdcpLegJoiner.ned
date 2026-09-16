@@ -22,6 +22,6 @@ simple PdcpLegJoiner like IPdcpLegJoiner
     parameters:
         @display("i=block/join");
     gates:
-        input in[];                // per-leg input (sized by the enclosing PdcpEntityBase's connections)
-        output out;                // merged stream to the RX entity
+        input in[];                // Per-leg input (sized by the enclosing PdcpEntityBase's connections)
+        output out;                // Merged stream to the RX entity
 }

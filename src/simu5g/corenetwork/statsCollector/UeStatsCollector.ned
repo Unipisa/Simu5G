@@ -29,7 +29,7 @@ module UeStatsCollector like IStatsCollector
         string packetFlowObserverModule = default("^.cellularNic.packetFlowObserver");
         bool movingAverage = default(true);
 
-        // time periods for measurements
+        // Time periods for measurements
         int dataVolumePeriods = default(15);
         int delayPacketPeriods = default(10);
         int discardRatePeriods = default(15);

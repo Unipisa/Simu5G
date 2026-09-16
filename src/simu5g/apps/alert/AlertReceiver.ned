@@ -25,7 +25,7 @@ simple AlertReceiver like IApp
     parameters:
         int localPort = default(3000);
         string interfaceTableModule;
-        string multicastInterface = default("cellular");  // if not empty, set the multicast output interface option on the socket (interface name expected)
+        string multicastInterface = default("cellular");  // If not empty, set the multicast output interface option on the socket (interface name expected)
         @signal[alertDelay];
         @statistic[alertDelay](title="Alert Message Delay"; unit="s"; source="alertDelay"; record=mean,vector);
         @signal[alertRcvdMsg];

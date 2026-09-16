@@ -24,8 +24,8 @@ simple NrRlcUmRxEntity like simu5g.stack.rlc.IRlcRxEntity
     parameters:
         @dynamic(true);
         @display("i=block/layer");
-        string macModule = default("^.^.mac");  // set by the enclosing RlcUmEntityBase compound (per leg)
-        string rlcMuxModule = default("^.^.rlcMux");  // this bearer's leg mux; set by the RlcUmEntityBase compound
+        string macModule = default("^.^.mac");  // Set by the enclosing RlcUmEntityBase compound (per leg)
+        string rlcMuxModule = default("^.^.rlcMux");  // This bearer's leg mux; set by the RlcUmEntityBase compound
         int UM_Window_Size = default(2048);     // SDU reassembly window: 2048 (12-bit SN) or 32 (6-bit SN)
         double t_Reassembly @unit(s) = default(80ms);
 
@@ -56,5 +56,5 @@ simple NrRlcUmRxEntity like simu5g.stack.rlc.IRlcRxEntity
 
     gates:
         input in;       // PDUs from MAC, via the RlcMux
-        output out;     // reassembled SDUs to the PDCP layer (direct per-DRB connection, not via a mux)
+        output out;     // Reassembled SDUs to the PDCP layer (direct per-DRB connection, not via a mux)
 }

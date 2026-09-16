@@ -30,7 +30,7 @@ module MecPlatform
         int numMecServices = default(0);
 
     gates:
-        inout virtInfr[];     // connection to the virtualization infrastructure
+        inout virtInfr[];     // Connection to the virtualization infrastructure
 
     submodules:
 

@@ -22,7 +22,7 @@ simple RlcTmTxEntity like simu5g.stack.rlc.IRlcTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/layer");
-        int queueSize = default(0);    // max queue length in packets (0: unlimited)
+        int queueSize = default(0);    // Max queue length in packets (0: unlimited)
 
         @signal[rlcPacketLossDl];
         @statistic[rlcPacketLossDl](title="rlc Packet Loss DL"; unit=""; source="rlcPacketLossDl"; record=mean,sum,vector);

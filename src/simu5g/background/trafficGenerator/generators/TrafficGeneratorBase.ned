@@ -50,14 +50,14 @@ simple TrafficGeneratorBase like ITrafficGenerator
         double rtxRateUl = default(0.1);
         double rtxDelayUl @unit("s") = default(0.006s);
 
-        // these values are only considered when
+        // These values are only considered when
         // - periodicCqi == false && computeAvgInterference == false
         double cqiMeanDl = default(15);
         double cqiMeanUl = default(15);
         double cqiStddevDl = default(0);
         double cqiStddevUl = default(0);
 
-        // statistics
+        // Statistics
         @signal[bgMeasuredSinrDl];
         @statistic[bgMeasuredSinrDl](title="Average DL SINR for background UEs"; unit=""; source="bgMeasuredSinrDl"; record=mean,count,vector);
         @signal[bgMeasuredSinrUl];

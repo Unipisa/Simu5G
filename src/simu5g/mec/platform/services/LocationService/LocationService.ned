@@ -26,13 +26,13 @@ simple LocationService like IMecService, IApp
     parameters:
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
-        string localAddress = default(""); // local address; may be left empty ("")
+        string localAddress = default(""); // Local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
         double locationSubscriptionPeriod @unit(s) = default(1s);
 
         bool loadGenerator = default(false);
-        double betaa = default(0);  // used only if loadGenerator is true
-        int numBgApps = default(0); // used only if loadGenerator is true
+        double betaa = default(0);  // Used only if loadGenerator is true
+        int numBgApps = default(0); // Used only if loadGenerator is true
 
         double requestServiceTime @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);

@@ -19,7 +19,7 @@ moduleinterface IHandoverPacketHolder
         @display("i=block/layer");
     gates:
         input upperLayerIn;
-        input x2In @loose; // only used in eNodeB/gNodeB nodes
+        input x2In @loose; // Only used in eNodeB/gNodeB nodes
         output stackOut;
         output hoManagerOut @loose; // eNodeB/gNodeB only: to forward packets to handover manager for X2 tunneling
 }

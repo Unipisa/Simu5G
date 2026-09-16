@@ -22,8 +22,8 @@ moduleinterface INrSdap
         string reflectiveQosTableModule;  // UE only: path to ReflectiveQosTable module (empty = disabled)
 
     gates:
-        input upperLayerIn;     // from IP layer
-        output upperLayerOut;   // to IP layer
-        input pdcpIn;           // from PDCP layer
-        output pdcpOut;         // to PDCP layer
+        input upperLayerIn;     // From IP layer
+        output upperLayerOut;   // To IP layer
+        input pdcpIn;           // From PDCP layer
+        output pdcpOut;         // To PDCP layer
 }

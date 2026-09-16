@@ -33,13 +33,13 @@ module NrNicUeD2D extends NrNicUe
         phy.typename = default("PhyUeD2D");
         ip2nic.typename = default("Ip2NicD2D");
 
-        // both legs previously ran with the NIC-wide D2D support enabled
+        // Both legs previously ran with the NIC-wide D2D support enabled
         rlcMux.typename = default("RlcMuxD2D");
         rrc.bearerManagement.lteRlcUmEntityModuleType = default("simu5g.stack.d2d.rlc.LteRlcUmEntityD2D");
         rrc.bearerManagement.nrRlcUmEntityModuleType = default("simu5g.stack.d2d.rlc.NrRlcUmEntityD2D");
         nrRlcMux.typename = default("RlcMuxD2D");
 
-        // use the D2D-capable channel model on both legs (matching the
+        // Use the D2D-capable channel model on both legs (matching the
         // pre-separation defaults: TR 36.814 on the LTE leg, TR 38.901 on the NR leg)
         channelModelType = default("D2dChannelModel");
         nrChannelModelType = default("D2dChannelModel");

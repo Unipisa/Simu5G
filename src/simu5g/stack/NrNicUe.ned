@@ -33,7 +33,7 @@ import simu5g.stack.sdap.common.IReflectiveQosTable;
 module NrNicUe extends LteNicUe
 {
     parameters:
-        bool hasSdap = default(false);  // whether the stack has an SDAP layer: true on 5GC (Upf) networks, false on EPC/EN-DC ones; the network sets it per its core
+        bool hasSdap = default(false);  // Whether the stack has an SDAP layer: true on 5GC (Upf) networks, false on EPC/EN-DC ones; the network sets it per its core
         bool useReflectiveQos = default(false);
         ip2nic.hasSdap = default(this.hasSdap);
         sdap.nodeRole = default("UE");
@@ -53,7 +53,7 @@ module NrNicUe extends LteNicUe
         nrMac.isNr = true;
         nrPhy.isNr = true;
         nrDlFbGen.isNr = true;
-        // the NR leg's modules take their MacNodeId from the node's NR id
+        // The NR leg's modules take their MacNodeId from the node's NR id
         rrc.nrHandoverController.macNodeId = parent.nrMacNodeId;
         nrMac.macNodeId = parent.nrMacNodeId;
         nrPhy.macNodeId = parent.nrMacNodeId;

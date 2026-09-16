@@ -29,7 +29,7 @@ simple CbrReceiver like IApp
         @signal[cbrJitter](type="simtime_t");
         @signal[cbrFrameLoss](type="double");
         @signal[cbrReceivedThroughput];
-        @signal[cbrReceivedBytes](type=long); // size of each received packet
+        @signal[cbrReceivedBytes](type=long); // Size of each received packet
         @signal[cbrRcvdPkt](type=long);
         @statistic[cbrFrameDelay](title="Cbr Frame Delay"; unit="s"; source="cbrFrameDelay"; record=mean,vector);
         @statistic[cbrJitter](title="Cbr Playout Loss"; unit="s"; source="cbrJitter"; record=mean,vector);

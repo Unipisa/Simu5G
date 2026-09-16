@@ -22,18 +22,18 @@ import inet.applications.contract.IApp;
 simple VodUdpServer like IApp
 {
     parameters:
-        int localPort; // port to listen on
+        int localPort; // Port to listen on
         string vodTraceFile;
         int fps = default(25);
         string traceType = default("SVC");  // "Scalable Video Coding" (from MPEG4?) -- only format implemented
 
-        // clients parameters
+        // Clients parameters
         object destAddresses = default([]);
         int destPort;
         volatile double clientsStartStreamTime @unit(s) = default(0s);
         object clientsReqTime @unit(s) = default([]);
         double startTime @unit(s) = default(0s);
-        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         @display("i=block/app");
     gates:

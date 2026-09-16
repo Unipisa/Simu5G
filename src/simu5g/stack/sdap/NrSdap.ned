@@ -62,14 +62,14 @@ simple NrSdap like INrSdap
     parameters:
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
         string bearerConfiguratorModule = default("bearerConfigurator");
-        bool establishBearersOnDemand = default(true);  // when false, a packet that finds no established bearer raises an error instead of establishing one (static bearers are established up front; see the staticDrbs parameter of ~BearerConfigurator)
+        bool establishBearersOnDemand = default(true);  // When false, a packet that finds no established bearer raises an error instead of establishing one (static bearers are established up front; see the staticDrbs parameter of ~BearerConfigurator)
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool useReflectiveQos = default(false); // UE only
         bool reflectiveQosOverridesQfi = default(false);  // UE only: when a packet has both a classified QFI (QfiReq tag) and a reflective QoS match, true = the reflective QFI wins, false = the classified one; a packet with only one of the two always uses it
         @display("i=block/layer");
     gates:
-        input upperLayerIn;     // from upper layer (Ip2Nic or app)
-        output upperLayerOut;   // to upper layer (Ip2Nic or app)
-        input pdcpIn;           // from PDCP layer
-        output pdcpOut;         // to PDCP layer
+        input upperLayerIn;     // From upper layer (Ip2Nic or app)
+        output upperLayerOut;   // To upper layer (Ip2Nic or app)
+        input pdcpIn;           // From PDCP layer
+        output pdcpOut;         // To PDCP layer
 }

@@ -24,11 +24,11 @@ package simu5g.world.radio;
 simple ChannelControl
 {
     parameters:
-        double pMax @unit("mW") = default(20mW); // maximum sending power used for this network (in mW)
-        double sat @unit("dBm") = default(-110dBm); // signal attenuation threshold (in dBm)
-        double alpha = default(2); // path loss coefficient
-        double carrierFrequency @unit("Hz") = default(2.4GHz); // base carrier frequency of all the channels (in Hz)
-        int numChannels = default(1); // number of radio channels (frequencies)
+        double pMax @unit("mW") = default(20mW); // Maximum sending power used for this network (in mW)
+        double sat @unit("dBm") = default(-110dBm); // Signal attenuation threshold (in dBm)
+        double alpha = default(2); // Path loss coefficient
+        double carrierFrequency @unit("Hz") = default(2.4GHz); // Base carrier frequency of all the channels (in Hz)
+        int numChannels = default(1); // Number of radio channels (frequencies)
         @display("i=misc/sun");
         @labels(node);
 }

@@ -36,9 +36,9 @@ moduleinterface ILteMac
         @display("i=block/mac");
 
     gates:
-        input upperLayerIn;   // from RLC
-        output upperLayerOut;  // to RLC
-        input phyIn;    // from PHY
-        output phyOut;    // to PHY
+        input upperLayerIn;   // From RLC
+        output upperLayerOut;  // To RLC
+        input phyIn;    // From PHY
+        output phyOut;    // To PHY
 }
 

@@ -51,7 +51,7 @@ moduleinterface IMecService
         int numBgApps;
 
 
-        string localAddress; // local address; may be left empty ("")
+        string localAddress; // Local address; may be left empty ("")
         int localPort;     // localPort number to listen on
 
         double requestServiceTime;

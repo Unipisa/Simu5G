@@ -34,9 +34,9 @@ network ExtUeAppMecAppExample
         // TS 37.324 ties SDAP to the 5GC connection, not to the radio
         **.cellularNic.hasSdap = default(true);
 
-        double playgroundSizeX @unit(m); // x size of the area the nodes are in (in meters)
-        double playgroundSizeY @unit(m); // y size of the area the nodes are in (in meters)
-        double playgroundSizeZ @unit(m); // z size of the area the nodes are in (in meters)
+        double playgroundSizeX @unit(m); // X size of the area the nodes are in (in meters)
+        double playgroundSizeY @unit(m); // Y size of the area the nodes are in (in meters)
+        double playgroundSizeZ @unit(m); // Z size of the area the nodes are in (in meters)
         @display("bgb=805,500");
 
     submodules:

@@ -24,24 +24,24 @@ simple HandoverController like IHandoverController
 
         bool dynamicCellAssociation = default(false);
 
-        // allows handovers in the UE
+        // Allows handovers in the UE
         bool enableHandover = default(false);
 
-        // whether this instance is associated with the the NR or the LTE stack
+        // Whether this instance is associated with the the NR or the LTE stack
         bool isNr;
 
         // MacNodeId of the stack leg this controller belongs to (set by the NIC)
         int macNodeId;
 
-        // handover duration
+        // Handover duration
         double handoverLatency @unit(s) = default(50ms);
         double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);
         double handoverAttachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency-handoverDetachmentTime : handoverDetachmentTime);
 
-        // if true, get minRssi from PhyPisaData
+        // If true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);
 
-        // configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)
+        // Configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)
         double minRssi @unit("dB") = default(-99.0dB);
 
         double hysteresisFactor = default(10);
@@ -53,7 +53,7 @@ simple HandoverController like IHandoverController
         string feedbackGeneratorModule = default("^.^.dlFbGen"); // TODO or "^.^.nrDlFbGen"
         string otherHandoverControllerModule = default("");
 
-        bool hasCollector = default(false); // true when node has a collector module (ueCollector/nrUeCollector) for this PHY module
+        bool hasCollector = default(false); // True when node has a collector module (ueCollector/nrUeCollector) for this PHY module
 
         @signal[servingCell];
         @statistic[servingCell](title="ID of the serving cell for the UE"; unit=""; source="servingCell"; record=vector);

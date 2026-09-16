@@ -39,7 +39,7 @@ network ExtClientServer_bgCells
         **.cellularNic.hasSdap = default(true);
         @display("i=block/network2;bgb=800,554;bgi=background/pisa");
 
-        // number of BG cells
+        // Number of BG cells
         int numBgCells = default(0);
 
     submodules:

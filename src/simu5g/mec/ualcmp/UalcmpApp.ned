@@ -36,10 +36,10 @@ simple UalcmpApp like IApp
         string serviceName = default("Ualcmp");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
-        string localAddress = default(""); // local address; may be left empty ("")
+        string localAddress = default(""); // Local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
 
-        // hostname of the reference orchestrator
+        // Hostname of the reference orchestrator
         string mecOrchestratorHostname;
 
         double requestServiceTime @unit(s) = default(5us);
@@ -47,7 +47,7 @@ simple UalcmpApp like IApp
 
         string serverThreadClass = default("simu5g.mec.platform.services.base.SocketManager");
 
-        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         @signal[loadGeneratorNumBackgroundRequests];
         @statistic[loadGeneratorNumBackgroundRequests](title="Load Generator Background Requests Count"; record=mean,vector);

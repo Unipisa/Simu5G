@@ -27,23 +27,23 @@ simple UeRequestApp like IApp
     parameters:
         @display("i=block/source");
 
-        //connection infos
+        // Connection infos
         int localPort = default(4000);
-        int deviceAppPort = default(4000); // port of the DeviceApp
+        int deviceAppPort = default(4000); // Port of the DeviceApp
         string deviceAppAddress; // ipAddress of the DeviceApp
 
         int requestPacketSize @unit(B) = default(10B);
 
-        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
-        //autoscheduling infos
+        // Autoscheduling infos
         double period @unit("s") = default(0.2s);
         double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);
 
         string mecAppName = default("MecResponseApp");
 
-        // stats
+        // Stats
 
         @signal[responseTime];
         @statistic[responseTime](title="responseTime"; unit="s"; source="responseTime"; record=stats,mean,vector);

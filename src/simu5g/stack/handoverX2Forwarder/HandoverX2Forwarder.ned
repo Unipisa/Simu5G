@@ -29,10 +29,10 @@ simple HandoverX2Forwarder like IHandoverX2Forwarder
         string handoverPacketHolderModule = default("^.handoverPacketHolder");
 
     gates:
-        //# connections to the X2 Manager
+        //# Connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
 
-        output tunnelOut; // data packets received via the X2 tunnel during handover
-        input dataIn; // data packets from HandoverPacketHolder to forward via X2
+        output tunnelOut; // Data packets received via the X2 tunnel during handover
+        input dataIn; // Data packets from HandoverPacketHolder to forward via X2
 }

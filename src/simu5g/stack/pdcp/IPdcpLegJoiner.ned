@@ -23,6 +23,6 @@ moduleinterface IPdcpLegJoiner
     parameters:
         @display("i=block/join");
     gates:
-        input in[];      // per-leg input
-        output out;      // merged stream to the RX entity
+        input in[];      // Per-leg input
+        output out;      // Merged stream to the RX entity
 }

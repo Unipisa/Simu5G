@@ -24,7 +24,7 @@ module RlcTmEntity
         @display("i=block/wheelbarrow");
     gates:
         input upperIn;    // SDUs from PDCP
-        output upperOut;  // reassembled SDUs to PDCP
+        output upperOut;  // Reassembled SDUs to PDCP
         input lowerIn;    // PDUs from RlcMux
         output lowerOut;  // PDUs and new-data notifications to RlcMux/MAC
         input macIn;      // MAC SDU requests via RlcMux

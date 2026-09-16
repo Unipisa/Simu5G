@@ -28,13 +28,13 @@ simple MecRequestBackgroundGeneratorApp extends MecAppBase
 {
     parameters:
         @class(MecRequestBackgroundGeneratorApp);
-        mecAppId = default(0); // it will be override by getId() in initialize
+        mecAppId = default(0); // It will be override by getId() in initialize
         mecAppIndex = default(0);
 
         int numberOfApplications;
         bool allocateHostResources = default(false);
 
-        //resource required info
+        // Resource required info
         requiredRam = default(10MB);
         requiredDisk = default(100MB);
         requiredCpu = default(15000);

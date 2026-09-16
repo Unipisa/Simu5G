@@ -35,14 +35,12 @@ module LteMacBase like ILteMac
         //# H-ARQ
         int harqProcesses = default(8);
         int maxHarqRtx = default(3);
-        int harqFbEvaluationTimer = default(4);              // number of slots for sending back HARQ FB
+        int harqFbEvaluationTimer = default(4);              // Number of slots for sending back HARQ FB
 
         //# Statistics display (in GUI)
         bool statDisplay = default(false);
 
-        //#
         //# Statistics recording
-        //#
         @signal[macDelayDl];
         @statistic[macDelayDl](title="Delay at the MAC layer UL"; unit="s"; source="macDelayDl"; record=mean,vector);
         @signal[macThroughputDl];
@@ -102,18 +100,14 @@ module LteMacBase like ILteMac
         @signal[ulMacPduArrived];
 
     gates:
-        //#
         //# Gates connecting RLC and MAC Layers
-        //#
 
-        input upperLayerIn;   // from RLC
-        output upperLayerOut;  // to RLC
+        input upperLayerIn;   // From RLC
+        output upperLayerOut;  // To RLC
 
-        //#
         //# Gates connecting MAC and PHY Layers
-        //#
 
-        input phyIn;    // from PHY
-        output phyOut;    // to PHY
+        input phyIn;    // From PHY
+        output phyOut;    // To PHY
 }
 

@@ -23,6 +23,6 @@ moduleinterface IHandoverX2Forwarder extends IX2User
     parameters:
         @display("i=block/cogwheel");
     gates:
-        output tunnelOut; // data packets received via the X2 tunnel during handover
+        output tunnelOut; // Data packets received via the X2 tunnel during handover
 }
 

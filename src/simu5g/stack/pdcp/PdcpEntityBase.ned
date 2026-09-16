@@ -37,20 +37,20 @@ module PdcpEntityBase
     parameters:
         @dynamic(true);
         @display("i=block/wheelbarrow");
-        int numLegs = default(1);                  // number of RLC legs of this bearer
-        string legs = default(numLegs == 1 ? "MCG" : "MCG SCG");  // cell group of each leg, space-separated, in leg-index order
-        bool hasSplitter = numLegs > 1 || legs != "MCG";  // the TX side routes through the splitter whenever a leg needs its per-leg id mapping
+        int numLegs = default(1);                  // Number of RLC legs of this bearer
+        string legs = default(numLegs == 1 ? "MCG" : "MCG SCG");  // Cell group of each leg, space-separated, in leg-index order
+        bool hasSplitter = numLegs > 1 || legs != "MCG";  // The TX side routes through the splitter whenever a leg needs its per-leg id mapping
         int headerCompressedSize @unit(B) = default(-1B);
         *.headerCompressedSize = default(this.headerCompressedSize);
-        string rlcMode @enum(TM,UM,AM) = default("UM");   // forwarded to tx only; determines the PDCP header size
+        string rlcMode @enum(TM,UM,AM) = default("UM");   // Forwarded to tx only; determines the PDCP header size
         *.rlcMode = default(this.rlcMode);
         *.numLegs = this.numLegs;
         *.legs = this.legs;
-        *.emitPerSduSignals = !this.hasSplitter;   // where the splitter is present, it emits the per-leg statistics
-        *.reorderingEnabled = this.numLegs > 1;    // reorder the SN stream merged from several legs
+        *.emitPerSduSignals = !this.hasSplitter;   // Where the splitter is present, it emits the per-leg statistics
+        *.reorderingEnabled = this.numLegs > 1;    // Reorder the SN stream merged from several legs
     gates:
         input upperIn;            // SDUs from IP (via PdcpMux)
-        output upperOut;          // reassembled SDUs to IP (via PdcpMux)
+        output upperOut;          // Reassembled SDUs to IP (via PdcpMux)
         output legOut[numLegs];   // PDUs to leg k (RLC entity, or DcMux/X2)
         input legIn[numLegs];     // PDUs from leg k
     submodules:

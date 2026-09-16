@@ -22,16 +22,16 @@ import inet.applications.contract.IApp;
 simple BurstSender like IApp
 {
     parameters:
-        int localPort = default(-1);                        // local port to bind the sender (-1 means any port)
-        int destPort = default(3000);                       // destination port to which packets will be sent
-        string destAddress;                                 // destination address in string format
-        double startTime @unit("s") = default(0s);          // starting time of the first burst
+        int localPort = default(-1);                        // Local port to bind the sender (-1 means any port)
+        int destPort = default(3000);                       // Destination port to which packets will be sent
+        string destAddress;                                 // Destination address in string format
+        double startTime @unit("s") = default(0s);          // Starting time of the first burst
 
-        int burstSize = default(10);                        // number of packets to be sent in each burst
-        double interBurstTime @unit("s") = default(1s);     // time interval between consecutive bursts
+        int burstSize = default(10);                        // Number of packets to be sent in each burst
+        double interBurstTime @unit("s") = default(1s);     // Time interval between consecutive bursts
 
-        int packetSize @unit(B) = default(40B);             // size of one packet, in bytes
-        double intraBurstTime @unit("s") = default(0.01s);  // time interval between packets within a burst
+        int packetSize @unit(B) = default(40B);             // Size of one packet, in bytes
+        double intraBurstTime @unit("s") = default(0.01s);  // Time interval between packets within a burst
 
         int tos = default(-1);                              // Type Of Service/Traffic Class for the sent packets (-1 means no specific TOS/Traffic Class is set)
 

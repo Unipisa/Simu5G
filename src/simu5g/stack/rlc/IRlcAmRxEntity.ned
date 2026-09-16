@@ -19,6 +19,6 @@ package simu5g.stack.rlc;
 moduleinterface IRlcAmRxEntity extends IRlcRxEntity
 {
     gates:
-        output feedbackOut;    // received STATUS PDUs -> TX-side ARQ
-        output statusOut;  // own STATUS reports -> TX for transmission
+        output feedbackOut;    // Received STATUS PDUs -> TX-side ARQ
+        output statusOut;  // Own STATUS reports -> TX for transmission
 }

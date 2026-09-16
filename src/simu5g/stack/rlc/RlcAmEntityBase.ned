@@ -33,13 +33,13 @@ module RlcAmEntityBase
     parameters:
         @dynamic(true);
         @display("i=block/wheelbarrow");
-        string macModule = default("^.mac");   // this bearer leg's MAC; set per leg by BearerManagement
-        string bearerManagementModule = default("^.rrc.bearerManagement");   // notified of radio link failures
+        string macModule = default("^.mac");   // This bearer leg's MAC; set per leg by BearerManagement
+        string bearerManagementModule = default("^.rrc.bearerManagement");   // Notified of radio link failures
         *.macModule = default(absPath(this.macModule));
         *.bearerManagementModule = default(absPath(this.bearerManagementModule));
     gates:
         input upperIn;    // SDUs from PDCP
-        output upperOut;  // reassembled SDUs to PDCP
+        output upperOut;  // Reassembled SDUs to PDCP
         input lowerIn;    // PDUs from RlcMux (data + control)
         output lowerOut;  // PDUs and new-data notifications to RlcMux/MAC
         input macIn;      // MAC SDU requests via RlcMux

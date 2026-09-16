@@ -32,13 +32,13 @@ module Upf extends ApplicationLayerNodeBase
         @display("i=abstract/switch");
         @figure[submodules];
 
-        string nodeType = default("UPF");   // do NOT change!
+        string nodeType = default("UPF");   // Do NOT change!
         string gateway = default("");
         forwarding = default(true);
         multicastForwarding = default(false);
 
     gates:
-        // this gate is used for the UPF connected to the external data network
+        // This gate is used for the UPF connected to the external data network
         // it must be left unconnected for intermediate UPFs
         inout dnPppg @loose @labels(PppFrame-conn);
 

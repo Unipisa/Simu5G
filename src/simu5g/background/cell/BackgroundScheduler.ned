@@ -27,28 +27,28 @@ simple BackgroundScheduler
         string trafficManagerModule = default("^.bgTrafficGenerator.manager");
         string channelModelModule = default("^.bgChannelModel");
 
-        // transmission power
+        // Transmission power
         double txPower @unit(dBm) = default(46dBm);
 
-        // transmission direction
+        // Transmission direction
         string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
 
-        // transmission angle
+        // Transmission angle
         double txAngle @unit(deg) = default(0deg);
 
-        // flag to indicate whether this is a NR base station
+        // Flag to indicate whether this is a NR base station
         bool isNr = default(false);
 
-        // operating carrier
+        // Operating carrier
         int numerologyIndex = default(0);
 
-        // operating carrier
+        // Operating carrier
         double carrierFrequency @unit(GHz) = default(2GHz);
 
-        // carrier bandwidth
+        // Carrier bandwidth
         int numBands = default(6);
 
-        // statistics
+        // Statistics
         @signal[bgAvgServedBlocksDl];
         @statistic[bgAvgServedBlocksDl](title="Average DL served blocks for background cells"; unit=""; source="bgAvgServedBlocksDl"; record=mean,vector);
         @signal[bgAvgServedBlocksUl];

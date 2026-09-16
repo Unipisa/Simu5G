@@ -23,7 +23,7 @@ simple HandoverPacketHolderUe like IHandoverPacketHolder
         @display("i=block/layer");
     gates:
         input upperLayerIn;
-        input x2In @loose; // required by the interface, but UNUSED
+        input x2In @loose; // Required by the interface, but UNUSED
         output stackOut;
-        output hoManagerOut @loose; // required by the interface, but UNUSED
+        output hoManagerOut @loose; // Required by the interface, but UNUSED
 }

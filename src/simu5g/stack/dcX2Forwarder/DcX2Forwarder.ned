@@ -23,9 +23,9 @@ simple DcX2Forwarder like IDcX2Forwarder
         @display("i=block/cogwheel");
         @class("DcX2Forwarder");
     gates:
-        //# connections to the X2 Manager
+        //# Connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
-        input dataIn; // data packets from PDCP to forward via X2
-        output tunnelOut; // data packets received from X2 to send to PDCP
+        input dataIn; // Data packets from PDCP to forward via X2
+        output tunnelOut; // Data packets received from X2 to send to PDCP
 }

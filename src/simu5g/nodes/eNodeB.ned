@@ -84,8 +84,8 @@ module eNodeB
         **.cellInfoModule = default(absPath(".cellInfo"));
 
         //# Apps
-        int numApps = default(0);     // no of apps.
-        int numX2Apps = default(0);   // no of X2 apps. Specify the app types in INI file with x2App[0..1].typename="X2AppClient" syntax
+        int numApps = default(0);     // Number of apps
+        int numX2Apps = default(0);   // Number of X2 apps. Specify the app types in INI file with x2App[0..1].typename="X2AppClient" syntax
 
         //# Transport layer
         bool hasUdp = true;
@@ -93,24 +93,24 @@ module eNodeB
         bool hasSctp = true;
 
         //# MEC support
-        string mecHost = default("");		// symbolic name of the connected MEHost in the Network
+        string mecHost = default("");		// Symbolic name of the connected MEHost in the Network
 
         //# @author Alessandro Noferi
         bool hasRniSupport = default(false);
 
-        //# use it in case of emulation
+        //# Use it in case of emulation
         string extMeAppsAddress = default(""); // Address of the external MeApp IP/mask
         //# Plmn params (used by RNI Service in EnodeBStatsCollector)
         string mcc = default("001"); // Test network
         string mnc = default("01");  // Test network
 
     gates:
-        inout ppp @loose;         // connection to the Core Network
-        input radioIn @directIn;  // connection to the radio interface
-        inout x2[];               // connection to the X2 interface
+        inout ppp @loose;         // Connection to the Core Network
+        input radioIn @directIn;  // Connection to the radio interface
+        inout x2[];               // Connection to the X2 interface
 
         //# MEC support
-        inout pppMEHost @loose;		// connection to the GtpEndpoint module inside MEHost
+        inout pppMEHost @loose;		// Connection to the GtpEndpoint module inside MEHost
 
     submodules:
         interfaceTable: InterfaceTable {

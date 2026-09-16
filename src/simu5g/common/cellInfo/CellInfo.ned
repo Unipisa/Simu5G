@@ -26,9 +26,7 @@ simple CellInfo
         @display("i=block/control");
 
         @class("CellInfo");
-        //#
         //# General properties
-        //#
 
         // The minimum X-coordinate of the area constraint, unconstrained by default
         double constraintAreaMinX @unit(m) = default(-1m/0);
@@ -48,9 +46,7 @@ simple CellInfo
         // Type of eNodeB (MICRO / MACRO) - valid only for eNodeBs
         bool microCell = default(false);
 
-        //#
         //# Physical layer properties
-        //#
 
         // Number of sub-carriers per RB in DL
         int rbyDl = default(12);

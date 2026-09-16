@@ -24,6 +24,6 @@ simple PdcpUplinkRelay
         string binderModule = default("binder");
 
     gates:
-        input in;    // from the local RLC entity (UL PDU from the UE)
-        output out;  // to the DcMux (tunneled to the master over X2)
+        input in;    // From the local RLC entity (UL PDU from the UE)
+        output out;  // To the DcMux (tunneled to the master over X2)
 }

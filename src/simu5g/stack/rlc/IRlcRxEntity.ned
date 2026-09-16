@@ -24,5 +24,5 @@ moduleinterface IRlcRxEntity
         @display("i=block/layer");
     gates:
         input in;       // PDUs from MAC, via the RlcMux
-        output out;     // reassembled SDUs to the PDCP layer (direct per-DRB connection, not via a mux)
+        output out;     // Reassembled SDUs to the PDCP layer (direct per-DRB connection, not via a mux)
 }

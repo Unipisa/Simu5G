@@ -27,7 +27,7 @@ simple PhyBase like IPhy
 {
     parameters:
         @display("i=block/wrxtx");
-        bool isNr = default(false);   // true for the NR leg (set by NrNicUe/NrNicEnb on their PHY submodule)
+        bool isNr = default(false);   // True for the NR leg (set by NrNicUe/NrNicEnb on their PHY submodule)
         int macNodeId;                // MacNodeId of the stack leg this PHY belongs to (set by the NIC)
         double ueTxPower @unit(dBm) = default(26dBm);
         double eNodeBTxPower @unit(dBm) = default(46dBm);
@@ -36,11 +36,11 @@ simple PhyBase like IPhy
         double txAngle @unit(deg) = default(0deg);
 
         string binderModule = default("binder");
-        string channelModelModule = default("^.channelModel[0]"); // or "nrChannelModel[0]"
+        string channelModelModule = default("^.channelModel[0]"); // Or "nrChannelModel[0]"
 
     gates:
-        input upperGateIn;       // from upper layer
-        output upperGateOut;    // to upper layer
-        input radioIn;           // gate to receive message via sendDirect
+        input upperGateIn;       // From upper layer
+        output upperGateOut;    // To upper layer
+        input radioIn;           // Gate to receive message via sendDirect
 }
 

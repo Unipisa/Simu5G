@@ -20,5 +20,5 @@ moduleinterface IRlcAmTxEntity extends IRlcTxEntity
 {
     gates:
         input feedbackIn;    // STATUS PDUs received from the peer (to ARQ)
-        input statusIn;  // locally generated STATUS reports (to transmit)
+        input statusIn;  // Locally generated STATUS reports (to transmit)
 }

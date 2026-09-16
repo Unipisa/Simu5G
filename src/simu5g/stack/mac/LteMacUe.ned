@@ -25,13 +25,13 @@ module LteMacUe extends LteMacBase
 {
     parameters:
         @class("LteMacUe");
-        bool isNr = default(false);            // true for the NR leg (set by NrNicUe on the nrMac submodule)
+        bool isNr = default(false);            // True for the NR leg (set by NrNicUe on the nrMac submodule)
         string collectorModule = default("");
 
-        int numPreambles = default(64);        // number of RACH preambles available for contention-based random access
+        int numPreambles = default(64);        // Number of RACH preambles available for contention-based random access
         int maxRacAttempts = default(10);      // preambleTransMax; max RAC attempts (0 = give up after first failure)
-        int racBackoffMin = default(0);        // min random backoff (TTIs) after failed RAC
-        int racBackoffMax = default(20);       // max random backoff (TTIs) after failed RAC (0 = no backoff, instant retry)
+        int racBackoffMin = default(0);        // Min random backoff (TTIs) after failed RAC
+        int racBackoffMax = default(20);       // Max random backoff (TTIs) after failed RAC (0 = no backoff, instant retry)
         int raResponseWindow = default(3);     // ra-ResponseWindow: TTIs to wait before retrying RAC
         int retxBsrTimer = default(40);        // retxBSR-Timer: BSR retransmission timer (TTIs; 0 = disabled)
 }

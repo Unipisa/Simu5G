@@ -28,29 +28,28 @@ simple ExtCell
 
         string binderModule = default("binder");
 
-        // coordinates
+        // Coordinates
         double positionX @unit("m") = default(0m);
         double positionY @unit("m") = default(0m);
         double positionZ @unit("m") = default(0m);
 
-        // transmission power
+        // Transmission power
         double txPower @unit(dBm) = default(46dBm);
 
-        // transmission direction
+        // Transmission direction
         string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
 
-        // transmission angle
+        // Transmission angle
         double txAngle @unit(deg) = default(0deg);
 
-        // operating carrier
+        // Operating carrier
         double carrierFrequency @unit(GHz) = default(2GHz);
 
-        // carrier bandwidth
+        // Carrier bandwidth
         int numBands = default(6);
 
-        // --- ALLOCATION MANAGEMENT --- //
+        // Allocation management
         string bandAllocationType @enum(FULL_ALLOC,RANDOM_ALLOC,CONTIGUOUS_ALLOC) = default("FULL_ALLOC");
         double bandUtilization = default(0.5);
         int startingOffset = default(0);
-        // ----------------------------- //
 }

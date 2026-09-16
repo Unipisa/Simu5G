@@ -24,5 +24,5 @@ moduleinterface IPdcpLegSplitter
         @display("i=block/dispatch");
     gates:
         input in;        // PDUs from the TX entity
-        output out[];    // to leg k
+        output out[];    // To leg k
 }

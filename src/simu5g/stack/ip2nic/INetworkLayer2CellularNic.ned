@@ -24,12 +24,12 @@ moduleinterface INetworkLayer2CellularNic
         bool isNr;
         @display("i=block/layer");
     gates:
-        // connection to network layer.
+        // Connection to network layer.
         // These gate names are recognized by the network layer (same as the ones in the INetworkInterface interface)
         input upperLayerIn;
         output upperLayerOut;
 
-        // connection to the cellular stack
+        // Connection to the cellular stack
         input stackIn;
         output stackOut;
 }

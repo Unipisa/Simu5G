@@ -42,21 +42,21 @@ simple StochasticChannelModel extends ChannelModelBase
     parameters:
         @class("StochasticChannelModel");
 
-        string pathLossType @enum("Tr36814","Tr36873","Tr38901") = default("Tr36814"); // which 3GPP propagation study supplies the path loss formulas
+        string pathLossType @enum("Tr36814","Tr36873","Tr38901") = default("Tr36814"); // Which 3GPP propagation study supplies the path loss formulas
 
         // Enable/disable shadowing
         bool shadowing = default(true);
 
-        // Pathloss scenario from ITU -->
+        // Pathloss scenario from ITU
         string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOWN_SCENARIO) = default("URBAN_MACROCELL");
 
-        // eNodeB height -->
+        // eNodeB height
         double nodebHeight @unit(m) = default(25m);
-        // Building height -->
+        // Building height
         double buildingHeight @unit(m) = default(20m);
-        // determines if the UE is inside a building
+        // Determines if the UE is inside a building
         bool insideBuilding = default(false);
-        // enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901); only used with pathLossType="Tr38901"
+        // Enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901); only used with pathLossType="Tr38901"
         bool useBuildingPenetrationHighLossModel = default(false);
 
         double streetWidth @unit(m) = default(20m);
@@ -66,54 +66,54 @@ simple StochasticChannelModel extends ChannelModelBase
 
         double correlationDistance @unit(m) = default(50m);
 
-        // Target bler used to compute feedback -->
+        // Target bler used to compute feedback
         double targetBler = default(0.01);
-        // HARQ reduction -->
+        // HARQ reduction
         double harqReduction = default(0.2);
 
-        // Antenna Gain of UE -->
+        // Antenna Gain of UE
         double antennaGainUe @unit(dBi) = default(0dBi);
-        // Antenna Gain of eNodeB -->
+        // Antenna Gain of eNodeB
         double antennGainEnB @unit(dBi) = default(18dBi);
-        // Antenna Gain of Micro node -->
+        // Antenna Gain of Micro node
         double antennGainMicro @unit(dBi) = default(5dBi);
-        // Thermal Noise for 10 MHz of Bandwidth -->
+        // Thermal Noise for 10 MHz of Bandwidth
         double thermalNoise @unit(dBm) = default(-104.5dBm);
-        // Ue noise figure -->
+        // Ue noise figure
         double ueNoiseFigure @unit(dBm) = default(7dBm);
-        // eNodeB noise figure -->
+        // eNodeB noise figure
         double bsNoiseFigure @unit(dBm) = default(5dBm);
-        // Cable Loss -->
+        // Cable Loss
         double cableLoss @unit(dB) = default(2dB);
 
-        // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation -->
+        // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation
         bool dynamicLos = default(false);
-        // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss -->
+        // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss
         bool fixedLos = default(false);
-        // Enable/disable fading -->
+        // Enable/disable fading
         bool fading = default(true);
-        // Fading type (JAKES or RAYGHLEY) -->
+        // Fading type (JAKES or RAYGHLEY)
         string fadingType @enum(RAYLEIGH,JAKES) = default("JAKES");
-        // If jakes fading this parameter specify the number of path (tap channel) -->
+        // If jakes fading this parameter specify the number of path (tap channel)
         int numFadingPaths = default(6);
 
         double delayRms @unit(s) = default(363ns);
 
-        // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->
+        // If true, enables the inter-cell interference computation for UL and DL connections from background cells
         bool bgCellInterference = default(true);
-        // if true, enables the inter-cell interference computation for DL connections from external cells (maybe this is obsolete and should be removed) -->
+        // If true, enables the inter-cell interference computation for DL connections from external cells (maybe this is obsolete and should be removed)
         bool extCellInterference = default(true);
-        // if true, enables the inter-cell interference computation for DL connections -->
+        // If true, enables the inter-cell interference computation for DL connections
         bool downlinkInterference = default(false);
-        // if true, enables the interference computation for UL connections -->
+        // If true, enables the interference computation for UL connections
         bool uplinkInterference = default(false);
 
         bool enableExtCellLos = default(true);
 
-        // collection of SINR statistics can be disabled because it might be quite time-consuming
+        // Collection of SINR statistics can be disabled because it might be quite time-consuming
         bool collectSinrStatistics = default(true);
 
-        // statistics
+        // Statistics
         @signal[rcvdSinrDl];
         @statistic[rcvdSinrDl](title="SINR measured at packet reception, DL"; unit="dB"; source="rcvdSinrDl"; record=mean,vector);
         @signal[rcvdSinrUl];

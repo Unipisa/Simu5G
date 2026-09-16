@@ -25,9 +25,9 @@ simple ChannelModelBase like IChannelModel
         @class("ChannelModelBase");
 
         string binderModule = default("binder");
-        string cellInfoModule = default("^.^.cellInfo");  // optional
+        string cellInfoModule = default("^.^.cellInfo");  // Optional
 
-        // component carrier for this channel model
+        // Component carrier for this channel model
         string componentCarrierModule = default("carrierAggregation.componentCarrier[0]");
 }
 

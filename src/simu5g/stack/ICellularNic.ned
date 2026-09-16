@@ -26,7 +26,7 @@ moduleinterface ICellularNic extends IWirelessInterface
         string nodeType;
         @networkInterface;
     gates:
-        inout x2[] @loose;     // optional x2 manager
-        input nrRadioIn @loose;        // for NR support
+        inout x2[] @loose;     // Optional x2 manager
+        input nrRadioIn @loose;        // For NR support
 }
 

@@ -26,7 +26,7 @@ simple LtePdcpRxEntity like IPdcpRxEntity
         @signal[pdcpSduReceived];
         @signal[sentPacketToUpperLayer];
         string binderModule = default("binder");
-        int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
+        int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size in bytes (-1B = compression disabled)
 
     gates:
         input in;

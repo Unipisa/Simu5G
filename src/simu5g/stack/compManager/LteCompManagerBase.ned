@@ -33,7 +33,7 @@ simple LteCompManagerBase like ILteCompManager
         @statistic[compReservedBlocks](title="CoMP Reserved Blocks"; unit=""; source="compReservedBlocks"; record=mean,vector);
 
     gates:
-        //# connections to the X2 Manager
+        //# Connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
 }

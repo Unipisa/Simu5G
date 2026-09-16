@@ -22,7 +22,7 @@ import inet.applications.contract.IApp;
 simple BurstReceiver like IApp
 {
     parameters:
-        int localPort = default(3000);   // the local UDP port to bind to
+        int localPort = default(3000);   // The local UDP port to bind to
 
         @signal[burstRcvdPkt];
         @statistic[burstRcvdPkt](title="Received packet ID"; unit=""; source="burstRcvdPkt"; record=vector);

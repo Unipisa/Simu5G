@@ -27,11 +27,11 @@ simple GtpUser
 {
     parameters:
         string binderModule = default("binder");
-        string interfaceTableModule;            // path to the InterfaceTable module
-        string ipOutInterface = default("");    // optional: manual specification of outgoing interface for received IP
+        string interfaceTableModule;            // Path to the InterfaceTable module
+        string ipOutInterface = default("");    // Optional: manual specification of outgoing interface for received IP
         int localPort = default(31);
         int tunnelPeerPort = default(31);
-        string gateway = default("");			// optional
+        string gateway = default("");			// Optional
 
         @display("i=block/tunnel");
 

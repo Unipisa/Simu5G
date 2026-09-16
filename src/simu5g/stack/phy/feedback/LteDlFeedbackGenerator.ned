@@ -22,25 +22,25 @@ simple LteDlFeedbackGenerator
 {
     parameters:
         @display("i=block/cogwheel");
-        bool isNr = default(false);            // true for the NR leg (set by NrNicUe on the nrDlFbGen submodule)
+        bool isNr = default(false);            // True for the NR leg (set by NrNicUe on the nrDlFbGen submodule)
         int macNodeId;                         // MacNodeId of the stack leg this generator belongs to (set by the NIC)
 
-        // can be ALLBANDS, PREFERRED, WIDEBAND
+        // Can be ALLBANDS, PREFERRED, WIDEBAND
         string feedbackType @enum(ALLBANDS,PREFERRED,WIDEBAND) = default("ALLBANDS");
 
-        // resource allocation type ("distributed" or "localized")
+        // Resource allocation type ("distributed" or "localized")
         string rbAllocationType @enum(distributed,localized) = default("localized");
 
-        // period for Periodic feedback in TTI
+        // Period for Periodic feedback in TTI
         int fbPeriod @unit(tti) = default(6tti);
 
-        // time interval between sensing and transmission in TTI
+        // Time interval between sensing and transmission in TTI
         int fbDelay @unit(tti) = default(1tti);
 
-        // true if we want to use also periodic feedback
+        // True if we want to use also periodic feedback
         bool usePeriodic = default(true);
 
-        // initial txMode (see LteCommon.h)
+        // Initial txMode (see LteCommon.h)
         string initialTxMode @enum(SINGLE_ANTENNA_PORT0,TRANSMIT_DIVERSITY) = default("SINGLE_ANTENNA_PORT0");
 
         string binderModule = default("binder");

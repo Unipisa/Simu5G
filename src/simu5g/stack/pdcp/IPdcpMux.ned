@@ -26,6 +26,6 @@ moduleinterface IPdcpMux
     gates:
         input upperLayerIn;
         output upperLayerOut;
-        output toTxEntity[];       // dynamic: dispatches to TX entity in gates
-        input fromRxEntity[];      // dynamic: receives from RX entity out gates
+        output toTxEntity[];       // Dynamic: dispatches to TX entity in gates
+        input fromRxEntity[];      // Dynamic: receives from RX entity out gates
 }

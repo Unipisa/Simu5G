@@ -44,8 +44,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool hasRniSupport = default(false);
 
         string nodeType;
-        double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
-        double processingDelayOut @unit(s) = default(0s);   // additional processing delay for outgoing ip packets
+        double processingDelayIn @unit(s) = default(0s);   // Additional processing delay for incoming ip packets
+        double processingDelayOut @unit(s) = default(0s);   // Additional processing delay for outgoing ip packets
 
         string channelModelType = default("StochasticChannelModel");
 
@@ -53,7 +53,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         int numCarriers = default(1);
 
         string address @mutable = default("auto");
-        // the LTE leg's modules take their MacNodeId from the node
+        // The LTE leg's modules take their MacNodeId from the node
         phy.macNodeId = parent.macNodeId;
         mac.macNodeId = parent.macNodeId;
         *.interfaceTableModule = default(absPath(this.interfaceTableModule));
@@ -61,15 +61,13 @@ module LteNicBase extends NetworkInterface like ICellularNic
         **.dualConnectivityEnabled = default(this.dualConnectivityEnabled);
 
     gates:
-        //#
         //# Gates connecting UE/eNB and LTE Stack
-        //#
         //# Control Ports
         input upperLayerIn;
         output upperLayerOut;
-        input radioIn @loose;  // to receive messages sent using sendDirect()
-        input nrRadioIn @loose;// for NR support
-        inout x2[] @loose;     // optional x2 manager
+        input radioIn @loose;  // To receive messages sent using sendDirect()
+        input nrRadioIn @loose;// For NR support
+        inout x2[] @loose;     // Optional x2 manager
 
     submodules:
         // handover helper, performs packet holding / forwarding
@@ -106,9 +104,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=80,60,col;g=left");
         }
 
-         		//#
         //# Modules used to take trace of PDCP pkt flow
-        //#
         packetFlowObserver: <default("")> like IPacketFlowObserver if hasRniSupport {
             @display("p=80,60,col;g=left");
         }
@@ -118,17 +114,13 @@ module LteNicBase extends NetworkInterface like ICellularNic
         ip2nic.stackOut --> pdcpMux.upperLayerIn;
         ip2nic.stackIn <-- pdcpMux.upperLayerOut;
 
-        //#
         //# Internal LTE Stack Connections
-        //#
 
         //# RLC <-> MAC
         rlcMux.macOut --> mac.upperLayerIn;
         rlcMux.macIn <-- mac.upperLayerOut;
 
-        //#
         //# Connections from LTE Stack to radio interface
-        //#
         mac.phyOut --> phy.upperGateIn;
         mac.phyIn <-- phy.upperGateOut;
 

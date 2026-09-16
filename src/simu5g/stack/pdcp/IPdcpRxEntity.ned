@@ -24,5 +24,5 @@ moduleinterface IPdcpRxEntity
         @display("i=block/layer");
     gates:
         input in;    // PDCP PDUs from the RLC leg(s) (merged by the compound)
-        output out;  // reassembled SDUs to the PdcpMux
+        output out;  // Reassembled SDUs to the PdcpMux
 }

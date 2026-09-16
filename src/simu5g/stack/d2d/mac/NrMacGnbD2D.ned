@@ -25,10 +25,10 @@ module NrMacGnbD2D extends NrMacGnb
     parameters:
         @class("NrMacGnbD2D");
 
-        // use the D2D-capable AMC leaf
+        // Use the D2D-capable AMC leaf
         amcType = default("NrAmcD2D");
 
-        // use the D2D-capable uplink scheduler leaf
+        // Use the D2D-capable uplink scheduler leaf
         ulSchedulerType = default("NrSchedulerGnbUlD2D");
 
         // FeedBack Historical Base capacity in D2D (number of stored feedback samples per UE)
@@ -37,7 +37,7 @@ module NrMacGnbD2D extends NrMacGnb
         bool usePreconfiguredTxParams = default(false);
         int d2dCqi = default(7);
 
-        // frequency reuse parameters
+        // Frequency reuse parameters
         bool reuseD2D = default(false);
         bool reuseD2DMulti = default(false);
         double conflictGraphUpdatePeriod @unit(s) = default(1s);
@@ -46,11 +46,11 @@ module NrMacGnbD2D extends NrMacGnb
         // if distances are set to -1.0, then dBm thresholds are used,
         // otherwise distances have priority on dBm thresholds
         double conflictGraphThreshold = default(90);                       // dBm
-        double conflictGraphD2DInterferenceRadius @unit(m) = default(-1.0m);         // meters
-        double conflictGraphD2DMultiTxRadius @unit(m) = default(-1.0m);              // meters
-        double conflictGraphD2DMultiInterferenceRadius @unit(m) = default(-1.0m);    // meters
+        double conflictGraphD2DInterferenceRadius @unit(m) = default(-1.0m);         // Meters
+        double conflictGraphD2DMultiTxRadius @unit(m) = default(-1.0m);              // Meters
+        double conflictGraphD2DMultiInterferenceRadius @unit(m) = default(-1.0m);    // Meters
 
-        // handling of D2D mode switch
+        // Handling of D2D mode switch
         bool msHarqInterrupt = default(true);
         bool msClearRlcBuffer = default(true);
 

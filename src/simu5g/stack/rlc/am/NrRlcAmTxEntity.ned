@@ -29,7 +29,7 @@ simple NrRlcAmTxEntity like simu5g.stack.rlc.IRlcAmTxEntity
         int pollPDU = default(64);
         int maxRtxThreshold = default(4);
         double t_PollRetransmit @unit(s) = default(80ms);
-        string bearerManagementModule;   // notified when maxRtxThreshold is reached; set by the enclosing entity
+        string bearerManagementModule;   // Notified when maxRtxThreshold is reached; set by the enclosing entity
 
         @signal[receivedPacketFromUpperLayer];
         @statistic[receivedPacketFromUpperLayer](source="receivedPacketFromUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
@@ -55,5 +55,5 @@ simple NrRlcAmTxEntity like simu5g.stack.rlc.IRlcAmTxEntity
         input macIn;    // MAC SDU requests, via the RlcMux
         output out;     // PDUs and new-data notifications to MAC, via the RlcMux
         input feedbackIn;   // STATUS PDUs received from the peer, from the co-located RX side (to ARQ)
-        input statusIn; // locally generated STATUS reports, from the co-located RX side (to transmit)
+        input statusIn; // Locally generated STATUS reports, from the co-located RX side (to transmit)
 }

@@ -42,7 +42,7 @@ module MecHost
         string nodeType = "MecHost";						// DO NOT CHANGE
         string gateway = default("upf");
 
-        //#	ME Host Resources
+        //# ME Host Resources
         int maxMecApps = default(0);
         double maxRam @unit("B") = default(32GB);
         double maxDisk @unit("B") = default(100TB);
@@ -56,10 +56,10 @@ module MecHost
         object bsList = default([]);
 
     gates:
-		//to local radio networks
+        // To local radio networks
         inout ppp[];
 
-        //to external networks (internet)
+        // To external networks (internet)
         inout pppIf[];
 
     submodules:

@@ -49,8 +49,8 @@ package simu5g.stack.pdcp;
 simple DcPdcpLegSplitter like IPdcpLegSplitter
 {
     parameters:
-        int numLegs;                        // number of legs (set by the enclosing PdcpEntityBase)
-        string legs;                        // cell group of each leg, space-separated "MCG"/"SCG" (set by the enclosing PdcpEntityBase)
+        int numLegs;                        // Number of legs (set by the enclosing PdcpEntityBase)
+        string legs;                        // Cell group of each leg, space-separated "MCG"/"SCG" (set by the enclosing PdcpEntityBase)
         string binderModule = default("binder");
         // The split policy (primary path, split threshold) and any legSelection override
         // are pushed by RRC from the bearer's definition; see banner comment.
@@ -60,5 +60,5 @@ simple DcPdcpLegSplitter like IPdcpLegSplitter
         @signal[pdcpSduSentNr];
     gates:
         input in;               // PDUs from the TX entity
-        output out[];           // to leg k (sized by the enclosing PdcpEntityBase's connections)
+        output out[];           // To leg k (sized by the enclosing PdcpEntityBase's connections)
 }

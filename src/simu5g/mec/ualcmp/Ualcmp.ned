@@ -38,7 +38,7 @@ module Ualcmp
         string nodeType = "MecOrchestrator";						// DO NOT CHANGE
         string gateway = default("upf");
 
-        // hostname of the reference orchestrator
+        // Hostname of the reference orchestrator
         string mecOrchestratorHostname = default("mecOrchestrator");
 
         bool hasIpv4 = default(true);
@@ -46,14 +46,14 @@ module Ualcmp
         *.interfaceTableModule = default(absPath(".interfaceTable"));
 //        *.routingTableModule = default("^.ipv4.routingTable");
 
-        int numExtEthInterfaces = default(0); //
+        int numExtEthInterfaces = default(0);
 
     gates:
-        //to external networks (internet)
+        // To external networks (internet)
         inout ppp[];
 
         output toMecOrchestrator;
-        input fromMecOrchestrator;			// connection to the ME App output gate
+        input fromMecOrchestrator;			// Connection to the ME App output gate
 
     submodules:
 

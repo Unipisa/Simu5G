@@ -55,7 +55,7 @@ module LteUe
         @figure[submodules];
 
         //# Apps
-        int numApps = default(0);   // no of apps.
+        int numApps = default(0);   // Number of apps
                                     // Specify the app types in INI file with app[0..1].typename="UdpVideoStreamClient" syntax
 
         //# Transport layer
@@ -65,7 +65,7 @@ module LteUe
 
         //# Node specs
         string nodeType = "UE";  // DO NOT CHANGE
-        int servingNodeId = default(0); // the initial serving eNodeB of the UE; 0 if none
+        int servingNodeId = default(0); // The initial serving eNodeB of the UE; 0 if none
         int macNodeId = default(1025+simu5g_seq("LteUe_macNodeId"));
 
         //# D2D support: selects the D2D-capable NIC variant (see the cellularNic submodule).
@@ -87,14 +87,14 @@ module LteUe
         int numLoInterfaces = default(1);
 
         //# Num of PcapRecorders
-        int numPcapRecorders = default(0); // no of PcapRecorders
+        int numPcapRecorders = default(0); // Number of PcapRecorders
 
         bool hasRniSupport = default(false);
         cellularNic.mac.collectorModule = hasRniSupport ? "^.^.ueCollector" : "";
         cellularNic.rrc.handoverController.hasCollector = hasRniSupport;
 
     gates:
-        input radioIn @directIn;     // connection to master
+        input radioIn @directIn;     // Connection to master
 
     submodules:
         interfaceTable: InterfaceTable {

@@ -26,6 +26,6 @@ simple PdcpDownlinkRelay
         string binderModule = default("binder");
 
     gates:
-        input in;    // from the DcMux (DL PDU tunneled from the master)
-        output out;  // to the local RLC entity
+        input in;    // From the DcMux (DL PDU tunneled from the master)
+        output out;  // To the local RLC entity
 }

@@ -60,15 +60,15 @@ module VirtualisationInfrastructure
         string gateway = default("");
 
     gates:
-        inout ppp[];				// connection with GtpEndpoint and local/external networks
+        inout ppp[];				// Connection with GtpEndpoint and local/external networks
 
-        output independentMecAppOut[numIndependentMecApp];			// connection to the ME App input gate
-        input independentMecAppIn[numIndependentMecApp];			// connection to the ME App output gate
+        output independentMecAppOut[numIndependentMecApp];			// Connection to the ME App input gate
+        input independentMecAppIn[numIndependentMecApp];			// Connection to the ME App output gate
 
-        output meAppOut[];			// connection to the ME App input gate
-        input meAppIn[];			// connection to the ME App output gate
+        output meAppOut[];			// Connection to the ME App input gate
+        input meAppIn[];			// Connection to the ME App output gate
 
-        inout mecPlatform[];			// connection to the MEC Platform
+        inout mecPlatform[];			// Connection to the MEC Platform
 
     submodules:
 

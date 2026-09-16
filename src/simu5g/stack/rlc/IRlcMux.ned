@@ -28,7 +28,7 @@ moduleinterface IRlcMux
     gates:
         input macIn;
         output macOut;
-        output toRxEntity[];          // dynamic: dispatches to RX entity in gates
-        input fromTxEntity[];         // dynamic: receives from TX entity out gates
-        output macToTxEntity[];       // dynamic: dispatches MAC SDU requests to TX entity macIn gates
+        output toRxEntity[];          // Dynamic: dispatches to RX entity in gates
+        input fromTxEntity[];         // Dynamic: receives from TX entity out gates
+        output macToTxEntity[];       // Dynamic: dispatches MAC SDU requests to TX entity macIn gates
 }

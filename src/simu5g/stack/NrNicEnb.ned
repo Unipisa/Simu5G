@@ -26,7 +26,7 @@ import simu5g.stack.sdap.INrSdap;
 module NrNicEnb extends LteNicEnb
 {
     parameters:
-        bool hasSdap = default(false);  // whether the stack has an SDAP layer: true on 5GC (Upf) networks, false on EPC/EN-DC ones; the network sets it per its core
+        bool hasSdap = default(false);  // Whether the stack has an SDAP layer: true on 5GC (Upf) networks, false on EPC/EN-DC ones; the network sets it per its core
         ip2nic.hasSdap = default(this.hasSdap);
         sdap.nodeRole = default("gNB");
         ip2nic.isNr = default(true);
