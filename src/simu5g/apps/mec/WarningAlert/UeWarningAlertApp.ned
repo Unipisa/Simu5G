@@ -45,7 +45,7 @@ simple UeWarningAlertApp like IApp
         double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);
 
-        string mecAppName = default("MecWarningAlertApp"); // But could be MEWarningAlertApp_rest_External
+        string mecAppName = default("MecWarningAlertApp");  // The "appName" of the application descriptor to instantiate; the emulation scenario uses "MecWarningAlertApp_External"
 
         double positionX @unit(m) = default(210m);
         double positionY @unit(m) = default(260m);
