@@ -41,7 +41,7 @@ simple TrafficFlowFilter
 
         string binderModule = default("binder");
         string bearerConfiguratorModule = default("bearerConfigurator");  // Where a core-network instance registers for QFI-rule delivery
-        string ownerType @enum(ENODEB,GNODEB,PGW,UPF,UPF_MEC); // Must be one between ENODEB,GNODEB,PGW,UPF,UPF_MEC
+        string ownerType @enum(ENODEB,GNODEB,PGW,UPF,UPF_MEC); // Must be one of ENODEB, GNODEB, PGW, UPF, UPF_MEC
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;

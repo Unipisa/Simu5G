@@ -32,7 +32,7 @@ simple MecRnisTestApp extends MecAppBase
 
         int localUePort;
 
-        // Resource required info
+        // Required resources
         requiredRam = default(10MB);
         requiredDisk = default(1MB);
         requiredCpu = default(100);

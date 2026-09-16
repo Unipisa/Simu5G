@@ -29,7 +29,7 @@ simple PhyUeD2D extends PhyUe
         @class("PhyUeD2D");
         double d2dTxPower @unit(dBm) = default(26dBm);
         bool d2dMulticastCaptureEffect = default(true);
-        string d2dMulticastCaptureEffectFactor = default("RSRP");  // Or distance
+        string d2dMulticastCaptureEffectFactor = default("RSRP");  // "RSRP", otherwise distance-based
         bool enableMulticastD2DRangeCheck = default(false);
         double multicastD2DRange @unit(m) = default(1000m);
 

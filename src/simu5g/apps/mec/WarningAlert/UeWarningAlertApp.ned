@@ -31,16 +31,16 @@ simple UeWarningAlertApp like IApp
 
         string mobilityModule;
 
-        // Connection infos
+        // Connection parameters
         int localPort = default(4000);
-        int deviceAppPort = default(4000); // ipAddress of the DeviceApp
-        string deviceAppAddress; // Port of the DeviceApp
+        int deviceAppPort = default(4000); // Port of the DeviceApp
+        string deviceAppAddress; // IP address of the DeviceApp
 
         int packetSize @unit(B) = default(10B);
 
         int tos = default(-1); // If not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
-        // Autoscheduling infos
+        // Auto-scheduling parameters
         double period @unit("s") = default(1s);
         double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);

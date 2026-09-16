@@ -57,10 +57,10 @@ module LteMacEnb extends LteMacBase
         // Summary feedback confidence function upper bound
         double summaryUpperBound @unit(s) = default(20ms);
 
-        // FeedBack Historical Base capacity in DL (number of stored feedback samples per UE)
+        // Feedback historical base capacity in DL (number of stored feedback samples per UE)
         int fbhbCapacityDl = default(5);
 
-        // FeedBack Historical Base capacity in UL (number of stored feedback samples per UE)
+        // Feedback historical base capacity in UL (number of stored feedback samples per UE)
         int fbhbCapacityUl = default(5);
 
         // Wideband CQI generation parameter (0.0 means "use the mean value")
@@ -69,7 +69,7 @@ module LteMacEnb extends LteMacBase
         // Number of eNodeBs - set to 0 if unknown
         int eNodeBCount = default(0);
 
-        //# eNb Scheduler Parameters
+        //# eNB scheduler parameters
         // Scheduling discipline. See LteCommon.h for discipline meaning.
         // ALLOCATOR_BESTFIT is the D2D frequency-reuse allocator: it is only
         // constructible by the D2D uplink schedulers, so selecting it requires

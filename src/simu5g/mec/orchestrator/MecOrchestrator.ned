@@ -27,7 +27,7 @@ simple MecOrchestrator
         string binderModule = default("binder");
 
         string selectionPolicy @enum(MecHostBased,MecServiceBased,AvailableResourcesBased) = default("MecServiceBased"); // Available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"
-        int mecHostIndex = default(0); // To be used with the MecHostBased policybased
+        int mecHostIndex = default(0); // To be used with the MecHostBased policy
         object mecHostList = default([]);
         object mecApplicationPackageList = default([]);
 

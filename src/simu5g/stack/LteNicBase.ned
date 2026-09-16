@@ -67,7 +67,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         output upperLayerOut;
         input radioIn @loose;  // To receive messages sent using sendDirect()
         input nrRadioIn @loose;// For NR support
-        inout x2[] @loose;     // Optional x2 manager
+        inout x2[] @loose;     // Optional X2 manager
 
     submodules:
         // handover helper, performs packet holding / forwarding

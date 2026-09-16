@@ -85,7 +85,7 @@ module eNodeB
 
         //# Apps
         int numApps = default(0);     // Number of apps
-        int numX2Apps = default(0);   // Number of X2 apps. Specify the app types in INI file with x2App[0..1].typename="X2AppClient" syntax
+        int numX2Apps = default(0);   // Number of X2 apps; set their types in the ini file, e.g. x2App[0..1].typename="X2AppClient"
 
         //# Transport layer
         bool hasUdp = true;
@@ -100,7 +100,7 @@ module eNodeB
 
         //# Use it in case of emulation
         string extMeAppsAddress = default(""); // Address of the external MeApp IP/mask
-        //# Plmn params (used by RNI Service in EnodeBStatsCollector)
+        //# PLMN params (used by RNI Service in EnodeBStatsCollector)
         string mcc = default("001"); // Test network
         string mnc = default("01");  // Test network
 

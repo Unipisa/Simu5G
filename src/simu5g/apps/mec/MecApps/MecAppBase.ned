@@ -29,12 +29,12 @@ simple MecAppBase like IMecApp, IApp
         string mp1Address = default("");
         int mp1Port = default(10021);
 
-        // Modules:
+        // Module references
         string vimModule = default("^.vim");
         string mecPlatformModule = default("^.mecPlatform");
         string serviceRegistryModule = default("^.mecPlatform.serviceRegistry");
 
-        // Resource required info
+        // Required resources
         double requiredRam @unit("B");
         double requiredDisk @unit("B");
         double requiredCpu;

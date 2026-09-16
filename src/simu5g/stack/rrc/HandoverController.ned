@@ -27,7 +27,7 @@ simple HandoverController like IHandoverController
         // Allows handovers in the UE
         bool enableHandover = default(false);
 
-        // Whether this instance is associated with the the NR or the LTE stack
+        // Whether this instance is associated with the NR or the LTE stack
         bool isNr;
 
         // MacNodeId of the stack leg this controller belongs to (set by the NIC)
@@ -38,7 +38,7 @@ simple HandoverController like IHandoverController
         double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);
         double handoverAttachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency-handoverDetachmentTime : handoverDetachmentTime);
 
-        // If true, get minRssi from PhyPisaData
+        // If true, gets minRssi from PhyPisaData
         bool minRssiDefault = default(true);
 
         // Configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)

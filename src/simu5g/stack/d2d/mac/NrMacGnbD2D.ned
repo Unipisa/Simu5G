@@ -31,7 +31,7 @@ module NrMacGnbD2D extends NrMacGnb
         // Use the D2D-capable uplink scheduler leaf
         ulSchedulerType = default("NrSchedulerGnbUlD2D");
 
-        // FeedBack Historical Base capacity in D2D (number of stored feedback samples per UE)
+        // Feedback historical base capacity in D2D (number of stored feedback samples per UE)
         int fbhbCapacityD2D = default(5);
 
         bool usePreconfiguredTxParams = default(false);

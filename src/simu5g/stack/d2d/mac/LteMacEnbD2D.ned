@@ -32,7 +32,7 @@ module LteMacEnbD2D extends LteMacEnb
         // Use the D2D-capable uplink scheduler leaf
         ulSchedulerType = default("LteSchedulerEnbUlD2D");
 
-        // FeedBack Historical Base capacity in D2D (number of stored feedback samples per UE)
+        // Feedback historical base capacity in D2D (number of stored feedback samples per UE)
         int fbhbCapacityD2D = default(5);
 
         bool usePreconfiguredTxParams = default(false);

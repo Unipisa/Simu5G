@@ -36,7 +36,7 @@ simple PhyBase like IPhy
         double txAngle @unit(deg) = default(0deg);
 
         string binderModule = default("binder");
-        string channelModelModule = default("^.channelModel[0]"); // Or "nrChannelModel[0]"
+        string channelModelModule = default("^.channelModel[0]"); // Set to "^.nrChannelModel[0]" on an NR leg, see ~NrNicUe
 
     gates:
         input upperGateIn;       // From upper layer

@@ -56,7 +56,7 @@ module LteUe
 
         //# Apps
         int numApps = default(0);   // Number of apps
-                                    // Specify the app types in INI file with app[0..1].typename="UdpVideoStreamClient" syntax
+                                    // Set the app types in the ini file, e.g. app[0..1].typename="UdpVideoStreamClient"
 
         //# Transport layer
         bool hasUdp = default(firstAvailableOrEmpty("Udp") != "");
@@ -86,7 +86,7 @@ module LteUe
         //# Loopback interfaces
         int numLoInterfaces = default(1);
 
-        //# Num of PcapRecorders
+        //# PcapRecorders
         int numPcapRecorders = default(0); // Number of PcapRecorders
 
         bool hasRniSupport = default(false);

@@ -24,13 +24,13 @@ simple BackgroundCellChannelModel
         @display("i=block/control");
         @class("BackgroundCellChannelModel");
 
-        // Modules
+        // Module references
         string binderModule = default("binder");
 
         // Enable/disable shadowing
         bool shadowing = default(true);
 
-        // Pathloss scenario from ITU
+        // Path loss scenario, in ITU terminology
         string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOWN_SCENARIO) = default("URBAN_MACROCELL");
 
         // eNodeB height
@@ -46,24 +46,24 @@ simple BackgroundCellChannelModel
 
         double correlationDistance @unit(m) = default(50m);
 
-        // Antenna Gain of UE (wrt an isotropic antenna)
+        // Antenna gain of the UE, relative to an isotropic antenna
         double antennaGainUe @unit(dBi) = default(0dBi);
-        // Antenna Gain of eNodeB
+        // Antenna gain of the eNodeB
         double antennGainEnB @unit(dBi) = default(18dBi);
-        // Antenna Gain of Micro node
+        // Antenna gain of the micro node
         double antennGainMicro @unit(dBi) = default(5dBi);
-        // Thermal Noise for 10 MHz of Bandwidth
+        // Thermal noise for 10 MHz of bandwidth
         double thermalNoise @unit(dBm) = default(-104.5dBm);
         // UE noise figure
         double ueNoiseFigure @unit(dBm) = default(7dBm);
         // eNodeB noise figure
         double bsNoiseFigure @unit(dBm) = default(5dBm);
-        // Cable Loss
+        // Cable loss
         double cableLoss @unit(dB) = default(2dB);
 
-        // If true enable the possibility to switch dynamically the LOS/NLOS pathloss computation
+        // If true, LOS/NLOS is drawn per link from the scenario's LOS probability; if false, it is fixed to fixedLos
         bool dynamicLos = default(false);
-        // If dynamicLos is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss
+        // LOS state of every link when dynamicLos is false: true = LOS, false = NLOS
         bool fixedLos = default(false);
         // Enable/disable fading
         bool fading = default(true);
