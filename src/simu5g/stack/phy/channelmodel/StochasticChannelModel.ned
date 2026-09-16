@@ -66,7 +66,7 @@ simple StochasticChannelModel extends ChannelModelBase
 
         double correlationDistance @unit(m) = default(50m);
 
-        // Target bler used to compute feedback
+        // Target BLER used to compute feedback
         double targetBler = default(0.01);
         // HARQ reduction
         double harqReduction = default(0.2);
@@ -79,22 +79,22 @@ simple StochasticChannelModel extends ChannelModelBase
         double antennGainMicro @unit(dBi) = default(5dBi);
         // Thermal Noise for 10 MHz of Bandwidth
         double thermalNoise @unit(dBm) = default(-104.5dBm);
-        // Ue noise figure
+        // UE noise figure
         double ueNoiseFigure @unit(dBm) = default(7dBm);
         // eNodeB noise figure
         double bsNoiseFigure @unit(dBm) = default(5dBm);
         // Cable Loss
         double cableLoss @unit(dB) = default(2dB);
 
-        // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation
+        // If true enable the possibility to switch dynamically the LOS/NLOS pathloss computation
         bool dynamicLos = default(false);
-        // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss
+        // If dynamicLos is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss
         bool fixedLos = default(false);
         // Enable/disable fading
         bool fading = default(true);
-        // Fading type (JAKES or RAYGHLEY)
+        // Fading type (JAKES or RAYLEIGH)
         string fadingType @enum(RAYLEIGH,JAKES) = default("JAKES");
-        // If jakes fading this parameter specify the number of path (tap channel)
+        // If Jakes fading, this parameter specifies the number of paths (tap channel)
         int numFadingPaths = default(6);
 
         double delayRms @unit(s) = default(363ns);
