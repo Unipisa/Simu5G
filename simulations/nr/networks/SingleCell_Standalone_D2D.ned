@@ -26,6 +26,13 @@ import simu5g.nodes.BackgroundCell;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// ~SingleCell_Standalone with its UEs split into three vectors, so that a
+// configuration can address cellular terminals (ueCell), D2D transmitters
+// (ueD2DTx) and D2D receivers (ueD2DRx) separately. The rest of the topology is
+// the same: one ~gNodeB behind an intermediate and an anchor ~Upf, with a router
+// and a server on the data network, plus numBgCells ~BackgroundCell interferers.
+//
 network SingleCell_Standalone_D2D
 {
     parameters:

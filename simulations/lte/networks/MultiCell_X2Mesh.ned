@@ -26,6 +26,12 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// Three ~eNodeB cells in a full X2 mesh. Each reaches the EPC ~PgwStandard
+// through a router of its own, and the server sits directly on the
+// ~PgwStandard's data-network gate. numUe1, numUe2 and numUe3 ~LteUe terminals
+// attach per cell, and numExtCells ~ExtCell cells can be added as interferers.
+//
 network MultiCell_X2Mesh
 {
     parameters:

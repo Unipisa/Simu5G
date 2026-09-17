@@ -27,7 +27,10 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// One real UE receives data from a real server
+// One ~gNodeB served by a ~Upf core, a router in front of the ~Upf, and one
+// ~NrUe. numExtCells ~ExtCell cells can be added as interferers. The router
+// has no simulated peer: the host it talks to, and the applications on the
+// ~NrUe, are configured in the ini file.
 //
 network ExtClientServerExample
 {

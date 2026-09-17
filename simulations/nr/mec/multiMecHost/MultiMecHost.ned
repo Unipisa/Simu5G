@@ -28,7 +28,11 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// This network includes two gNBs and two MEC hosts
+// Two ~gNodeB cells, each on an intermediate ~Upf of its own with a ~MecHost hung
+// off it, so every cell has its own MEC host. Both intermediate ~Upf nodes meet
+// at the anchor ~Upf, which carries the ~Ualcmp and, behind it, the
+// ~MecOrchestrator. An X2 link joins the two gNodeBs. numUe ~NrUe terminals
+// attach, and numBgCells ~BackgroundCell cells can be added as interferers.
 //
 network MultiMecHost
 {

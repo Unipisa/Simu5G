@@ -16,6 +16,11 @@ package simu5g.stack.phy.feedback.testFeedback;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 
 
+//
+// A test harness for the downlink feedback generator: one
+// ~LteDlFeedbackGenerator and one ~FeedbackTester that drives it. The two are
+// not connected; the tester reaches the generator by module reference.
+//
 network TestFeedback
 {
     submodules:

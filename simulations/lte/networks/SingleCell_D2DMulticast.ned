@@ -25,6 +25,11 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// ~SingleCell with its UEs split into cellular terminals (ueCell) and members of
+// a D2D multicast group (ueD2D). The rest of the topology is the same: one
+// ~eNodeB on an EPC ~PgwStandard, with a router and a server behind it.
+//
 network SingleCell_D2DMulticast
 {
     parameters:

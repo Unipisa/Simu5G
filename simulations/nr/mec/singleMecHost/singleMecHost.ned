@@ -27,6 +27,11 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// One ~gNodeB and one ~MecHost hung off the same intermediate ~Upf, behind an
+// anchor ~Upf that carries the ~Ualcmp and, behind it, the ~MecOrchestrator.
+// numUes ~NrUe terminals attach to the gNodeB.
+//
 network SingleMecHost
 {
     parameters:

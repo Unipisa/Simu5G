@@ -26,6 +26,11 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// Two ~eNodeB cells on a shared EPC ~PgwStandard, joined by an X2 link, with a
+// router and a server behind the core. Four ~LteUe terminals are placed two per
+// cell, and numExtCells ~ExtCell cells can be added as interferers.
+//
 network MultiCell
 {
     parameters:

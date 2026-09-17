@@ -27,6 +27,12 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// The topology of ~SingleMecHost -- one ~gNodeB and one ~MecHost on a shared
+// intermediate ~Upf, with a ~Ualcmp and a ~MecOrchestrator behind the anchor
+// ~Upf -- without its playground size parameters. numUes ~NrUe terminals attach
+// to the gNodeB.
+//
 network RnisTest
 {
     parameters:

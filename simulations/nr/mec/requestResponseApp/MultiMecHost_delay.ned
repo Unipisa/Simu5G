@@ -28,7 +28,10 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// This network includes two gNBs and two MEC hosts
+// ~MultiMecHost with the two intermediate ~Upf nodes linked directly to each
+// other, and with no X2 link between the gNodeBs. The length of that link -- and
+// so its propagation delay -- follows the routersDelay parameter, which makes the
+// distance between the two MEC hosts configurable.
 //
 network MultiMecHost_delay
 {

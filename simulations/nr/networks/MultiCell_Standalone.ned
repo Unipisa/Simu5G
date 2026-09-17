@@ -27,7 +27,12 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// This network represents the deployment option 3 in 3GPP 38.801
+// Two ~gNodeB cells served by a 5G core: the anchor ~Upf faces the data network
+// (a router and a server), an intermediate ~Upf feeds both gNodeBs, and an X2
+// link joins them. numUe ~NrUe terminals attach, and numBgCells
+// ~BackgroundCell cells can be added as interferers.
+//
+// The topology is 5G standalone, deployment option 2 of 3GPP TR 38.801.
 //
 network MultiCell_Standalone
 {

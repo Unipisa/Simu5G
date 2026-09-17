@@ -25,6 +25,10 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// The minimal LTE topology: one ~eNodeB connected to an EPC ~PgwStandard, which
+// faces a router and a server, plus numUe ~LteUe terminals.
+//
 network SingleCell
 {
     parameters:

@@ -25,6 +25,12 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// ~SingleCell with its UEs split into three vectors, so that a configuration can
+// address cellular terminals (ueCell), D2D transmitters (ueD2DTx) and D2D
+// receivers (ueD2DRx) separately. The rest of the topology is the same: one
+// ~eNodeB on an EPC ~PgwStandard, with a router and a server behind it.
+//
 network SingleCell_D2D
 {
     parameters:

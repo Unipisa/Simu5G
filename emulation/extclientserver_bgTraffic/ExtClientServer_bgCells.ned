@@ -27,8 +27,11 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// One real UE receives data from a real server
-// The network includes a configurable number of background cells
+// ~ExtClientServerExample with background cells instead of external ones: one
+// ~gNodeB served by a ~Upf core, a router in front of the ~Upf, one ~NrUe, and
+// numBgCells ~BackgroundCell cells. The router has no simulated peer: the host
+// it talks to, and the applications on the ~NrUe, are configured in the ini
+// file.
 //
 network ExtClientServer_bgCells
 {

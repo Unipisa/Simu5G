@@ -27,6 +27,13 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// Five ~eNodeB cells, each reaching the EPC ~PgwStandard through a router of its
+// own, with a further router and a server behind the core. There are no X2
+// links. numUe1 to numUe5 ~LteUe terminals attach per cell, and an
+// ~EventGenerator and a ~MultihopD2DStatistics module sit beside them, wired to
+// nothing.
+//
 network MultiCell_D2DMultihop
 {
     parameters:

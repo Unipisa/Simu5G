@@ -28,9 +28,12 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// This network represents the deployment option 3a in 3GPP 38.801
-// A gNodeB is serving as secondary node for a LTE eNodeB, which is connected
-// to the LTE EPC. All data-plane traffic goes through the LTE eNodeB
+// The two-cell version of ~SingleCell_withSecondaryGnb: two ~eNodeB masters,
+// each paired over X2 with its own ~gNodeB secondary, and a further X2 link
+// between the two masters. Both eNodeBs connect to the EPC ~PgwStandard, which
+// faces a router and a server; neither gNodeB has a core-network link. numUe
+// ~NrUe terminals attach, and numBgCells ~BackgroundCell cells can be added as
+// interferers.
 //
 network MultiCell_withSecondaryGnb
 {

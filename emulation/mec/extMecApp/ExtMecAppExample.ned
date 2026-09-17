@@ -27,6 +27,15 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
+//
+// One ~gNodeB and one ~MecHost hung off the same intermediate ~Upf, behind an
+// anchor ~Upf that carries the ~Ualcmp and, behind it, the ~MecOrchestrator, plus
+// one ~NrUe. Nothing here is external: which node talks to a real host, and over
+// which interface, is configured in the ini file.
+//
+// ~ExtUeAppExample, ~ExtMecAppExample and ~ExtUeAppMecAppExample share this
+// topology and differ only in that configuration.
+//
 network ExtMecAppExample
 {
     parameters:

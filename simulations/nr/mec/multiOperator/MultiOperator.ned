@@ -30,11 +30,16 @@ import simu5g.world.radio.LteChannelControl;
 
 
 //
-// This network showcases a scenario with two 5G networks (CN+RAN), each of them
-// including three gNBs and one MEC host.
-// Operator B's MEC system can be disabled using the 'enableMecOperatorB' parameter
+// Two operator networks side by side. Each has three ~gNodeB cells chained by X2,
+// an intermediate ~Upf that feeds them and carries the operator's ~MecHost, an
+// anchor ~Upf, and a ~Ualcmp with its ~MecOrchestrator. The two anchor ~Upf nodes
+// meet at a shared router, the only node the operators have in common. numUe_A
+// and numUe_B ~NrUe terminals attach to operator A and B respectively, and
+// numBgCells ~BackgroundCell cells can be added as interferers.
 //
-// Also see 'demo.xml' for the correct configuration of network interfaces
+// Operator B's MEC system -- its ~MecHost, ~MecOrchestrator and ~Ualcmp -- is
+// conditional on the enableMecOperatorB parameter. The addresses of the network
+// interfaces are assigned in demo.xml.
 //
 network MultiOperator
 {

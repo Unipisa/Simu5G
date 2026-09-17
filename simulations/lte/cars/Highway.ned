@@ -29,6 +29,12 @@ import simu5g.nodes.LteCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 
+//
+// Two ~eNodeB cells on a shared EPC ~PgwStandard, joined by an X2 link, with a
+// router and a server behind the core. The cars are ~LteCar nodes created at run
+// time by the VeinsInetManager from a SUMO road traffic simulation, so the car[]
+// vector is empty in the topology itself.
+//
 network Highway
 {
     parameters:

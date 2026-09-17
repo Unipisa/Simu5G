@@ -28,6 +28,12 @@ import simu5g.nodes.NrCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 
+//
+// Two ~gNodeB cells on a shared 5GC ~Upf, joined by an X2 link, with a router and
+// a server behind the core. The cars are ~NrCar nodes created at run time by the
+// VeinsInetManager from a SUMO road traffic simulation, so the car[] vector is
+// empty in the topology itself.
+//
 network Highway
 {
     parameters:
