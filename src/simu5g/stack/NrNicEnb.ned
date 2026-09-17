@@ -23,6 +23,9 @@ import simu5g.stack.sdap.INrSdap;
 // CoMP (Coordinated MultiPoint) or dual connectivity. D2D support is added by the
 // ~NrNicEnbD2D subtype.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module NrNicEnb extends LteNicEnb
 {
     parameters:

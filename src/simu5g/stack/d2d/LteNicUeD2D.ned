@@ -21,6 +21,9 @@ import simu5g.stack.LteNicUe;
 // communication capabilities, allowing direct communication between UEs without
 // the need to route traffic through the base station.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module LteNicUeD2D extends LteNicUe
 {
     parameters:

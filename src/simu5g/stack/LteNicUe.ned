@@ -21,6 +21,9 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 // which includes PDCP, RLC, MAC, and PHY layers. The parameters and submodules
 // allow customization of the UE's behavior.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module LteNicUe extends LteNicBase
 {
     parameters:

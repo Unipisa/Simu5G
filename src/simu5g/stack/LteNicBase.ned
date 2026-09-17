@@ -32,6 +32,9 @@ import simu5g.stack.phy.channelmodel.IChannelModel;
 // and eNodeB (evolved Node B), to configure and utilize these layers according to their
 // specific requirements.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:

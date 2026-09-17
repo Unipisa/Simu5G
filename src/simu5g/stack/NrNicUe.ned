@@ -30,6 +30,9 @@ import simu5g.stack.sdap.common.IReflectiveQosTable;
 // support NR-specific functionalities. D2D support is added by the
 // ~NrNicUeD2D subtype.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module NrNicUe extends LteNicUe
 {
     parameters:

@@ -22,6 +22,9 @@ import simu5g.stack.LteNicEnb;
 // selection algorithm can be specified via the rrc.d2dModeSelection
 // submodule's typename.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module LteNicEnbD2D extends LteNicEnb
 {
     parameters:

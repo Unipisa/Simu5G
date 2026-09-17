@@ -20,6 +20,9 @@ import simu5g.stack.NrNicUe;
 // mode controller, allowing direct UE-to-UE communication without routing traffic
 // through the gNodeB. It is the NR counterpart of ~LteNicUeD2D.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module NrNicUeD2D extends NrNicUe
 {
     parameters:

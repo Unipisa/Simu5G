@@ -20,6 +20,9 @@ import simu5g.stack.NrNicEnb;
 // PHY, and by enabling the D2D mode controller and mode selection. It is the NR
 // counterpart of ~LteNicEnbD2D.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module NrNicEnbD2D extends NrNicEnb
 {
     parameters:

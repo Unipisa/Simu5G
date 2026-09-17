@@ -28,6 +28,9 @@ import simu5g.x2.LteX2Manager;
 // allow customization of the eNodeB's behavior, including whether it supports
 // D2D communication, CoMP (Coordinated MultiPoint), or dual connectivity.
 //
+// The PDCP and RLC entities are missing from the submodules on purpose: the RRC
+// layer's ~BearerManagement creates them per bearer at run time.
+//
 module LteNicEnb extends LteNicBase
 {
     parameters:
