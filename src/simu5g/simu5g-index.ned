@@ -46,10 +46,14 @@
 // - ~eNodeB and ~gNodeB -- the LTE and 5G NR base stations
 // - ~LteUe and ~NrUe -- the LTE and 5G NR user equipment
 // - ~LteCar and ~NrCar -- UE variants with vehicular mobility
+// - ~LteNicUe, ~LteNicEnb, ~NrNicUe and ~NrNicEnb -- the cellular network
+//   interfaces that carry the protocol stack of those nodes
 // - ~Upf and ~PgwStandard -- the core network nodes: the 5G Core User Plane
 //   Function, and the PDN Gateway of a 4G EPC
+// - ~BearerConfigurator -- the central configurator of the network's data radio
+//   bearers and of its QoS-flow classification rules
 // - ~MecHost -- the ETSI MEC host that runs MEC applications and services
-// - ~BackgroundCell and ~ExtCell -- lightweight cell models that create
+// - ~BackgroundCell -- lightweight cell model that creates
 //   inter-cell interference without simulating the traffic behind it
 // - ~SingleCell and ~MultiCell (LTE), and ~SingleCell_Standalone and
 //   ~MultiCell_Standalone (5G) -- selected networks used in example simulations
