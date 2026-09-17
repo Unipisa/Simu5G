@@ -27,7 +27,6 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
-// MultiCell_withSecondaryGnb
 //
 // This network represents the deployment option 3a in 3GPP 38.801
 // A gNodeB is serving as secondary node for a LTE eNodeB, which is connected

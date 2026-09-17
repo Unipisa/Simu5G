@@ -13,9 +13,8 @@
 
 package simu5g.background.trafficGenerator;
 
-// BackgroundTrafficManagerBase
 //
-// This is base module for the traffic manager for background UEs
+// This is the base module for the traffic manager for background UEs
 //
 simple BackgroundTrafficManagerBase like IBackgroundTrafficManager
 {

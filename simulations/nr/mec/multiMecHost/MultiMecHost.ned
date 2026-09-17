@@ -27,7 +27,6 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
-// MultiMecHost
 //
 // This network includes two gNBs and two MEC hosts
 //

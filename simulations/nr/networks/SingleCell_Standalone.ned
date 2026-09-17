@@ -26,7 +26,6 @@ import simu5g.nodes.BackgroundCell;
 import simu5g.world.radio.LteChannelControl;
 
 
-// SingleCell_standalone
 //
 // This network represents the deployment option 3 in 3GPP 38.801
 //

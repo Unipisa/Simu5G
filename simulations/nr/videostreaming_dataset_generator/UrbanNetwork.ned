@@ -29,9 +29,6 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
-//
-// UrbanNetwork
-//
 network UrbanNetwork
 {
     parameters:

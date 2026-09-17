@@ -14,8 +14,6 @@
 package simu5g.common.binder;
 
 //
-// Binder module
-//
 // The Binder module functions as a global repository of network-related information
 // utilized throughout the simulation for various control-plane functionalities. It provides
 // a centralized storage and access point for data such as network configurations and

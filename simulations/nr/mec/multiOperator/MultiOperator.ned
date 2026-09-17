@@ -29,7 +29,6 @@ import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
-// MultiOperator
 //
 // This network showcases a scenario with two 5G networks (CN+RAN), each of them
 // including three gNBs and one MEC host.

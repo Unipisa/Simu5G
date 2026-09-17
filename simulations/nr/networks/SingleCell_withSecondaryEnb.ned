@@ -27,7 +27,6 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
 
-// SingleCell_withSecondaryEnb
 //
 // The mirror image of ~SingleCell_withSecondaryGnb: here the gNodeB is the master
 // node and the eNodeB is its secondary, so the UE is anchored on its NR stack and

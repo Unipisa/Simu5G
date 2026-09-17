@@ -26,7 +26,6 @@ import simu5g.nodes.Upf;
 import simu5g.world.radio.LteChannelControl;
 
 
-// ExtServerExample
 //
 // One simulated UE receives data from a real server, and one simulated
 // UE sends data to a real server
