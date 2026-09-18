@@ -59,8 +59,14 @@
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-unbalanced -r 0,              5s,         ec82-b96f/tplx;e2a0-907b/tilx;94d6-0930/~tNl;4e4d-7d01/sz, PASS, radio interference anisotropic
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-MeshTopology -r 0,                 5s,         829a-a5dd/tplx;70bf-939c/tilx;f7ac-b770/~tNl;ee5e-365e/sz, PASS, radio interference anisotropic
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 0,                          5s,         3ff4-d9c9/tplx;cf0b-7803/tilx;7cb3-e68a/~tNl;83a1-a730/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 1,                          5s,         984a-e4ae/tplx;a330-ff40/tilx;7cb3-e68a/~tNl;2199-b4a5/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 2,                          5s,         3465-ba7d/tplx;1718-1b52/tilx;170c-fe53/~tNl;be47-e74c/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         f219-17e5/tplx;1c0e-b69f/tilx;58ae-124c/~tNl;4950-605d/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         9e37-fd49/tplx;bfeb-b144/tilx;5a13-52f4/~tNl;c70a-c8a1/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         c18e-640f/tplx;2f4c-2881/tilx;6a82-b9b0/~tNl;fe4f-b0bf/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         2330-66a5/tplx;c73e-3ad9/tilx;876c-d6f8/~tNl;e075-43a7/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         8bce-71e7/tplx;52c7-6377/tilx;da75-7582/~tNl;de23-a0ce/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         b67d-4d56/tplx;857f-8088/tilx;a312-209d/~tNl;83fa-d359/sz, PASS, radio bgcell bgue
 /simulations/nr/mec/multiMecHost/,       -f omnetpp.ini -c MultiMec -r 0,                        20s,        47bd-ca29/tplx;7856-8733/tilx;c8a0-de25/~tNl;f035-24f3/sz,  PASS, radio interference
 /simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_MultiMec -r 0,          20s,        2799-4c5d/tplx;3e48-d251/tilx;1fd6-6758/~tNl;1552-7c94/sz,  PASS, radio interference multicarrier
 /simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_SingleMec -r 0,         20s,        ceef-7262/tplx;a03d-c058/tilx;065c-0d63/~tNl;5d3c-ae7f/sz,  PASS, radio interference multicarrier
