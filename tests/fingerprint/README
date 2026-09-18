@@ -37,7 +37,7 @@ separate file, selectable as `./fingerprints simulations_d2d.csv` -- and no
 
 Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
 
-    radio          219  a stochastic channel model is in use, so path loss,
+    radio          235  a stochastic channel model is in use, so path loss,
                         fading and shadowing are actually evaluated
     idealchannel    18  IdealChannelModel: reception is a coin flip and no
                         propagation is computed. These rows are radio-inert by
@@ -50,11 +50,11 @@ Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
     nofading        24  a stochastic model with both fading and shadowing
                         turned off, so the channel is geometry only. Like
                         idealchannel, but sensitive to path loss
-    interference    43  downlinkInterference and/or uplinkInterference is
+    interference    59  downlinkInterference and/or uplinkInterference is
                         enabled, i.e. interference between real cells is
                         modeled. Interference from background cells is
                         bgcell, not this
-    multicarrier    17  more than one component carrier, so the per-carrier
+    multicarrier    33  more than one component carrier, so the per-carrier
                         channelModel[] vector has more than one element
     bgcell          21  background cells are present (numBgCells > 0)
     bgue            17  background UEs are attached to a real cell. Background
