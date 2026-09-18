@@ -38,6 +38,8 @@
 /simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         1449-4e41/tplx;440a-7d2f/tilx;e406-2239/~tNl;51b4-40fb/sz, PASS, radio
 /simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         82e9-76bc/tplx;b9c0-5436/tilx;908d-2e99/~tNl;ac3b-c225/sz, PASS, radio
 /simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 0,                5s,         05e0-2230/tplx;b32a-cb1f/tilx;685e-319b/~tNl;5790-9546/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 1,                5s,         d07e-6dc8/tplx;983f-a834/tilx;70f3-8ef2/~tNl;6604-8bfd/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 2,                5s,         95b0-9efe/tplx;b8c0-f063/tilx;685e-319b/~tNl;83c5-442f/sz, PASS, radio interference anisotropic
 /simulations/lte/multicell/,             -f omnetpp.ini -c VoIP -r 0,                            5s,         ec6f-cd8a/tplx;7175-6297/tilx;aec6-9caa/~tNl;a5f7-2e52/sz, PASS, radio interference
 /simulations/lte/test_handover/,         -f omnetpp.ini -c FileTransfer-DL_UL -r 0,             15s,         192a-f4b7/tplx;80c0-5af8/tilx;9794-139c/~tNl;092f-cd0d/sz, PASS, radio nofading
 /simulations/lte/test_handover/,         -f omnetpp.ini -c Handover-General -r 0,               15s,         19b8-f68e/tplx;5756-ae65/tilx;7f57-793f/~tNl;2fcc-0288/sz, PASS, radio nofading
