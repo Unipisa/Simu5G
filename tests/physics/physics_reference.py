@@ -479,6 +479,30 @@ def grade_background_cell_floor(grader):
                                   quiet - loaded, 1e-9, " dB")
 
 
+def grade_link_reciprocity(grader):
+    """The downlink and uplink budgets of one link differ only by constants,
+    so their SINRs must differ by that constant whatever the channel does to
+    the link -- as long as the channel does the same thing to both ends."""
+    budget = Budget()
+    powers = config_values(['**.eNodeBTxPower', '**.ueTxPower',
+                            '**.ueNoiseFigure', '**.bsNoiseFigure'])
+    # Antenna gains and cable loss appear in both directions and cancel; what
+    # is left is the transmit powers and the noise figures.
+    expected = ((powers['**.eNodeBTxPower'] - powers['**.ueTxPower'])
+                - (powers['**.ueNoiseFigure'] - powers['**.bsNoiseFigure']))
+
+    table = scalar_table('module =~ "*.ue[0].*.nrChannelModel[*]" '
+                         'AND (name =~ "measuredSinrDl:mean" OR name =~ "measuredSinrUl:mean")',
+                         itervars=('shad',))
+    for shad, row in table.iterrows():
+        on = str(shad) == 'true'
+        params = f"shadowing={'true' if on else 'false'}"
+        ref = 'reciprocal-with-shadowing' if on else 'reciprocal-budget'
+        grader.check_absolute(ref, params,
+                              row['measuredSinrDl:mean'] - row['measuredSinrUl:mean'],
+                              expected, 1e-9, " dB")
+
+
 GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
     'LinkBudget': grade_link_budget,
@@ -486,6 +510,7 @@ GRADERS = {
     'GeometryInvariance': grade_geometry_invariance,
     'ModuleOrderPermutation': grade_module_order_permutation,
     'BackgroundCellFloor': grade_background_cell_floor,
+    'LinkReciprocity': grade_link_reciprocity,
 }
 
 

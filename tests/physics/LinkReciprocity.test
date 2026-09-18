@@ -1,0 +1,131 @@
+%description:
+
+A radio link has one realization, and both of its ends should see it.
+
+That is the premise LinkKey is built on: the key is normalized so that a link
+is the same key from either end (ChannelModelBase.h), and the per-link
+shadowing, LOS and fading state is indexed by it. Reciprocity is what makes
+that worth doing.
+
+Without shadowing the two directions agree exactly. The downlink and uplink
+budgets differ only by constants -- the two transmit powers and the two noise
+figures, since the antenna gains and the cable loss appear in both -- so
+
+    SINR_DL - SINR_UL = (eNodeBTxPower - ueTxPower) - (ueNoiseFigure - bsNoiseFigure)
+
+which the model reproduces to the last digit. That check is worth having on
+its own: it is the only assertion in this directory on the uplink budget, and
+it says that both directions traverse the same path loss.
+
+With shadowing the same difference has to stay the same constant, because
+shadowing is a property of the link and not of the direction of travel. It
+does not. computeShadowing reads two different maps depending on which
+direction it is serving: a downlink CQI takes the map stored on the UE
+(obtainShadowingMap), everything else takes the evaluating module's own
+lastComputedSF_. The key into those maps is the same LinkKey; the maps are
+not the same map. So one physical link acquires two independent shadowing
+realizations, and measured here the downlink is faded by 2.72 dB while the
+uplink is lifted by 9.22 dB at the same instant, for the same pair of nodes,
+at the same distance.
+
+Recorded as an expected failure rather than fixed. Which of the two maps
+should survive -- or whether both should be replaced by state the medium owns
+once per link -- is the same modelling question that decides the data layout
+of any refactoring of the medium, and it is not this test's to answer. What
+the test is for is that the answer stops being a matter of belief.
+
+%expected-failure: shadowing is drawn per direction, so a link is not reciprocal
+
+%extraargs: -c LinkReciprocity
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config LinkReciprocity]
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+seed-set = 0
+**.vector-recording = false
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+**.measuredSinrUl.result-recording-modes = mean,count,min,max
+
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 25m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 500m
+*.ue[0].mobility.initialY = 300m
+*.ue[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 2000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = ${shad = false, true}
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.ueTxPower = 26dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 0dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+**.bsNoiseFigure = 5dBm
+
+*.ue[*].numApps = 2
+*.server.numApps = 2
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.02s
+*.server.app[0].startTime = 0.1s
+*.ue[*].app[1].typename = "CbrSender"
+*.ue[*].app[1].destAddress = "server"
+*.ue[*].app[1].destPort = 4000
+*.ue[*].app[1].localPort = 4088
+*.ue[*].app[1].packetSize = 40B
+*.ue[*].app[1].samplingTime = 0.02s
+*.ue[*].app[1].startTime = 0.1s
+*.server.app[1].typename = "CbrReceiver"
+*.server.app[1].localPort = 4000
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=2 failures=0
+
+%not-contains: verdict.txt
+FAILED
