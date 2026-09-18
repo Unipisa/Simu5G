@@ -259,6 +259,63 @@ def grade_geometry_invariance(grader):
                          'the untransformed run', 'rotated a quarter turn')
 
 
+def check_relabelled_runs(grader, table, reference, other, relabel, ref_name, label,
+                          ignore=()):
+    """One verdict for "this permutation only permuted the labels".
+
+    Unlike an invariance check the two runs are not expected to be equal
+    element by element: the transformation renames the parts, so each scalar
+    of the reference run is compared against the correspondingly renamed
+    scalar of the other. A name with no counterpart is a failure and not a
+    silent skip -- that is what would hide a relabelling rule that does not
+    cover everything it should."""
+    mismatched, compared, unmatched = [], 0, []
+    for (module, name), value in table[reference].items():
+        if any(pattern in module for pattern in ignore):
+            continue
+        key = (relabel(module), name)
+        if key not in table[other].index:
+            unmatched.append((module, name))
+            continue
+        compared += 1
+        counterpart = table[other][key]
+        if not (value == counterpart
+                or (value != value and counterpart != counterpart)):
+            mismatched.append((module, name, value, counterpart))
+
+    detail = f"{len(mismatched)} of {compared} scalars differ from {ref_name} once relabelled"
+    if unmatched:
+        detail += f"; {len(unmatched)} had no counterpart, e.g. {unmatched[0][0]}"
+    if mismatched:
+        detail += ": " + "; ".join(f"{m.split('.', 1)[-1]}.{n} {v} vs {o}"
+                                   for m, n, v, o in mismatched[:3])
+    grader.check_true('permutation', label, not mismatched and not unmatched, detail)
+
+
+def grade_carrier_symmetry(grader):
+    """A carrier is identified by its frequency; which slot of the
+    componentCarrier and channelModel vectors it occupies is not a physical
+    fact. Exchanging the two indices must therefore exchange the two carriers'
+    results and change nothing else."""
+    table = all_scalars_by_run(('swap',))
+    if 0.0 not in table.columns or 1.0 not in table.columns:
+        raise LookupError("both carrier orderings are needed")
+
+    pattern = re.compile(r'((?:nr)?[Cc]hannelModel|componentCarrier)\[([01])\]')
+    relabel = lambda module: pattern.sub(
+        lambda hit: f"{hit.group(1)}[{1 - int(hit.group(2))}]", module)
+
+    check_relabelled_runs(
+        grader, table, 0.0, 1.0, relabel, 'the unswapped run',
+        'carrier indices exchanged',
+        # The UE's LTE channel model has one carrier, so it has no index to be
+        # exchanged with, and it is pinned to componentCarrier[0] by default --
+        # which this configuration does swap the frequency of. It records
+        # nothing in a standalone NR scenario, but it is excluded by name
+        # rather than by being quietly unmatched.
+        ignore=('.cellularNic.channelModel[',))
+
+
 def grade_module_order_permutation(grader):
     """Swapping two UEs' positions must swap their results and change nothing
     else: which slot of a module vector a UE occupies is a property of how the
@@ -275,30 +332,12 @@ def grade_module_order_permutation(grader):
     if 0.0 not in table.columns or 1.0 not in table.columns:
         raise LookupError("both the reference and the swapped run are needed")
 
-    def relabel(module):
-        return module.replace('ue[0]', 'ue[#]').replace('ue[1]', 'ue[0]') \
-                     .replace('ue[#]', 'ue[1]')
+    pattern = re.compile(r'ue\[([01])\]')
+    relabel = lambda module: pattern.sub(
+        lambda hit: f"ue[{1 - int(hit.group(1))}]", module)
 
-    reference, swapped = table[0.0], table[1.0]
-    mismatched, compared, unmatched = [], 0, 0
-    for (module, name), value in reference.items():
-        key = (relabel(module), name)
-        if key not in swapped.index:
-            unmatched += 1
-            continue
-        compared += 1
-        other = swapped[key]
-        if not (value == other or (value != value and other != other)):
-            mismatched.append((module, name, value, other))
-
-    detail = f"{len(mismatched)} of {compared} scalars differ once the two UEs are relabelled"
-    if unmatched:
-        detail += f" ({unmatched} had no counterpart)"
-    if mismatched:
-        detail += ": " + "; ".join(f"{m.split('.', 1)[-1]}.{n} {v} vs {o}"
-                                   for m, n, v, o in mismatched[:3])
-    grader.check_true('index-independence', 'two UEs exchanged',
-                      not mismatched and unmatched == 0, detail)
+    check_relabelled_runs(grader, table, 0.0, 1.0, relabel,
+                          'the unswapped run', 'two UEs exchanged')
 
 
 class Budget:
@@ -511,6 +550,7 @@ GRADERS = {
     'ModuleOrderPermutation': grade_module_order_permutation,
     'BackgroundCellFloor': grade_background_cell_floor,
     'LinkReciprocity': grade_link_reciprocity,
+    'CarrierSymmetry': grade_carrier_symmetry,
 }
 
 

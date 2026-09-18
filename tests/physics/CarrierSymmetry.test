@@ -1,0 +1,116 @@
+%description:
+
+Which slot of the carrier vectors a carrier occupies must not reach a result.
+
+A component carrier is identified by its frequency -- that is what the Binder
+keys its per-carrier structures on -- so two carriers cannot be identical and
+"the same scenario on two identical carriers" is not a thing that can be
+configured. The testable statement is the one that matters anyway: exchanging
+which index holds which frequency has to exchange the two carriers' results
+and change nothing else.
+
+That is a direct exercise of the per-carrier channelModel[] vector, which is
+a structure any refactoring of the medium has to rebuild, and of the
+componentCarrierModule wiring that ties each channel model to its carrier. An
+index leaking into the physics -- a state map keyed on the carrier's position
+rather than on its frequency, say -- would show here and almost nowhere else.
+
+The whole recorded result set is compared, with the carrier indices relabelled
+in the module names. A name with no counterpart is a failure rather than a
+silent skip, because a relabelling rule that quietly covers less than it
+should is exactly how this kind of test stops testing anything. The one
+exclusion is stated at the grader: the UE's LTE channel model has a single
+carrier, so it has no index to be exchanged with.
+
+Everything random is switched off, so what remains between the two carriers
+is the frequency-dependent path loss -- 81.22 dB of SINR on the 2 GHz carrier
+against 71.68 dB on the 6 GHz one -- and the two runs have to agree on which
+of those belongs to which frequency rather than to which slot.
+
+%extraargs: -c CarrierSymmetry
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config CarrierSymmetry]
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+seed-set = 0
+**.vector-recording = false
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+
+# Which carrier index holds which frequency. Only the frequency should reach
+# a result; the index is a position in a vector.
+**.swapped = ${swap = 0, 1}
+*.carrierAggregation.numComponentCarriers = 2
+*.carrierAggregation.componentCarrier[0].carrierFrequency = (${swap} == 0 ? 2GHz : 6GHz)
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.carrierAggregation.componentCarrier[1].carrierFrequency = (${swap} == 0 ? 6GHz : 2GHz)
+*.carrierAggregation.componentCarrier[1].numBands = 6
+
+*.gnb.cellularNic.numCarriers = 2
+*.gnb.cellularNic.channelModel[0].componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.gnb.cellularNic.channelModel[1].componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+*.ue[*].cellularNic.numNrCarriers = 2
+*.ue[*].cellularNic.nrChannelModel[0].componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.ue[*].cellularNic.nrChannelModel[1].componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 25m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 400m
+*.ue[0].mobility.initialY = 300m
+*.ue[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 2000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+**.numBands = 6
+
+*.ue[*].numApps = 1
+*.server.numApps = 1
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 100B
+*.server.app[0].samplingTime = 0.01s
+*.server.app[0].startTime = 0.1s
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=1 failures=0
+
+%not-contains: verdict.txt
+FAILED
