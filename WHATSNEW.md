@@ -1,5 +1,18 @@
 # What's New in Simu5G
 
+## (unreleased)
+
+### Fixes that change results
+
+- **External cells with `FULL_ALLOC` interfere.** An `ExtCell` whose
+  `bandAllocationType` is `"FULL_ALLOC"` -- the default -- occupied none of
+  its bands, so it added no interference at all. It now occupies every band
+  in every TTI, as the allocation type says. Every simulation with external
+  cells left at the default allocation therefore changes its results;
+  `RANDOM_ALLOC` and `CONTIGUOUS_ALLOC` cells are unaffected. To reproduce
+  earlier results of a network whose external cells are all `FULL_ALLOC`,
+  switch their contribution off with `**.extCellInterference = false`.
+
 ## v1.8.0 (2026-10-07)
 
 The most significant change in this release is the support for new PDU
