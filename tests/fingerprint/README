@@ -16,6 +16,67 @@ verified by some other means, and the fingerprints in the tests
 updated.
 
 
+Tags
+----
+
+The sixth column of each CSV is a space-separated tag list. Tags exist so that
+work on one subsystem has a fast inner loop instead of a full-suite round trip:
+
+    ./fingerprints -m interference
+    ./fingerprints -m 'propagation|bgcell'
+    ./fingerprints -x idealchannel
+
+-m and -x are Python regexes, matched against workingdir + " " + args + " " +
+tags, so a tag that also occurs in a path or a config name selects both. The
+tags below are chosen not to collide with anything in the current tree.
+
+A tag says what a configuration exercises, not where it lives, because the
+directory is already matchable. So there is no `d2d` tag -- the d2d rows are a
+separate file, selectable as `./fingerprints simulations_d2d.csv` -- and no
+`rlc` or `mec` tag either.
+
+Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
+
+    radio          204  a stochastic channel model is in use, so path loss,
+                        fading and shadowing are actually evaluated
+    idealchannel    18  IdealChannelModel: reception is a coin flip and no
+                        propagation is computed. These rows are radio-inert by
+                        construction, and a change confined to the radio model
+                        must leave all 18 byte-identical
+    propagation     25  the configuration exists to exercise the propagation
+                        matrix: the scenario x specification x LOS sweep of
+                        simulations/channelmodel/, plus the two ChannelModel-*
+                        configurations of simulations/nr/d2d/
+    nofading        24  a stochastic model with both fading and shadowing
+                        turned off, so the channel is geometry only. Like
+                        idealchannel, but sensitive to path loss
+    interference    37  downlinkInterference and/or uplinkInterference is
+                        enabled, i.e. interference between real cells is
+                        modeled. Interference from background cells is
+                        bgcell, not this
+    multicarrier    17  more than one component carrier, so the per-carrier
+                        channelModel[] vector has more than one element
+    bgcell          12  background cells are present (numBgCells > 0)
+    bgue             8  background UEs are attached to a real cell. Background
+                        UEs living inside a background cell are part of
+                        bgcell, and a row can carry both
+    anisotropic      6  an ANISOTROPIC antenna is configured somewhere, so the
+                        horizontal antenna pattern is exercised
+
+The tags were derived from each row's fully resolved configuration -- the
+output of
+
+    simu5g -u Cmdenv -f omnetpp.ini -c <Config> -r <Run> -q runconfig
+
+which flattens the extends chain and resolves iteration variables -- combined
+with the NED defaults of the parameters no .ini sets. They are not derived from
+path names. Note that -q runconfig without -r dumps every run of the config
+concatenated, which is a trap when a config iterates over a channel parameter.
+
+Re-recording preserves tags: the runner rewrites only the fingerprint string,
+in place, on the line it came from.
+
+
 Notes on INET/OMNeT++ versions:
 
 - **Fingerprints are INET/OMNeT++ version specific**: the fingerprints
