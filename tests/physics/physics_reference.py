@@ -14,8 +14,10 @@
 #
 
 import glob
+import importlib.util
 import math
 import os
+import re
 import sys
 
 try:
@@ -67,6 +69,13 @@ class Grader:
               f"observed={observed:.6f} expected={expected:.6f} "
               f"n={int(n)} dev={sigmas:+.2f}sigma tol=+-{halfwidth:.6f}")
 
+    def check_true(self, ref, params, ok, detail=""):
+        """A property that is either held or not, with no numeric distance to
+        report -- an ordering, a sign, an invariance."""
+        self.graded += 1
+        self.failures += 0 if ok else 1
+        print(f"{'OK     ' if ok else 'FAILED '} {ref:<22} {params:<28} {detail}")
+
     def check_absolute(self, ref, params, observed, expected, tolerance, unit=""):
         ok = abs(observed - expected) <= tolerance
         self.graded += 1
@@ -92,7 +101,13 @@ def scalar_table(filter_expression, itervars):
     for var in itervars:
         if var not in df.columns:
             raise LookupError(f"results carry no iteration variable '{var}'")
-        df[var] = df[var].astype(float)
+        # Iteration variables arrive as text. Numeric ones are converted so that
+        # a sweep sorts and prints as numbers; the rest -- a boolean flag, a
+        # scenario name -- are left as they were written in the ini.
+        try:
+            df[var] = df[var].astype(float)
+        except ValueError:
+            pass
     # One recorded value per cell. The table is keyed by name, not by module,
     # so the same scalar matched on two modules -- or in two repetitions of a
     # run -- would otherwise be averaged into a number no run recorded. A nan is
@@ -156,8 +171,102 @@ def grade_harq_residual_loss(grader):
                               row['macPacketLossDl:sum'], 5.0, " SDUs")
 
 
+def pathloss_reference():
+    """The transcription of the 3GPP formulas that grades the path-loss unit
+    tests, imported rather than copied. A physics check that needs a path loss
+    and the unit test that grades one are then held to the same statement of
+    what the specification requires, and cannot drift apart."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        os.pardir, 'unit', 'pathloss_reference.py')
+    spec = importlib.util.spec_from_file_location('pathloss_reference', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def config_values(names):
+    """The scenario's own configuration, so that a check states the model's
+    arithmetic and not the scenario's numbers: edit the ini and the expected
+    value follows. Units are stripped -- every quantity read here is in the
+    unit the ini writes it in."""
+    entries = scave.get_config_entries('*')
+    out = {}
+    for name in names:
+        hits = entries[entries.name == name].value.unique()
+        if len(hits) != 1:
+            raise LookupError(f"expected exactly one value for config entry "
+                              f"'{name}', found {list(hits)}")
+        out[name] = float(re.match(r'-?[\d.]+', hits[0]).group(0))
+    return out
+
+
+class Budget:
+    """The downlink budget of a scenario in which nothing is random: a sum of
+    configured constants and one path loss. Stated once, because the
+    interference check needs exactly the same arithmetic for the interferer as
+    the link-budget check needs for the wanted signal."""
+
+    def __init__(self):
+        self.plr = pathloss_reference()
+        self.cfg = config_values([
+            '**.eNodeBTxPower', '**.antennGainEnB', '**.antennaGainUe', '**.cableLoss',
+            '**.thermalNoise', '**.ueNoiseFigure', '**.nodebHeight', '**.ueHeight',
+            '*.carrierAggregation.componentCarrier[0].carrierFrequency',
+        ])
+        self.hBS = self.cfg['**.nodebHeight']
+        self.hUT = self.cfg['**.ueHeight']
+        self.fc = self.cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
+        self.noise = self.cfg['**.thermalNoise'] + self.cfg['**.ueNoiseFigure']
+
+    def received_power(self, d2D):
+        """dBm at the UE, for a base station d2D metres away."""
+        d3D = math.sqrt(d2D ** 2 + (self.hBS - self.hUT) ** 2)
+        return (self.cfg['**.eNodeBTxPower']
+                - self.plr.t901_umi_los(d3D, d2D, self.fc, self.hBS, self.hUT)
+                + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
+                - self.cfg['**.cableLoss'])
+
+    def sinr(self, d_serving):
+        """dB over the noise floor."""
+        return self.received_power(d_serving) - self.noise
+
+
+def grade_link_budget(grader):
+    """With fading, shadowing and all interference off, an omnidirectional
+    antenna and a fixed LOS state, the reported SINR is a sum of constants and
+    one path loss."""
+    budget = Budget()
+    pos = config_values(['*.gnb.mobility.initialZ', '*.ue[0].mobility.initialZ'])
+
+    # Tripwire, not a claim about the model: the heights the formula uses and
+    # the heights the coordinates place the nodes at are independent inputs. If
+    # they disagree the checks below still run -- they just grade a geometry the
+    # model never evaluated.
+    grader.check_absolute('geometry-is-consistent', 'formula vs coordinates',
+                          pos['*.gnb.mobility.initialZ'] - pos['*.ue[0].mobility.initialZ'],
+                          budget.hBS - budget.hUT, 0.0, " m")
+
+    table = scalar_table('module =~ "*.nrChannelModel[*]" AND name =~ "measuredSinrDl:*"',
+                         itervars=('d',))
+    previous = None
+    for d2D, row in table.iterrows():
+        params = f"d={d2D:g}m"
+        expected = budget.sinr(d2D)
+        observed = row['measuredSinrDl:mean']
+        # Exact to floating point: with the randomness switched off there is
+        # nothing left for a tolerance to absorb, and a loose one here would
+        # hide precisely the term-sized errors the check exists to catch.
+        grader.check_absolute('link-budget', params, observed, expected, 1e-9, " dB")
+
+        if previous is not None:
+            grader.check_true('budget-falls-with-distance', params, observed < previous,
+                              f"{observed:.4f} dB < {previous:.4f} dB at the previous distance")
+        previous = observed
+
+
 GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
+    'LinkBudget': grade_link_budget,
 }
 
 

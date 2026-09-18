@@ -1,0 +1,128 @@
+%description:
+
+The downlink budget, end to end, against the closed form.
+
+The unit tests stop at the path-loss term and the fingerprints only hash the
+consequences, so nothing checks that the model assembles a received signal
+level correctly out of its ingredients. With fading, shadowing and every
+interference contribution switched off, an omnidirectional antenna and a fixed
+LOS state, the SINR the UE reports is a sum of constants and one path loss:
+
+    SINR = txPower - PL(d) + Gtx + Grx - cableLoss - thermalNoise - noiseFigure
+
+Every term but PL is a parameter of the scenario. PL comes from
+pathloss_reference.py -- the independent transcription of the 3GPP formulas
+that grades the path-loss unit tests -- so the two layers are held to one
+statement of what TR 38.901 requires, and cannot drift apart. That join is the
+point of the test as much as the arithmetic is.
+
+The UE is swept over five distances, which also carries the second claim: the
+budget has to fall monotonically with distance. The sweep straddles the
+breakpoint distance (about 120 m for this geometry at 2 GHz), so both branches
+of the UMi LOS formula are exercised.
+
+A note on the geometry, because it is a trap rather than a detail. The heights
+that enter the formula are the nodebHeight and ueHeight parameters, while the
+distance comes from the nodes' actual coordinates. They are independent
+inputs: leave initialZ unset and the model computes a path loss for a 10 m
+base station over a distance measured as though it stood on the ground. The
+configuration below keeps them consistent and the grader checks that it does,
+because an inconsistent scenario would not fail -- it would quietly grade a
+different geometry.
+
+%extraargs: -c LinkBudget
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config LinkBudget]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+**.measuredSinrDl.result-recording-modes = mean,count
+
+############### The sweep ##############
+# Straddles the breakpoint distance, so both branches of the LOS formula run.
+**.ueDistance = ${d = 50, 100, 200, 400, 800}
+
+############### Geometry ##############
+# initialZ and the height parameters have to agree: the first sets the distance
+# the model measures, the second the heights the formula uses.
+*.gnb.mobility.initialX = 450m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 10m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 450m + ${d}m
+*.ue[0].mobility.initialY = 300m
+*.ue[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### The budget terms, stated rather than inherited ##############
+# A physics test should not inherit the numbers it is asserting about: these are
+# the NED defaults today, written down so that changing a default makes this
+# test disagree with the model loudly instead of moving silently with it.
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 0dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+
+############### Traffic, only to make the UE report ##############
+*.ue[*].numApps = 1
+*.server.numApps = 1
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.02s
+*.server.app[0].startTime = 0.1s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=10 failures=0
+
+%not-contains: verdict.txt
+FAILED
