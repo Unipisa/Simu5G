@@ -1,0 +1,139 @@
+%description:
+
+The interference floor a background cell imposes, against the closed form.
+
+A background cell is the modern replacement for an external cell: a base
+station with background UEs and a scheduler, but no real protocol stack. What
+reaches a real UE from one is a single term, and it is computable -- so this
+grades it rather than recording it.
+
+Worth having separately from InterferenceDelta, which covers the same
+arithmetic for a real neighbouring cell, because the background path is not
+the same code and does not use the same physics. computeExtCellPathLoss
+always applies the TR 36.814 formulas whatever propagation study the model
+itself is configured with, and it passes the plain distance between the two
+nodes as both the three-dimensional and the two-dimensional one. Neither is
+obvious from the outside, and a refactoring that unified the two paths would
+change the answer without changing anything a fingerprint could attribute.
+
+The scenario is one real cell, one background cell and a UE between them,
+with every random ingredient switched off, so both the wanted signal and the
+background cell's contribution are sums of configured constants and one path
+loss -- from two different studies:
+
+    S = txPower   - PL_38901(d_serving) + Gtx + Grx - cableLoss
+    I = bgTxPower - PL_36814(d_bgCell)  + Gtx + Grx - cableLoss
+    N = thermalNoise + noiseFigure
+
+As in InterferenceDelta, the background scheduler does not occupy every band
+in every TTI and the model counts only the bands it did, so the reported SINR
+spans two predictable endpoints: the maximum is the interference-free budget,
+from the TTIs in which the background cell was idle, and the minimum is the
+fully-loaded one. Both are asserted, which makes the check independent of how
+the background load happened to fall.
+
+enableExtCellLos is switched off, so the background link is NLOS by
+configuration rather than by borrowing the serving link's LOS state -- which
+is what computeExtCellPathLoss does otherwise, and which would make the
+expected value depend on a draw belonging to a different link.
+
+%extraargs: -c BackgroundCellFloor
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config BackgroundCellFloor]
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+seed-set = 0
+**.vector-recording = false
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+
+**.bgCellInterference = ${bgi = true, false}
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 25m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 400m
+*.ue[0].mobility.initialY = 300m
+*.ue[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 2000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.enableExtCellLos = false
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 0dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+
+############ one background cell, heavily loaded ############
+*.numBgCells = 1
+*.bgCell[0].mobility.initialX = 900m
+*.bgCell[0].mobility.initialY = 300m
+*.bgCell[0].mobility.initialZ = 25m
+*.bgCell[0].bgScheduler.isNr = true
+*.bgCell[0].bgScheduler.txPower = 40dBm
+*.bgCell[0].bgScheduler.txDirection = "OMNI"
+*.bgCell[0].bgScheduler.numBands = 6
+*.bgCell[0].bgTrafficGenerator.numBgUes = 10
+*.bgCell[0].bgTrafficGenerator.bgUE[*].mobility.initialX = uniform(800m,1000m)
+*.bgCell[0].bgTrafficGenerator.bgUE[*].mobility.initialY = uniform(200m,400m)
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.typename = "TrafficGeneratorCbr"
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.startTimeDl = uniform(0s,0.05s)
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.packetSizeDl = 1000B
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.periodDl = 0.001s
+
+*.ue[*].numApps = 1
+*.server.numApps = 1
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.02s
+*.server.app[0].startTime = 0.1s
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=6 failures=0
+
+%not-contains: verdict.txt
+FAILED

@@ -327,12 +327,32 @@ class Budget:
                 + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
                 - self.cfg['**.cableLoss'])
 
-    def sinr(self, d_serving, d_interferer=None):
-        """dB, over noise alone or over noise plus one interferer."""
+    def background_received_power(self, distance, tx_power):
+        """dBm at the UE from an external or background cell.
+
+        Same budget as a real base station's, but a different propagation
+        model: computeExtCellPathLoss always applies the TR 36.814 formulas,
+        whatever study the channel model itself is configured with, and passes
+        the plain distance between the two nodes as both the 3D and the 2D
+        one. NLOS, which is what enableExtCellLos = false selects; left true,
+        the interferer would borrow the serving link's LOS state."""
+        return (tx_power - self.plr.t814_umi_nlos(distance, self.fc)
+                + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
+                - self.cfg['**.cableLoss'])
+
+    def over_noise(self, signal_dbm, interference_dbm=None):
+        """dB of a received power over the noise floor, or over noise plus one
+        interferer."""
         denominator = 10 ** (self.noise / 10.0)
-        if d_interferer is not None:
-            denominator += 10 ** (self.received_power(d_interferer) / 10.0)
-        return self.received_power(d_serving) - 10 * math.log10(denominator)
+        if interference_dbm is not None:
+            denominator += 10 ** (interference_dbm / 10.0)
+        return signal_dbm - 10 * math.log10(denominator)
+
+    def sinr(self, d_serving, d_interferer=None):
+        """dB, for a base station d_serving away, over noise alone or over
+        noise plus one more base station d_interferer away."""
+        interference = None if d_interferer is None else self.received_power(d_interferer)
+        return self.over_noise(self.received_power(d_serving), interference)
 
 
 def grade_interference_delta(grader):
@@ -413,12 +433,59 @@ def grade_link_budget(grader):
         previous = observed
 
 
+def grade_background_cell_floor(grader):
+    """One real cell, one background cell. The wanted signal and the
+    interferer are both closed-form, from two different propagation studies."""
+    budget = Budget()
+    pos = config_values([
+        '*.gnb.mobility.initialX', '*.gnb.mobility.initialZ',
+        '*.ue[0].mobility.initialX', '*.ue[0].mobility.initialZ',
+        '*.bgCell[0].mobility.initialX', '*.bgCell[0].mobility.initialZ',
+        '*.bgCell[0].bgScheduler.txPower',
+    ])
+    grader.check_absolute('geometry-is-consistent', 'formula vs coordinates',
+                          pos['*.gnb.mobility.initialZ'] - pos['*.ue[0].mobility.initialZ'],
+                          budget.hBS - budget.hUT, 0.0, " m")
+
+    d_serving = abs(pos['*.ue[0].mobility.initialX'] - pos['*.gnb.mobility.initialX'])
+    # The background path takes the straight distance between the two nodes,
+    # heights included, and uses it as both the 3D and the 2D distance.
+    d_bg = math.hypot(pos['*.bgCell[0].mobility.initialX'] - pos['*.ue[0].mobility.initialX'],
+                      pos['*.bgCell[0].mobility.initialZ'] - pos['*.ue[0].mobility.initialZ'])
+
+    signal = budget.received_power(d_serving)
+    interferer = budget.background_received_power(d_bg, pos['*.bgCell[0].bgScheduler.txPower'])
+    quiet = budget.over_noise(signal)
+    loaded = budget.over_noise(signal, interferer)
+
+    table = scalar_table('module =~ "*.ue[0].*.nrChannelModel[*]" '
+                         'AND name =~ "measuredSinrDl:*"', itervars=('bgi',))
+    for bgi, row in table.iterrows():
+        on = str(bgi) == 'true'
+        params = f"bgCellInterference={'true' if on else 'false'}"
+        if not on:
+            grader.check_absolute('no-interference-is-flat', params,
+                                  row['measuredSinrDl:max'] - row['measuredSinrDl:min'],
+                                  0.0, 1e-9, " dB")
+            grader.check_absolute('quiet-sinr', params,
+                                  row['measuredSinrDl:min'], quiet, 1e-9, " dB")
+        else:
+            grader.check_absolute('idle-bgcell-costs-nothing', params,
+                                  row['measuredSinrDl:max'], quiet, 1e-9, " dB")
+            grader.check_absolute('loaded-bgcell-sinr', params,
+                                  row['measuredSinrDl:min'], loaded, 1e-9, " dB")
+            grader.check_absolute('background-cell-floor', params,
+                                  row['measuredSinrDl:max'] - row['measuredSinrDl:min'],
+                                  quiet - loaded, 1e-9, " dB")
+
+
 GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
     'LinkBudget': grade_link_budget,
     'InterferenceDelta': grade_interference_delta,
     'GeometryInvariance': grade_geometry_invariance,
     'ModuleOrderPermutation': grade_module_order_permutation,
+    'BackgroundCellFloor': grade_background_cell_floor,
 }
 
 
