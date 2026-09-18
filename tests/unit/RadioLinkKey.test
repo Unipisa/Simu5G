@@ -1,0 +1,136 @@
+%description:
+
+LinkKey, the identity of a radio link (ChannelModelBase.h).
+
+It is a small type with a large job. The per-link channel state -- the LOS
+draw, the shadowing value, the Jakes fading realization -- is held in maps
+indexed by this key, so what LinkKey considers "the same link" is exactly what
+the model considers "the same channel realization". Two mistakes it exists to
+prevent: a link seen from its two ends landing in two different slots, and two
+distinct links of one node sharing one slot, which is what keying the state
+by node alone does to a UE with several peers.
+
+The checks are decided here rather than graded: no specification says how a
+simulator should key its channel state.
+
+The state maps are std::map, so the ordering is not a detail either. It has to
+be a strict weak ordering consistent with equality, or lookups silently miss
+and a link quietly acquires a second, independent realization.
+
+Also here: a default-constructed RadioLink has to be visibly unusable. It is
+filled in field by field by its builders, and a default that happened to look
+like a valid downlink from node 0 would let a half-built link through.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+
+const MacNodeId UE_A = MacNodeId(1025);
+const MacNodeId UE_B = MacNodeId(1026);
+const MacNodeId UE_C = MacNodeId(1027);
+
+{
+    // A link is the same link from either end. This is the property the whole
+    // type exists for: the transmitter and the receiver have to agree on which
+    // channel realization applies to them.
+    c.check("a link is the same key from either end", LinkKey(UE_A, UE_B) == LinkKey(UE_B, UE_A));
+    c.check("the normalized order is by node id",
+            LinkKey(UE_B, UE_A).a == UE_A && LinkKey(UE_B, UE_A).b == UE_B);
+}
+{
+    // The cellular callers construct the degenerate key deliberately, so that
+    // a UE's cellular link keeps exactly one slot per UE, as a node-keyed map
+    // would give it.
+    c.check("the one-argument key is the degenerate pair", LinkKey(UE_A) == LinkKey(UE_A, UE_A));
+}
+{
+    // ...and the degenerate key must not collide with any real link of that
+    // same node, or a UE's cellular channel state and its D2D channel state
+    // would be one and the same value.
+    c.check("a node's cellular key differs from its links to peers",
+            !(LinkKey(UE_A) == LinkKey(UE_A, UE_B)));
+}
+{
+    // What the type exists to prevent: one node, several peers, one slot.
+    c.check("two links of one node are two keys",
+            !(LinkKey(UE_A, UE_B) == LinkKey(UE_A, UE_C)));
+
+    // Demonstrated through the container the model actually uses, because that
+    // is where a broken ordering does its damage rather than a broken ==.
+    std::map<LinkKey, int> state;
+    state[LinkKey(UE_A, UE_B)] = 1;
+    state[LinkKey(UE_A, UE_C)] = 2;
+    state[LinkKey(UE_B, UE_A)] = 3;   // the first link again, from the far end
+    c.expectValue("the far end addresses the same map slot", (long long)state.size(), 2);
+    c.expectValue("...and reads back what that link stored", state[LinkKey(UE_A, UE_B)], 3);
+}
+{
+    // std::map needs a strict weak ordering, and one consistent with ==, or a
+    // lookup can miss a key that is present and the link silently gets a second
+    // realization. Checked over a set of keys spanning both shapes.
+    std::vector<LinkKey> keys = {
+        LinkKey(UE_A), LinkKey(UE_B), LinkKey(UE_C),
+        LinkKey(UE_A, UE_B), LinkKey(UE_A, UE_C), LinkKey(UE_B, UE_C),
+    };
+    bool irreflexive = true, asymmetric = true, consistent = true, transitive = true;
+    for (const auto& x : keys) {
+        if (x < x)
+            irreflexive = false;
+        for (const auto& y : keys) {
+            if ((x < y) && (y < x))
+                asymmetric = false;
+            if ((x == y) != (!(x < y) && !(y < x)))
+                consistent = false;
+            for (const auto& z : keys)
+                if ((x < y) && (y < z) && !(x < z))
+                    transitive = false;
+        }
+    }
+    c.check("the ordering is irreflexive", irreflexive);
+    c.check("the ordering is asymmetric", asymmetric);
+    c.check("the ordering is transitive", transitive);
+    c.check("equality is exactly the absence of ordering either way", consistent);
+}
+{
+    // A key built from the two ends must order identically however it was
+    // built, or the same link occupies two slots depending on who looked it up.
+    c.check("ordering does not depend on which end built the key",
+            !(LinkKey(UE_A, UE_B) < LinkKey(UE_B, UE_A))
+            && !(LinkKey(UE_B, UE_A) < LinkKey(UE_A, UE_B)));
+}
+{
+    // The printed form distinguishes the two shapes; it goes into the logs a
+    // reader uses to tell a cellular link from a sidelink one.
+    std::ostringstream cellular, peer;
+    cellular << LinkKey(UE_A);
+    peer << LinkKey(UE_A, UE_B);
+    c.check("a degenerate key prints as the single node", cellular.str() == "1025",
+            "printed '" + cellular.str() + "'");
+    c.check("a peer link prints as the pair", peer.str() == "[1025,1026]",
+            "printed '" + peer.str() + "'");
+}
+{
+    // A half-built link must not pass for a real one.
+    RadioLink fresh;
+    c.check("a default RadioLink names no endpoints",
+            fresh.txId == NODEID_NONE && fresh.rxId == NODEID_NONE);
+    c.check("...no cell", fresh.cellId == NODEID_NONE);
+    c.check("...and no direction", fresh.dir == UNKNOWN_DIRECTION);
+    c.check("...and it claims no antenna gain it has not been given",
+            fresh.txAntennaGain == 0.0 && fresh.rxAntennaGain == 0.0 && fresh.noiseFigure == 0.0);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=18 modelfailures=0
+
+%not-contains: stdout
+FAILED
