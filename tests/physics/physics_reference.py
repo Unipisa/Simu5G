@@ -226,9 +226,57 @@ class Budget:
                 + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
                 - self.cfg['**.cableLoss'])
 
-    def sinr(self, d_serving):
-        """dB over the noise floor."""
-        return self.received_power(d_serving) - self.noise
+    def sinr(self, d_serving, d_interferer=None):
+        """dB, over noise alone or over noise plus one interferer."""
+        denominator = 10 ** (self.noise / 10.0)
+        if d_interferer is not None:
+            denominator += 10 ** (self.received_power(d_interferer) / 10.0)
+        return self.received_power(d_serving) - 10 * math.log10(denominator)
+
+
+def grade_interference_delta(grader):
+    """Two cells, one victim. The interfering cell is not busy in every TTI and
+    the model only counts the bands it actually occupied, so the reported SINR
+    spans two predictable endpoints rather than sitting at one value."""
+    budget = Budget()
+    pos = config_values(['*.gnb1.mobility.initialX', '*.gnb2.mobility.initialX',
+                         '*.ue[0].mobility.initialX', '*.gnb1.mobility.initialZ',
+                         '*.ue[0].mobility.initialZ'])
+    d_serving = abs(pos['*.ue[0].mobility.initialX'] - pos['*.gnb1.mobility.initialX'])
+    d_interferer = abs(pos['*.ue[0].mobility.initialX'] - pos['*.gnb2.mobility.initialX'])
+
+    grader.check_absolute('geometry-is-consistent', 'formula vs coordinates',
+                          pos['*.gnb1.mobility.initialZ'] - pos['*.ue[0].mobility.initialZ'],
+                          budget.hBS - budget.hUT, 0.0, " m")
+
+    quiet = budget.sinr(d_serving)
+    loaded = budget.sinr(d_serving, d_interferer)
+
+    table = scalar_table('module =~ "*.ue[0].*.nrChannelModel[*]" '
+                         'AND name =~ "measuredSinrDl:*"', itervars=('dli',))
+    for dli, row in table.iterrows():
+        on = str(dli) == 'true'
+        params = f"downlinkInterference={'true' if on else 'false'}"
+        if not on:
+            # Nothing varies, so the two extremes have to be the one budget
+            # value. A spread here would mean something is still perturbing the
+            # channel that the scenario believes it switched off.
+            grader.check_absolute('no-interference-is-flat', params,
+                                  row['measuredSinrDl:max'] - row['measuredSinrDl:min'],
+                                  0.0, 1e-9, " dB")
+            grader.check_absolute('quiet-sinr', params,
+                                  row['measuredSinrDl:min'], quiet, 1e-9, " dB")
+        else:
+            grader.check_absolute('idle-interferer-costs-nothing', params,
+                                  row['measuredSinrDl:max'], quiet, 1e-9, " dB")
+            grader.check_absolute('loaded-interferer-sinr', params,
+                                  row['measuredSinrDl:min'], loaded, 1e-9, " dB")
+            # The headline: the drop between the two endpoints is the ratio of
+            # the interference-plus-noise floor to the noise floor, and nothing
+            # else. This is the quantity no fingerprint row varies today.
+            grader.check_absolute('interference-delta', params,
+                                  row['measuredSinrDl:max'] - row['measuredSinrDl:min'],
+                                  quiet - loaded, 1e-9, " dB")
 
 
 def grade_link_budget(grader):
@@ -267,6 +315,7 @@ def grade_link_budget(grader):
 GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
     'LinkBudget': grade_link_budget,
+    'InterferenceDelta': grade_interference_delta,
 }
 
 

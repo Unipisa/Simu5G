@@ -1,0 +1,144 @@
+%description:
+
+What a second cell costs the first, against the closed form.
+
+Interference is the least covered part of the radio model -- no shipped
+fingerprint row varies downlinkInterference at all -- and it is the code a
+structural change to the medium disturbs most, because it is the one place
+where a cell reaches into another cell's channel model.
+
+The scenario is two cells and one victim UE, run with downlinkInterference
+off and on. Every random ingredient is switched off, so both the wanted
+signal and the interferer's contribution are the same closed-form budget the
+LinkBudget test grades, evaluated at their two distances:
+
+    S = txPower - PL(d_serving)     + Gtx + Grx - cableLoss
+    I = txPower - PL(d_interferer)  + Gtx + Grx - cableLoss
+    N = thermalNoise + noiseFigure
+
+    SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
+
+The interfering cell is loaded, but a scheduler does not fill every band in
+every TTI, and the model only counts a band that the interferer actually
+occupied (computeDownlinkInterference checks getDlBandStatus). The reported
+SINR is therefore not one number -- which is what makes the extremes the
+right thing to assert, and makes them exact:
+
+ - the maximum is the interference-free budget, from the TTIs in which the
+   interferer happened to be idle;
+ - the minimum is the fully-loaded budget, from the TTIs in which it used
+   every band.
+
+Both are predicted, so the check does not depend on how the load happened to
+fall, only on the two endpoints being reached. With interference off the two
+extremes collapse onto one value, which is also what proves the machinery is
+genuinely off rather than merely quiet.
+
+%extraargs: -c InterferenceDelta
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config InterferenceDelta]
+network = simu5g.simulations.nr.networks.MultiCell_Standalone
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+# The extremes are the quantities under test here, not the average.
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+
+############### The sweep: the one thing that varies ##############
+**.downlinkInterference = ${dli = false, true}
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### Geometry: victim 100 m from its cell, 400 m from the other ##############
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb1.mobility.initialZ = 10m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb2.mobility.initialZ = 10m
+*.numUe = 2
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+# Association is by best signal and then frozen: the victim must not change
+# cell halfway through, or the budget it is graded against changes with it.
+**.dynamicCellAssociation = true
+**.enableHandover = false
+*.ue[0].mobility.initialX = 350m
+*.ue[0].mobility.initialY = 500m
+*.ue[0].mobility.initialZ = 1.5m
+*.ue[1].mobility.initialX = 750m
+*.ue[1].mobility.initialY = 500m
+*.ue[1].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1500m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+
+############### The budget terms, stated rather than inherited ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 0dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+
+############### Traffic: a trickle to the victim, a flood to the other cell ##############
+*.ue[*].numApps = 1
+*.server.numApps = 2
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[*].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.02s
+*.server.app[0].startTime = 0.1s
+# Enough to keep gnb2 busy most of the time, but not so much that it never
+# falls idle: the check needs both extremes to occur.
+*.server.app[1].destAddress = "ue[1]"
+*.server.app[1].destPort = 3000
+*.server.app[1].localPort = 3089
+*.server.app[1].packetSize = 1000B
+*.server.app[1].samplingTime = 0.0002s
+*.server.app[1].startTime = 0.05s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=6 failures=0
+
+%not-contains: verdict.txt
+FAILED
