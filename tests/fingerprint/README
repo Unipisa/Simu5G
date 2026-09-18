@@ -37,7 +37,7 @@ separate file, selectable as `./fingerprints simulations_d2d.csv` -- and no
 
 Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
 
-    radio          206  a stochastic channel model is in use, so path loss,
+    radio          210  a stochastic channel model is in use, so path loss,
                         fading and shadowing are actually evaluated
     idealchannel    18  IdealChannelModel: reception is a coin flip and no
                         propagation is computed. These rows are radio-inert by
@@ -50,7 +50,7 @@ Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
     nofading        24  a stochastic model with both fading and shadowing
                         turned off, so the channel is geometry only. Like
                         idealchannel, but sensitive to path loss
-    interference    39  downlinkInterference and/or uplinkInterference is
+    interference    43  downlinkInterference and/or uplinkInterference is
                         enabled, i.e. interference between real cells is
                         modeled. Interference from background cells is
                         bgcell, not this
@@ -60,7 +60,7 @@ Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
     bgue             8  background UEs are attached to a real cell. Background
                         UEs living inside a background cell are part of
                         bgcell, and a row can carry both
-    anisotropic      8  an ANISOTROPIC antenna is configured somewhere, so the
+    anisotropic     12  an ANISOTROPIC antenna is configured somewhere, so the
                         horizontal antenna pattern is exercised
 
 The tags were derived from each row's fully resolved configuration -- the
