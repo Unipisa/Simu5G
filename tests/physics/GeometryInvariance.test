@@ -1,0 +1,137 @@
+%description:
+
+Two things the radio model must not depend on: where the network sits, and
+which way it faces.
+
+Neither has an expected value. The scenario is run three times -- as placed,
+translated by a kilometre, and rotated a quarter turn about the base station
+-- and every recorded scalar of the transformed runs has to equal the
+reference run's, bit for bit. A metamorphic check of this shape is unusually
+good at catching what a large refactoring actually breaks: an absolute
+coordinate that creeps into a formula which should only see a difference, or
+an axis convention that stops being a convention.
+
+Fading and shadowing are deliberately left ON. With them off the check would
+only exercise the path-loss geometry; with them on it also covers the
+per-link state -- the shadowing recurrence keyed on distance travelled, the
+Jakes map lookups -- which is the part a refactoring re-homes and the part
+that would notice if a map key started depending on absolute position.
+
+The transformations are chosen so that exactness is a fair demand. A
+translation by a whole number of metres and a quarter turn both map the
+coordinates onto exactly representable ones, so the distances the model
+computes are not merely close but identical, and the comparison can be for
+equality rather than to a tolerance. A 45 degree rotation would not be a
+weaker property, only a weaker test: the differences it produced would be
+floating-point noise rather than evidence.
+
+Three UEs at different distances and bearings, so the rotation moves all of
+them and the invariance cannot hold by accident of symmetry. One cell and
+omnidirectional antennas, because a sectorial antenna has a direction and is
+entitled to care which way the network faces.
+
+The configuration pins seed-set, which matters more here than anywhere else
+in this directory: OMNeT++ derives it from the run number by default, so the
+points of a parameter study would otherwise draw different random numbers and
+every stochastic quantity would differ between them -- enough for the model
+to appear to violate both invariances by several decibels.
+
+%extraargs: -c GeometryInvariance
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config GeometryInvariance]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+
+# Load-bearing, and the whole test is worthless without it: seed-set defaults
+# to the run number, so the points of a parameter study normally get DIFFERENT
+# random seeds. An invariance check compares runs against each other, which
+# only means anything if they draw the same random numbers -- otherwise every
+# stochastic quantity differs and the model looks broken when it is not.
+seed-set = 0
+
+############### The transformations ##############
+# One at a time: translate, or rotate, or neither.
+**.offset = ${dx = 0, 1000}
+**.turn = ${rot = 0, 90}
+constraint = ($dx == 0) || ($rot == 0)
+
+############### Geometry ##############
+# A quarter turn about the base station maps (x,y) to (-y,x), written out
+# rather than computed, so the coordinates stay exactly representable.
+*.gnb.mobility.initialX = 900m + ${dx}m
+*.gnb.mobility.initialY = 900m + ${dx}m
+*.gnb.mobility.initialZ = 25m
+
+*.numUe = 3
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 900m + ${dx}m + (${rot} == 0 ? 150m : 0m)
+*.ue[0].mobility.initialY = 900m + ${dx}m + (${rot} == 0 ? 0m : 150m)
+*.ue[1].mobility.initialX = 900m + ${dx}m + (${rot} == 0 ? 0m : -300m)
+*.ue[1].mobility.initialY = 900m + ${dx}m + (${rot} == 0 ? 300m : 0m)
+*.ue[2].mobility.initialX = 900m + ${dx}m + (${rot} == 0 ? -450m : 0m)
+*.ue[2].mobility.initialY = 900m + ${dx}m + (${rot} == 0 ? 0m : -450m)
+*.ue[*].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 3000m
+**.mobility.constraintAreaMaxY = 3000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: randomness left on, on purpose ##############
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = true
+**.fading = true
+**.fadingType = "JAKES"
+**.shadowing = true
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+
+############### Traffic ##############
+*.ue[*].numApps = 1
+*.server.numApps = 3
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[*].typename = "CbrSender"
+*.server.app[*].destAddress = "ue[" + string(ancestorIndex(0)) + "]"
+*.server.app[*].destPort = 3000
+*.server.app[*].localPort = 3088 + ancestorIndex(0)
+*.server.app[*].packetSize = 100B
+*.server.app[*].samplingTime = 0.01s
+*.server.app[*].startTime = 0.1s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=2 failures=0
+
+%not-contains: verdict.txt
+FAILED

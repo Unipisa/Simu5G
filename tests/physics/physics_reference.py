@@ -200,6 +200,65 @@ def config_values(names):
     return out
 
 
+def all_scalars_by_run(itervars):
+    """Every recorded scalar of every run, indexed by (module, name) with one
+    column per combination of the swept variables.
+
+    This is what an invariance check compares. Asserting over the whole result
+    set rather than over one chosen statistic is the point: a transformation
+    that ought to change nothing has to change nothing, and picking a statistic
+    in advance would only test the part that was already suspected."""
+    df = scave.get_scalars('module =~ "*"', include_itervars=True,
+                           convert_to_base_unit=False)
+    if df.empty:
+        raise LookupError("no scalars recorded")
+    for var in itervars:
+        if var not in df.columns:
+            raise LookupError(f"results carry no iteration variable '{var}'")
+        try:
+            df[var] = df[var].astype(float)
+        except ValueError:
+            pass
+    return df.pivot_table(index=['module', 'name'], columns=list(itervars),
+                          values='value', aggfunc='first', dropna=False)
+
+
+def differing_scalars(table, reference, other):
+    """The rows where two runs disagree. Two recorded nans count as agreeing:
+    a statistic that was declared and never emitted is not a difference."""
+    a, b = table[reference], table[other]
+    agree = (a == b) | (a.isna() & b.isna())
+    return table[~agree]
+
+
+def check_runs_identical(grader, table, reference, other, ref_name, label):
+    """One verdict for "this transformation changed nothing", naming what it
+    did change when it changed something."""
+    diff = differing_scalars(table, reference, other)
+    detail = f"{len(diff)} of {len(table)} recorded scalars differ from {ref_name}"
+    if not diff.empty:
+        worst = diff.head(3)
+        detail += ": " + "; ".join(
+            f"{module}.{name} {worst.loc[(module, name), reference]} vs "
+            f"{worst.loc[(module, name), other]}"
+            for module, name in worst.index)
+    grader.check_true('invariance', label, diff.empty, detail)
+
+
+def grade_geometry_invariance(grader):
+    """Neither where the network sits nor which way it faces may reach a
+    result. Both transformations map the coordinates onto exactly
+    representable ones, so the demand is equality rather than closeness."""
+    table = all_scalars_by_run(('dx', 'rot'))
+    reference = (0.0, 0.0)
+    if reference not in table.columns:
+        raise LookupError("the untransformed run is missing from the results")
+    check_runs_identical(grader, table, reference, (1000.0, 0.0),
+                         'the untransformed run', 'translated by 1000 m')
+    check_runs_identical(grader, table, reference, (0.0, 90.0),
+                         'the untransformed run', 'rotated a quarter turn')
+
+
 class Budget:
     """The downlink budget of a scenario in which nothing is random: a sum of
     configured constants and one path loss. Stated once, because the
@@ -316,6 +375,7 @@ GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
     'LinkBudget': grade_link_budget,
     'InterferenceDelta': grade_interference_delta,
+    'GeometryInvariance': grade_geometry_invariance,
 }
 
 

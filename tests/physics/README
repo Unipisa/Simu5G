@@ -92,6 +92,43 @@ the numbers the run recorded. Note also that the filter expression of
 get_runattrs() selects runs rather than attribute names, so an attribute is
 picked out of the returned frame afterwards rather than in the filter.
 
+Invariance tests
+----------------
+
+Some checks have no expected value at all. They run the same scenario twice
+under a transformation that ought to change nothing -- moving the network,
+turning it, renaming its parts -- and compare the two runs against each other.
+These are cheap to write, need no physics to be derived, and are unusually
+good at catching what a large refactoring actually breaks: an absolute
+coordinate that creeps into a formula which should only ever see a difference,
+or an ordering that starts reaching a result.
+
+They compare the whole recorded result set rather than a chosen statistic.
+Picking a statistic in advance would only test the part that was already
+suspected, and a transformation that ought to change nothing has to change
+nothing.
+
+Two things such a test has to get right; getting either wrong makes it
+report a defect the model does not have:
+
+ - Pin seed-set. It defaults to the run number, so the points of a parameter
+   study normally draw DIFFERENT random numbers. Runs compared against each
+   other must share a seed, or every stochastic quantity differs and the model
+   looks broken.
+
+ - Choose a transformation whose exactness is a fair demand. A translation by
+   a whole number of metres and a quarter turn map coordinates onto exactly
+   representable ones, so the distances the model computes are identical
+   rather than merely close, and equality is the right comparison. A 45 degree
+   rotation is not a weaker property, only a weaker test: what it produces is
+   floating-point noise rather than evidence.
+
+A relabelling comparison -- where the transformation permutes the parts rather
+than moving them -- has a third: only compare what the label addresses.
+Modules created on demand and named after a MacNodeId move when the thing they
+belong to moves, and comparing those reports a naming artifact as a physics
+difference.
+
 Tolerances
 ----------
 
