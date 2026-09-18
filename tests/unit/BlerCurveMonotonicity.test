@@ -1,0 +1,63 @@
+%description:
+
+A defect in the shipped BLER curves, recorded rather than fixed: block error
+rate is not monotonically non-increasing in SINR.
+
+Physically it has to be. A modulation that fails a given fraction of the time
+at some SINR cannot fail more often when the signal gets stronger, and the
+CQI search in LteFeedbackComputationRealistic::getCqi -- which walks the
+curves looking for the one whose BLER sits closest to the target -- is only
+well defined if they are ordered.
+
+BLERvsSINR_15CQI_TU.h is a table of measured points rather than a formula, so
+these look like measurement noise or transcription slips that were never
+filtered out. Three adjacent pairs in BLER_15_CQI_TU go the wrong way:
+
+    CQI  1   SINR -1.5 -> -0.5    BLER 0     -> 0.004
+    CQI  4   SINR  4.0 ->  5.0    BLER 0.008 -> 0.02
+    CQI  5   SINR -3.0 -> -2.0    BLER 0.988 -> 0.996
+
+The CQI 1 pair is the odd one: the curve reaches exactly zero at -1.5 dB and
+then comes back up, which also means "error-free" is reported one point before
+the curve actually ends.
+
+The effect on a simulation is small -- the deviations are a fraction of a
+percent, and only the CQI 4 pair sits anywhere near a plausible target BLER --
+so this is filed as a data-quality problem, not a correctness emergency.
+Fixing it means deciding what the curves ought to be, which is a modelling
+question and not a refactoring one; until then, asserting it here keeps the
+fact visible and stops anyone concluding the curves are ordered.
+
+When this is fixed, drop the %expected-failure line and move the check into
+BlerCqiRoundTrip.test, next to the other properties of the curves.
+
+%expected-failure: the shipped BLER curves are non-monotonic at three points
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+PhyPisaData pisa;
+
+int offenders = 0;
+for (int cqi = 1; cqi <= 15; cqi++)
+    for (int s = -30; s < 50; s++)
+        if (pisa.getBler(cqi, s + 1) > pisa.getBler(cqi, s))
+            offenders++;
+
+c.check("BLER is non-increasing in SINR, for every CQI", offenders == 0,
+        "sampled 1 dB steps where BLER rises: " + std::to_string(offenders));
+
+c.summary();
+
+%contains: stdout
+modelchecks=1 modelfailures=0
+
+%not-contains: stdout
+FAILED

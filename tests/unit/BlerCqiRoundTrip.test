@@ -1,0 +1,210 @@
+%description:
+
+The SINR-to-error mapping, from both ends: the BLER curve lookup
+(PhyPisaData::getBler) and the CQI the feedback computation derives from it
+(LteFeedbackComputationRealistic::getCqi). These are the two halves of one
+round trip -- a CQI is chosen as the modulation whose BLER is closest to the
+target, and the error model then asks what BLER that modulation actually has
+-- and neither half is covered today.
+
+No reference formula exists to grade this against: the curves are a table of
+measured points (BLERvsSINR_15CQI_TU.h), not a closed form, so what is
+checked here are the properties the table and its lookup have to have to
+mean anything, and the model's own stated contracts.
+
+Deliberately included is one thing that is arguably a defect. The test
+asserts the behaviour as it is today, so that a refactoring which changes it
+fails a named check that says what changed, rather than only a fingerprint:
+PhyPisaData's minSnr()/maxSnr() do not agree with the table they are
+commented as coming from. The checks below locate the real saturation
+points by probing rather than by trusting either the constants or the
+table, and then state the disagreement.
+
+The one property that ought to hold and does not -- BLER falling monotonically
+with SINR -- is split out into BlerCurveMonotonicity.test, which records it as
+an expected failure.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// The CQI mapping is a protected seam of the feedback computation, exposed
+// here the way lib/MacTestStubs.h exposes the MAC's: the class under test is
+// the real one, only its access specifier is stepped around.
+class ProbeFeedback : public LteFeedbackComputationRealistic
+{
+  public:
+    using LteFeedbackComputationRealistic::LteFeedbackComputationRealistic;
+    using LteFeedbackComputationRealistic::getCqi;
+};
+
+// Probe: the lowest integer SINR at which CQI `cqi` is not yet hopeless.
+static int lowestSnrBelowTotalLoss(PhyPisaData& p, int cqi)
+{
+    for (int s = -60; s <= 60; s++)
+        if (p.getBler(cqi, s) < 1.0)
+            return s;
+    return 61;
+}
+
+// Probe: the lowest integer SINR at which CQI `cqi` is error-free.
+static int lowestErrorFreeSnr(PhyPisaData& p, int cqi)
+{
+    for (int s = -60; s <= 60; s++)
+        if (p.getBler(cqi, s) == 0.0)
+            return s;
+    return 61;
+}
+
+%activity:
+Checker c;
+PhyPisaData pisa;
+
+//
+// --- the curve lookup: PhyPisaData::getBler ---
+//
+{
+    // A block error rate is a probability. Nothing downstream range-checks it,
+    // so the day an interpolation goes out of bounds it would silently become a
+    // negative or >1 error probability in isReceptionSuccessful().
+    bool inRange = true;
+    for (int cqi = 1; cqi <= 15; cqi++)
+        for (int s = -30; s <= 50; s++) {
+            double b = pisa.getBler(cqi, s);
+            if (!(b >= 0.0 && b <= 1.0))
+                inRange = false;
+        }
+    c.check("every tabulated BLER is a probability in [0,1]", inRange);
+}
+{
+    // A more aggressive modulation is never the safer one at the same SINR.
+    // Without this the CQI scale would not be an ordering at all.
+    bool ordered = true;
+    for (int s = -30; s <= 50; s++)
+        for (int cqi = 1; cqi < 15; cqi++)
+            if (pisa.getBler(cqi + 1, s) < pisa.getBler(cqi, s))
+                ordered = false;
+    c.check("at a fixed SINR, BLER is non-decreasing in CQI", ordered);
+}
+{
+    // The saturations of GetBLER_TU: total loss below the curve's first point,
+    // error-free at and above its last.
+    c.expectValue("CQI 1 is hopeless far below its curve", (long long)(pisa.getBler(1, -30) * 100), 100);
+    c.expectValue("CQI 15 is error-free far above its curve", (long long)(pisa.getBler(15, 50) * 100), 0);
+}
+{
+    // getBler's SINR parameter is an int, so the curve is only ever sampled at
+    // 1 dB granularity even though GetBLER_TU interpolates on a double. A
+    // refactoring that widens the parameter would start sampling between these
+    // points, which is a behaviour change worth noticing: CQI 7's curve falls
+    // from 0.036 at 10 dB to 0.008 at 11, so 10.9 dB would read differently.
+    double between = 10.9;
+    c.check("the lookup is sampled at integer SINR only",
+            pisa.getBler(7, between) == pisa.getBler(7, 10));
+}
+{
+    // blerShift displaces the curve along the SINR axis, and it does so once:
+    // asking with a shift of k is asking k dB further along with no shift.
+    PhyPisaData shifted;
+    shifted.setBlerShift(3);
+    bool equivalent = true;
+    for (int cqi = 1; cqi <= 15; cqi++)
+        for (int s = -20; s <= 40; s++)
+            if (shifted.getBler(cqi, s) != pisa.getBler(cqi, s + 3))
+                equivalent = false;
+    c.check("blerShift is applied exactly once, as a shift of the SINR axis", equivalent);
+
+    // ...and it moves the declared bounds with it, in the direction that keeps
+    // the same stretch of curve addressable.
+    c.expectValue("minSnr moves with blerShift", shifted.minSnr(), pisa.minSnr() - 3);
+    c.expectValue("maxSnr moves with blerShift", shifted.maxSnr(), pisa.maxSnr() - 3);
+}
+{
+    // Where the curves really start and stop, found by probing, against what
+    // PhyPisaData declares. minSnr() agrees. maxSnr() does not: it claims 40
+    // while the last CQI is already error-free at 38, so there is a 2 dB strip
+    // in which getCqi does not take its CQI-15 shortcut and searches instead --
+    // arriving at 15 anyway, because every CQI reports zero BLER there.
+    //
+    // The comments in PhyPisaData.h name SINR_15_CQI_TU[0][0] and [14][15] as
+    // these two constants; neither matches (-14.5 and 38.0 respectively).
+    // minSnr() lands right anyway, because CQI 1's first two tabulated points
+    // are both BLER 1, so -14 interpolates to total loss just as -14.5 does.
+    int firstUseful = lowestSnrBelowTotalLoss(pisa, 1);
+    int firstErrorFree = lowestErrorFreeSnr(pisa, 15);
+    c.expectValue("minSnr() is the last SINR at which even CQI 1 is hopeless",
+            pisa.minSnr(), firstUseful - 1);
+    c.expectValue("CQI 15 is error-free from 38 dB up", firstErrorFree, 38);
+    c.check("maxSnr() overshoots the point where the last curve ends",
+            pisa.maxSnr() > firstErrorFree,
+            "maxSnr=" + std::to_string(pisa.maxSnr()) + " errorFreeFrom=" + std::to_string(firstErrorFree));
+}
+
+//
+// --- the other half: the CQI derived from those curves ---
+//
+{
+    // The feedback computation needs a Binder only to reach its PhyPisaData.
+    Binder *binder = new Binder();
+    ProbeFeedback fb(binder, 0.01, 1);
+
+    // The scheduler acts on this number: more SINR must never yield a lower
+    // CQI, or a UE that moves closer to the cell is served a slower modulation.
+    bool monotone = true;
+    for (double s = -20; s < 45; s += 1.0)
+        if (fb.getCqi(s + 1) < fb.getCqi(s))
+            monotone = false;
+    c.check("CQI is non-decreasing in SINR", monotone);
+
+    c.expectValue("CQI is 0 at the bottom of the usable range",
+            fb.getCqi(pisa.minSnr()), 0);
+    c.expectValue("CQI is 15 above the top of the usable range",
+            fb.getCqi(pisa.maxSnr() + 1), 15);
+
+    // getCqi ROUNDS its SINR (floor(snr+0.5)), while the error model TRUNCATES
+    // the same quantity (StochasticChannelModel: int snr = snrV[band]). The two
+    // therefore disagree by up to 1 dB about which curve point applies to the
+    // same channel. Pinned as the model's current contract, so that a
+    // refactoring which unifies them fails here and says so.
+    c.expectValue("getCqi rounds a fractional SINR up from .5",
+            fb.getCqi(9.5), fb.getCqi(10.0));
+    c.expectValue("getCqi rounds a fractional SINR down below .5",
+            fb.getCqi(9.49), fb.getCqi(9.0));
+
+    delete binder;
+}
+{
+    // A CQI is the modulation whose BLER is closest to the target, so tolerating
+    // more errors can only ask for a faster one. This is the whole meaning of
+    // the targetBler parameter, and nothing else in the suite exercises it.
+    Binder *binder = new Binder();
+    ProbeFeedback strict(binder, 0.001, 1);
+    ProbeFeedback lax(binder, 0.1, 1);
+    bool neverSlower = true;
+    bool everFaster = false;
+    for (double s = -10; s < 40; s += 1.0) {
+        Cqi a = strict.getCqi(s);
+        Cqi b = lax.getCqi(s);
+        if (b < a)
+            neverSlower = false;
+        if (b > a)
+            everFaster = true;
+    }
+    c.check("a laxer target BLER never asks for a slower modulation", neverSlower);
+    c.check("a laxer target BLER does ask for a faster one somewhere", everFaster);
+    delete binder;
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=18 modelfailures=0
+
+%not-contains: stdout
+FAILED

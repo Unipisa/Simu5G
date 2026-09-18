@@ -111,6 +111,23 @@ test calls "registration order" is exactly the order bearer establishment
 produces in the running model, and a group's membership is the one the
 running model would join.
 
+The radio-model tests
+---------------------
+
+BlerCqiRoundTrip consists of decided-in-the-test checks too, for the same
+reason: no specification says how a simulator should tabulate measured BLER
+curves.
+
+It covers the SINR-to-error mapping from both ends -- the curve lookup
+(PhyPisaData::getBler) and the CQI the feedback computation derives from it --
+as the properties those have to have to mean anything: a BLER is a
+probability, a more aggressive modulation is never the safer one at the same
+SINR, more SINR never yields a lower CQI, a laxer target BLER never asks for a
+slower modulation. It also pins a behaviour that is arguably a defect,
+deliberately, so that a refactoring which changes it fails a named check
+rather than only a fingerprint: getCqi rounds its SINR while the error model
+truncates the same quantity.
+
 Tripwires
 ---------
 
