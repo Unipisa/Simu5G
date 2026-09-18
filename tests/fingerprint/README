@@ -37,7 +37,7 @@ separate file, selectable as `./fingerprints simulations_d2d.csv` -- and no
 
 Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
 
-    radio          216  a stochastic channel model is in use, so path loss,
+    radio          219  a stochastic channel model is in use, so path loss,
                         fading and shadowing are actually evaluated
     idealchannel    18  IdealChannelModel: reception is a coin flip and no
                         propagation is computed. These rows are radio-inert by
@@ -56,8 +56,8 @@ Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
                         bgcell, not this
     multicarrier    17  more than one component carrier, so the per-carrier
                         channelModel[] vector has more than one element
-    bgcell          18  background cells are present (numBgCells > 0)
-    bgue            14  background UEs are attached to a real cell. Background
+    bgcell          21  background cells are present (numBgCells > 0)
+    bgue            17  background UEs are attached to a real cell. Background
                         UEs living inside a background cell are part of
                         bgcell, and a row can carry both
     anisotropic     12  an ANISOTROPIC antenna is configured somewhere, so the
