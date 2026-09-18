@@ -16,21 +16,27 @@ verified by some other means, and the fingerprints in the tests
 updated.
 
 
-Notes for Simu5G-1.7.0:
+Notes on INET/OMNeT++ versions:
 
-- **Fingerprints and INET/OMNeT++ versions**: the fingerprints recorded in
-  `simulations.csv` and `simulations_d2d.csv` are tied to the versions CI
-  records them with, INET-4.5.4 and OMNeT++ 6.3.0 (see
+- **Fingerprints are INET/OMNeT++ version specific**: the fingerprints
+  recorded in `simulations.csv` and `simulations_d2d.csv` are tied to the
+  versions CI records them with, INET-4.7.0 and OMNeT++ 6.4.0 (see
   `.github/workflows/fingerprint-tests.yml`). Running the suite against a
   different INET or OMNeT++ version reports mismatches, and those mismatches
-  do not indicate a problem. All 202 configurations were re-run against
-  INET-4.6.0 and INET-4.7.0, under OMNeT++ 6.3.0 and 6.4.0; every
-  configuration ran to completion in every combination, with no errors. The
-  `~tNl` ingredient -- the packets that cross between network nodes, their
-  times and their lengths -- is identical in all 202 configurations in every
-  combination tested, so the simulated network traffic itself is unaffected
-  by the INET and OMNeT++ version. What moves is intra-node event scheduling
-  (`tplx`, `tilx`) and recorded statistics (`sz`):
+  do not indicate a problem.
+
+- **What the version affects**: all 202 configurations have been run against
+  INET-4.5.4, INET-4.6.0 and INET-4.7.0, under OMNeT++ 6.3.0 and 6.4.0;
+  every configuration ran to completion in every combination, with no
+  errors. The `~tNl` ingredient -- the packets that cross between network
+  nodes, their times and their lengths -- is identical in all 202
+  configurations in every combination tested, so the simulated network
+  traffic itself is unaffected by the INET and OMNeT++ version. What moves
+  is intra-node event scheduling (`tplx`, `tilx`) and recorded statistics
+  (`sz`). Re-recording the baselines from INET-4.5.4 + OMNeT++ 6.3.0 to
+  INET-4.7.0 + OMNeT++ 6.4.0 moved `sz` in all 202 configurations, `tilx`
+  in 50 of them and `tplx` in 23, and `~tNl` in none. The steps that
+  contribute:
 
   - **INET-4.5.4 to INET-4.6.0** is the substantial step: `sz` moves in all
     202 configurations, and `tplx` and `tilx` in 18 and 45 of them.
@@ -51,3 +57,5 @@ Notes for Simu5G-1.7.0:
     underlying values are the same, and fingerprints are computed from the
     values, not from the recorded text.)
 
+- **Release and debug agree**: the release and the debug build produce the
+  same fingerprints, which is why CI can check both against these baselines.
