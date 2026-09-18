@@ -1,0 +1,142 @@
+%description:
+
+The residual loss rate HARQ leaves for RLC is an exactly known number, and
+nothing checks it.
+
+IdealChannelModel decides reception by a coin flip whose probability is
+per * harqReduction^(n-1) for the n-th attempt (IdealChannelModel.cc:37). With
+harqReduction = 1 the attempts of a MAC PDU are independent and identically
+distributed, so the PDU is discarded only when all maxHarqRtx+1 of them fail,
+with probability perDl^(maxHarqRtx+1). IdealChannelModel.ned:32 states this
+contract in prose, and simulations/nr/rlc/omnetpp.ini:15 states it again as
+the reason those scenarios exist; neither is tested.
+
+This grades it over a 3x3 sweep of the base and the exponent, so an error in
+either is caught separately, and it does so through the whole
+PHY -> MAC -> HARQ -> RLC chain rather than by calling one function: the
+scenario is an ordinary cellular downlink, and what is measured is what the
+MAC reports having given up on.
+
+Each point carries two further checks. The per-attempt error rate has to equal
+perDl, or the residual figure means nothing -- that one is a tripwire, and it
+fails first and explains itself if harqReduction stops being neutral. And
+because RLC UM does not retransmit, the SDUs the application never receives
+have to be the same packets the MAC discarded, which is what makes this an
+assertion about the chain rather than about one statistic.
+
+%extraargs: -c HarqResidualLoss
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config HarqResidualLoss]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 40s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+
+# The counts are what turn a ratio into a graded claim: the tolerance of each
+# check is the binomial standard error over its own sample size. Recording them
+# here rather than in the shipped NED keeps this test out of every fingerprint.
+**.macPacketLossDl.result-recording-modes = mean,count,sum
+**.harqErrorRateDl.result-recording-modes = mean,count
+# Exact SDU counts at both ends. cbrFrameLoss would be the obvious statistic to
+# use instead, but it is computed against CbrSender's declared frame count,
+# which is one short of the number it actually sends (CbrSender.cc:53 divides
+# the interval by the period and the sender fires at both ends of it), so a
+# check built on it would have to tolerate that off-by-one rather than catch it.
+**.cbrGeneratedBytes.result-recording-modes = mean,count
+**.cbrReceivedBytes.result-recording-modes = mean,count
+
+############### The quantity under test ##############
+# The base and the exponent of perDl^(maxHarqRtx+1), swept independently.
+# The bases are high enough that even the rarest residual, 0.5^4, is graded
+# from a few hundred discards, which is what keeps the runs short.
+**.perDl = ${perDl = 0.5, 0.6, 0.7}
+**.maxHarqRtx = ${maxHarqRtx = 1, 2, 3}
+
+############### Geometry: one stationary UE, one gNB ##############
+*.gnb.mobility.initialX = 450m
+*.gnb.mobility.initialY = 300m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 450m
+*.ue[0].mobility.initialY = 350m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 0m
+**.mobility.initFromDisplayString = false
+
+############### Channel: a configurable error rate, nothing else ##############
+# No propagation at all, so the loss rate is the configured number rather than
+# an emergent property of geometry and MCS selection.
+*.gnb.cellularNic.channelModelType = "IdealChannelModel"
+*.ue[*].cellularNic.nrChannelModelType = "IdealChannelModel"
+
+# Independent attempts. This is the assumption the closed form rests on.
+**.harqReduction = 1
+
+# A clean uplink, so nothing on the feedback path is confounded with the
+# downlink losses under test.
+**.perUl = 0
+**.perD2D = 0
+
+# Keep the loss process off the traffic source's stream, so that changing the
+# error rate does not change which SDUs are offered.
+num-rngs = 2
+**.channelModel[*].rng-0 = 1
+**.nrChannelModel[*].rng-0 = 1
+
+############### RLC UM: losses are not repaired ##############
+# UM has no ARQ, so a discarded MAC PDU is an SDU the application never sees.
+*.bearerConfigurator.onDemandDrbs = [{coreNetwork: "5gc", isDefault: true, suppressSdapHeader: true, lcg: 3, rlcMode: "UM"}]
+
+############### Deterministic CBR traffic, downlink ##############
+# 100 SDU/s over 34s is about 3400 HARQ processes per point. That is what
+# sets how tight the tolerances can be; it is also well under the one-PDU-per-
+# TTI ceiling, so the link never saturates and the only losses are the coin
+# flips. Raising the rate to the point of saturation adds queueing loss on top
+# and destroys the measurement.
+*.ue[*].numApps = 1
+*.server.numApps = 1
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.01s
+*.server.app[0].startTime = 1s
+# Stop well before the time limit: an SDU merely still in flight when the run
+# ends is otherwise indistinguishable from one that was lost.
+*.server.app[0].finishTime = 35s
+
+############### Radio ##############
+**.numBands = 50
+**.ueTxPower = 26dBm
+**.eNodeBTxPower = 40dBm
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=27 failures=0
+
+%not-contains: verdict.txt
+FAILED

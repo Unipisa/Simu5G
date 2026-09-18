@@ -1,0 +1,132 @@
+This folder contains physics tests: small simulations of the shipped model
+whose results are graded against values derived from first principles.
+
+Why this is separate from the fingerprint suite
+-----------------------------------------------
+
+A fingerprint says that the simulation followed the same trajectory as when
+the fingerprint was recorded. That makes it an excellent change detector and a
+poor oracle: it cannot say whether the trajectory was right, and the moment a
+legitimate change is accepted and the baseline re-recorded, every claim the
+old fingerprint was making is gone.
+
+The checks here are meant to survive that re-record. Each one states what the
+model ought to produce and grades the run against it, so a refactoring that
+changes a fingerprint can be accepted with evidence rather than with a
+judgement call -- and one that breaks the physics fails a named assertion that
+says which quantity moved and by how much.
+
+Why this is separate from tests/unit
+------------------------------------
+
+The tests in tests/unit exercise classes without a running simulation: each
+one's %activity section becomes the body of a cSimpleModule in a one-module
+network. A physics test runs a real simulation of a real network, so it has no
+C++ of its own at all -- only an ini, and a grader that reads the results. The
+two directories share the opp_test machinery and nothing else.
+
+Running the tests
+-----------------
+
+    ./runtest                # all tests, against the release library
+    ./runtest Foo.test ...   # selected tests
+    MODE=debug ./runtest     # against the debug library
+
+or, from the project root,
+
+    make physicstests
+    make MODE=debug physicstests
+
+Both the Simu5G and the INET shared library must be built in the requested
+mode, and SIMU5G_ROOT and INET_ROOT must be set (source the setenv script of
+both projects). Generated files and the results of each run end up in ./work,
+which is not under version control.
+
+These tests run real simulations and are correspondingly slower than the unit
+tests -- tens of seconds each rather than a fraction of a second, because the
+tolerance of a statistical check is set by how many samples the run collects.
+
+Writing a test
+--------------
+
+A test is an opp_test case with no %activity: an %inifile section holding one
+configuration, an %extraargs line selecting it by name, and a
+%postrun-command that grades the results:
+
+    %extraargs: -c HarqResidualLoss
+    %postrun-command: ../../physics_reference.py --grade results >verdict.txt
+    %contains: verdict.txt
+    graded=27 failures=0
+
+A configuration that sweeps iteration variables runs every point in one test,
+and the grader grades each. It picks which set of checks to apply from the
+configuration name recorded in the result file, so the name in the ini, the
+key in physics_reference.py's GRADERS table and the file name have to agree.
+
+The expected value of a check is computed in physics_reference.py from the
+scenario's own parameters. It is never read from a previous run, and the
+grader is never adjusted to make a test pass: when the model and the grader
+disagree, the grader is right until the physics says otherwise. This is the
+same discipline the path-loss tests in tests/unit follow with
+pathloss_reference.py.
+
+Reading the results
+-------------------
+
+physics_reference.py reads .sca files through omnetpp.scave.results -- the
+same library the IDE and opp_scavetool use -- and not by parsing the file
+format itself. That is worth insisting on: a hand-written parser in a test
+script is one more thing to get subtly wrong, and the library already merges
+the iteration variables of each run into the result rows, which is exactly
+what a swept test needs to key its checks on.
+
+It needs omnetpp/python on PYTHONPATH, which sourcing the OMNeT++ setenv
+script does, and pandas.
+
+One thing to know about that API. get_scalars() defaults to
+convert_to_base_unit=True, which rescales values by the statistic's declared
+unit -- and applies that to the ':count' field as well, although a count has
+no unit. A statistic declared in bytes therefore reports a packet count
+multiplied by eight. The grader passes convert_to_base_unit=False and takes
+the numbers the run recorded. Note also that the filter expression of
+get_runattrs() selects runs rather than attribute names, so an attribute is
+picked out of the returned frame afterwards rather than in the filter.
+
+Tolerances
+----------
+
+The tolerance policy is stated once, in physics_reference.py, rather than per
+test. A check over a fraction of N independent trials is graded against a
+K-sigma binomial band with K = 4, which puts the false-failure rate of a
+correct model at about one in 16000 per check.
+
+The band is only as tight as the sample count allows, so each verdict line
+prints its own deviation in sigmas and the half-width that was applied. That
+is what tells a reader how discriminating a case actually was: in
+HarqResidualLoss the weakest point, perDl = 0.5 with maxHarqRtx = 3, has a
+band of +-27% of the expected value, which is still enough to reject an
+off-by-one in the number of transmission attempts by seven sigma.
+
+A check that compares two counts of the same events -- rather than a count
+against a probability -- is graded against a small absolute tolerance instead,
+and the reason for its size is written at the check.
+
+What a test should be able to do
+--------------------------------
+
+Fail. A check that cannot fail is not evidence, so when adding one, run the
+scenario once with the mechanism under test deliberately broken and confirm
+that the verdict says so. HarqResidualLoss rests on the transmission attempts
+being independent, which is what harqReduction = 1 buys; run it with the
+default harqReduction of 0.2 and 18 of its 27 checks fail, between 15 and 46
+sigma out.
+
+Tripwires
+---------
+
+As in tests/unit, some checks grade nothing about the model: they assert a
+precondition the other checks silently depend on. HarqResidualLoss checks that
+the per-attempt error rate is still perDl, because if it is not then its
+residual-loss figure is measuring something else -- and a tripwire failing
+first, with its own name, is a great deal more informative than the check it
+guards failing for no visible reason.
