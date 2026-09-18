@@ -158,6 +158,27 @@ being independent, which is what harqReduction = 1 buys; run it with the
 default harqReduction of 0.2 and 18 of its 27 checks fail, between 15 and 46
 sigma out.
 
+Expected failures
+-----------------
+
+A test may carry an %expected-failure directive, as in tests/unit: it asserts
+what the model ought to produce and is reported as EXPECTEDFAIL rather than
+FAIL until it does. ModuleOrderPermutation is one -- a UE's results depend on
+its index, and whether that should be fixed is a modelling question rather
+than a refactoring one.
+
+For that to work the grader has to exit 0 when a check fails. opp_test treats
+a non-zero post-run command as an ERROR, which overrides %expected-failure and
+makes a known deviation impossible to record. So the verdict file is the
+result and the .test file asserts on it; a non-zero exit is reserved for being
+unable to grade at all, which is a different thing from grading something and
+finding it wrong.
+
+The %description of such a test carries the measurement, not a hypothesis.
+Recording a deviation is only worth doing if what is recorded is what was
+observed: ModuleOrderPermutation's description exists because the obvious
+explanation for its failure turned out, on measurement, not to be the cause.
+
 Tripwires
 ---------
 

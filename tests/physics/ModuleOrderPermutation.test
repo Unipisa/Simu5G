@@ -1,0 +1,146 @@
+%description:
+
+Whether a UE's results depend on its index.
+
+They should not. Which slot of a module vector a UE occupies is a property of
+how the network was written down, not of the radio environment, so swapping
+two UEs' positions ought to swap their results and change nothing else. The
+scenario is run twice, with the two UEs' positions exchanged, and every
+recorded scalar of one run is compared against the correspondingly relabelled
+scalar of the other.
+
+The comparison is scoped to what a UE index can address: the UE's own channel
+model, PHY, MAC and application results. The RLC entities are created on
+demand and named after the MacNodeId, which itself follows module index, so
+they move between parents when the UEs exchange cells; comparing those would
+report a naming artifact as a physics difference.
+
+Measured, rather than assumed. Switching the channel's randomness and the
+interference computation on and off independently -- with dynamic LOS
+disabled as well, so that "deterministic" means no draw of any kind -- gives:
+
+    channel         interference     differing of 360 compared
+    deterministic   off                 0
+    deterministic   on                  0
+    stochastic      off                18
+    stochastic      on                 32
+
+The configuration below keeps dynamic LOS on, which is the fuller exercise and
+which is why the recorded verdict is 30 rather than 32: the LOS coin flip is
+one more draw taken in evaluation order, and how many scalars two orderings
+happen to agree on is not a meaningful quantity. The decomposition above is.
+
+So the model is index-independent whenever the channel is deterministic --
+including with interference enabled, which is worth stating because the
+obvious suspect is the cross-cell state mutation in
+computeDownlinkInterference, and on this evidence that is not by itself the
+cause. What breaks the invariance is the stochastic state: the draws are
+consumed from a shared stream in evaluation order, and evaluation order
+follows module order, so exchanging two UEs hands each of them the other's
+random numbers. The interference path makes it worse -- it draws more, in
+cell-evaluation order -- but it is a contributor rather than the mechanism.
+
+Recorded as an expected failure rather than fixed. Whether the model ought to
+keep per-cell channel state or one shared per-link realization is a modelling
+question -- the same one that decides a good part of the data layout of any
+refactoring of the medium -- and it is not this test's to answer. What the
+test is for is that the answer stops being a matter of belief: the deviation
+is measured, named and visible, so nobody assumes an order-independence the
+model does not have, and so the day it is fixed something says so.
+
+%expected-failure: draws from a shared random stream are taken in module order, so results depend on UE index
+
+%extraargs: -c ModuleOrderPermutation
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config ModuleOrderPermutation]
+network = simu5g.simulations.nr.networks.MultiCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+
+# As in GeometryInvariance: the runs are compared against each other, so they
+# have to draw the same random numbers. seed-set follows the run number
+# otherwise.
+seed-set = 0
+
+############### The permutation ##############
+**.swapped = ${swap = 0, 1}
+
+############### Geometry: two UEs, one per cell, positions exchanged ##############
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb1.mobility.initialZ = 25m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb2.mobility.initialZ = 25m
+*.numUe = 2
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+**.dynamicCellAssociation = true
+**.enableHandover = false
+*.ue[0].mobility.initialX = (${swap} == 0 ? 350m : 700m)
+*.ue[0].mobility.initialY = (${swap} == 0 ? 450m : 560m)
+*.ue[1].mobility.initialX = (${swap} == 0 ? 700m : 350m)
+*.ue[1].mobility.initialY = (${swap} == 0 ? 560m : 450m)
+*.ue[*].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1500m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: interference on, state on ##############
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = true
+**.fading = true
+**.fadingType = "JAKES"
+**.shadowing = true
+**.downlinkInterference = true
+**.uplinkInterference = true
+**.bgCellInterference = false
+**.extCellInterference = false
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+
+############### Traffic: identical for both UEs, so only position tells them apart ##############
+*.ue[*].numApps = 1
+*.server.numApps = 2
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[*].typename = "CbrSender"
+*.server.app[*].destAddress = "ue[" + string(ancestorIndex(0)) + "]"
+*.server.app[*].destPort = 3000
+*.server.app[*].localPort = 3088 + ancestorIndex(0)
+*.server.app[*].packetSize = 100B
+*.server.app[*].samplingTime = 0.01s
+*.server.app[*].startTime = 0.1s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=1 failures=0
+
+%not-contains: verdict.txt
+FAILED

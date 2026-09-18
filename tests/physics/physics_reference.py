@@ -200,7 +200,7 @@ def config_values(names):
     return out
 
 
-def all_scalars_by_run(itervars):
+def all_scalars_by_run(itervars, filter_expression='module =~ "*"'):
     """Every recorded scalar of every run, indexed by (module, name) with one
     column per combination of the swept variables.
 
@@ -208,10 +208,10 @@ def all_scalars_by_run(itervars):
     set rather than over one chosen statistic is the point: a transformation
     that ought to change nothing has to change nothing, and picking a statistic
     in advance would only test the part that was already suspected."""
-    df = scave.get_scalars('module =~ "*"', include_itervars=True,
+    df = scave.get_scalars(filter_expression, include_itervars=True,
                            convert_to_base_unit=False)
     if df.empty:
-        raise LookupError("no scalars recorded")
+        raise LookupError(f"no scalars matched: {filter_expression}")
     for var in itervars:
         if var not in df.columns:
             raise LookupError(f"results carry no iteration variable '{var}'")
@@ -257,6 +257,48 @@ def grade_geometry_invariance(grader):
                          'the untransformed run', 'translated by 1000 m')
     check_runs_identical(grader, table, reference, (0.0, 90.0),
                          'the untransformed run', 'rotated a quarter turn')
+
+
+def grade_module_order_permutation(grader):
+    """Swapping two UEs' positions must swap their results and change nothing
+    else: which slot of a module vector a UE occupies is a property of how the
+    network was written down, not of the radio environment."""
+    # Scoped to what a UE index can address. The dynamically created RLC
+    # entities are named after the MacNodeId, which follows module index, so
+    # they move between parents when the UEs exchange cells -- comparing them
+    # would report a naming artifact as a physics difference.
+    table = all_scalars_by_run(('swap',),
+                               'module =~ "*.ue[*].cellularNic.nrChannelModel[*]"'
+                               ' OR module =~ "*.ue[*].cellularNic.nrPhy"'
+                               ' OR module =~ "*.ue[*].cellularNic.nrMac"'
+                               ' OR module =~ "*.ue[*].app[*]"')
+    if 0.0 not in table.columns or 1.0 not in table.columns:
+        raise LookupError("both the reference and the swapped run are needed")
+
+    def relabel(module):
+        return module.replace('ue[0]', 'ue[#]').replace('ue[1]', 'ue[0]') \
+                     .replace('ue[#]', 'ue[1]')
+
+    reference, swapped = table[0.0], table[1.0]
+    mismatched, compared, unmatched = [], 0, 0
+    for (module, name), value in reference.items():
+        key = (relabel(module), name)
+        if key not in swapped.index:
+            unmatched += 1
+            continue
+        compared += 1
+        other = swapped[key]
+        if not (value == other or (value != value and other != other)):
+            mismatched.append((module, name, value, other))
+
+    detail = f"{len(mismatched)} of {compared} scalars differ once the two UEs are relabelled"
+    if unmatched:
+        detail += f" ({unmatched} had no counterpart)"
+    if mismatched:
+        detail += ": " + "; ".join(f"{m.split('.', 1)[-1]}.{n} {v} vs {o}"
+                                   for m, n, v, o in mismatched[:3])
+    grader.check_true('index-independence', 'two UEs exchanged',
+                      not mismatched and unmatched == 0, detail)
 
 
 class Budget:
@@ -376,6 +418,7 @@ GRADERS = {
     'LinkBudget': grade_link_budget,
     'InterferenceDelta': grade_interference_delta,
     'GeometryInvariance': grade_geometry_invariance,
+    'ModuleOrderPermutation': grade_module_order_permutation,
 }
 
 
@@ -386,9 +429,8 @@ def main():
 
     files = sorted(glob.glob(os.path.join(sys.argv[2], "*.sca")))
     if not files:
-        print(f"FAILED no .sca files in {sys.argv[2]}")
-        print("graded=0 failures=1")
-        return 1
+        print(f"FAILED no .sca files in {sys.argv[2]}", file=sys.stderr)
+        return 2
     scave.set_inputs(files)
 
     # Which set of checks to apply is the configuration's own name, taken from
@@ -403,14 +445,21 @@ def main():
             raise LookupError(f"expected one configuration in {sys.argv[2]}, found {sorted(names)}")
         GRADERS[names.pop()](grader)
     except KeyError as e:
-        print(f"FAILED no grader defined for configuration {e}")
-        grader.failures += 1
+        print(f"cannot grade: no grader defined for configuration {e}", file=sys.stderr)
+        return 2
     except LookupError as e:
-        print(f"FAILED {e}")
-        grader.failures += 1
+        print(f"cannot grade: {e}", file=sys.stderr)
+        return 2
 
     print(f"graded={grader.graded} failures={grader.failures}")
-    return 1 if grader.failures else 0
+
+    # Exit 0 even when checks failed. The verdict file is the result -- the
+    # .test file asserts on it -- and opp_test treats a non-zero post-run
+    # command as an ERROR, which would override %expected-failure and make it
+    # impossible to record a known deviation. A non-zero exit is reserved for
+    # being unable to grade at all, which is a different thing from grading
+    # something and finding it wrong.
+    return 0
 
 
 if __name__ == '__main__':
