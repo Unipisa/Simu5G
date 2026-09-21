@@ -1,0 +1,290 @@
+%description:
+
+StochasticChannelModel::jakesFading() and rayleighFading(): what the small-scale
+fading value is, when it is drawn, and -- the part most exposed to a
+refactoring -- whose state it is drawn into.
+
+The value is graded exactly. On the first call for a link the model draws a
+realization band by band, and within each band path by path: an angle of
+arrival, cos(uniform(0, pi)), and a delay spread, exponential(delayRms), stored
+as a simtime_t. It then sums the paths, one-ring (Clarke) with Cavers'
+frequency selectivity, at t = now - 1 ms with a Doppler shift of speed * f / c.
+An RngSnapshot taken before the call replays the same draws, so the test
+recomputes that sum independently and compares -- to 1e-9 dB, since both sides
+evaluate the same operations in the same order.
+
+Map selection is asserted as the property it exists for, not as which map gets
+written. A DL CQI is computed at the base station with cqiDl set, and it has to
+describe the channel the UE then decodes against. The model arranges that by
+keeping a DL realization on the UE's side: with cqiDl it looks the UE up
+through the Binder (obtainUeJakesMap) and uses that UE's map. Get the selection
+wrong and the scheduler adapts to one channel while the UE decodes through
+another -- silently, since both are plausible fading. Background UEs have no
+channel model of their own, so theirs lives in the evaluating model's
+jakesFadingMapBgUe_.
+
+rayleighFading() is pinned as a set of tripwires, because what it does is
+surprising and ought to fail loudly if it changes: it is a lookup in the one
+table PhyPisaData shares across the whole simulation, indexed by band alone,
+so every node on a band gets the same value, the value never changes over time,
+and no random number is drawn.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using omnetpp::SimTime;
+
+// A realization, as jakesFading() draws it: [band][path].
+struct JakesRealization
+{
+    std::vector<std::vector<double>> cosAoa;
+    std::vector<std::vector<double>> delay;  // seconds, quantized as a simtime_t is
+};
+
+// The draws of a realization, replayed from a snapshot of the model's RNG.
+static JakesRealization replayRealization(omnetpp::cRNG *rng, int bands, int paths, double delayRms)
+{
+    JakesRealization r;
+    r.cosAoa.resize(bands);
+    r.delay.resize(bands);
+    for (int b = 0; b < bands; b++)
+        for (int p = 0; p < paths; p++) {
+            r.cosAoa[b].push_back(cos(omnetpp::uniform(rng, 0, M_PI)));
+            r.delay[b].push_back(SimTime(omnetpp::exponential(rng, delayRms)).dbl());
+        }
+    return r;
+}
+
+// |H|^2 in dB for one band of a realization, written out from the model's
+// documented formula. The speed of light is spelled out rather than taken from
+// the macro the model uses, so that a change to that constant fails here.
+static double jakesGainDb(const JakesRealization& r, int band, double speed, double fHz, double now)
+{
+    const double c = 299792458.0;
+    SimTime t = now - 0.001;
+    double doppler = (speed * fHz) / c;
+    int paths = r.cosAoa[band].size();
+    double attenuation = 1.00 / sqrt(static_cast<double>(paths));
+    double re = 0, im = 0;
+    for (int p = 0; p < paths; p++) {
+        double phi = 2.00 * M_PI * (r.cosAoa[band][p] * doppler * t.dbl() - r.delay[band][p] * fHz);
+        re = re + attenuation * cos(phi);
+        im = im - attenuation * sin(phi);
+    }
+    return 10 * log10(re * re + im * im);
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# The fading parameters, stated rather than inherited.
+**.fading = true
+**.fadingType = "JAKES"
+**.numFadingPaths = 6
+**.delayRms = 363ns
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+Binder *binder = harnessModule<Binder>(this, "binder");
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+bs->setPhy(&bsEndpoint);
+ue->setPhy(&ueEndpoint);
+ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
+const MacNodeId ueId = MacNodeId(1025);
+StubUeRegistration registration(binder, ueId, &ueEndpoint);
+
+const int bands = bs->getNumBands();
+const int paths = bs->par("numFadingPaths").intValue();
+const double delayRms = bs->par("delayRms").doubleValue();
+const double fHz = inet::units::values::Hz(bs->getCarrierFrequency()).get();
+ChannelModelProbe bsProbe(bs), ueProbe(ue);
+
+// Away from t = 0, so that the evaluation time t = now - 1 ms is positive.
+wait(0.010);
+
+//
+// --- the value ---
+//
+{
+    // A fresh link: the first call draws the realization, and the value is the
+    // Jakes sum over it.
+    const LinkKey key(MacNodeId(1100));
+    const double speed = 13.9;   // m/s, 50 km/h
+    RngSnapshot snapshot(ue);
+    double got3 = ue->jakesFading(key, MacNodeId(1100), speed, 3, false);
+    JakesRealization r = replayRealization(snapshot.rng(), bands, paths, delayRms);
+    c.expectNear("the fading value is the Jakes sum over the drawn realization",
+            got3, jakesGainDb(r, 3, speed, fHz, simTime().dbl()), 1e-9);
+
+    // The realization covers every band, and each band has its own.
+    double got8 = ue->jakesFading(key, MacNodeId(1100), speed, 8, false);
+    c.expectNear("...on every band, from that band's own paths",
+            got8, jakesGainDb(r, 8, speed, fHz, simTime().dbl()), 1e-9);
+
+    // The replay consumed exactly what the model consumed: the next draw agrees.
+    c.check("the realization is drawn band by band, angle then delay, per path",
+            ue->uniform(0, 1) == omnetpp::uniform(snapshot.rng(), 0, 1));
+}
+{
+    // Drawn once. A second call on the same link, even on another band, draws
+    // nothing and reuses the realization.
+    const LinkKey key(MacNodeId(1101));
+    ue->jakesFading(key, MacNodeId(1101), 5.0, 0, false);
+    unsigned long drawnBefore = ue->getRNG(0)->getNumbersDrawn();
+    double a = ue->jakesFading(key, MacNodeId(1101), 5.0, 0, false);
+    double b = ue->jakesFading(key, MacNodeId(1101), 5.0, 0, false);
+    ue->jakesFading(key, MacNodeId(1101), 5.0, 6, false);
+    c.expectValue("a realization is drawn once and then reused",
+            (long long)(ue->getRNG(0)->getNumbersDrawn() - drawnBefore), 0);
+    c.check("the same link, band and instant give the same value", a == b);
+}
+{
+    // Doppler, varied alone: the realization and the instant are fixed, only
+    // the speed changes.
+    const LinkKey key(MacNodeId(1102));
+    RngSnapshot snapshot(ue);
+    ue->jakesFading(key, MacNodeId(1102), 0.0, 2, false);
+    JakesRealization r = replayRealization(snapshot.rng(), bands, paths, delayRms);
+    bool followsSpeed = true;
+    for (double speed : {0.0, 1.0, 13.9, 33.3, 69.4}) {
+        double got = ue->jakesFading(key, MacNodeId(1102), speed, 2, false);
+        if (fabs(got - jakesGainDb(r, 2, speed, fHz, simTime().dbl())) > 1e-9)
+            followsSpeed = false;
+    }
+    c.check("the Doppler term is speed * f / c, at every speed", followsSpeed);
+
+    // A stationary link is frozen in time; a moving one is not.
+    double still = ue->jakesFading(key, MacNodeId(1102), 0.0, 2, false);
+    double moving = ue->jakesFading(key, MacNodeId(1102), 30.0, 2, false);
+    wait(0.005);
+    double stillLater = ue->jakesFading(key, MacNodeId(1102), 0.0, 2, false);
+    double movingLater = ue->jakesFading(key, MacNodeId(1102), 30.0, 2, false);
+    c.check("a stationary link's fading does not change over time", still == stillLater);
+    c.check("a moving link's fading does", moving != movingLater);
+    c.expectNear("...and follows the same realization at the new instant",
+            movingLater, jakesGainDb(r, 2, 30.0, fHz, simTime().dbl()), 1e-9);
+}
+
+//
+// --- whose state: map selection ---
+//
+{
+    // Without cqiDl a model uses its own map: the base station's for the
+    // uplink and for the CQI of the uplink.
+    const LinkKey key(ueId);
+    bs->jakesFading(key, ueId, 3.0, 1, false);
+    c.check("without cqiDl the base station fades from its own map",
+            bsProbe.jakesMap().count(key) == 1);
+    c.check("...and leaves the UE's map alone", ueProbe.jakesMap().count(key) == 0);
+}
+{
+    // With cqiDl, the base station reaches the UE's map through the Binder.
+    const LinkKey key(ueId);
+    double cqiView = bs->jakesFading(key, ueId, 3.0, 4, true);
+    c.check("a DL CQI at the base station fades from the UE's map",
+            ueProbe.jakesMap().count(key) == 1);
+
+    // The property that selection exists for: the channel the CQI describes is
+    // the channel the UE's decoder sees -- same link, band, speed and instant.
+    double decoderView = ue->jakesFading(key, ueId, 3.0, 4, false);
+    c.check("the channel a DL CQI describes is the channel the UE decodes through",
+            cqiView == decoderView,
+            "cqi=" + std::to_string(cqiView) + " decoder=" + std::to_string(decoderView));
+
+    // And the two directions are different realizations: the base station's
+    // own map drew its own for the uplink.
+    double uplinkView = bs->jakesFading(key, ueId, 3.0, 4, false);
+    c.check("the uplink is a different realization from the downlink", uplinkView != decoderView);
+
+    // A UE the Binder does not know is an error, not a null map to dereference.
+    c.expectRejected("a DL CQI for a UE the Binder does not know is rejected", [&] {
+        bs->jakesFading(LinkKey(MacNodeId(1199)), MacNodeId(1199), 3.0, 4, true);
+    });
+}
+{
+    // A background UE has no model of its own; its DL realization lives in the
+    // evaluating model's background map.
+    const LinkKey key(MacNodeId(BGUE_MIN_ID + 3));
+    size_t own = bsProbe.jakesMap().size(), ueSide = ueProbe.jakesMap().size();
+    bs->jakesFading(key, MacNodeId(BGUE_MIN_ID + 3), 3.0, 0, true, true);
+    c.check("a background UE's DL CQI fades from the background map",
+            bsProbe.jakesMapBgUe().count(key) == 1);
+    c.check("...and touches neither the base station's nor any UE's own map",
+            bsProbe.jakesMap().size() == own && ueProbe.jakesMap().size() == ueSide);
+
+    // isBgUe only means anything together with cqiDl.
+    const LinkKey key2(MacNodeId(BGUE_MIN_ID + 4));
+    bs->jakesFading(key2, MacNodeId(BGUE_MIN_ID + 4), 3.0, 0, false, true);
+    c.check("without cqiDl a background UE fades from the model's own map",
+            bsProbe.jakesMap().count(key2) == 1 && bsProbe.jakesMapBgUe().count(key2) == 0);
+}
+
+//
+// --- rayleighFading, pinned ---
+//
+{
+    unsigned long drawnBefore = bs->getRNG(0)->getNumbersDrawn();
+    bool sharedAcrossNodes = true, isTheTable = true;
+    std::vector<double> before;
+    for (int band = 0; band < bands; band++) {
+        double v = bs->rayleighFading(MacNodeId(1025), band);
+        before.push_back(v);
+        if (v != bs->rayleighFading(MacNodeId(1777), band) || v != ue->rayleighFading(MacNodeId(1025), band))
+            sharedAcrossNodes = false;
+        if (v != 10 * log10(binder->phyPisaData.getChannel(band)))
+            isTheTable = false;
+    }
+    wait(0.050);
+    bool timeInvariant = true;
+    for (int band = 0; band < bands; band++)
+        if (bs->rayleighFading(MacNodeId(1025), band) != before[band])
+            timeInvariant = false;
+
+    c.check("Rayleigh fading is the shared PhyPisaData table, indexed by band", isTheTable);
+    c.check("...so every node on a band sees the same value", sharedAcrossNodes);
+    c.check("...the value never changes over time", timeInvariant);
+    c.expectValue("...and no random number is drawn",
+            (long long)(bs->getRNG(0)->getNumbersDrawn() - drawnBefore), 0);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=22 modelfailures=0
+
+%not-contains: stdout
+FAILED
