@@ -1,0 +1,135 @@
+%description:
+
+The harness the channel-model unit tests stand on, checked on its own.
+
+A StochasticChannelModel cannot be exercised as a bare object: it resolves a
+Binder and a ComponentCarrier and reads some thirty parameters when it
+initializes. So these tests build a small network around the %activity driver
+-- a Binder, a CarrierAggregation and two channel models, one for a base
+station and one for a UE -- and stand in for every PHY with a StubEndpoint,
+which is plain data behind the IRadioEndpoint interface. No node, NIC or PHY
+module is instantiated.
+
+Every check here is a tripwire: it asserts something the other channel-model
+tests silently depend on, so that the day the harness stops holding, a check
+with this name fails instead of every test failing for no visible reason.
+
+ - the network builds, and each channel model comes up on the carrier it was
+   configured with;
+ - a model's own endpoint is whatever the test hands setPhy();
+ - a stub UE registered through the Binder's real API is the endpoint the model
+   reaches when it looks a UE up -- the route by which one channel model finds
+   another's state, and the one IRadioEndpoint lets a stub take part in;
+ - an RngSnapshot reproduces the numbers the model draws next, which is what
+   lets the other tests grade a random recurrence exactly.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+
+# There is no cell here to register the carrier with.
+**.cellInfoModule = ""
+# Binder::finish() would cast every registered UE's endpoint to a PhyUe.
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+Binder *binder = harnessModule<Binder>(this, "binder");
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+{
+    // Both models initialized against the harness carrier, not a default one.
+    c.check("the base station's model is on the configured carrier",
+            bs->getCarrierFrequency() == GHz(3.5) && bs->getNumBands() == 10);
+    c.check("the UE's model is on the configured carrier",
+            ue->getCarrierFrequency() == GHz(3.5) && ue->getNumBands() == 10);
+}
+{
+    // A model's own endpoint is the stub: cellularLink() reads the local
+    // position from it, and for a downlink the local end is the receiver.
+    StubEndpoint own;
+    own.coord = inet::Coord(12, 34, 1.5);
+    bs->setPhy(&own);
+    ChannelModelProbe probe(bs);
+    RadioLink link = probe.cellularLink(MacNodeId(1025), DL, inet::Coord(0, 0, 25), false);
+    c.check("the model's own position comes from the endpoint handed to setPhy()",
+            link.rxCoord == own.coord);
+}
+{
+    // A UE registered through the Binder is the one the model reaches.
+    StubEndpoint ueEndpoint;
+    ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
+    const MacNodeId ueId = MacNodeId(1025);
+    StubUeRegistration registration(binder, ueId, &ueEndpoint);
+
+    ChannelModelProbe probe(bs);
+    c.check("a registered stub UE's Jakes map is the one its own model holds",
+            probe.obtainUeJakesMap(ueId) == ue->getJakesMap());
+    c.check("...and so is its shadowing map",
+            probe.obtainShadowingMap(ueId) == ue->getShadowingMap());
+    c.expectRejected("an id nobody registered is rejected, not answered with no map", [&] {
+        probe.obtainUeJakesMap(MacNodeId(1099));
+    });
+
+    // A registered UE whose model on this carrier is not a StochasticChannelModel
+    // is rejected too, for either map.
+    StubEndpoint modelless;
+    StubUeRegistration modellessRegistration(binder, MacNodeId(1026), &modelless);
+    c.expectRejected("a UE without a stochastic model on the carrier is rejected (Jakes)", [&] {
+        probe.obtainUeJakesMap(MacNodeId(1026));
+    });
+    c.expectRejected("...and (shadowing)", [&] {
+        probe.obtainShadowingMap(MacNodeId(1026));
+    });
+}
+{
+    // The snapshot replays the model's own stream, draw for draw.
+    RngSnapshot snapshot(bs);
+    double drawnByModel = bs->uniform(0, 1);
+    double normalByModel = bs->normal(0, 4);
+    double replayedUniform = omnetpp::uniform(snapshot.rng(), 0, 1);
+    double replayedNormal = omnetpp::normal(snapshot.rng(), 0, 4);
+    c.check("an RngSnapshot replays the model's next draws exactly",
+            drawnByModel == replayedUniform && normalByModel == replayedNormal);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=9 modelfailures=0
+
+%not-contains: stdout
+FAILED

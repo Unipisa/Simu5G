@@ -132,6 +132,33 @@ RadioLinkKey covers LinkKey, which decides what the model considers to be the
 same channel realization -- including through std::map, since a broken
 ordering does its damage at the lookup rather than at the comparison.
 
+The channel-model tests
+-----------------------
+
+A StochasticChannelModel cannot be exercised as a bare object the way the
+path-loss models can: it resolves a Binder and a ComponentCarrier and reads
+some thirty parameters when it initializes. These tests therefore bring their
+own small network, as a %file, with the %activity driver as one submodule
+among a Binder, a CarrierAggregation and the channel models under test, and
+select it with an %inifile (and %no-default-inifile, since the default one
+names the driver itself as the network). ChannelModelHarness sets out the
+shape and checks that it holds.
+
+No node, NIC or PHY module is instantiated. Every PHY is a StubEndpoint from
+lib/ChannelModelTestUtil.h: plain data behind the IRadioEndpoint interface,
+which is all a channel model asks of a PHY. A stub UE is registered with the
+Binder through its real API (StubUeRegistration, which calls addUeInfo() as
+LteMacUe does), so that code which finds a UE by walking the Binder's UE list
+finds the stub.
+
+Two more helpers live in the same header. ChannelModelProbe reaches the
+model's protected state and internal steps through pointers-to-member formed
+in a derived class -- plain C++, with no friend declaration in the model and
+no cast of the object to a type it is not. RngSnapshot copies the generator a
+module draws from; drawing from the copy reproduces the model's next draws in
+order, which is what lets a test grade a random recurrence exactly rather than
+statistically.
+
 Tripwires
 ---------
 
