@@ -18,6 +18,7 @@
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
+#include "simu5g/stack/phy/channelmodel/PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/StochasticChannelModel.h"
 
 namespace simu5g {
@@ -114,6 +115,7 @@ class ChannelModelProbe
         static auto shadowingMapPtr() { return &Access::lastComputedSF_; }
         static auto jakesMapPtr() { return &Access::jakesFadingMap_; }
         static auto jakesMapBgUePtr() { return &Access::jakesFadingMapBgUe_; }
+        static auto pathLossPtr() { return &Access::pathLoss_; }
 
         static auto linkForPtr() { return &Access::linkFor; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
@@ -139,6 +141,7 @@ class ChannelModelProbe
     auto& shadowingMap() { return model_->*Access::shadowingMapPtr(); }
     auto& jakesMap() { return model_->*Access::jakesMapPtr(); }
     auto& jakesMapBgUe() { return model_->*Access::jakesMapBgUePtr(); }
+    PathLossModel *pathLoss() { return model_->*Access::pathLossPtr(); }
 
     // internal steps
     RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info); }
