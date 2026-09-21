@@ -1,0 +1,103 @@
+%description:
+
+StochasticChannelModel::computeAngle() and computeVerticalAngle(): the two
+angles that place a UE in a sectorial base station's antenna pattern. The
+pattern itself is graded by PathLossAntennaPattern; these are what it is
+evaluated at.
+
+computeAngle() is the horizontal angle of the point as seen from the centre,
+counter-clockwise from the x axis, in degrees; computeVerticalAngle() is the
+angle from the zenith, so 90 is the horizon and 180 straight down. Checked
+here with both ends at the same height -- all four quadrants, the four axes,
+and that only the difference of the two positions matters -- and, for the
+vertical angle, with the point below the centre, which is how every shipped
+scenario places a UE relative to a base station, and above it.
+
+Every direction, the negative y axis included, comes back in [0, 360).
+
+What these functions get wrong when the two ends are at different heights is
+recorded separately, as an expected failure, in ChannelModelAngleHeights.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *m = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+const Coord o(0, 0, 10);
+const double d = 80.0;
+
+// A point at the given azimuth, at the centre's height.
+auto at = [&](double deg) {
+    return Coord(o.x + d * cos(deg * M_PI / 180), o.y + d * sin(deg * M_PI / 180), o.z);
+};
+
+c.expectNear("quadrant I",   m->computeAngle(o, at(30)),  30,  1e-9);
+c.expectNear("quadrant II",  m->computeAngle(o, at(150)), 150, 1e-9);
+c.expectNear("quadrant III", m->computeAngle(o, at(210)), 210, 1e-9);
+c.expectNear("quadrant IV",  m->computeAngle(o, at(330)), 330, 1e-9);
+
+c.expectNear("the positive x axis is 0",   m->computeAngle(o, Coord(d, 0, 10)),  0,   0);
+c.expectNear("the positive y axis is 90",  m->computeAngle(o, Coord(0, d, 10)),  90,  0);
+c.expectNear("the negative x axis is 180", m->computeAngle(o, Coord(-d, 0, 10)), 180, 0);
+c.expectNear("the negative y axis is 270",
+        m->computeAngle(o, Coord(0, -d, 10)), 270, 0);
+
+{
+    const Coord shift(1234.5, -678.25, 0);
+    c.expectNear("only the difference of the two positions matters",
+            m->computeAngle(o + shift, at(150) + shift), m->computeAngle(o, at(150)), 1e-9);
+}
+
+c.expectNear("a point at the centre's height is on the horizon: 90 from the zenith",
+        m->computeVerticalAngle(o, Coord(d, 0, 10)), 90, 0);
+c.expectNear("a point as far below as it is away is 45 below the horizon: 135",
+        m->computeVerticalAngle(o, Coord(8, 0, 2)), 135, 1e-9);
+c.expectNear("a point as far above as it is away is 45 above the horizon: 45",
+        m->computeVerticalAngle(o, Coord(8, 0, 18)), 45, 1e-9);
+c.expectNear("a point straight below is at the nadir: 180",
+        m->computeVerticalAngle(o, Coord(0, 0, 1.5)), 180, 0);
+c.expectNear("a point straight above is at the zenith: 0",
+        m->computeVerticalAngle(o, Coord(0, 0, 25)), 0, 0);
+
+c.summary();
+
+%contains: stdout
+modelchecks=14 modelfailures=0
+
+%not-contains: stdout
+FAILED

@@ -1,0 +1,79 @@
+%description:
+
+A defect in the azimuth that places a UE in a sectorial antenna pattern,
+recorded rather than fixed. It shows only when the two ends are at different
+heights -- which for a base station and a UE is always.
+
+computeAngle() is meant to be the horizontal angle, the azimuth: the vertical
+angle is computed separately by computeVerticalAngle(), and the two are passed
+to the antenna pattern as independent arguments, as TR 38.901 7.3 defines it.
+But it takes asin(dy / d) with d the three-dimensional distance, so the height
+difference enlarges the hypotenuse and pulls the result towards the x axis. A
+UE due north of a 25 m mast, 50 m away at 1.5 m, comes out at about 65 degrees
+instead of 90, and a sectorial antenna's attenuation is evaluated 25 degrees
+off. The fix is atan2 on the horizontal components. In the shipped suite it
+would move exactly one row, channelmodel/Anisotropic-36873, the only
+anisotropic scenario with a height difference: the LTE ones keep every node at
+z = 0, which is the one geometry in which the defect cannot show -- and so the
+suite has exercised sectorial antennas almost only where they could not
+reveal it.
+
+When fixed, drop the %expected-failure line and fold the checks into
+ChannelModelGeometry, which is where they belong.
+
+%expected-failure: the azimuth mixes height into the angle
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *m = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+
+const Coord mast(0, 0, 25);
+c.expectNear("a UE due north of a mast is at azimuth 90, whatever the heights",
+        m->computeAngle(mast, Coord(0, 50, 1.5)), 90, 1e-9);
+c.expectNear("a UE at 45 degrees is at azimuth 45, whatever the heights",
+        m->computeAngle(mast, Coord(50, 50, 1.5)), 45, 1e-9);
+
+c.summary();
+
+%contains: stdout
+modelchecks=2 modelfailures=0
+
+%not-contains: stdout
+FAILED
