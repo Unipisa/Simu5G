@@ -116,6 +116,7 @@ class ChannelModelProbe
         static auto jakesMapPtr() { return &Access::jakesFadingMap_; }
         static auto jakesMapBgUePtr() { return &Access::jakesFadingMapBgUe_; }
         static auto pathLossPtr() { return &Access::pathLoss_; }
+        static auto fadingPtr() { return &Access::fading_; }
 
         static auto linkForPtr() { return &Access::linkFor; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
@@ -142,6 +143,7 @@ class ChannelModelProbe
     auto& jakesMap() { return model_->*Access::jakesMapPtr(); }
     auto& jakesMapBgUe() { return model_->*Access::jakesMapBgUePtr(); }
     PathLossModel *pathLoss() { return model_->*Access::pathLossPtr(); }
+    bool& fading() { return model_->*Access::fadingPtr(); }
 
     // internal steps
     RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info); }
