@@ -159,6 +159,16 @@ module draws from; drawing from the copy reproduces the model's next draws in
 order, which is what lets a test grade a random recurrence exactly rather than
 statistically.
 
+A test can also derive from the model to fix one of its inputs.
+ChannelModelReception overrides getReceptionSinr() -- the seam the D2D model
+routes its links through -- so that the reception decision runs on SINRs the
+test chose; the derived module type is declared in the test's own NED file,
+and its @class resolves in the test's namespace. The same test shows what a
+series of random verdicts graded against a formula needs besides agreement:
+it scores the series against the formula's near misses too, and each has to
+be contradicted by at least one verdict, or the series could not have told
+them apart.
+
 Tripwires
 ---------
 

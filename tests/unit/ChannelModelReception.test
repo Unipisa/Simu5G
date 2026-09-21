@@ -1,0 +1,372 @@
+%description:
+
+The reception decision of StochasticChannelModel, isReceptionSuccessful():
+how the per-band SINRs of a received packet become one yes or no. Each
+allocated band contributes the BLER of the packet's CQI at that band's SINR; a
+band of n blocks gets through with probability (1-BLER)^n; the packet with the
+product over its bands; the error probability that leaves is scaled by
+harqReduction^(txNumber-1) for a retransmission; and one uniform draw decides.
+
+The SINRs are the test's own. The model under test overrides
+getReceptionSinr(), the seam the D2D model routes its links through, so the
+arithmetic runs on inputs chosen here, and the SINR computation is left to the
+tests that grade it.
+
+The arithmetic is graded exactly, not statistically. A copy of the model's
+random number generator, taken before a series of receptions, yields the draw
+each of them is about to be decided by, so the verdict of every reception can
+be computed from the formula and compared. One copy serves the whole series:
+a reception that drew a second number would put every later verdict out of
+step.
+
+A series that agrees with the formula might agree with a slightly different
+one just as well. So the series is also scored against the formula's near
+misses -- the SINR rounded or floored instead of truncated, the HARQ reduction
+left out or applied once too often, one block per band, the worst band alone,
+the first remote unit alone, the first codeword's CQI -- and each of them has
+to be contradicted by at least one reception.
+
+Two behaviours are pinned as the model's current contract, not endorsed:
+
+ - the SINR is truncated toward zero, where the CQI computation rounds it
+   (see BlerCqiRoundTrip.test): -14.9 dB is judged as -14, inside the
+   curves, and -2.7 dB as -2;
+ - the SINR statistic is recorded only for a reception that reaches the draw.
+   A packet lost to CQI 0, or to a band below the curves, records nothing, so
+   rcvdSinrDl and rcvdSinrUl leave out exactly the worst receptions.
+
+%includes:
+#include <algorithm>
+#include <cmath>
+#include <random>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/common/blerCurves/BLERvsSINR_15CQI_TU.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// A channel model whose per-band SINRs are set by the test. Everything else --
+// the error model, its parameters, the Binder's curves, the random number
+// generator -- is StochasticChannelModel's own.
+class FixedSinrChannelModel : public StochasticChannelModel
+{
+  public:
+    std::vector<double> sinr;  // by band
+
+  protected:
+    std::vector<double> getReceptionSinr(AirFrame *frame, UserControlInfo *lteInfo,
+            const std::vector<double>& rsrpVector) override { return sinr; }
+};
+
+Define_Module(FixedSinrChannelModel);
+
+// One received packet, as the error model sees it: a downlink data packet.
+struct Reception
+{
+    std::vector<Cqi> cqis = {7};  // per codeword
+    unsigned char cw = 0;
+    unsigned char txNumber = 1;
+    RbMap blocks;                 // remote unit -> band -> blocks
+    std::vector<double> sinr = std::vector<double>(10, 0.0);  // by band
+};
+
+static bool decide(FixedSinrChannelModel *model, const Reception& r)
+{
+    UserControlInfo info;
+    info.setDirection(DL);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(MacNodeId(1));
+    info.setDestId(MacNodeId(1025));
+    info.setTxMode(SINGLE_ANTENNA_PORT0);
+    info.setCarrierFrequency(GHz(3.5));
+    info.setCw(r.cw);
+    info.setTxNumber(r.txNumber);
+    info.setGrantedBlocks(r.blocks);
+    auto *params = new UserTxParams();
+    params->writeCqi(r.cqis);
+    info.setUserTxParams(params);
+    model->sinr = r.sinr;
+    return model->isReceptionSuccessful(nullptr, &info, {});
+}
+
+// Whether the model drew a random number while fn ran: a copy of its generator
+// taken before and one taken after would draw the same next number otherwise.
+template<typename Fn>
+static bool drawsDuring(cComponent *model, Fn fn)
+{
+    RngSnapshot before(model);
+    fn();
+    RngSnapshot after(model);
+    return before.rng()->doubleRand() != after.rng()->doubleRand();
+}
+
+// The error model's formula, and its near misses. EXACT is the model as it is;
+// each other variant differs from it in one step.
+enum Variant {
+    EXACT,
+    ROUNDED_SINR, FLOORED_SINR,
+    NO_HARQ_REDUCTION, HARQ_ONCE_TOO_OFTEN,
+    ONE_BLOCK_PER_BAND, WORST_BAND_ONLY, FIRST_REMOTE_ONLY, FIRST_CODEWORD_CQI,
+    NUM_VARIANTS
+};
+
+static const char *variantNames[NUM_VARIANTS] = {
+    "exact",
+    "the SINR rounded instead of truncated", "the SINR floored instead of truncated",
+    "no HARQ reduction", "the HARQ reduction applied to the first transmission too",
+    "one block per band", "the worst band alone", "the first remote unit alone", "the first codeword's CQI",
+};
+
+// The probability that the reception fails, as the variant computes it. The
+// BLER comes straight from the curve table (the Binder's blerShift is 0).
+static double errorProbability(const Reception& r, double harqReduction, Variant v)
+{
+    Cqi cqi = (r.cqis.size() == 1 || v == FIRST_CODEWORD_CQI) ? r.cqis[0] : r.cqis[r.cw];
+    double success = 1.0, worst = 1.0;
+    bool firstRemote = true;
+    for (const auto& [remote, bands] : r.blocks) {
+        if (v == FIRST_REMOTE_ONLY && !firstRemote)
+            break;
+        firstRemote = false;
+        for (const auto& [band, blocks] : bands) {
+            if (blocks == 0)
+                continue;
+            double s = r.sinr[band];
+            int snr = v == ROUNDED_SINR ? (int)std::floor(s + 0.5) : v == FLOORED_SINR ? (int)std::floor(s) : (int)s;
+            double bandSuccess = std::pow(1.0 - GetBLER_TU(snr, cqi), v == ONE_BLOCK_PER_BAND ? 1.0 : (double)blocks);
+            success *= bandSuccess;
+            worst = std::min(worst, bandSuccess);
+        }
+    }
+    double per = 1.0 - (v == WORST_BAND_ONLY ? worst : success);
+    if (v == NO_HARQ_REDUCTION)
+        return per;
+    return per * std::pow(harqReduction, v == HARQ_ONCE_TOO_OFTEN ? r.txNumber : r.txNumber - 1);
+}
+
+// A reception for the series. The SINRs span each CQI's curve from where its
+// BLER is near 1 to past where it reaches 0, with fractional parts, so that
+// truncating, rounding and flooring disagree; they stay above -15 dB, so that
+// no reception is lost before the draw.
+static Reception randomReception(std::mt19937& gen)
+{
+    auto pick = [&](int lo, int hi) { return std::uniform_int_distribution<int>(lo, hi)(gen); };
+    Reception r;
+    r.cqis = {Cqi(pick(1, 15))};
+    if (pick(0, 1))
+        r.cqis.push_back(Cqi(pick(1, 15)));
+    r.cw = pick(0, 1);
+    r.txNumber = pick(1, 4);
+    int numRemotes = pick(0, 3) == 0 ? 2 : 1;
+    for (int k = 0; k < numRemotes; k++) {
+        int numBands = pick(1, 3);
+        for (int i = 0; i < numBands; i++)
+            r.blocks[k == 0 ? MACRO : RU1][pick(0, 9)] = pick(1, 6);
+    }
+    Cqi cqi = r.cqis.size() == 1 ? r.cqis[0] : r.cqis[r.cw];
+    double lo = std::max(SINR_15_CQI_TU[cqi - 1][4], -14.9), hi = SINR_15_CQI_TU[cqi - 1][15] + 1.0;
+    for (double& s : r.sinr)
+        s = std::uniform_real_distribution<double>(lo, hi)(gen);
+    return r;
+}
+
+// The SINR values a channel model emits as rcvdSinrDl.
+struct SinrRecorder : public cListener
+{
+    std::vector<double> values;
+    void receiveSignal(cComponent *source, simsignal_t signal, double value, cObject *details) override
+    {
+        values.push_back(value);
+    }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+// The 38.901 channel model, with the per-band SINR of a reception set by the
+// test.
+simple FixedSinrChannelModel extends Tr38901ChannelModel
+{
+    @class(FixedSinrChannelModel);
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        channelModel: FixedSinrChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Not the default (0.2), so that the test cannot pass on a hardcoded value.
+*.channelModel.harqReduction = 0.4
+*.channelModel.collectSinrStatistics = true
+
+# the model logs every band of every reception
+*.channelModel.cmdenv-log-level = off
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *model = harnessModule<FixedSinrChannelModel>(this, "channelModel");
+const double harqReduction = model->par("harqReduction").doubleValue();
+
+SinrRecorder recorder;
+model->subscribe("rcvdSinrDl", &recorder);
+
+// CQI 7, one band of 4 blocks at 6 dB, a first transmission
+Reception base;
+base.blocks[MACRO][2] = 4;
+base.sinr[2] = 6.0;
+
+//
+// --- what is decided before the draw, or without the arithmetic ---
+//
+{
+    Reception rx = base;
+    rx.txNumber = 0;
+    c.expectRejected("a transmission counter of 0 is rejected", [&] { decide(model, rx); });
+}
+{
+    Reception rx = base;
+    rx.cqis = {16};
+    c.expectRejected("a CQI above 15 is rejected", [&] { decide(model, rx); });
+
+    rx.blocks.clear();
+    c.expectRejected("...even in an empty grant: the CQI is checked before any band is", [&] { decide(model, rx); });
+
+    rx.cqis = base.cqis;
+    bool received = false;
+    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    c.check("an empty grant is a certain success, decided by a draw like any other", received && drew);
+}
+{
+    Reception rx = base;
+    rx.cqis = {0};
+    bool received = true;
+    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    c.check("CQI 0 is a loss, decided before the draw", !received && !drew);
+}
+{
+    Reception rx = base;
+    rx.sinr[2] = -15.0;
+    bool received = true;
+    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    c.check("a band below the curves (-15 dB) is a loss, decided before the draw", !received && !drew);
+
+    rx.sinr[2] = -14.9;
+    drew = drawsDuring(model, [&] { decide(model, rx); });
+    c.check("...judged on the SINR truncated toward zero: -14.9 dB counts as -14, inside the curves, and goes to the draw",
+            drew);
+}
+{
+    Reception rx = base;
+    rx.sinr[2] = 41.0;
+    c.check("a band above the curves (41 dB) is a certain success", decide(model, rx));
+}
+{
+    // A band of BLER 1 fails with certainty, whatever the other bands do.
+    Reception rx = base;
+    rx.sinr[2] = -10.0;
+    rx.blocks[MACRO][5] = 1;
+    rx.sinr[5] = 41.0;
+    c.check("a band at BLER 1 makes the first transmission a certain loss", !decide(model, rx));
+}
+{
+    // Bands with nothing on them hold an SINR that would lose the packet
+    // before the draw, if it were read.
+    Reception rx = base;
+    rx.blocks[MACRO][5] = 0;
+    rx.sinr[5] = -30.0;
+    rx.sinr[7] = -30.0;
+    bool drew = drawsDuring(model, [&] { decide(model, rx); });
+    c.check("a band the grant gives no blocks, listed or not, is not read", drew);
+}
+
+//
+// --- the SINR statistic ---
+//
+{
+    Reception rx;
+    rx.blocks[MACRO][1] = 1;
+    rx.blocks[MACRO][4] = 5;
+    rx.sinr[1] = 3.7;
+    rx.sinr[4] = 8.1;
+    recorder.values.clear();
+    decide(model, rx);
+    c.check("the SINR recorded is the plain mean over the allocated bands: untruncated, and not weighted by blocks",
+            recorder.values.size() == 1 && recorder.values[0] == (3.7 + 8.1) / 2);
+
+    Reception zeroCqi = rx, belowCurves = rx;
+    zeroCqi.cqis = {0};
+    belowCurves.sinr[4] = -15.0;
+    recorder.values.clear();
+    decide(model, zeroCqi);
+    decide(model, belowCurves);
+    c.check("a packet lost before the draw records no SINR: the statistic leaves out the worst receptions",
+            recorder.values.empty());
+}
+
+//
+// --- the arithmetic, graded against the draw ---
+//
+{
+    const int count = 1000;
+    std::mt19937 gen(20260921);  // which receptions the series has; the model's draws decide them
+    RngSnapshot twin(model);
+    int mismatches = 0, received = 0, lost = 0;
+    int contradicted[NUM_VARIANTS] = {};
+    std::string firstMismatch;
+    recorder.values.clear();
+
+    for (int i = 0; i < count; i++) {
+        Reception rx = randomReception(gen);
+        double u = omnetpp::uniform(twin.rng(), 0.0, 1.0);
+        bool actual = decide(model, rx);
+        (actual ? received : lost)++;
+        if (actual != !(u <= errorProbability(rx, harqReduction, EXACT)) && mismatches++ == 0)
+            firstMismatch = "reception " + std::to_string(i) + ": draw " + std::to_string(u) + ", error probability "
+                    + std::to_string(errorProbability(rx, harqReduction, EXACT)) + ", model says " + (actual ? "received" : "lost");
+        for (int v = EXACT + 1; v < NUM_VARIANTS; v++)
+            if (actual != !(u <= errorProbability(rx, harqReduction, (Variant)v)))
+                contradicted[v]++;
+    }
+
+    c.check("every reception is decided by (1-BLER)^blocks per band, the product over the bands, "
+            "harqReduction^(txNumber-1), and one draw",
+            mismatches == 0, std::to_string(mismatches) + " of " + std::to_string(count) + " disagree; " + firstMismatch);
+    c.check("...on a series that is not one-sided", received >= count / 10 && lost >= count / 10,
+            std::to_string(received) + " received, " + std::to_string(lost) + " lost");
+    for (int v = EXACT + 1; v < NUM_VARIANTS; v++)
+        c.check(std::string("...that tells the formula from its near miss: ") + variantNames[v], contradicted[v] > 0,
+                "contradicted by " + std::to_string(contradicted[v]) + " receptions");
+    c.expectValue("every reception that reaches the draw records its SINR, received or lost",
+            recorder.values.size(), count);
+}
+
+model->unsubscribe("rcvdSinrDl", &recorder);
+c.summary();
+
+%contains: stdout
+modelchecks=23 modelfailures=0
+
+%not-contains: stdout
+FAILED
