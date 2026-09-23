@@ -1523,10 +1523,6 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         if (interfChanModel == nullptr)
             continue;
 
-        // IRadioEndpoint bridge, removed in the next step: the interfering cell's
-        // channel model belongs to that cell's PHY, which is enbInfo->phy.
-        ASSERT(interfChanModel->phy_ == enbInfo->phy);
-
         // compute attenuation using data structures within the cell
         double att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]";
@@ -1538,14 +1534,14 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             double txAngle = enbInfo->txAngle;
 
             // compute the angle between uePosition and reference axis, considering the eNB as center
-            double ueAngle = computeAngle(interfChanModel->phy_->getCoord(), coord);
+            double ueAngle = computeAngle(enbInfo->phy->getCoord(), coord);
 
             // compute the reception angle between ue and eNB
             double recvAngle = fabs(txAngle - ueAngle);
             if (recvAngle > 180)
                 recvAngle = 360 - recvAngle;
 
-            double verticalAngle = computeVerticalAngle(interfChanModel->phy_->getCoord(), coord);
+            double verticalAngle = computeVerticalAngle(enbInfo->phy->getCoord(), coord);
 
             // compute attenuation due to sectorial tx
             angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
