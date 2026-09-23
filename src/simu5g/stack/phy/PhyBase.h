@@ -26,6 +26,7 @@
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
+#include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 
 namespace simu5g {
 
@@ -45,7 +46,7 @@ class ChannelModelBase;
  * ChannelControl uses both to deliver broadcast frames (the base station
  * beacons) to the radios in range.
  */
-class PhyBase : public cSimpleModule, public cListener
+class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
 {
 
   protected:
@@ -147,7 +148,7 @@ class PhyBase : public cSimpleModule, public cListener
         return channelModel_;
     }
 
-    ChannelModelBase *getChannelModel(GHz carrierFreq = GHz(0.0))
+    ChannelModelBase *getChannelModel(GHz carrierFreq = GHz(0.0)) override
     {
         if (channelModel_.empty())
             return nullptr;
@@ -167,17 +168,17 @@ class PhyBase : public cSimpleModule, public cListener
         return eNodeBtxPower_;
     }
 
-    virtual double getTxPwr(Direction dir = UNKNOWN_DIRECTION)
+    double getTxPwr(Direction dir = UNKNOWN_DIRECTION) override
     {
         return txPower_;
     }
 
-    TxDirectionType getTxDirection()
+    TxDirectionType getTxDirection() override
     {
         return txDirection_;
     }
 
-    double getTxAngle()
+    double getTxAngle() override
     {
         return txAngle_;
     }
@@ -296,7 +297,7 @@ class PhyBase : public cSimpleModule, public cListener
     /*
      * Returns the current position of the node
      */
-    const inet::Coord& getCoord() const { return radioPos_; }
+    const inet::Coord& getCoord() const override { return radioPos_; }
     /*
      * Returns the time of the last transmission performed
      */
