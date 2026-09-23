@@ -58,6 +58,7 @@ class Binder;
 class CellInfo;
 class LteMacEnb;
 class LteMacBase;
+class IRadioEndpoint;
 class PhyBase;
 class StochasticChannelModel;
 class LteControlInfo;
@@ -396,7 +397,7 @@ struct EnbInfo
     TxDirectionType txDirection;
     double txAngle;
     MacNodeId id;
-    PhyBase *phy = nullptr;
+    IRadioEndpoint *phy = nullptr;  // the cell's PHY as a channel model sees it
     LteMacEnb *mac = nullptr;
     StochasticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> eNodeB;
@@ -412,7 +413,7 @@ struct UeInfo
     MacNodeId cellId;
     StochasticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> ue;
-    PhyBase *phy = nullptr;
+    IRadioEndpoint *phy = nullptr;  // the UE's PHY as a channel model sees it
     std::string str() const;
 };
 

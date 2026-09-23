@@ -1441,8 +1441,8 @@ double StochasticChannelModel::computeExtCellPathLoss(double dist, const LinkKey
 
 StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap(MacNodeId id)
 {
-    // obtain a reference to UE phy
-    PhyBase *phy = nullptr;
+    // obtain a reference to the UE's endpoint
+    IRadioEndpoint *phy = nullptr;
 
     for (const auto& ueInfo : binder_->getUeList()) {
         if (ueInfo->id == id) {
@@ -1467,8 +1467,8 @@ StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap
 
 StochasticChannelModel::ShadowFadingMap *StochasticChannelModel::obtainShadowingMap(MacNodeId id)
 {
-    // obtain a reference to UE phy
-    PhyBase *phy = nullptr;
+    // obtain a reference to the UE's endpoint
+    IRadioEndpoint *phy = nullptr;
 
     for (const auto& ueInfo : binder_->getUeList()) {
         if (ueInfo->id == id) {
