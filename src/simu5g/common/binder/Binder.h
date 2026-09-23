@@ -637,16 +637,16 @@ class Binder : public cSimpleModule
     virtual cModule *getPhyByNodeId(MacNodeId nodeId);
 
     /**
-     * A node's PHY -- for an NR UE its NR PHY, as with getPhyByNodeId(). Throws
-     * if the node is not in the simulation.
+     * A node's PHY as a channel model sees it -- for an NR UE its NR PHY, as
+     * with getPhyByNodeId(). Throws if the node is not in the simulation.
      */
-    virtual PhyBase *getPhy(MacNodeId nodeId);
+    virtual IRadioEndpoint *getPhy(MacNodeId nodeId);
 
     /**
      * As getPhy(), but returns nullptr for a node that is not in the simulation
      * (a UE may have left it).
      */
-    virtual PhyBase *findPhy(MacNodeId nodeId);
+    virtual IRadioEndpoint *findPhy(MacNodeId nodeId);
     virtual cModule *getMacByNodeId(MacNodeId nodeId);
     virtual cModule *getRrcByNodeId(MacNodeId nodeId);
     virtual cModule *getIp2NicByNodeId(MacNodeId nodeId);
