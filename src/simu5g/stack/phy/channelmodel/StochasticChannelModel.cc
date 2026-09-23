@@ -1523,6 +1523,10 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         if (interfChanModel == nullptr)
             continue;
 
+        // IRadioEndpoint bridge, removed in the next step: the interfering cell's
+        // channel model belongs to that cell's PHY, which is enbInfo->phy.
+        ASSERT(interfChanModel->phy_ == enbInfo->phy);
+
         // compute attenuation using data structures within the cell
         double att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]";
