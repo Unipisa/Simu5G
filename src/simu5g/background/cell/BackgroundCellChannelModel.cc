@@ -426,7 +426,7 @@ double BackgroundCellChannelModel::computeAngle(inet::Coord center, inet::Coord 
         angle = 180.0 - arcoSen;
     else if (relx < 0 && rely <= 0) // quadrant III
         angle = 180.0 - arcoSen;
-    else if (relx > 0 && rely < 0) // quadrant IV
+    else if (relx >= 0 && rely < 0) // quadrant IV, and the negative y axis
         angle = 360.0 + arcoSen;
     else
         // quadrant I
