@@ -139,6 +139,25 @@ void D2dUeMacHelper::macHandleD2DModeSwitch(cPacket *pktAux)
             }
         }
 
+        // Interrupt the H-ARQ processes once per switch, not per old connection: the eNB
+        // purges its UL RX H-ARQ for this UE unconditionally, and the old connection may
+        // not be recognizable here -- the UL connection is the UE's DRB to the eNB, and when
+        // the eNB established it, its flow carries no D2D peer ids. A UL process left
+        // waiting for feedback the eNB will never send is reused later while not empty.
+        if (oldDirection != newDirection && switchPkt->getInterruptHarq()) {
+            EV << NOW << " D2dUeMacHelper::macHandleD2DModeSwitch - interrupting H-ARQ processes" << endl;
+
+            for (auto& [carrierFrequency, harqTxBuffers] : *mac_->getHarqTxBuffers()) {
+                for (MacNodeId id : {peerId, mac_->getMacCellId()}) { // SL, then UL
+                    auto hit = harqTxBuffers.find(id);
+                    if (hit != harqTxBuffers.end()) {
+                        for (unsigned int proc = 0; proc < (unsigned int)mac_->harqProcesses(); proc++)
+                            hit->second->forceDropProcess(proc);
+                    }
+                }
+            }
+        }
+
         // Phase 2: Process old connections (safe to modify containers now)
         for (const auto& [cid, connInfo] : oldConnections) {
             EV << NOW << " D2dUeMacHelper::macHandleD2DModeSwitch - found old connection with cid " << cid << ", erasing buffered data" << endl;
@@ -148,30 +167,6 @@ void D2dUeMacHelper::macHandleD2DModeSwitch(cPacket *pktAux)
 
                     // Clear buffers but keep the connection alive for potential mode switch back
                     mac_->clearOutgoingConnectionBuffers(cid);
-                }
-
-                if (switchPkt->getInterruptHarq()) {
-                    EV << NOW << " D2dUeMacHelper::macHandleD2DModeSwitch - interrupting H-ARQ processes" << endl;
-
-                    // Interrupt H-ARQ processes for SL
-                    MacNodeId id = peerId;
-                    for (auto& mtit : *mac_->getHarqTxBuffers()) {
-                        HarqTxBuffers::iterator hit = mtit.second.find(id);
-                        if (hit != mtit.second.end()) {
-                            for (int proc = 0; proc < (unsigned int)mac_->harqProcesses(); proc++) {
-                                hit->second->forceDropProcess(proc);
-                            }
-                        }
-
-                        // Interrupt H-ARQ processes for UL
-                        id = mac_->getMacCellId();
-                        hit = mtit.second.find(id);
-                        if (hit != mtit.second.end()) {
-                            for (int proc = 0; proc < (unsigned int)mac_->harqProcesses(); proc++) {
-                                hit->second->forceDropProcess(proc);
-                            }
-                        }
-                    }
                 }
             }
 
