@@ -136,6 +136,21 @@ void StochasticChannelModel::initialize(int stage)
     }
 }
 
+void StochasticChannelModel::setCellularBudget(RadioLink& link) const
+{
+    if (link.dir == DL) {
+        link.noiseFigure = ueNoiseFigure_;    // dB
+        link.txAntennaGain = antennaGainEnB_; // dB
+        link.rxAntennaGain = antennaGainUe_;  // dB
+    }
+    else { // if( dir == UL )
+        // TODO check if antennaGainEnB should be added in UL direction too
+        link.txAntennaGain = antennaGainUe_;
+        link.rxAntennaGain = antennaGainEnB_;
+        link.noiseFigure = bsNoiseFigure_;
+    }
+}
+
 RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord, bool cqiDl)
 {
     // The local module is one endpoint and 'coord' the other; 'dir' says which
@@ -147,6 +162,7 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     link.stateKey = LinkKey(ueId);
     link.stateNodeId = ueId;
     link.useUeSideMaps = cqiDl;
+    setCellularBudget(link);
 
     if (dir == DL) { // the local module is the UE, 'coord' is the BS
         link.txIsBaseStation = true;
@@ -202,10 +218,8 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.useUeSideMaps = (link.dir == DL);
     }
 
+    setCellularBudget(link);
     if (link.dir == DL) {
-        link.noiseFigure = ueNoiseFigure_;    // dB
-        link.txAntennaGain = antennaGainEnB_; // dB
-        link.rxAntennaGain = antennaGainUe_;  // dB
         link.txIsBaseStation = true;
         link.txId = eNbId;
         link.rxId = ueId;
@@ -213,10 +227,6 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.rxCoord = ueCoord;
     }
     else { // if( dir == UL )
-        // TODO check if antennaGainEnB should be added in UL direction too
-        link.txAntennaGain = antennaGainUe_;
-        link.rxAntennaGain = antennaGainEnB_;
-        link.noiseFigure = bsNoiseFigure_;
         link.txIsBaseStation = false;
         link.txId = ueId;
         link.rxId = eNbId;

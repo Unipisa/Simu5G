@@ -387,6 +387,13 @@ class StochasticChannelModel : public ChannelModelBase
     virtual RadioLink linkFor(UserControlInfo *lteInfo);
 
     /*
+     * Fill a cellular link's budget -- antenna gains and noise figure -- from its
+     * direction: the base station's and the UE's parameters, receiver side's
+     * noise figure.
+     */
+    void setCellularBudget(RadioLink& link) const;
+
+    /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
      * local module is one endpoint, 'coord' the other, and 'dir' says which of
      * the two is the UE.
