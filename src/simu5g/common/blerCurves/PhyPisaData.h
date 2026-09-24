@@ -32,8 +32,6 @@ class PhyPisaData
 
     int nCqi() { return 15; }
 
-    int maxChannel2() { return 1000; }
-
     // BLER of the given CQI (1-15, per 3GPP) at the given SINR (dB), read from the
     // single TU curve set of BLERvsSINR_15CQI_TU.h, whatever the transmission mode
     double getBler(int cqi, int sinr) { return GetBLER_TU(sinr + blerShift_, cqi); };

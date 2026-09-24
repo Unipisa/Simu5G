@@ -33,8 +33,6 @@ class PhyEnb : public PhyBase
     /** Self-message to trigger broadcast message sending for handover purposes */
     cMessage *beaconStarter_ = nullptr;
 
-    int randomChannelIndex_;
-
     /** Computes the feedback of the primary carrier from the received SINR */
     LteFeedbackComputation *lteFeedbackComputation_ = nullptr;
 

@@ -38,8 +38,6 @@ void PhyEnb::initialize(int stage)
         nodeId_ = MacNodeId(par("macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
 
-        randomChannelIndex_ = intuniform(1, binder_->phyPisaData.maxChannel2()); // NOTE: moving this to the next stage (where it is used will change random number stream and CHANGE FINGERPRINTS!
-
         nodeType_ = NODEB;
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
