@@ -72,11 +72,6 @@ std::vector<double> IdealChannelModel::getSINR_bgUe(AirFrame *frame, UserControl
     return tmp;
 }
 
-double IdealChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId)
-{
-    return 10000.0;
-}
-
 bool IdealChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     double per = getErrorProbability(lteInfo->getDirection(), lteInfo->getTxNumber());

@@ -235,12 +235,6 @@ class ChannelModelBase : public cSimpleModule
     virtual std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) = 0;
 
     /*
-     * Compute received power for a background UE according to path loss
-     *
-     */
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) = 0;
-
-    /*
      * Compute received useful signal for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
      * @param frame pointer to the packet

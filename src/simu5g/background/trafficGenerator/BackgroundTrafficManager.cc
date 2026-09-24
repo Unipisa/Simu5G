@@ -85,10 +85,4 @@ double BackgroundTrafficManager::getTtiPeriod()
     return mac_->getTtiPeriod();
 }
 
-double BackgroundTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
-{
-    MacNodeId bsId = mac_->getMacNodeId();
-    return channelModel_->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bsId);
-}
-
 } //namespace

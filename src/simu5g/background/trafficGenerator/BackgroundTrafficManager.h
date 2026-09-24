@@ -59,9 +59,6 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 
     // returns the bytes per block of the given UE in the given direction
     unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) override;
-
-    // Compute received power for a background UE according to path loss
-    double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus) override;
 };
 
 } //namespace

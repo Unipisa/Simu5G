@@ -266,12 +266,6 @@ class BackgroundCellChannelModel : public cSimpleModule
      * Compute SINR for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
      */
     virtual std::vector<double> getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase *bgUe, BackgroundScheduler *bgScheduler, Direction dir);
-
-    /*
-     * Compute received power for a background UE according to pathloss
-     *
-     */
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundScheduler *bgScheduler);
 };
 
 } //namespace

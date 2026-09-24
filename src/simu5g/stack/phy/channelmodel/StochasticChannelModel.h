@@ -310,12 +310,6 @@ class StochasticChannelModel : public ChannelModelBase
     std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
-     * Compute received power for a background UE according to pathloss
-     *
-     */
-    double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) override;
-
-    /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
      * after that it throws a random number in order to check if this packet will be corrupted or not
      *

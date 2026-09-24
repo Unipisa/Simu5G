@@ -78,9 +78,6 @@ class IBackgroundTrafficManager
 
     // Update background UE's backlog and return true if the buffer is empty
     virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) = 0;
-
-    // Compute received power for a background UE according to path loss
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus) = 0;
 };
 
 } //namespace

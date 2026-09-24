@@ -83,11 +83,6 @@ class IdealChannelModel : public ChannelModelBase
      * @param lteInfo pointer to the user control info
      */
     std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) override;
-    /*
-     * Compute received power for a background UE according to path loss
-     *
-     */
-    double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) override;
 };
 
 } //namespace

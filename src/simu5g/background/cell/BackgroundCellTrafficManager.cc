@@ -79,10 +79,4 @@ double BackgroundCellTrafficManager::getTtiPeriod()
     return bgScheduler_->getTtiPeriod();
 }
 
-double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
-{
-    BackgroundCellChannelModel *bgChannelModel = bgScheduler_->getChannelModel();
-    return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgScheduler_);
-}
-
 } //namespace
