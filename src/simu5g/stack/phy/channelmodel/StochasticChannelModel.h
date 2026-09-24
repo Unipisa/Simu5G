@@ -449,7 +449,7 @@ class StochasticChannelModel : public ChannelModelBase
      * Compute the euclidean distance between the current position and the
      * last position used to calculate the LOS probability
      */
-    virtual double computeCorrelationDistance(const LinkKey& key, const inet::Coord coord);
+    virtual double computeCorrelationDistance(const LinkKey& key, const inet::Coord coord) const;
 
     /*
      * Update base point if distance to previous value is greater than the

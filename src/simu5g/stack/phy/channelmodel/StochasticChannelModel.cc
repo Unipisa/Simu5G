@@ -381,17 +381,11 @@ void StochasticChannelModel::updateCorrelationDistance(const LinkKey& nodeId, co
     }
 }
 
-double StochasticChannelModel::computeCorrelationDistance(const LinkKey& nodeId, const inet::Coord coord) {
-    double dist = 0.0;
-
-    if (lastCorrelationPoint_.find(nodeId) == lastCorrelationPoint_.end()) {
-        // no lastCorrelationPoint found. Add current position and return dist = 0.0
-        lastCorrelationPoint_[nodeId] = Position(NOW, coord);
-    }
-    else {
-        dist = lastCorrelationPoint_[nodeId].second.distance(coord);
-    }
-    return dist;
+double StochasticChannelModel::computeCorrelationDistance(const LinkKey& nodeId, const inet::Coord coord) const {
+    // no correlation point yet: the link is new, and updateCorrelationDistance()
+    // records its first one
+    auto it = lastCorrelationPoint_.find(nodeId);
+    return (it == lastCorrelationPoint_.end()) ? 0.0 : it->second.second.distance(coord);
 }
 
 double StochasticChannelModel::computeSpeed(const MacNodeId nodeId,
