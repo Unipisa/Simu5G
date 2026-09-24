@@ -439,8 +439,9 @@ double BackgroundCellChannelModel::computeVerticalAngle(inet::Coord center, inet
 {
     double threeDimDistance = center.distance(point);
     double twoDimDistance = getTwoDimDistance(center, point);
-    double arccos = acos(twoDimDistance / threeDimDistance) * 180.0 / M_PI;
-    return 90 + arccos;
+    double elevation = acos(twoDimDistance / threeDimDistance) * 180.0 / M_PI;
+    // angle from the zenith: above the horizon if the point is higher than the centre
+    return (point.z > center.z) ? 90 - elevation : 90 + elevation;
 }
 
 double BackgroundCellChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord b)
