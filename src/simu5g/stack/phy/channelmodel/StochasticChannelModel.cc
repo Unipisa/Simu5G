@@ -996,6 +996,9 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
 
     // get cqi used to transmit this cw
     Cqi cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
+    if (cqi > 15)
+        throw cRuntimeError("A packet has been transmitted with a cqi greater than 15 cqi:%d txmode:%d dir:%d cw:%d rtx:%d",
+                cqi, lteInfo->getTxMode(), lteInfo->getDirection(), cw, lteInfo->getTxNumber());
 
     MacNodeId id;
     Direction dir = lteInfo->getDirection();
@@ -1039,8 +1042,6 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
             // Get the Bler
             if (cqi == 0)
                 return false; // CQI 0 means channel below usable quality (e.g. after handover) — loss
-            if (cqi > 15)
-                throw cRuntimeError("A packet has been transmitted with a cqi greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, transmissionAttempt);
 
             // for statistical purposes
             sumSnr += snrV[band];
