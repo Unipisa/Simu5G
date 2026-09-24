@@ -283,9 +283,6 @@ double StochasticChannelModel::computeShadowing(double d3D, double d2D, const Li
     else
         actualShadowingMap = &lastComputedSF_;
 
-    if (actualShadowingMap == nullptr)
-        throw cRuntimeError("StochasticChannelModel::computeShadowing - actualShadowingMap not found (nullptr)");
-
     double mean = 0;
 
     // Get std deviation according to LOS/NLOS and selected scenario
@@ -1439,7 +1436,7 @@ double StochasticChannelModel::computeExtCellPathLoss(double dist, const LinkKey
     return attenuation;
 }
 
-StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap(MacNodeId id)
+StochasticChannelModel *StochasticChannelModel::obtainUeChannelModel(MacNodeId id)
 {
     // obtain a reference to the UE's endpoint
     IRadioEndpoint *phy = nullptr;
@@ -1452,38 +1449,23 @@ StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap
     }
 
     if (phy == nullptr)
-        return nullptr;
+        throw cRuntimeError("StochasticChannelModel::obtainUeChannelModel - UE %d is not known to the Binder", (int)num(id));
 
-    // get the associated channel and get a reference to its Jakes Map
-    JakesFadingMap *j;
-    StochasticChannelModel *re = dynamic_cast<StochasticChannelModel *>(phy->getChannelModel(carrierFrequency_));
-    if (re == nullptr)
-        throw cRuntimeError("StochasticChannelModel::obtainUeJakesMap - channel model is a null pointer");
-    else
-        j = re->getJakesMap();
+    StochasticChannelModel *model = dynamic_cast<StochasticChannelModel *>(phy->getChannelModel(carrierFrequency_));
+    if (model == nullptr)
+        throw cRuntimeError("StochasticChannelModel::obtainUeChannelModel - UE %d has no StochasticChannelModel on carrier %g GHz",
+                (int)num(id), carrierFrequency_.get());
+    return model;
+}
 
-    return j;
+StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap(MacNodeId id)
+{
+    return obtainUeChannelModel(id)->getJakesMap();
 }
 
 StochasticChannelModel::ShadowFadingMap *StochasticChannelModel::obtainShadowingMap(MacNodeId id)
 {
-    // obtain a reference to the UE's endpoint
-    IRadioEndpoint *phy = nullptr;
-
-    for (const auto& ueInfo : binder_->getUeList()) {
-        if (ueInfo->id == id) {
-            phy = ueInfo->phy;
-            break;
-        }
-    }
-
-    if (phy == nullptr)
-        return nullptr;
-
-    // get the associated channel and get a reference to its shadowing Map
-    StochasticChannelModel *re = dynamic_cast<StochasticChannelModel *>(phy->getChannelModel(carrierFrequency_));
-    ShadowFadingMap *j = re->getShadowingMap();
-    return j;
+    return obtainUeChannelModel(id)->getShadowingMap();
 }
 
 bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,

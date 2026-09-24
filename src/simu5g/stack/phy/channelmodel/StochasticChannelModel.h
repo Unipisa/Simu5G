@@ -514,6 +514,14 @@ class StochasticChannelModel : public ChannelModelBase
     virtual double computeExtCellPathLoss(double dist, const LinkKey& key);
 
     /*
+     * The channel model of the specified UE on this model's carrier. Throws if
+     * the Binder does not know the UE, or if that model is not a
+     * StochasticChannelModel.
+     * @param id mac id of the user
+     */
+    virtual StochasticChannelModel *obtainUeChannelModel(MacNodeId id);
+
+    /*
      * Obtain the jakes map for the specified UE
      * @param id mac id of the user
      */
