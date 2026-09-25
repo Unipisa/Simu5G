@@ -21,7 +21,7 @@ namespace simu5g;
 class CbrPacket extends inet::FieldsChunk {
     unsigned int numFrames;
     unsigned int frameId;
-    simtime_t arrivalTime;
+    simtime_t arrivalTime;   // Not on the wire; nothing sets it
     simtime_t payloadTimestamp;
     unsigned int payloadSize;
 }
