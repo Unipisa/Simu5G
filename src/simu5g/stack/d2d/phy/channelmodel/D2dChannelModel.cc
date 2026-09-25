@@ -227,6 +227,7 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
 
                 // get tx power and attenuation from this UE
                 double rxPwr = txPwr - cableLoss_ + 2 * antennaGainUe_;
+                ASSERT(isRadiosLinkBudget(ueId, destId, antennaGainUe_, antennaGainUe_, cableLoss_));
                 // interferer -> our receiver; the eNB-side maps are used for interferers
                 double att = getAttenuation(d2dLink(ueId, ueCoord, destId, destCoord, false));
                 (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm

@@ -23,6 +23,18 @@ using namespace omnetpp;
  */
 class CellularReceiver : public cSimpleModule
 {
+  protected:
+    double noiseFigure_ = NAN;
+    double cableLoss_ = NAN;
+
+  protected:
+    virtual void initialize() override;
+
+  public:
+    /** Noise figure in dB. */
+    double getNoiseFigure() const { return noiseFigure_; }
+    /** Cable loss in dB. */
+    double getCableLoss() const { return cableLoss_; }
 };
 
 } // namespace simu5g

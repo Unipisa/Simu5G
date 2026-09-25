@@ -15,4 +15,18 @@ namespace simu5g {
 
 Define_Module(CellularAntenna);
 
+void CellularAntenna::initialize()
+{
+    gain_ = par("gain");
+    const char *txDirection = par("txDirection");
+    txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDirection));
+    switch (txDirection_) {
+        case OMNI: txAngle_ = 0.0;
+            break;
+        case ANISOTROPIC: txAngle_ = par("txAngle");
+            break;
+        default: throw cRuntimeError("unknown txDirection: '%s'", txDirection);
+    }
+}
+
 } // namespace simu5g

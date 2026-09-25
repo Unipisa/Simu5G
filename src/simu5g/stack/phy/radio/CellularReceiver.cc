@@ -15,4 +15,10 @@ namespace simu5g {
 
 Define_Module(CellularReceiver);
 
+void CellularReceiver::initialize()
+{
+    noiseFigure_ = par("noiseFigure");
+    cableLoss_ = par("cableLoss");
+}
+
 } // namespace simu5g

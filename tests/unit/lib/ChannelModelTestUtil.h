@@ -42,12 +42,18 @@ class StubEndpoint : public IRadioEndpoint
     TxDirectionType txDirection = OMNI;
     double txAngle = 0.0;
     double txPower = 0.0;
+    double antennaGain = 0.0;
+    double noiseFigure = 0.0;
+    double cableLoss = 0.0;
     std::map<GHz, ChannelModelBase *> channelModels;  // by carrier frequency
 
     const inet::Coord& getCoord() const override { return coord; }
     TxDirectionType getTxDirection() override { return txDirection; }
     double getTxAngle() override { return txAngle; }
     double getTxPwr(Direction dir = UNKNOWN_DIRECTION) override { return txPower; }
+    double getAntennaGain() override { return antennaGain; }
+    double getNoiseFigure() override { return noiseFigure; }
+    double getCableLoss() override { return cableLoss; }
 
     ChannelModelBase *getChannelModel(GHz carrierFreq = GHz(0.0)) override
     {

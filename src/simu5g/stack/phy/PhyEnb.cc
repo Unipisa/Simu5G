@@ -52,17 +52,6 @@ void PhyEnb::initialize(int stage)
         else
             txPower_ = eNodeBtxPower_;
 
-        // set TX direction
-        std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
-        switch (txDirection_) {
-            case OMNI: txAngle_ = 0.0;
-                break;
-            case ANISOTROPIC: txAngle_ = par("txAngle");
-                break;
-            default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
-        }
-
         beaconInterval_ = cellInfo_->par("beaconInterval");
         if (beaconInterval_ <= 0)
             throw cRuntimeError("cellInfo.beaconInterval must be positive (got %gs); beacons are "

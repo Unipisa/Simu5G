@@ -117,6 +117,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 **.d2dTxPower = 20dBm
 **.antennGainEnB = 18dBi
 **.antennaGainUe = 3dBi
+*.ueD2D*[*].cellularNic.*adio.antenna.gain = 3dBi
 **.cableLoss = 2dB
 **.thermalNoise = -104.5dBm
 **.ueNoiseFigure = 7dBm

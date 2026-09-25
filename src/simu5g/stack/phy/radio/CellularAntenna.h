@@ -14,6 +14,8 @@
 
 #include <omnetpp.h>
 
+#include "simu5g/common/LteCommon.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -23,6 +25,21 @@ using namespace omnetpp;
  */
 class CellularAntenna : public cSimpleModule
 {
+  protected:
+    double gain_ = NAN;
+    TxDirectionType txDirection_ = OMNI;
+    double txAngle_ = NAN;
+
+  protected:
+    virtual void initialize() override;
+
+  public:
+    /** Antenna gain in dBi. */
+    double getGain() const { return gain_; }
+    /** Whether the antenna radiates omnidirectionally or sectorially. */
+    TxDirectionType getTxDirection() const { return txDirection_; }
+    /** The boresight of a sectorial antenna, in degrees; 0 for an omnidirectional one. */
+    double getTxAngle() const { return txAngle_; }
 };
 
 } // namespace simu5g

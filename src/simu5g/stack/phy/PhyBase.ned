@@ -32,8 +32,6 @@ simple PhyBase like IPhy
         double ueTxPower @unit(dBm) = default(26dBm);
         double eNodeBTxPower @unit(dBm) = default(46dBm);
         double microTxPower @unit(dBm) = default(30dBm);
-        string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
-        double txAngle @unit(deg) = default(0deg);
 
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium"); // The network's radio medium

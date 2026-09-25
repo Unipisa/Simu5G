@@ -95,6 +95,14 @@ const Coord enbPos(0, 0, 25), uePos(120, 45, 1.5);
 StubEndpoint enbEndpoint, ueEndpoint;
 enbEndpoint.coord = enbPos;
 ueEndpoint.coord = uePos;
+// The radios hold the link budget the channel models are configured with:
+// getRSRP() asserts that the two agree.
+enbEndpoint.antennaGain = ue->par("antennGainEnB").doubleValue();
+enbEndpoint.cableLoss = bs->par("cableLoss").doubleValue();
+enbEndpoint.noiseFigure = bs->par("bsNoiseFigure").doubleValue();
+ueEndpoint.antennaGain = ue->par("antennaGainUe").doubleValue();
+ueEndpoint.cableLoss = ue->par("cableLoss").doubleValue();
+ueEndpoint.noiseFigure = ue->par("ueNoiseFigure").doubleValue();
 ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
 bs->setPhy(&enbEndpoint);
 ue->setPhy(&ueEndpoint);

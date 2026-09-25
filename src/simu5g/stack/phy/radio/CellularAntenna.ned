@@ -12,12 +12,16 @@
 package simu5g.stack.phy.radio;
 
 //
-// The antenna of a cellular radio: its gain and, for a sectorial antenna, the
-// direction and pattern. It holds nothing yet.
+// The antenna of a cellular radio: its gain, and whether it radiates in all
+// directions or sectorially, towards txAngle. The sector's pattern is the
+// propagation study's (see the channel model's pathLossType).
 //
 simple CellularAntenna
 {
     parameters:
+        double gain @unit(dBi) = default(0dBi);     // Antenna gain, transmitting and receiving
+        string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
+        double txAngle @unit(deg) = default(0deg);   // Boresight of a sectorial (ANISOTROPIC) antenna
         @class(CellularAntenna);
         @display("i=device/antennatower");
 }

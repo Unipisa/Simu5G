@@ -115,10 +115,6 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     double microTxPower_ = NAN;
     // Tx Power
     double txPower_ = NAN;
-    // Tx Direction
-    TxDirectionType txDirection_ = OMNI;
-    // Tx Angle
-    double txAngle_ = NAN;
 
     /*
      * NR Support
@@ -177,15 +173,11 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
         return txPower_;
     }
 
-    TxDirectionType getTxDirection() override
-    {
-        return txDirection_;
-    }
-
-    double getTxAngle() override
-    {
-        return txAngle_;
-    }
+    TxDirectionType getTxDirection() override;
+    double getTxAngle() override;
+    double getAntennaGain() override;
+    double getNoiseFigure() override;
+    double getCableLoss() override;
 
     /**
      * Delivers a decoded packet to the upper (stack) layer: records the

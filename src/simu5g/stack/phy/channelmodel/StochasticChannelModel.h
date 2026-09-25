@@ -143,9 +143,6 @@ class StochasticChannelModel : public ChannelModelBase
     // Antenna gain of eNodeB
     double antennaGainEnB_;
 
-    // Antenna gain of micro node
-    double antennaGainMicro_;
-
     // Antenna gain of UE
     double antennaGainUe_;
 
@@ -411,6 +408,20 @@ class StochasticChannelModel : public ChannelModelBase
      * @param sinr mean SINR over the resource blocks actually used
      */
     virtual void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr);
+
+    /*
+     * Whether the antenna gains and cable loss used for the link from txId to
+     * rxId are those of the two radios on the medium (the transmitter's and
+     * the receiver's gain, the receiver's cable loss). True if either end is
+     * not a radio on the medium.
+     */
+    bool isRadiosLinkBudget(MacNodeId txId, MacNodeId rxId, double txAntennaGain, double rxAntennaGain, double cableLoss) const;
+
+    /*
+     * Whether the noise figure used for a reception at rxId is that radio's.
+     * True if rxId is not a radio on the medium.
+     */
+    bool isReceiversNoiseFigure(MacNodeId rxId, double noiseFigure) const;
 
     /*
      * Fill den[] with the per-band interference-plus-noise denominator, in dBm,

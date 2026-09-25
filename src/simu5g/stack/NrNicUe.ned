@@ -67,6 +67,8 @@ module NrNicUe extends LteNicUe
         rrc.nrConnectionControl.otherConnectionControlModule = "^.connectionControl";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.radioModule = "^.nrRadio";
+        nrRadio.antenna.gain = default(0dBi);
+        nrRadio.receiver.noiseFigure = default(7dB);
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.connectionControlModule = "^.rrc.nrConnectionControl";
         rrc.nrConnectionControl.macModule = "^.^.nrMac";

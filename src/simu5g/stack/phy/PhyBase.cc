@@ -14,6 +14,8 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/radio/CellularAntenna.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 #include <inet/common/InitStages.h>
@@ -300,6 +302,31 @@ void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)
     request->duration = duration;
     frame->setControlInfo(request);
     send(frame, radioOutGate_);
+}
+
+TxDirectionType PhyBase::getTxDirection()
+{
+    return check_and_cast<CellularAntenna *>(radio_->getSubmodule("antenna"))->getTxDirection();
+}
+
+double PhyBase::getTxAngle()
+{
+    return check_and_cast<CellularAntenna *>(radio_->getSubmodule("antenna"))->getTxAngle();
+}
+
+double PhyBase::getAntennaGain()
+{
+    return check_and_cast<CellularAntenna *>(radio_->getSubmodule("antenna"))->getGain();
+}
+
+double PhyBase::getNoiseFigure()
+{
+    return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"))->getNoiseFigure();
+}
+
+double PhyBase::getCableLoss()
+{
+    return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"))->getCableLoss();
 }
 
 int PhyBase::getReceiverGateIndex(const cModule *receiver, MacNodeId dest) const

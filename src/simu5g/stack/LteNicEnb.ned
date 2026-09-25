@@ -36,6 +36,8 @@ module LteNicEnb extends LteNicBase
     parameters:
         mac.typename = default("LteMacEnb");
         phy.typename = default("PhyEnb");
+        radio.antenna.gain = default(18dBi);
+        radio.receiver.noiseFigure = default(5dB);
         handoverPacketHolder.typename = default("HandoverPacketHolderEnb");
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         bool compEnabled = default(false);
