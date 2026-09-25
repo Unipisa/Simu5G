@@ -25,7 +25,6 @@ import simu5g.nodes.Upf;
 import simu5g.nodes.MecHost;
 import simu5g.mec.orchestrator.MecOrchestrator;
 import simu5g.mec.ualcmp.Ualcmp;
-import simu5g.world.radio.ChannelControl;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
@@ -51,9 +50,6 @@ network RnisTest
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=690,124;is=s");
-        }
-        channelControl: ChannelControl {
-            @display("p=690,24;is=s");
         }
         binder: Binder {
             @display("p=690,174;is=s");

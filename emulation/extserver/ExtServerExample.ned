@@ -23,7 +23,6 @@ import simu5g.nodes.ExtCell;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
-import simu5g.world.radio.ChannelControl;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
@@ -47,9 +46,6 @@ network ExtServerExample
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=73,172;is=s");
-        }
-        channelControl: ChannelControl {
-            @display("p=73,72;is=s");
         }
         binder: Binder {
             @display("p=73,222;is=s");

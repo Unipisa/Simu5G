@@ -25,7 +25,6 @@ import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.BackgroundCell;
-import simu5g.world.radio.ChannelControl;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
@@ -47,9 +46,6 @@ network SingleCell_Standalone
         **.cellularNic.hasSdap = default(true);
         @display("i=block/network2;bgb=1000,1000;bgi=background/pisa");
     submodules:
-        channelControl: ChannelControl {
-            @display("p=50,25;is=s");
-        }
         routingRecorder: RoutingTableRecorder {
             @display("p=50,75;is=s");
         }

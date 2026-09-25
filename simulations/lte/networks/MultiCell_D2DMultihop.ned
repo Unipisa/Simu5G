@@ -26,7 +26,6 @@ import simu5g.nodes.PgwStandard;
 import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.stack.d2d.binder.D2dBinder;
-import simu5g.world.radio.ChannelControl;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
@@ -47,9 +46,6 @@ network MultiCell_D2DMultihop
         int numUe5 = default(1);
         @display("i=block/network2;bgb=2000,500;");
     submodules:
-        channelControl: ChannelControl {
-            @display("p=90,24;is=s");
-        }
         routingRecorder: RoutingTableRecorder {
             @display("p=90,74;is=s");
         }
