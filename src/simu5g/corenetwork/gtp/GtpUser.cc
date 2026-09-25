@@ -14,6 +14,7 @@
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
+#include "simu5g/common/UplinkUeTag_m.h"
 #include <iostream>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/common/packet/printer/PacketPrinter.h>
@@ -91,7 +92,7 @@ void GtpUser::setUplinkTunnels(const SessionRef& session, const UplinkTunnels& t
     ASSERT(isBaseStation(ownerType_));
     for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
         if (nodeId != NODEID_NONE)
-            ulTunnels_[nodeId] = tunnels;
+            ulTunnels_[nodeId] = UplinkSession{session, tunnels};
     EV_INFO << "GtpUser::setUplinkTunnels - " << session << " enters the core network at " << tunnels.anchor << endl;
 }
 
@@ -188,6 +189,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
     TrafficFlowTemplateId flowId = tftInfo->getTft();
     Qfi qfi = tftInfo->getQfi();
 
+    // at a base station: the UE the datagram came from over the air (see Ip2Nic)
+    MacNodeId sourceUe = isBaseStation(ownerType_) ? datagram->removeTag<UplinkUeTag>()->getUeNodeId() : NODEID_NONE;
+
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "] qfi[" << qfi << "]" << endl;
 
     if (flowId == TFT_REMOVED_DESTINATION) {
@@ -216,6 +220,13 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
+            // a base station sends into the uplink tunnel of the UE's PDU session, whose
+            // anchor is the gateway; a MEC host's UPF relays traffic of no PDU session
+            if (isBaseStation(ownerType_)) {
+                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe, datagram->getTag<IpHeaderFieldsTag>()->getSrcAddress());
+                ASSERT(tunnels.anchor.address == gwAddress_);
+                teid = tunnels.anchor.teid;
+            }
         }
         else if (flowId == TFT_MEC_HOST) { // send to a MEC host
             // check if the destination MEC host is within the same core network
@@ -223,6 +234,16 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // retrieve the address of the UPF included within the MEC host
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
             tunnelPeerAddress = binder_->getUpfFromMecHost(destAddr);
+            // a base station sends into the UE's PDU session's uplink tunnel to the MEC
+            // host; a UPF relays traffic of no PDU session
+            if (isBaseStation(ownerType_)) {
+                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe, datagram->getTag<IpHeaderFieldsTag>()->getSrcAddress());
+                auto it = tunnels.mecHosts.find(tunnelPeerAddress);
+                if (it == tunnels.mecHosts.end())
+                    throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel to the MEC host UPF %s",
+                            num(sourceUe), tunnelPeerAddress.str().c_str());
+                teid = it->second;
+            }
         }
         else { // send to a BS
             // check if the destination is within the same core network
@@ -297,12 +318,29 @@ void GtpUser::handleFromUdp(Packet *pkt)
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == UPF_MEC) {
+        // a tunnel from a base station names the PDU session the datagram belongs to; a
+        // relay from the UPF carries traffic of no PDU session
+        if (gtpUserMsg->getTeid() != TEID_NONE) {
+            const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
+            ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getSourceAddress()));
+            EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
+        }
+
         // we are on the MEC, local delivery
         EV << "GtpUser::handleFromUdp - Datagram local delivery to the MEC host" << endl;
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == PGW || ownerType_ == UPF) {
-        // the tunnel does not identify the session (TEID 0), so the destination does
+        // a tunnel from a base station names the PDU session the datagram belongs to; a
+        // relay from a MEC host's UPF carries traffic of no PDU session
+        if (gtpUserMsg->getTeid() != TEID_NONE) {
+            const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
+            ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getSourceAddress()));
+            EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
+        }
+
+        // where the datagram goes next is the destination's matter: the data network, or
+        // the PDU session of another UE
         L3Address destAddr = peekIpHeader(originalPacket)->getDestinationAddress();
 
         // The IP link of a UE's IPv6 session ends here: link-local-scope traffic (Neighbor
@@ -385,6 +423,17 @@ Teid GtpUser::getDownlinkTeid(const L3Address& ueAddress, const L3Address& bsAdd
         throw cRuntimeError("GtpUser: the PDU session of UE %d (%s) has no downlink tunnel from here", num(ueId), ueAddress.str().c_str());
     ASSERT(it->second.address == bsAddress);
     return it->second.teid;
+}
+
+const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId, const L3Address& srcAddress)
+{
+    auto it = ulTunnels_.find(ueNodeId);
+    if (it == ulTunnels_.end())
+        throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel from here", num(ueNodeId));
+    // the datagram's source address names the session's UE, or no UE at all (e.g. the
+    // unspecified address of an IPv6 Duplicate Address Detection probe)
+    ASSERT(isSessionUe(it->second.session, srcAddress));
+    return it->second.tunnels;
 }
 
 const SessionRef& GtpUser::findTunnel(Teid teid)

@@ -73,8 +73,12 @@ class GtpUser : public cSimpleModule
     std::map<Teid, SessionRef> rxTunnels_;
 
     // At a base station: the uplink tunnels of the PDU sessions of the UEs it serves or
-    // has served, by each of the UE's node ids
-    std::map<MacNodeId, UplinkTunnels> ulTunnels_;
+    // has served, with the session, by each of the UE's node ids
+    struct UplinkSession {
+        SessionRef session;
+        UplinkTunnels tunnels;
+    };
+    std::map<MacNodeId, UplinkSession> ulTunnels_;
 
     // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of each PDU session it serves,
     // by each of the UE's node ids; none while the UE is attached nowhere
@@ -104,6 +108,10 @@ class GtpUser : public cSimpleModule
     // The TEID of the downlink tunnel of the PDU session of the UE with the given
     // address, which leads to the base station with the given address
     Teid getDownlinkTeid(const inet::L3Address& ueAddress, const inet::L3Address& bsAddress);
+
+    // At a base station: the uplink tunnels of the PDU session of the UE with the given
+    // node id, which sent a datagram with the given source address
+    const UplinkTunnels& getUplinkTunnels(MacNodeId ueNodeId, const inet::L3Address& srcAddress);
 
     // The PDU session of a tunnel ending here; throws for an unknown TEID
     const SessionRef& findTunnel(Teid teid);

@@ -17,6 +17,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/common/UplinkUeTag_m.h"
 
 namespace simu5g {
 
@@ -87,11 +88,16 @@ void Ip2Nic::handleMessage(cMessage *msg)
         EV << "Ip2Nic: message from stack: sending up" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         pkt->removeTagIfPresent<SocketInd>();
+        // at a base station, the UE the datagram came from, whose PDU session's uplink
+        // tunnel carries it on (see GtpUser)
+        MacNodeId sourceUe = (nodeType_ == NODEB) ? pkt->getTag<FlowControlInfo>()->getSourceId() : NODEID_NONE;
         removeAllSimu5GTags(pkt);
         // the transmitting node's, which the packet may still carry over the air
         pkt->removeTagIfPresent<IpHeaderFieldsTag>();
-        if (nodeType_ == NODEB)
+        if (nodeType_ == NODEB) {
+            pkt->addTag<UplinkUeTag>()->setUeNodeId(sourceUe);
             toIpBs(pkt);
+        }
         else
             toIpUe(pkt);
     }
