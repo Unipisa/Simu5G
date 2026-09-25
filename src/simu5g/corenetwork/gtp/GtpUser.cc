@@ -319,6 +319,12 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
     EV << "GtpUser::handleFromUdp - Decapsulating and forwarding to the correct destination" << endl;
 
+    if (const auto& header = pkt->peekAtFront<GtpUserMsg>(); header->getMessageType() == GTPU_END_MARKER) {
+        handleEndMarker(header->getTeid());
+        delete pkt;
+        return;
+    }
+
     // re-create the original IP datagram and send it to the local network
     auto originalPacket = new Packet(pkt->getName());
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
@@ -440,6 +446,33 @@ const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId)
     if (it == ulTunnels_.end())
         throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel from here", num(ueNodeId));
     return it->second.tunnels;
+}
+
+void GtpUser::sendEndMarker(const FTeid& tunnel)
+{
+    Enter_Method("sendEndMarker");
+    if (ownerType_ != UPF && ownerType_ != PGW)
+        throw cRuntimeError("GtpUser: %s is no anchor UPF/PGW to send an End Marker", getFullPath().c_str());
+    EV << "GtpUser::sendEndMarker - the downlink leaves " << tunnel << endl;
+    auto header = makeGtpUserHeader(tunnel.teid, QFI_NONE, PDU_SESSION_CONTAINER_NONE, B(0));
+    header->setMessageType(GTPU_END_MARKER);
+    auto endMarker = new Packet("GtpEndMarker");
+    endMarker->insertAtFront(header);
+    socket_.sendTo(endMarker, tunnel.address, tunnelPeerPort_);
+}
+
+void GtpUser::handleEndMarker(Teid teid)
+{
+    if (!isBaseStation(ownerType_))
+        throw cRuntimeError("GtpUser: an End Marker arrived at %s, which is no base station", getFullPath().c_str());
+    // the end of the session's downlink on this tunnel: the handover source relays it
+    // to where the UE went (see HandoverPacketHolderEnb)
+    const SessionRef& session = findTunnel(teid);
+    EV << "GtpUser::handleEndMarker - End Marker of " << session << endl;
+    auto endMarker = new Packet("GtpEndMarker");
+    attachSessionTag(endMarker, session);
+    endMarker->addTag<GtpEndMarkerInd>();
+    send(endMarker, "pppGate");
 }
 
 const FTeid *GtpUser::findDownlinkTunnel(MacNodeId ueNodeId)

@@ -84,8 +84,12 @@ void GtpUserX2::handleFromStack(Packet *pkt)
     auto gtpMsg = makeGtpUserHeader(TEID_NONE, QFI_NONE, PDU_SESSION_CONTAINER_NONE, pkt->getDataLength());
     // forwarded downlink goes on the downlink tunnel of its PDU session at the target,
     // a dual connectivity PDU on its bearer's tunnel at the peer for its direction
-    if (x2Msg->getType() == X2_HANDOVER_DATA_MSG)
+    if (x2Msg->getType() == X2_HANDOVER_DATA_MSG) {
         gtpMsg->setTeid(getForwardingTeid(pkt->removeTag<SessionTag>().get(), destId));
+        // the End Marker the source relays after the forwarded downlink
+        if (pkt->removeTagIfPresent<GtpEndMarkerInd>() != nullptr)
+            gtpMsg->setMessageType(GTPU_END_MARKER);
+    }
     else if (x2Msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG) {
         auto flow = pkt->removeTag<FlowControlInfo>();
         MacNodeId ueNodeId = flow->getDirection() == DL ? flow->getDestId() : flow->getSourceId();
@@ -116,8 +120,10 @@ void GtpUserX2::handleFromUdp(Packet *pkt)
     // PDCP PDU of a dual connectivity bearer
     Teid teid = gtpMsg->getTeid();
     if (auto it = rxTunnels_.find(teid); it != rxTunnels_.end()) {
-        EV << "GtpUserX2::handleFromUdp - Forwarded datagram of " << it->second << endl;
+        EV << "GtpUserX2::handleFromUdp - Forwarded " << (gtpMsg->getMessageType() == GTPU_END_MARKER ? "End Marker" : "datagram") << " of " << it->second << endl;
         attachSessionTag(pkt, it->second);
+        if (gtpMsg->getMessageType() == GTPU_END_MARKER)
+            pkt->addTag<GtpEndMarkerInd>();
     }
     else if (auto jt = dcRxTunnels_.find(teid); jt != dcRxTunnels_.end()) {
         auto tunnelInd = pkt->addTag<X2DcTunnelInd>();

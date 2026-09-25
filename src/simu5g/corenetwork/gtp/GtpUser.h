@@ -105,6 +105,9 @@ class GtpUser : public cSimpleModule
     // a PDU session
     void tunnelDownlink(inet::Packet *datagram, const FTeid& tunnel, Qfi qfi);
 
+    // At a base station: an End Marker arrived on the tunnel with the given TEID
+    void handleEndMarker(Teid teid);
+
     // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of the PDU session of the UE
     // with the given node id; nullptr if its session is not served here, or the UE is
     // attached nowhere
@@ -134,6 +137,10 @@ class GtpUser : public cSimpleModule
     // At a UPF/PGW or a MEC host's UPF: the session's downlink tunnel, which the path
     // switch moves; an unset F-TEID while the UE is attached nowhere
     virtual void setDownlinkTunnel(const SessionRef& session, const FTeid& tunnel);
+
+    // At an anchor UPF/PGW: end a downlink tunnel with an End Marker, as the path switch
+    // moves the session's downlink off it (the "send end marker" instruction of the SMF)
+    virtual void sendEndMarker(const FTeid& tunnel);
 
     // The session is released: forget its uplink and downlink tunnels
     virtual void removeSession(const SessionRef& session);

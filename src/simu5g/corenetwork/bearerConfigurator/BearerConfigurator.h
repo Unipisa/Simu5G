@@ -134,6 +134,7 @@ class BearerConfigurator : public cSimpleModule, public cListener
         FTeid ulAnchor;                             // uplink F-TEID at the anchor
         std::map<int, Teid> ulMecHosts;             // uplink TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
         MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
+        MacNodeId lastDlBaseStation = NODEID_NONE;  // where the downlink last entered the RAN, kept while the UE is attached nowhere
         FTeid dl;                                   // downlink F-TEID at dlBaseStation
         std::map<MacNodeId, Teid> dlTeids;          // the downlink TEID at each base station the UE has been attached through, kept until release
     };

@@ -65,13 +65,18 @@ void HandoverPacketHolderEnb::initialize(int stage)
 
 MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(const SessionTag *session)
 {
+    return resolveUeNodeId(session->getLteNodeId(), session->getNrNodeId());
+}
+
+MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(MacNodeId lteNodeId, MacNodeId nrNodeId)
+{
     // The UE's id on this node's own cell group: an NR node serves, holds and forwards
     // NR ids, an LTE node LTE ids -- a dual-stack UE has both, and picking by this node's
     // technology (rather than LTE-first) is what lets an NR node be the master. The
     // other-stack id is the fallback for a single-stack UE of the other technology.
-    MacNodeId destId = amNr_ ? session->getNrNodeId() : session->getLteNodeId();
+    MacNodeId destId = amNr_ ? nrNodeId : lteNodeId;
     if (destId == NODEID_NONE)
-        destId = amNr_ ? session->getLteNodeId() : session->getNrNodeId();
+        destId = amNr_ ? lteNodeId : nrNodeId;
     return destId;
 }
 
@@ -96,6 +101,11 @@ void HandoverPacketHolderEnb::fromIpBs(Packet *pkt)
     // Remove InterfaceReq Tag (we already are on an interface now)
     pkt->removeTagIfPresent<InterfaceReq>();
 
+    if (pkt->findTag<GtpEndMarkerInd>() != nullptr) {
+        relayEndMarker(pkt);
+        return;
+    }
+
     // the base station's downlink user-plane entry
     attachIpHeaderFields(pkt);
 
@@ -109,8 +119,9 @@ void HandoverPacketHolderEnb::fromIpBs(Packet *pkt)
         return;
     }
 
-    // handle incoming packets destined to UEs that are completing handover
-    if (hoHolding_.find(destId) != hoHolding_.end()) {
+    // handle incoming packets destined to UEs that are completing handover, or whose
+    // handover completed before the End Marker of the old path arrived
+    if (hoHolding_.find(destId) != hoHolding_.end() || awaitingEndMarker_.find(destId) != awaitingEndMarker_.end()) {
         // hold packets until handover is complete
         if (hoFromIp_.find(destId) == hoFromIp_.end()) {
             IpDatagramQueue queue;
@@ -143,6 +154,21 @@ void HandoverPacketHolderEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId ta
 
     hoForwarding_[ueId] = targetEnb;
 
+    // A UE that leaves before the End Marker of its previous handover arrived here: the
+    // downlink held back for it goes on to the new target, ahead of what follows
+    if (awaitingEndMarker_.erase(ueId) != 0) {
+        auto it = hoFromIp_.find(ueId);
+        if (it != hoFromIp_.end()) {
+            IpDatagramQueue& queue = it->second;
+            while (!queue.empty()) {
+                Packet *pkt = queue.front();
+                queue.pop_front();
+                take(pkt);
+                sendTunneledPacketOnHandover(pkt, targetEnb);
+            }
+        }
+    }
+
     if (!hoManager_)
         hoManager_.reference(this, "handoverX2ForwarderModule", true);
 
@@ -173,6 +199,11 @@ void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, Mac
 void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 {
     EV << "HandoverPacketHolder::receiveTunneledPacketOnHandover - received packet via X2" << endl;
+    if (datagram->findTag<GtpEndMarkerInd>() != nullptr) {
+        receiveEndMarker(datagram);
+        return;
+    }
+
     // the base station's entry for downlink traffic forwarded by the handover source:
     // the forwarding tunnel named the PDU session, and so the UE, the datagram is for
     // (see GtpUserX2)
@@ -195,6 +226,50 @@ void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
     }
 
     hoFromX2_[destId].push_back(datagram);
+}
+
+void HandoverPacketHolderEnb::relayEndMarker(Packet *endMarker)
+{
+    // to the base station this one forwards the UE's downlink to, or else the one the
+    // UE is served by now (the late-packet case of fromIpBs())
+    MacNodeId ueId = resolveUeNodeId(endMarker->getTag<SessionTag>().get());
+    auto it = hoForwarding_.find(ueId);
+    MacNodeId targetEnb = (it != hoForwarding_.end()) ? it->second : binder_->getServingNodeOrSelf(ueId);
+    if (targetEnb == NODEID_NONE || targetEnb == nodeId_) {
+        EV << "HandoverPacketHolder::relayEndMarker - End Marker for UE " << ueId << ", which has not moved to another base station, discarded" << endl;
+        delete endMarker;
+        return;
+    }
+    EV << "HandoverPacketHolder::relayEndMarker - relaying the End Marker for UE " << ueId << " to eNB " << targetEnb << endl;
+    sendTunneledPacketOnHandover(endMarker, targetEnb);
+}
+
+void HandoverPacketHolderEnb::receiveEndMarker(Packet *endMarker)
+{
+    MacNodeId ueId = resolveUeNodeId(endMarker->getTag<SessionTag>().get());
+    delete endMarker;
+    if (awaitingEndMarker_.erase(ueId) == 0) {
+        // e.g. the UE moved on before it arrived, and the downlink held for it went along
+        EV << "HandoverPacketHolder::receiveEndMarker - End Marker for UE " << ueId << ", which is not waiting for one, discarded" << endl;
+        return;
+    }
+    EV << "HandoverPacketHolder::receiveEndMarker - End Marker for UE " << ueId << ": the forwarded downlink is complete" << endl;
+    if (hoHolding_.find(ueId) == hoHolding_.end())
+        releaseHeldDownlink(ueId);
+}
+
+void HandoverPacketHolderEnb::releaseHeldDownlink(MacNodeId ueId)
+{
+    auto it = hoFromIp_.find(ueId);
+    if (it == hoFromIp_.end())
+        return;
+    IpDatagramQueue& queue = it->second;
+    while (!queue.empty()) {
+        Packet *pkt = queue.front();
+        queue.pop_front();
+        take(pkt);
+        toStackBs(pkt);
+    }
 }
 
 void HandoverPacketHolderEnb::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
@@ -229,19 +304,29 @@ void HandoverPacketHolderEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNo
         }
     }
 
-    if (hoFromIp_.find(ueId) != hoFromIp_.end()) {
-        IpDatagramQueue& queue = hoFromIp_[ueId];
-        while (!queue.empty()) {
-            Packet *pkt = queue.front();
-            queue.pop_front();
-
-            // send pkt down
-            take(pkt);
-            toStackBs(pkt);
-        }
-    }
+    // the downlink from the new path follows once the End Marker of the old one has
+    // arrived, so none of the forwarded downlink still on its way is overtaken
+    if (awaitingEndMarker_.find(ueId) == awaitingEndMarker_.end())
+        releaseHeldDownlink(ueId);
+    else
+        EV << NOW << " HandoverPacketHolder::signalHandoverCompleteTarget - UE " << ueId << ": holding the downlink of the new path until the End Marker" << endl;
 
     hoHolding_.erase(ueId);
+}
+
+void HandoverPacketHolderEnb::switchDownlinkPath(MacNodeId ueLteId, MacNodeId ueNrId, MacNodeId fromBaseStation)
+{
+    Enter_Method("switchDownlinkPath");
+    MacNodeId ueId = resolveUeNodeId(ueLteId, ueNrId);
+    // In a handover, the old base station forwards the downlink it gets until the path
+    // switch, and relays the End Marker after it (TS 23.502 4.9.1.2.2). Otherwise
+    // nothing is forwarded, and a wait left over from an earlier handover is void.
+    if (fromBaseStation != NODEID_NONE && fromBaseStation != nodeId_ && hoHolding_.find(ueId) != hoHolding_.end()) {
+        EV << NOW << " HandoverPacketHolder::switchDownlinkPath - the downlink of UE " << ueId << " comes here instead of eNB " << fromBaseStation << ", which relays the End Marker" << endl;
+        awaitingEndMarker_.insert(ueId);
+    }
+    else if (awaitingEndMarker_.erase(ueId) != 0 && hoHolding_.find(ueId) == hoHolding_.end())
+        releaseHeldDownlink(ueId);
 }
 
 } //namespace

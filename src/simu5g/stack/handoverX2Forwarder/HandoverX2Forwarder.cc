@@ -16,6 +16,7 @@
 
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/QfiTag_m.h"
 #include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE.h"
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
@@ -89,7 +90,8 @@ void HandoverX2Forwarder::handleX2Message(cPacket *pkt)
         // forwarding side overwrote with x2ap, so downstream consumers (e.g. the
         // packet-filter dissection of bearer definitions) see the packet for what
         // it is.
-        datagram->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&ipProtocolOf(datagram));
+        if (datagram->findTag<GtpEndMarkerInd>() == nullptr)   // an End Marker carries no datagram
+            datagram->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&ipProtocolOf(datagram));
 
         // Restore the datagram's QoS flow, carried alongside it the way the 3GPP
         // forwarding tunnel carries the QFI (TS 38.425): the datagram re-enters the

@@ -24,6 +24,7 @@
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
 #include "simu5g/stack/rrc/Registration.h"
+#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
 namespace simu5g {
 
@@ -922,6 +923,23 @@ void BearerConfigurator::switchPath(CoreSession& session)
     gtpEndpoints_[session.anchor].module->setDownlinkTunnel(session.ref, session.dl);
     for (const auto& [index, teid] : session.ulMecHosts)
         gtpEndpoints_[index].module->setDownlinkTunnel(session.ref, session.dl);
+    if (dlBaseStation == NODEID_NONE)
+        return;
+
+    // The anchor ends the downlink on the old path with an End Marker, which the old base
+    // station relays to the new one after the downlink it forwards, and the new one holds
+    // back the downlink of the new path until then (TS 23.502 4.9.1.2.2). A handover
+    // passes through "attached nowhere", so the old path is the one last used. The MEC
+    // host UPFs send none, and their downlink is not ordered against the forwarded one
+    // (in 3GPP, a MEC branch sits behind the anchor's single N3 tunnel).
+    MacNodeId oldDlBaseStation = session.lastDlBaseStation;
+    if (oldDlBaseStation != NODEID_NONE && oldDlBaseStation != dlBaseStation) {
+        FTeid oldDl{getGtpEndpointAddress(gtpEndpoints_.at(bsGtpEndpoints_.at(oldDlBaseStation))), session.dlTeids.at(oldDlBaseStation)};
+        gtpEndpoints_[session.anchor].module->sendEndMarker(oldDl);
+    }
+    auto holder = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(dlBaseStation));
+    holder->switchDownlinkPath(session.ref.lteNodeId, session.ref.nrNodeId, oldDlBaseStation);
+    session.lastDlBaseStation = dlBaseStation;
 }
 
 void BearerConfigurator::setUpRanTunnels(CoreSession& session, MacNodeId bsId)

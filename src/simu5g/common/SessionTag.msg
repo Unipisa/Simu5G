@@ -34,3 +34,14 @@ class SessionTag extends inet::TagBase {
     MacNodeId lteNodeId = NODEID_NONE;   // The UE's node id on its LTE stack
     MacNodeId nrNodeId = NODEID_NONE;    // The UE's node id on its NR stack; NODEID_NONE if it has none
 }
+
+//
+// Marks a packet that stands for a GTP-U End Marker (TS 29.281 7.3.2): the end of a PDU
+// session's downlink on the tunnel it arrived on, which the anchor sends at the path
+// switch. It carries no data. The old base station relays it over X2 to the base
+// station the UE moved to, which releases the downlink it has held back from the new
+// path until then (see ~HandoverPacketHolderEnb). Attached by ~GtpUser and ~GtpUserX2
+// where the End Marker arrives; node-local, like SessionTag.
+//
+class GtpEndMarkerInd extends inet::TagBase {
+}

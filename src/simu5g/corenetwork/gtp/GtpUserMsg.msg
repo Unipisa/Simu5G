@@ -33,7 +33,7 @@ enum PduSessionContainerType
 // the 4-octet PDU Session Container itself (TS 38.415): 16 octets then.
 //
 class GtpUserMsg extends inet::FieldsChunk {
-    uint8_t messageType = 255;   // 255: G-PDU (TS 29.281 6.1)
+    uint8_t messageType = 255;   // GTPU_G_PDU or GTPU_END_MARKER (TS 29.281 6.1)
     uint16_t lengthField;        // The octets after the mandatory header: optional fields, extension headers and the T-PDU
     Teid teid;                   // Allocated by the receiving end of the tunnel; TEID_NONE on relays between core network nodes, which carry no PDU session's traffic
     PduSessionContainerType pduSessionContainer = PDU_SESSION_CONTAINER_NONE;
@@ -42,6 +42,10 @@ class GtpUserMsg extends inet::FieldsChunk {
 }
 
 cplusplus {{
+// GTP-U message types (TS 29.281 6.1)
+constexpr uint8_t GTPU_END_MARKER = 254;   // The last packet on a tunnel a PDU session's downlink leaves (TS 29.281 7.3.2)
+constexpr uint8_t GTPU_G_PDU = 255;        // User data (a T-PDU)
+
 // The length of a GTP-U header with or without a PDU Session Container
 inline inet::B gtpUserHeaderLength(PduSessionContainerType container) { return inet::B(container == PDU_SESSION_CONTAINER_NONE ? 8 : 16); }
 }}
