@@ -184,15 +184,6 @@ typedef unsigned short Codeword;
 /// Numerology Index
 typedef unsigned short NumerologyIndex;
 
-/// identifies a traffic flow template
-typedef int TrafficFlowTemplateId;
-
-/// Traffic Flow Template ID constants
-constexpr TrafficFlowTemplateId TFT_REMOVED_DESTINATION = -2;    // Destination removed from simulation
-constexpr TrafficFlowTemplateId TFT_EXTERNAL_DESTINATION = -1;   // External destination (gateway)
-constexpr TrafficFlowTemplateId TFT_LOCAL_DELIVERY = 0;          // Local delivery (same base station)
-constexpr TrafficFlowTemplateId TFT_MEC_HOST = -3;               // MEC host destination
-
 // Attenuation vector for analogue models
 typedef std::vector<double> AttenuationVector;
 

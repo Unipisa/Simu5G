@@ -101,13 +101,14 @@ class GtpUser : public cSimpleModule
     // receive a reply of the Neighbor Discovery responder (UPF/PGW only), and tunnel it to the UE's base station
     void handleFromNdResponder(inet::Packet *datagram);
 
-    // encapsulate a datagram for the UE with the given address into GTP-U, and send it
-    // through the downlink tunnel of the UE's PDU session, to the given base station
-    void tunnelToBaseStation(inet::Packet *datagram, const inet::L3Address& ueAddress, MacNodeId bsId, Qfi qfi);
+    // encapsulate a datagram into GTP-U, and send it through the given downlink tunnel of
+    // a PDU session
+    void tunnelDownlink(inet::Packet *datagram, const FTeid& tunnel, Qfi qfi);
 
-    // The TEID of the downlink tunnel of the PDU session of the UE with the given
-    // address, which leads to the base station with the given address
-    Teid getDownlinkTeid(const inet::L3Address& ueAddress, const inet::L3Address& bsAddress);
+    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of the PDU session of the UE
+    // with the given node id; nullptr if its session is not served here, or the UE is
+    // attached nowhere
+    const FTeid *findDownlinkTunnel(MacNodeId ueNodeId);
 
     // At a base station: the uplink tunnels of the PDU session of the UE with the given
     // node id, which sent a datagram with the given source address

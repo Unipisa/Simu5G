@@ -16,8 +16,22 @@ import inet.common.TagBase;
 
 namespace simu5g;
 
+//
+// Where a traffic flow filter sends a datagram entering the user plane of its node
+// (see ~TrafficFlowFilter, ~GtpUser)
+//
+enum TftOutcome
+{
+    TFT_REMOVED_DESTINATION = 0;    // Dropped: the destination left the simulation, or is attached nowhere
+    TFT_EXTERNAL_DESTINATION = 1;   // To the core network gateway
+    TFT_LOCAL_DELIVERY = 2;         // Back into this base station's radio network
+    TFT_MEC_HOST = 3;               // To the UPF of the destination MEC host
+    TFT_PDU_SESSION = 4;            // Into the downlink tunnel of the destination UE's PDU session
+}
+
 class TftControlInfo extends inet::TagBase
 {
-    unsigned int tft;
+    TftOutcome tft;
+    MacNodeId ueNodeId = NODEID_NONE;   // TFT_PDU_SESSION: the destination UE, by one of its node ids
     Qfi qfi;  // QFI derived from IP DSCP (simplified PDR matching)
 };

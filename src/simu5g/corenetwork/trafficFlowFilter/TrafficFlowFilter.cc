@@ -149,13 +149,14 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
         return;
     }
 
-    // run packet filter and associate a flowId to the connection (default bearer?)
-    // search within tftTable the proper entry for this destination
-    TrafficFlowTemplateId tftId = findTrafficFlow(srcAddr, destAddr);   // search for the tftId in the binder
+    // where the datagram goes
+    MacNodeId ueNodeId = NODEID_NONE;
+    TftOutcome tft = findTrafficFlow(srcAddr, destAddr, ueNodeId);
 
     // add control info to the normal IP datagram. This info will be read by the GTP-U application
     auto tftInfo = pkt->addTag<TftControlInfo>();
-    tftInfo->setTft(tftId);
+    tftInfo->setTft(tft);
+    tftInfo->setUeNodeId(ueNodeId);
 
     // QFI assignment. An uplink packet that SDAP already attributed to a QoS flow
     // (the QfiInd tag, carrying the QFI the UE classified it with) keeps that QFI on
@@ -178,13 +179,13 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
         qfi = Qfi(0);   // traffic no rule covers belongs to the default flow
     tftInfo->setQfi(qfi);
 
-    EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << " qfi=" << qfi << endl;
+    EV << "TrafficFlowFilter::handleMessage - setting tft=" << tft << " ueNodeId=" << ueNodeId << " qfi=" << qfi << endl;
 
     // send the datagram to the GTP-U module
     send(pkt, "gtpUserGateOut");
 }
 
-TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L3Address destAddress)
+TftOutcome TrafficFlowFilter::findTrafficFlow(const L3Address& srcAddress, const L3Address& destAddress, MacNodeId& ueNodeId)
 {
     // check whether the destination address is a (simulated) MEC host's address
     if (binder_->isMecHost(destAddress)) {
@@ -219,6 +220,14 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         }
     }
 
+    if (!isBaseStation(ownerType_)) {
+        // MEC host or PGW/UPF: the downlink of the destination UE's PDU session, whose
+        // tunnel the GTP-U endpoint knows (or knows it has none, see GtpUser)
+        EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is UE " << destId << endl;
+        ueNodeId = destId;
+        return TFT_PDU_SESSION;
+    }
+
     MacNodeId destBS = binder_->getServingNodeOrSelf(destId);
     if (destBS == NODEID_NONE) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
@@ -230,28 +239,13 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     MacNodeId destMaster = binder_->getMasterNodeOrSelf(destBS);
     MacNodeId srcMaster = binder_->getServingNodeOrSelf(binder_->getMacNodeId(srcAddress));
 
-    if (isBaseStation(ownerType_)) {
-        if (fastForwarding_ && srcMaster == destMaster)
-            return TFT_LOCAL_DELIVERY;                       // local delivery
+    if (fastForwarding_ && srcMaster == destMaster)
+        return TFT_LOCAL_DELIVERY;                       // local delivery
 
-        return TFT_EXTERNAL_DESTINATION;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
-                                          // TODO if the BS is within the same core network, there should be a direct tunnel to
-                                          //      it without going through the gateway (for now, this is not implemented as it
-                                          //      may cause packets being transmitted via the X2
-    }
-
-    // MEC host or PGW/UPF
-
-    // check if the destination belongs to another core network (for multi-operator scenarios)
-    std::string destGw = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
-    if (gateway_ != destGw) {
-        // the destination is a Base Station under a different core network, send the packet to the gateway
-        EV << "Forward packet to the gateway" << endl;
-        return TFT_EXTERNAL_DESTINATION;
-    }
-
-    EV << "Forward packet to BS " << destMaster << endl;
-    return num(destMaster);
+    return TFT_EXTERNAL_DESTINATION;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
+                                      // TODO if the BS is within the same core network, there should be a direct tunnel to
+                                      //      it without going through the gateway (for now, this is not implemented as it
+                                      //      may cause packets being transmitted via the X2
 }
 
 } //namespace

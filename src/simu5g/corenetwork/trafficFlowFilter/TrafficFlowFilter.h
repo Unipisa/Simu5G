@@ -36,10 +36,10 @@ class BearerConfigurator;
  * associating it with an ID that will be recognized by the first GTP-U entity.
  *
  * This simplified traffic filter queries the Binder to find the destination of the packet.
- * It resides at both the eNodeB and the PGW. At the PGW, when a packet comes to the traffic flow filter, the latter finds the
- * destination endpoint (the eNodeB serving the destination UE) of the GTP tunnel that needs to be established. At the eNodeB,
- * the destination endpoint is always the PGW. However, if the fastForwarding flag is enabled and the destination of the packet
- * is within the same cell, the packet is just relayed to the Radio interface.
+ * It resides at both the eNodeB and the PGW. At the PGW (and at a UPF or a MEC host's UPF), it finds the destination UE,
+ * whose PDU session's downlink tunnel the GTP-U endpoint then sends the packet on. At the eNodeB, the destination endpoint
+ * is always the PGW. However, if the fastForwarding flag is enabled and the destination of the packet is within the same
+ * cell, the packet is just relayed to the Radio interface.
  */
 class TrafficFlowFilter : public cSimpleModule
 {
@@ -92,8 +92,8 @@ class TrafficFlowFilter : public cSimpleModule
 
     CoreNodeType selectOwnerType(const char *type);
 
-    // functions for managing filter tables
-    TrafficFlowTemplateId findTrafficFlow(inet::L3Address srcAddress, inet::L3Address destAddress);
+    // Where a datagram goes; for TFT_PDU_SESSION, ueNodeId is set to the destination UE
+    TftOutcome findTrafficFlow(const inet::L3Address& srcAddress, const inet::L3Address& destAddress, MacNodeId& ueNodeId);
 
   public:
     // Take delivery of this filter's compiled QFI-assignment rules from the

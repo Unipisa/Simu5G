@@ -167,43 +167,59 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 {
     /*
      * when we get here, it means that the packet is entering the core network and it may need to be tunneled to some destination,
-     * based on the trafficFlowId found by the TrafficFlowFilter:
-     * 1) tftId == -2, the destination does not belong to the simulation anymore
+     * based on the outcome the TrafficFlowFilter found:
+     * 1) TFT_REMOVED_DESTINATION: the destination does not belong to the simulation anymore
      *    --> delete the packet
-     * 2) tftId == 0, we are on a BS and the destination is a UE under the same gNB
+     * 2) TFT_LOCAL_DELIVERY: we are on a BS and the destination is a UE under the same gNB
      *    --> forward the packet to the local LTE/NR NIC
-     * 3) tftId == -1, destination is outside the radio network
+     * 3) TFT_EXTERNAL_DESTINATION: destination is outside the radio network
      *    --> tunnel the packet towards the CN gateway
-     * 4) tftId == -3, destination is a MEC host
+     * 4) TFT_MEC_HOST: destination is a MEC host
      *    4a) the MEC host is inside the same core network
      *        --> tunnel the packet towards the MEC host
      *    4b) the MEC host is inside another core network
      *        --> tunnel the packet towards the CN gateway
-     * 5) otherwise, destination is a UE
-     *    5a) the UE is inside the same network
-     *        --> tunnel the packet towards its serving BS
-     *    5b) the UE is inside another network
+     * 5) TFT_PDU_SESSION: destination is a UE (only at a UPF/PGW or a MEC host's UPF)
+     *    5a) its PDU session is served here
+     *        --> tunnel the packet on the session's downlink tunnel
+     *    5b) the UE is attached nowhere
+     *        --> delete the packet
+     *    5c) the UE is inside another network
      *        --> tunnel the packet towards the CN gateway
      */
 
     auto tftInfo = datagram->removeTag<TftControlInfo>();
-    TrafficFlowTemplateId flowId = tftInfo->getTft();
+    TftOutcome tft = tftInfo->getTft();
     Qfi qfi = tftInfo->getQfi();
 
     // at a base station: the UE the datagram came from over the air (see Ip2Nic)
     MacNodeId sourceUe = isBaseStation(ownerType_) ? datagram->removeTag<UplinkUeTag>()->getUeNodeId() : NODEID_NONE;
 
-    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "] qfi[" << qfi << "]" << endl;
+    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with tft[" << tft << "] qfi[" << qfi << "]" << endl;
 
-    if (flowId == TFT_REMOVED_DESTINATION) {
+    // the downlink of a UE's PDU session goes on the session's tunnel, which the path
+    // switch keeps pointing at the base station the downlink enters the RAN at
+    const FTeid *dlTunnel = nullptr;
+    if (tft == TFT_PDU_SESSION) {
+        MacNodeId ueNodeId = tftInfo->getUeNodeId();
+        dlTunnel = findDownlinkTunnel(ueNodeId);
+        if (dlTunnel == nullptr) {
+            // a UE attached nowhere is dropped; the UE of another core network is its
+            // gateway's to reach
+            bool attached = binder_->getServingNodeOrSelf(ueNodeId) != NODEID_NONE;
+            tft = attached ? TFT_EXTERNAL_DESTINATION : TFT_REMOVED_DESTINATION;
+        }
+    }
+
+    if (tft == TFT_REMOVED_DESTINATION) {
         // the destination has been removed from the simulation. Delete datagram
         EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Deleting packet." << endl;
         delete datagram;
         return;
     }
 
-    // If we are on the eNB and the flowId represents the ID of this eNB, forward the packet locally
-    if (flowId == TFT_LOCAL_DELIVERY) {
+    // on a base station, a UE-to-UE shortcut: forward the packet locally
+    if (tft == TFT_LOCAL_DELIVERY) {
         // local delivery: keep the classified QFI with the packet, the same way
         // handleFromUdp() restores it for tunneled traffic -- SDAP relies on
         // QfiReq being present on the gNB DL path
@@ -224,7 +240,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
         L3Address tunnelPeerAddress;
         Teid teid = TEID_NONE;
-        if (flowId == TFT_EXTERNAL_DESTINATION) { // send to the gateway
+        if (tft == TFT_EXTERNAL_DESTINATION) { // send to the gateway
             if (gwAddress_.isUnspecified())
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
@@ -237,7 +253,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 teid = tunnels.anchor.teid;
             }
         }
-        else if (flowId == TFT_MEC_HOST) { // send to a MEC host
+        else if (tft == TFT_MEC_HOST) { // send to a MEC host
             // check if the destination MEC host is within the same core network
 
             // retrieve the address of the UPF included within the MEC host
@@ -254,15 +270,11 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 teid = it->second;
             }
         }
-        else { // send to a BS
-            // check if the destination is within the same core network
-
-            // get the symbolic IP address of the tunnel destination ID
-            // then obtain the address via IPvXAddressResolver
-            std::string  symbolicName = binder_->getNodeModule(MacNodeId(flowId))->getFullPath();
-            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << symbolicName << endl;
-            tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
-            teid = getDownlinkTeid(destAddr, tunnelPeerAddress);
+        else { // on the downlink tunnel of the destination UE's PDU session
+            ASSERT(tft == TFT_PDU_SESSION && dlTunnel != nullptr);
+            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << *dlTunnel << endl;
+            tunnelPeerAddress = dlTunnel->address;
+            teid = dlTunnel->teid;
         }
 
         // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
@@ -364,25 +376,18 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
         MacNodeId destId = binder_->getMacNodeId(destAddr);
         if (destId != NODEID_NONE) { // final destination is a UE
-            // a UE attached nowhere has no tunnel to reach it by, as for downlink traffic
-            // entering the core network (see TrafficFlowFilter::findTrafficFlow())
-            MacNodeId destBs = binder_->getServingNodeOrSelf(destId);
-            if (destBs == NODEID_NONE) {
-                EV << "GtpUser::handleFromUdp - Destination " << destAddr << " is a UE attached nowhere, deleting datagram" << endl;
-                delete originalPacket;
+            // a UE whose PDU session is served here: into the downlink tunnel of that
+            // session, preserving the QFI of the incoming GTP-U
+            if (const FTeid *tunnel = findDownlinkTunnel(destId)) {
+                tunnelDownlink(originalPacket, *tunnel, gtpUserMsg->getQfi());
                 return;
             }
-
-            // the UE's tunnel ends at the master of its serving node, as for downlink
-            // traffic entering the core network
-            MacNodeId destMaster = binder_->getMasterNodeOrSelf(destBs);
-
-            // check if the destination belongs to the same core network (for multi-operator scenarios)
-            std::string gwFullPath = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
-            if (networkNode_->getFullPath() == gwFullPath) {
-                // the destination is a Base Station under the same core network as this PGW/UPF,
-                // tunnel the packet toward that BS, preserving the QFI of the incoming GTP-U
-                tunnelToBaseStation(originalPacket, destAddr, destMaster, gtpUserMsg->getQfi());
+            // a UE attached nowhere has no tunnel to reach it by, as for downlink traffic
+            // entering the core network; the UE of another core network is reached
+            // through the data network
+            if (binder_->getServingNodeOrSelf(destId) == NODEID_NONE) {
+                EV << "GtpUser::handleFromUdp - Destination " << destAddr << " is a UE attached nowhere, deleting datagram" << endl;
+                delete originalPacket;
                 return;
             }
         }
@@ -400,28 +405,26 @@ void GtpUser::handleFromNdResponder(Packet *datagram)
     if (destId == NODEID_NONE)
         throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, which is no UE's address", destAddr.str().c_str());
 
-    // the UE's tunnel ends at the master of its serving node, the node its downlink enters
-    // the radio network at (see TrafficFlowFilter::findTrafficFlow())
-    MacNodeId servingNode = binder_->getServingNodeOrSelf(destId);
-    if (servingNode == NODEID_NONE) {
+    const FTeid *tunnel = findDownlinkTunnel(destId);
+    if (tunnel == nullptr) {
+        if (binder_->getServingNodeOrSelf(destId) != NODEID_NONE)
+            throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, a UE whose PDU session is not served here", destAddr.str().c_str());
         EV_WARN << "GtpUser::handleFromNdResponder - UE " << destId << " is attached to no base station, reply to " << destAddr << " discarded" << endl;
         delete datagram;
         return;
     }
-    tunnelToBaseStation(datagram, destAddr, binder_->getMasterNodeOrSelf(servingNode), Qfi(0));  // the default QoS flow
+    tunnelDownlink(datagram, *tunnel, Qfi(0));  // the default QoS flow
 }
 
-void GtpUser::tunnelToBaseStation(Packet *datagram, const L3Address& ueAddress, MacNodeId bsId, Qfi qfi)
+void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
 {
-    std::string symbolicName = binder_->getNodeModule(bsId)->getFullPath();
-    L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
-    EV << "GtpUser::tunnelToBaseStation - tunneling to BS " << symbolicName << endl;
+    EV << "GtpUser::tunnelDownlink - tunneling to " << tunnel << endl;
 
     // send the message to the BS through GTP tunneling
     // * create a new GtpUserMessage
     // * encapsulate the datagram within the GtpUserMsg
     auto header = makeShared<GtpUserMsg>();
-    header->setTeid(getDownlinkTeid(ueAddress, tunnelPeerAddress));
+    header->setTeid(tunnel.teid);
     header->setQfi(qfi);
     header->setChunkLength(B(8));
     auto gtpMsg = new Packet(datagram->getName());
@@ -430,18 +433,7 @@ void GtpUser::tunnelToBaseStation(Packet *datagram, const L3Address& ueAddress, 
     gtpMsg->insertAtBack(data);
     delete datagram;
 
-    EV << "GtpUser::tunnelToBaseStation - Tunneling datagram to " << tunnelPeerAddress.str() << endl;
-    socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
-}
-
-Teid GtpUser::getDownlinkTeid(const L3Address& ueAddress, const L3Address& bsAddress)
-{
-    MacNodeId ueId = binder_->getMacNodeId(ueAddress);
-    auto it = dlTunnels_.find(ueId);
-    if (it == dlTunnels_.end())
-        throw cRuntimeError("GtpUser: the PDU session of UE %d (%s) has no downlink tunnel from here", num(ueId), ueAddress.str().c_str());
-    ASSERT(it->second.address == bsAddress);
-    return it->second.teid;
+    socket_.sendTo(gtpMsg, tunnel.address, tunnelPeerPort_);
 }
 
 const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId, const L3Address& srcAddress)
@@ -453,6 +445,12 @@ const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId, const L3Addre
     // unspecified address of an IPv6 Duplicate Address Detection probe)
     ASSERT(isSessionUe(it->second.session, srcAddress));
     return it->second.tunnels;
+}
+
+const FTeid *GtpUser::findDownlinkTunnel(MacNodeId ueNodeId)
+{
+    auto it = dlTunnels_.find(ueNodeId);
+    return (it != dlTunnels_.end() && it->second.isSet()) ? &it->second : nullptr;
 }
 
 const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
