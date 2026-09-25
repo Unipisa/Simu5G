@@ -24,6 +24,7 @@ import simu5g.nodes.NrUe;
 import simu5g.nodes.Upf;
 import simu5g.nodes.gNodeB;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 //
 // A 5G standalone network whose UPF anchors Ethernet PDU sessions: its Ethernet N6 link
@@ -84,6 +85,9 @@ network EthernetSessions
         }
         device[numDevices]: StandardHost {
             @display("p=500,650,row,100;i=device/device");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

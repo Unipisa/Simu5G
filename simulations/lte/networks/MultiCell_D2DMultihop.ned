@@ -27,6 +27,7 @@ import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -129,6 +130,9 @@ network MultiCell_D2DMultihop
         }
         d2dMultihopStatistics: MultihopD2DStatistics {
             @display("p=90,374;is=s");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=90,99;is=s");
         }
     connections:
         router1.pppg++ <--> Eth10G <--> eNodeB1.ppp;

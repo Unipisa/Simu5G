@@ -24,6 +24,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -71,6 +72,9 @@ network SingleCell
         }
         ue[numUe]: LteUe {
             @display("p=783,278");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

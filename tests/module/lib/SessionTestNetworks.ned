@@ -28,6 +28,7 @@ import simu5g.nodes.eNodeB;
 import simu5g.nodes.gNodeB;
 import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 //
 // A 5G core network for the tests of PDU sessions: one ~gNodeB, whose ~Upf anchors the
@@ -82,6 +83,9 @@ network NrSessionTestNetwork
         ue[numUe]: NrUe {
             @display("p=500,400");
         }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
+        }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.dnPppg;
@@ -130,6 +134,9 @@ network EpcSessionTestNetwork
         }
         ue[numUe]: LteUe {
             @display("p=500,400");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

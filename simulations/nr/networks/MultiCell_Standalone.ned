@@ -26,6 +26,7 @@ import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.BackgroundCell;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -93,6 +94,9 @@ network MultiCell_Standalone
         }
         ue[numUe]: NrUe {
             @display("p=500,428");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
 

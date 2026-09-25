@@ -26,6 +26,7 @@ import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -95,6 +96,9 @@ network MultiCell
         }
         extCell[numExtCells]: ExtCell {
             @display("p=100,480;is=vl");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

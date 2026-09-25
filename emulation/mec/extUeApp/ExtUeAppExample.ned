@@ -25,6 +25,7 @@ import simu5g.nodes.MecHost;
 import simu5g.mec.orchestrator.MecOrchestrator;
 import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -89,6 +90,9 @@ network ExtUeAppExample
 
         ue: NrUe {
             @display("p=51,259");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=690,99;is=s");
         }
 
     connections allowunconnected:

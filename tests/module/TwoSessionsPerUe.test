@@ -37,6 +37,7 @@ import simu5g.nodes.NrUe;
 import simu5g.nodes.Upf;
 import simu5g.nodes.gNodeB;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 simple TwoSessionCoreControl extends CoreControl
 {
@@ -87,6 +88,7 @@ network TwoSessionNetwork
         gnb1: gNodeB;
         gnb2: gNodeB;
         ue: NrUe;
+        radioMedium: CellularRadioMedium;
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.dnPppg;

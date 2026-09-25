@@ -26,6 +26,7 @@ import simu5g.nodes.Upf;
 import simu5g.nodes.BackgroundCell;
 import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -98,6 +99,9 @@ network SingleCell_Standalone_D2D
         }
         ueD2DRx[numUeD2DRx]: NrUe {
             @display("p=726,423");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

@@ -24,6 +24,7 @@ import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.BackgroundCell;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -77,6 +78,9 @@ network ExtClientServer_bgCells
         }
         ue: NrUe {
             @display("p=670,309");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=73,147;is=s");
         }
 
     connections allowunconnected:

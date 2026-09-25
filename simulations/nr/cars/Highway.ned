@@ -29,6 +29,7 @@ import simu5g.nodes.gNodeB;
 import simu5g.nodes.NrCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 //
 // Two ~gNodeB cells on a shared 5GC ~Upf, joined by an X2 link, with a router and
@@ -95,6 +96,9 @@ network Highway
         }
         //# submodule vector to store all cars - will be filled dynamically during simulations
         car[0]: NrCar;
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
+        }
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;

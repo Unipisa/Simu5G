@@ -26,6 +26,7 @@ import simu5g.nodes.MecHost;
 import simu5g.mec.orchestrator.MecOrchestrator;
 import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -89,6 +90,9 @@ network SingleMecHost
 
         ualcmp: Ualcmp {
             @display("p=545,158;i=device/smallrouter");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=690,99;is=s");
         }
 
 

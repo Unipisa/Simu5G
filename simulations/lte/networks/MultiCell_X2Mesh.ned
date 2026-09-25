@@ -25,6 +25,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.ChannelControl;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 
 
 //
@@ -98,6 +99,9 @@ network MultiCell_X2Mesh
         }
         extCell[numExtCells]: ExtCell {
             @display("p=100,480;is=vl");
+        }
+        radioMedium: CellularRadioMedium {
+            @display("p=50,100;is=s");
         }
     connections:
 
