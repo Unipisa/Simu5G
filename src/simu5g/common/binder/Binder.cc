@@ -565,7 +565,12 @@ void Binder::initAndResetUlTransmissionInfo()
         return;
     }
 
-    for (auto& [timeSlot, transmissions] : ulTransmissionMap_) {
+    for (auto& [carrierFrequency, transmissions] : ulTransmissionMap_) {
+        // a carrier's slot ends only at its own slot boundaries: with carriers of
+        // different numerologies, the others' slots end in between
+        simtime_t slotDuration = getSlotDurationFromNumerologyIndex(componentCarriers_[carrierFrequency].numerologyIndex);
+        if (NOW.raw() % slotDuration.raw() != 0)
+            continue;
         // the second element (i.e., referring to the old time slot) becomes the first element
         if (!transmissions.empty())
             transmissions.erase(transmissions.begin());
