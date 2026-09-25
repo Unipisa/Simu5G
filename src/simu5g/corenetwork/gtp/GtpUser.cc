@@ -364,9 +364,18 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
         MacNodeId destId = binder_->getMacNodeId(destAddr);
         if (destId != NODEID_NONE) { // final destination is a UE
+            // a UE attached nowhere has no tunnel to reach it by, as for downlink traffic
+            // entering the core network (see TrafficFlowFilter::findTrafficFlow())
+            MacNodeId destBs = binder_->getServingNodeOrSelf(destId);
+            if (destBs == NODEID_NONE) {
+                EV << "GtpUser::handleFromUdp - Destination " << destAddr << " is a UE attached nowhere, deleting datagram" << endl;
+                delete originalPacket;
+                return;
+            }
+
             // the UE's tunnel ends at the master of its serving node, as for downlink
-            // traffic entering the core network (see TrafficFlowFilter::findTrafficFlow())
-            MacNodeId destMaster = binder_->getMasterNodeOrSelf(binder_->getServingNodeOrSelf(destId));
+            // traffic entering the core network
+            MacNodeId destMaster = binder_->getMasterNodeOrSelf(destBs);
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)
             std::string gwFullPath = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
