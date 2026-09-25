@@ -11,7 +11,6 @@
 
 #include "simu5g/stack/pdcp/DcMux.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
-#include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/dcX2Forwarder/X2DcTunnelInd_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
@@ -25,7 +24,6 @@ Define_Module(DcMux);
 void DcMux::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        binder_.reference(this, "binderModule", true);
         nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macNodeId").intValue());
 
         bearerManagement_ = inet::getModuleFromPar<BearerManagement>(par("bearerManagementModule"), this);
@@ -43,49 +41,35 @@ void DcMux::handleMessage(cMessage *msg)
         auto tag = pkt->removeTag<X2SourceNodeInd>();
         MacNodeId sourceNode = tag->getSourceNode();
 
-        // the bearer's X2-U tunnel names the bearer; the tag the PDU carries across X2
-        // must name the same one, with no D2D fields set
+        // The bearer's X2-U tunnel names the bearer, by the UE's id on the stack this node
+        // serves; the PDU's flow identity at this node follows from it
         auto tunnel = pkt->removeTag<X2DcTunnelInd>();
-        auto ctrlInfo = pkt->getTag<FlowControlInfo>();
-        ASSERT(tunnel->getDirection() == ctrlInfo->getDirection());
-        ASSERT(ctrlInfo->getD2dTxPeerId() == NODEID_NONE && ctrlInfo->getD2dRxPeerId() == NODEID_NONE && ctrlInfo->getD2dGroupId() == NODEID_NONE);
-        if (ctrlInfo->getDirection() == DL) {
-            // DL: master sent data for a UE — dispatch to this bearer's X2 relay
-            MacNodeId destId = ctrlInfo->getDestId();
-            DrbKey id = DrbKey(destId, ctrlInfo->getDrbId());
-            ASSERT(DrbKey(tunnel->getUeNodeId(), tunnel->getDrbId()) == id && ctrlInfo->getSourceId() == nodeId_);
+        DrbKey id = DrbKey(tunnel->getUeNodeId(), tunnel->getDrbId());
+        auto lteInfo = pkt->addTag<FlowControlInfo>();
+        lteInfo->setDirection(tunnel->getDirection());
+        lteInfo->setDrbId(tunnel->getDrbId());
+        if (tunnel->getDirection() == DL) {
+            // DL: master sent data for a UE — dispatch to this bearer's X2 relay, which
+            // hands it to the RLC of this node's leg
+            lteInfo->setSourceId(nodeId_);
+            lteInfo->setDestId(id.getNodeId());
             cModule *relay = bearerManagement_->lookupPdcpRelayEntityModule(id);
             ASSERT(relay != nullptr);
 
             EV << NOW << " DcMux::handleMessage - Received DL PDCP PDU from master node " << sourceNode
-               << " for UE " << destId << " - dispatching to the X2 relay entity" << endl;
+               << " for UE " << id.getNodeId() << " - dispatching to the X2 relay entity" << endl;
             // path start = our toRelayEntity gate (crosses the compound boundary into its DL relay)
             send(pkt, relay->gate("x2In")->getPathStartGate());
         }
         else {
-            // UL: secondary forwarded UL data — dispatch directly to RX entity
-            auto lteInfo = pkt->getTag<FlowControlInfo>();
-            // The PDU crossed X2 from the secondary leg, so it carries the UE's
-            // secondary-facing id (the leg splitter's rewrite), while this node's
-            // PDCP compounds are keyed by the id of the stack it serves itself.
-            // Translate to that id whenever the carried one is not this node's to
-            // serve: at an EN-DC master the NR id becomes the LTE one, at an NE-DC
-            // master the LTE id becomes the NR one.
-            MacNodeId sourceId = lteInfo->getSourceId();
-            if (binder_->getServingNode(sourceId) != nodeId_)
-                sourceId = binder_->getUeNodeId(sourceId, !isNrUe(sourceId));
-            DrbKey id = DrbKey(sourceId, lteInfo->getDrbId());
-            ASSERT(DrbKey(tunnel->getUeNodeId(), tunnel->getDrbId()) == id);
+            // UL: secondary forwarded UL data — dispatch directly to RX entity. Above the
+            // compound's joiner the PDU belongs to the bearer, whose identity at this node
+            // is the served stack's pair, so a secondary-leg PDU is indistinguishable from
+            // an anchor-leg one there (SDAP keys its RX lookup by the source id)
+            lteInfo->setSourceId(id.getNodeId());
+            lteInfo->setDestId(nodeId_);
             cModule *pdcpEnt = bearerManagement_->lookupPdcpEntityModule(id);
             ASSERT(pdcpEnt != nullptr);
-
-            // Above the compound's joiner the PDU belongs to the bearer, whose
-            // identity at this node is the served stack's pair: rewrite the ids so
-            // a secondary-leg PDU is indistinguishable from an anchor-leg one there
-            // (SDAP keys its RX lookup by the source id)
-            auto ctrlForUpdate = pkt->getTagForUpdate<FlowControlInfo>();
-            ctrlForUpdate->setSourceId(sourceId);
-            ctrlForUpdate->setDestId(nodeId_);
 
             EV << NOW << " DcMux::handleMessage - Received UL PDCP PDU from secondary node " << sourceNode
                << " for " << id << " - dispatching to the PDCP entity's remote leg" << endl;

@@ -73,14 +73,9 @@ void DcX2Forwarder::handleX2Message(cMessage *msg)
     if (x2Msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG) {
         auto dcMsg = packet->removeAtFront<X2DualConnectivityDataMsg>();
 
-        // forward packet to the PDCP layer
+        // forward packet to the PDCP layer; the X2-U tunnel it arrived on names its bearer
+        // (the X2DcTunnelInd tag, see GtpUserX2)
         X2NodeId sourceId = dcMsg->getSourceId();
-
-        // copy FlowControlInfo Tag to the original packet
-        auto dcMsgTag = dcMsg->getTag<FlowControlInfo>();
-        auto pktTag = packet->addTagIfAbsent<FlowControlInfo>();
-        *pktTag = *dcMsgTag;
-
         receiveDataFromSourceNode(packet, sourceId);
         return;
     }
@@ -101,16 +96,9 @@ void DcX2Forwarder::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetN
     pkt->addTagIfAbsent<X2ControlInfoTag>()->setSourceId(nodeId_);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
-    // insert X2 Dual Connectivity Msg header
+    // insert X2 Dual Connectivity Msg header; the bearer travels as the X2-U tunnel the
+    // PDU is sent on, which GtpUserX2 picks by the packet's FlowControlInfo tag
     auto dcMsg = inet::makeShared<X2DualConnectivityDataMsg>();
-
-    // copy FlowControlInfo Tag to the dcMsg region
-    // this is necessary because otherwise it will be removed during the transmission over the X2
-    // (the packet keeps its own, which names the bearer's X2-U tunnel to GtpUserX2)
-    auto pktTag = pkt->getTag<FlowControlInfo>();
-    auto dcMsgTag = dcMsg->addTagIfAbsent<FlowControlInfo>();
-    *dcMsgTag = *pktTag;
-
     pkt->insertAtFront(dcMsg);
 
     EV << NOW << " DcX2Forwarder::forwardDataToTargetNode - Send packet to node " << targetNode << endl;

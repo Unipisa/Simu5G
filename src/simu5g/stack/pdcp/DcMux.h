@@ -21,7 +21,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class Binder;
 class BearerManagement;
 
 /**
@@ -34,7 +33,6 @@ class BearerManagement;
 class DcMux : public cSimpleModule
 {
   protected:
-    inet::ModuleRefByPar<Binder> binder_;
     MacNodeId nodeId_;
 
     BearerManagement *bearerManagement_ = nullptr;
