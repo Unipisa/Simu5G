@@ -16,8 +16,32 @@ import simu5g.common.LteCommon;
 
 namespace simu5g;
 
-class GtpUserMsg extends inet::FieldsChunk {
-    Teid teid;  // Allocated by the receiving end of the tunnel; TEID_NONE on relays between core network nodes, which carry no PDU session's traffic
-    Qfi qfi;  // QoS Flow Identifier (carried in PDU Session Container in real GTP-U)
-    chunkLength = inet::B(1); // TODO: size 0
+//
+// The PDU Session Container extension header of a GTP-U header (TS 38.415 5.5.2),
+// which carries the QFI of a G-PDU on N3: which PDU SESSION INFORMATION it holds, if any
+//
+enum PduSessionContainerType
+{
+    PDU_SESSION_CONTAINER_NONE = -1;   // No PDU Session Container
+    DL_PDU_SESSION_INFORMATION = 0;    // PDU Type 0, sent by the core network
+    UL_PDU_SESSION_INFORMATION = 1;    // PDU Type 1, sent by the RAN
 }
+
+//
+// A GTP-U header (TS 29.281 5.1): the 8 mandatory octets, and when a PDU Session
+// Container is present, the 4 optional octets that announce the extension header and
+// the 4-octet PDU Session Container itself (TS 38.415): 16 octets then.
+//
+class GtpUserMsg extends inet::FieldsChunk {
+    uint8_t messageType = 255;   // 255: G-PDU (TS 29.281 6.1)
+    uint16_t lengthField;        // The octets after the mandatory header: optional fields, extension headers and the T-PDU
+    Teid teid;                   // Allocated by the receiving end of the tunnel; TEID_NONE on relays between core network nodes, which carry no PDU session's traffic
+    PduSessionContainerType pduSessionContainer = PDU_SESSION_CONTAINER_NONE;
+    Qfi qfi;                     // The QoS flow; on the wire only inside the PDU Session Container
+    chunkLength = inet::B(8);
+}
+
+cplusplus {{
+// The length of a GTP-U header with or without a PDU Session Container
+inline inet::B gtpUserHeaderLength(PduSessionContainerType container) { return inet::B(container == PDU_SESSION_CONTAINER_NONE ? 8 : 16); }
+}}

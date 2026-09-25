@@ -240,6 +240,8 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
         L3Address tunnelPeerAddress;
         Teid teid = TEID_NONE;
+        // the QFI travels in a PDU Session Container on the tunnels of 5GC sessions (N3)
+        PduSessionContainerType container = PDU_SESSION_CONTAINER_NONE;
         if (tft == TFT_EXTERNAL_DESTINATION) { // send to the gateway
             if (gwAddress_.isUnspecified())
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
@@ -251,6 +253,8 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe);
                 ASSERT(tunnels.anchor.address == gwAddress_);
                 teid = tunnels.anchor.teid;
+                if (tunnels.toUpf)
+                    container = UL_PDU_SESSION_INFORMATION;
             }
         }
         else if (tft == TFT_MEC_HOST) { // send to a MEC host
@@ -268,6 +272,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                     throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel to the MEC host UPF %s",
                             num(sourceUe), tunnelPeerAddress.str().c_str());
                 teid = it->second;
+                container = UL_PDU_SESSION_INFORMATION;
             }
         }
         else { // on the downlink tunnel of the destination UE's PDU session
@@ -275,13 +280,12 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << *dlTunnel << endl;
             tunnelPeerAddress = dlTunnel->address;
             teid = dlTunnel->teid;
+            if (ownerType_ != PGW)
+                container = DL_PDU_SESSION_INFORMATION;
         }
 
         // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
-        auto header = makeShared<GtpUserMsg>();
-        header->setTeid(teid);
-        header->setQfi(qfi);
-        header->setChunkLength(B(8));
+        auto header = makeGtpUserHeader(teid, qfi, container, datagram->getDataLength());
         auto gtpPacket = new Packet(datagram->getName());
         gtpPacket->insertAtFront(header);
         auto data = datagram->peekData();
@@ -420,10 +424,7 @@ void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
     // send the message to the BS through GTP tunneling
     // * create a new GtpUserMessage
     // * encapsulate the datagram within the GtpUserMsg
-    auto header = makeShared<GtpUserMsg>();
-    header->setTeid(tunnel.teid);
-    header->setQfi(qfi);
-    header->setChunkLength(B(8));
+    auto header = makeGtpUserHeader(tunnel.teid, qfi, ownerType_ == PGW ? PDU_SESSION_CONTAINER_NONE : DL_PDU_SESSION_INFORMATION, datagram->getDataLength());
     auto gtpMsg = new Packet(datagram->getName());
     gtpMsg->insertAtFront(header);
     auto data = datagram->peekData();

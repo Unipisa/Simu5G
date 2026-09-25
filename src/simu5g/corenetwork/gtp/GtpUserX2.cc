@@ -81,8 +81,7 @@ void GtpUserX2::handleFromStack(Packet *pkt)
     ASSERT(srcId != destId);
     EV << "GtpUserX2::handleFromStack - Received a LteX2Message with destId[" << destId << "]" << endl;
 
-    auto gtpMsg = makeShared<GtpUserMsg>();
-    gtpMsg->setChunkLength(B(8));
+    auto gtpMsg = makeGtpUserHeader(TEID_NONE, QFI_NONE, PDU_SESSION_CONTAINER_NONE, pkt->getDataLength());
     // forwarded downlink goes on the downlink tunnel of its PDU session at the target,
     // a dual connectivity PDU on its bearer's tunnel at the peer for its direction
     if (x2Msg->getType() == X2_HANDOVER_DATA_MSG)

@@ -20,6 +20,7 @@
 
 #include "simu5g/common/LteTypes.h"
 #include "simu5g/common/SessionTag_m.h"
+#include "simu5g/corenetwork/gtp/GtpUserMsg_m.h"
 
 namespace simu5g {
 
@@ -78,7 +79,25 @@ struct UplinkTunnels
 {
     FTeid anchor;
     std::map<inet::L3Address, Teid> mecHosts;
+    bool toUpf = false;   // the anchor is a UPF (5GC): the G-PDUs carry a PDU Session Container
 };
+
+/**
+ * The GTP-U header of a G-PDU (TS 29.281) that carries a T-PDU of the given length on
+ * the tunnel with the given TEID; with a PDU Session Container that carries the QFI
+ * (TS 38.415), unless container is PDU_SESSION_CONTAINER_NONE.
+ */
+inline inet::Ptr<GtpUserMsg> makeGtpUserHeader(Teid teid, Qfi qfi, PduSessionContainerType container, inet::B tpduLength)
+{
+    auto header = inet::makeShared<GtpUserMsg>();
+    header->setTeid(teid);
+    header->setQfi(qfi);
+    header->setPduSessionContainer(container);
+    inet::B headerLength = gtpUserHeaderLength(container);
+    header->setChunkLength(headerLength);
+    header->setLengthField((headerLength - inet::B(8) + tpduLength).get());
+    return header;
+}
 
 } //namespace
 

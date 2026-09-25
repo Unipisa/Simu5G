@@ -948,6 +948,7 @@ UplinkTunnels BearerConfigurator::getUplinkTunnels(const CoreSession& session)
 {
     UplinkTunnels tunnels;
     tunnels.anchor = session.ulAnchor;
+    tunnels.toUpf = gtpEndpoints_[session.anchor].type == UPF;
     for (const auto& [index, teid] : session.ulMecHosts)
         tunnels.mecHosts[getGtpEndpointAddress(gtpEndpoints_[index])] = teid;
     return tunnels;
