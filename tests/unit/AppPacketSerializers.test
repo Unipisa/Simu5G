@@ -1,0 +1,174 @@
+%description:
+
+The serializers of the application packets of VoipSender, CbrSender and
+BurstSender (VoipPacket, CbrPacket, BurstPacket), which PCAP recording and
+emulation go through. Each packet is serialized at the senders' default size
+(40 bytes), at a larger size, and at the smallest size its fields fit in: it
+must serialize to exactly its length and read back with every field the sender
+sets. One byte less than that smallest size must be rejected.
+
+The expected values are decided here, from the wire format of the serializers
+(see their header comments): a 4-octet length, then the fields the sender sets,
+in declaration order, then padding up to the packet's length. That makes the
+smallest packet 28 octets for VoipPacket (talk spurt, frame count, frame id,
+timestamp, payload size), 24 for CbrPacket (frame count, frame id, timestamp,
+payload size) and 20 for BurstPacket (message id, timestamp, payload size).
+The fields a receiver fills in for its own bookkeeping (the arrival and
+playout times) are not on the wire, so the test leaves them unset.
+
+%includes:
+#include <inet/common/MemoryInputStream.h>
+#include <inet/common/MemoryOutputStream.h>
+#include "simu5g/apps/burst/BurstPacket_m.h"
+#include "simu5g/apps/cbr/CbrPacket_m.h"
+#include "simu5g/apps/voip/VoipPacket_m.h"
+#include "SchedulerTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using namespace inet;
+
+// The send time the packets carry; not a constant, as the time scale is set after static initialization
+static simtime_t timestamp() { return SimTime(1234567, SIMTIME_US); }
+
+static void differs(std::string& diff, bool same, const std::string& field)
+{
+    if (!same)
+        diff += " " + field;
+}
+
+static Ptr<const VoipPacket> makeVoip(B length)
+{
+    auto packet = makeShared<VoipPacket>();
+    packet->setIDtalk(7);
+    packet->setNframes(250);
+    packet->setIDframe(42);
+    packet->setPayloadTimestamp(timestamp());
+    packet->setPayloadSize(length.get());
+    packet->setChunkLength(length);
+    packet->markImmutable();
+    return packet;
+}
+
+static std::string compare(const VoipPacket& sent, const VoipPacket& received)
+{
+    std::string diff;
+    differs(diff, received.getIDtalk() == sent.getIDtalk(), "IDtalk");
+    differs(diff, received.getNframes() == sent.getNframes(), "nframes");
+    differs(diff, received.getIDframe() == sent.getIDframe(), "IDframe");
+    differs(diff, received.getPayloadTimestamp() == sent.getPayloadTimestamp(), "payloadTimestamp=" + received.getPayloadTimestamp().str());
+    differs(diff, received.getPayloadSize() == sent.getPayloadSize(), "payloadSize");
+    return diff;
+}
+
+static Ptr<const CbrPacket> makeCbr(B length)
+{
+    auto packet = makeShared<CbrPacket>();
+    packet->setNumFrames(1000);
+    packet->setFrameId(42);
+    packet->setPayloadTimestamp(timestamp());
+    packet->setPayloadSize(length.get());
+    packet->setChunkLength(length);
+    packet->markImmutable();
+    return packet;
+}
+
+static std::string compare(const CbrPacket& sent, const CbrPacket& received)
+{
+    std::string diff;
+    differs(diff, received.getNumFrames() == sent.getNumFrames(), "numFrames");
+    differs(diff, received.getFrameId() == sent.getFrameId(), "frameId");
+    differs(diff, received.getPayloadTimestamp() == sent.getPayloadTimestamp(), "payloadTimestamp=" + received.getPayloadTimestamp().str());
+    differs(diff, received.getPayloadSize() == sent.getPayloadSize(), "payloadSize");
+    return diff;
+}
+
+static Ptr<const BurstPacket> makeBurst(B length)
+{
+    auto packet = makeShared<BurstPacket>();
+    packet->setMsgId(42);
+    packet->setPayloadTimestamp(timestamp());
+    packet->setPayloadSize(length.get());
+    packet->setChunkLength(length);
+    packet->markImmutable();
+    return packet;
+}
+
+static std::string compare(const BurstPacket& sent, const BurstPacket& received)
+{
+    std::string diff;
+    differs(diff, received.getMsgId() == sent.getMsgId(), "msgId");
+    differs(diff, received.getPayloadTimestamp() == sent.getPayloadTimestamp(), "payloadTimestamp=" + received.getPayloadTimestamp().str());
+    differs(diff, received.getPayloadSize() == sent.getPayloadSize(), "payloadSize");
+    return diff;
+}
+
+// Three checks per size (serialized length, read-back fields, read-back length)
+// and one for the size below the smallest, whatever the serializer throws
+template<typename T>
+static void checkSerializer(Checker& checker, const std::string& name, Ptr<const T> (*make)(B), B smallest)
+{
+    for (B length : {B(40), B(100), smallest}) {
+        std::string what = name + " of " + std::to_string(length.get()) + " bytes";
+        auto sent = make(length);
+        std::vector<uint8_t> bytes;
+        std::string error;
+        try {
+            MemoryOutputStream stream;
+            Chunk::serialize(stream, sent);
+            stream.copyData(bytes);
+        }
+        catch (cRuntimeError& e) {
+            error = e.what();
+        }
+        checker.check(what + " serializes to as many bytes", error.empty() && B(bytes.size()) == length,
+                error.empty() ? "actual=" + std::to_string(bytes.size()) : "error: " + error);
+
+        Ptr<const T> received;
+        B receivedLength = B(0);
+        if (error.empty()) {
+            try {
+                MemoryInputStream stream(bytes);
+                auto chunk = Chunk::deserialize(stream, typeid(T));
+                if (chunk->isIncorrect() || chunk->isIncomplete() || chunk->isImproperlyRepresented())
+                    error = "read back as incorrect, incomplete or improperly represented";
+                receivedLength = B(chunk->getChunkLength());
+                received = dynamicPtrCast<const T>(chunk);
+            }
+            catch (cRuntimeError& e) {
+                error = e.what();
+            }
+        }
+        std::string diff = error.empty() && received != nullptr ? compare(*sent, *received) : "";
+        checker.check(what + " reads back with the fields the sender set", error.empty() && received != nullptr && diff.empty(),
+                !error.empty() ? "error: " + error : received == nullptr ? "not a " + name : diff.empty() ? "" : "differs in:" + diff);
+        checker.check(what + " reads back as long as it was sent", error.empty() && receivedLength == length,
+                !error.empty() ? "error: " + error : "actual=" + std::to_string(receivedLength.get()));
+    }
+
+    B tooShort = smallest - B(1);
+    std::string error;
+    try {
+        MemoryOutputStream stream;
+        Chunk::serialize(stream, make(tooShort));
+    }
+    catch (cRuntimeError& e) {
+        error = e.what();
+    }
+    checker.check(name + " of " + std::to_string(tooShort.get()) + " bytes, shorter than its fields, is rejected", !error.empty(),
+            error.empty() ? "serialized without an error" : "error: " + error);
+}
+
+%activity:
+Checker checker;
+checkSerializer<VoipPacket>(checker, "VoipPacket", &makeVoip, B(28));
+checkSerializer<CbrPacket>(checker, "CbrPacket", &makeCbr, B(24));
+checkSerializer<BurstPacket>(checker, "BurstPacket", &makeBurst, B(20));
+checker.summary();
+
+%contains: stdout
+modelchecks=30 modelfailures=0
+
+%not-contains: stdout
+FAILED
