@@ -100,6 +100,8 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 num-rngs = 2
 **.channelModel[*].rng-0 = 1
 **.nrChannelModel[*].rng-0 = 1
+**.cellularNic.radio.receiver.rng-0 = 1
+**.cellularNic.nrRadio.receiver.rng-0 = 1
 
 ############### RLC UM: losses are not repaired ##############
 # UM has no ARQ, so a discarded MAC PDU is an SDU the application never sees.

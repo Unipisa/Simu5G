@@ -18,6 +18,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class BlerCurveErrorModel;
+
 /**
  * See the NED documentation of CellularReceiver.
  */
@@ -31,6 +33,15 @@ class CellularReceiver : public cSimpleModule
     virtual void initialize() override;
 
   public:
+    /** The error model the reception decisions are drawn against. */
+    BlerCurveErrorModel *getErrorModel() const;
+
+    /**
+     * Decides a reception with the given packet error rate by one uniform
+     * draw from this module's RNG: received if the draw exceeds the rate.
+     */
+    virtual bool decide(double packetErrorRate);
+
     /** Noise figure in dB. */
     double getNoiseFigure() const { return noiseFigure_; }
     /** Cable loss in dB. */

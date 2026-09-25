@@ -137,9 +137,6 @@ class StochasticChannelModel : public ChannelModelBase
     // also used to recompute the probability of LOS
     double correlationDistance_;
 
-    // Percentage of error probability reduction for each h-arq retransmission
-    double harqReduction_;
-
     // Antenna gain of eNodeB
     double antennaGainEnB_;
 

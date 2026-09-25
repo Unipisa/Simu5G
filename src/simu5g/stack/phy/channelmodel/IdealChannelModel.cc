@@ -12,6 +12,9 @@
 
 #include "IdealChannelModel.h"
 
+#include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -75,7 +78,8 @@ std::vector<double> IdealChannelModel::getSINR_bgUe(AirFrame *frame, UserControl
 bool IdealChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     double per = getErrorProbability(lteInfo->getDirection(), lteInfo->getTxNumber());
-    bool success = uniform(0.0, 1.0) > per;
+    // the receiving node's receiver draws the decision
+    bool success = phy_->getReceiver()->decide(per);
     EV << "IdealChannelModel::isReceptionSuccessful - transmission " << (int)lteInfo->getTxNumber()
        << ", error probability " << per << " -> " << (success ? "received" : "lost") << endl;
     return success;

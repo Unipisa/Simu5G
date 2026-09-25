@@ -187,6 +187,7 @@ import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+import simu5g.stack.phy.radio.CellularReceiver;
 
 // The 38.901 channel model, with the per-band SINR of a reception set by the
 // test.
@@ -202,6 +203,7 @@ network Harness
         radioMedium: CellularRadioMedium;
         carrierAggregation: CarrierAggregation;
         channelModel: FixedSinrChannelModel;
+        receiver: CellularReceiver;  // the decoding node's, deciding against its error model
         test: Test;
 }
 
@@ -218,7 +220,7 @@ sim-time-limit = 1s
 *.binder.printTrafficGeneratorConfig = false
 
 # Not the default (0.2), so that the test cannot pass on a hardcoded value.
-*.channelModel.harqReduction = 0.4
+*.receiver.errorModel.harqReduction = 0.4
 *.channelModel.collectSinrStatistics = true
 
 # the model logs every band of every reception
@@ -229,7 +231,14 @@ sim-time-limit = 1s
 %activity:
 Checker c;
 auto *model = harnessModule<FixedSinrChannelModel>(this, "channelModel");
-const double harqReduction = model->par("harqReduction").doubleValue();
+auto *receiver = harnessModule<CellularReceiver>(this, "receiver");
+const double harqReduction = receiver->getErrorModel()->par("harqReduction").doubleValue();
+
+// the decoding node: the model reaches its receiver through it (the model and
+// the receiver draw from the same RNG here, so the twin below replays both)
+StubEndpoint decoder;
+decoder.receiver = receiver;
+model->setPhy(&decoder);
 
 SinrRecorder recorder;
 model->subscribe("rcvdSinrDl", &recorder);

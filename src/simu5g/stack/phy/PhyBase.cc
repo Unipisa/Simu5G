@@ -321,12 +321,17 @@ double PhyBase::getAntennaGain()
 
 double PhyBase::getNoiseFigure()
 {
-    return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"))->getNoiseFigure();
+    return getReceiver()->getNoiseFigure();
 }
 
 double PhyBase::getCableLoss()
 {
-    return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"))->getCableLoss();
+    return getReceiver()->getCableLoss();
+}
+
+CellularReceiver *PhyBase::getReceiver()
+{
+    return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"));
 }
 
 int PhyBase::getReceiverGateIndex(const cModule *receiver, MacNodeId dest) const

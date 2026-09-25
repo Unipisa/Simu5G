@@ -67,8 +67,6 @@ simple StochasticChannelModel extends ChannelModelBase
 
         // Target BLER used to compute feedback
         double targetBler = default(0.01);
-        // Factor the error probability is multiplied by for each HARQ retransmission
-        double harqReduction = default(0.2);
 
         // Antenna gain of the UE
         double antennaGainUe @unit(dBi) = default(0dBi);

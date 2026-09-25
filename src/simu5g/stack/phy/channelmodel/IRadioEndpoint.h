@@ -19,6 +19,7 @@
 namespace simu5g {
 
 class ChannelModelBase;
+class CellularReceiver;
 
 /**
  * What a channel model needs to know about a node's radio, and nothing more.
@@ -26,8 +27,9 @@ class ChannelModelBase;
  * A channel model evaluates links between radio endpoints -- its own node's and
  * other nodes'. From each endpoint it needs: where it is, how its antenna
  * radiates (omnidirectionally or sectorially, and in which direction) and with
- * what gain, how much power it transmits, the noise figure and cable loss of
- * its receiver, and which channel model it uses on a given carrier. PhyBase implements this interface, and the channel model reaches
+ * what gain, how much power it transmits, its receiver (with the noise figure
+ * and cable loss, and the reception decision), and which channel model it uses
+ * on a given carrier. PhyBase implements this interface, and the channel model reaches
  * PHYs -- its own and its peers' -- only through it. That is what lets a channel
  * model be exercised against stub endpoints without instantiating a node.
  *
@@ -60,6 +62,9 @@ class IRadioEndpoint
 
     /** The loss between the antenna and the receiver, in dB. */
     virtual double getCableLoss() = 0;
+
+    /** The receiver, which decides the receptions at this endpoint. */
+    virtual CellularReceiver *getReceiver() = 0;
 
     /**
      * The endpoint's channel model on the given carrier, or on its primary

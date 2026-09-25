@@ -21,6 +21,8 @@
 #include "simu5g/stack/phy/channelmodel/PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/StochasticChannelModel.h"
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
 
 namespace simu5g {
 namespace unittest {
@@ -45,6 +47,7 @@ class StubEndpoint : public IRadioEndpoint
     double antennaGain = 0.0;
     double noiseFigure = 0.0;
     double cableLoss = 0.0;
+    CellularReceiver *receiver = nullptr;
     std::map<GHz, ChannelModelBase *> channelModels;  // by carrier frequency
 
     const inet::Coord& getCoord() const override { return coord; }
@@ -54,6 +57,7 @@ class StubEndpoint : public IRadioEndpoint
     double getAntennaGain() override { return antennaGain; }
     double getNoiseFigure() override { return noiseFigure; }
     double getCableLoss() override { return cableLoss; }
+    CellularReceiver *getReceiver() override { return receiver; }
 
     ChannelModelBase *getChannelModel(GHz carrierFreq = GHz(0.0)) override
     {

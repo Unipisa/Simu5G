@@ -25,6 +25,8 @@
 #include "simu5g/stack/phy/channelmodel/Tr36814PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/Tr36873PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/Tr38901PathLossModel.h"
+#include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
 
 namespace simu5g {
 
@@ -79,8 +81,7 @@ void StochasticChannelModel::initialize(int stage)
         wStreet_ = par("streetWidth");
 
         correlationDistance_ = par("correlationDistance");
-        harqReduction_ = par("harqReduction");
-
+    
         antennaGainUe_ = par("antennaGainUe");
         antennaGainEnB_ = par("antennGainEnB");
         thermalNoise_ = par("thermalNoise");
@@ -1036,82 +1037,29 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
     // Get the resource Block id used to transmit this packet
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
-    double blockErrorRate = 0.0;
-    double cumulativeSuccessProbability = 1.0;
+    // the receiving node's receiver decides, against its error model
+    CellularReceiver *receiver = phy_->getReceiver();
+    std::optional<double> packetErrorRate = receiver->getErrorModel()->computePacketErrorRate(cqi, snrV, rbmap, transmissionAttempt);
+    if (!packetErrorRate)
+        return false; // lost for certain, no decision to draw
 
-    // for statistical purposes
-    double sumSnr = 0.0;
-    int usedRBs = 0;
-
-    // for each Remote unit used to transmit the packet
-    for (const auto &[remoteUnit, rbList] : rbmap) {
-        // for each logical band used to transmit the packet
-        for (const auto &[band, allocation] : rbList) {
-            // this Rb is not allocated
-            if (allocation == 0)
-                continue;
-
-            // Get the Bler
-            if (cqi == 0)
-                return false; // CQI 0 means channel below usable quality (e.g. after handover) — loss
-
-            // for statistical purposes
-            sumSnr += snrV[band];
-            usedRBs++;
-
-            int snr = snrV[band];// XXX because band is a Band (=unsigned short)
-            if (snr < binder_->phyPisaData.minSnr())
-                return false;
-            else if (snr > binder_->phyPisaData.maxSnr())
-                blockErrorRate = 0.0;
-            else
-                blockErrorRate = binder_->phyPisaData.getBler(cqi, snr);
-
-            EV << "\t bler computation: [cqi=" << cqi
-               << "] - [snr=" << snr << "]" << endl;
-
-            double blockSuccessRate = 1.0 - blockErrorRate;
-            // compute the success probability according to the number of RB used
-            double allocationSuccessProbability = pow(blockSuccessRate, (double)allocation);
-            // compute the success probability according to the number of LB used
-            cumulativeSuccessProbability *= allocationSuccessProbability;
-
-            EV << " StochasticChannelModel::error direction " << dirToA(dir)
-               << " node " << id << " remote unit " << dasToA(remoteUnit)
-               << " Band " << band << " SNR " << snr << " CQI " << cqi
-               << " BLER " << blockErrorRate << " success probability " << allocationSuccessProbability
-               << " total success probability " << cumulativeSuccessProbability << endl;
+    // emit SINR statistic: the mean over the allocated bands
+    if (collectSinrStatistics_) {
+        double sumSnr = 0.0;
+        int usedRBs = 0;
+        for (const auto& [remoteUnit, rbList] : rbmap) {
+            for (const auto& [band, allocation] : rbList) {
+                if (allocation == 0)
+                    continue;
+                sumSnr += snrV[band];
+                usedRBs++;
+            }
         }
+        if (usedRBs > 0)
+            emitRcvdSinr(dir, id, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
     }
-    // Compute total error probability
-    double packetErrorRate = 1.0 - cumulativeSuccessProbability;
-    // Apply HARQ soft combining gain
-    double effectiveErrorRateWithHarq = packetErrorRate * pow(harqReduction_, transmissionAttempt - 1);
 
-    double randomSample = uniform(0.0, 1.0);
-
-    EV << " StochasticChannelModel::error direction " << dirToA(dir)
-       << " node " << id << " total ERROR probability  " << packetErrorRate
-       << " per with H-ARQ error reduction " << effectiveErrorRateWithHarq
-       << " - CQI[" << cqi << "]- random error extracted[" << randomSample << "]" << endl;
-
-    // emit SINR statistic
-    if (collectSinrStatistics_ && usedRBs > 0)
-        emitRcvdSinr(dir, id, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
-
-    bool receptionFailed = (randomSample <= effectiveErrorRateWithHarq);
-    if (receptionFailed) {
-        EV << "This is NOT your lucky day (" << randomSample << " < " << effectiveErrorRateWithHarq
-           << ") -> do not receive." << endl;
-
-        // Signal too weak, we can't receive it
-        return false;
-    }
-    // Signal is strong enough, receive this Signal
-    EV << "This is your lucky day (" << randomSample << " > " << effectiveErrorRateWithHarq
-       << ") -> Receive AirFrame." << endl;
-
-    return true;
+    return receiver->decide(*packetErrorRate);
 }
 
 double StochasticChannelModel::antennaGainOf(MacNodeId nodeId, double gainIfNoRadio) const

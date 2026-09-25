@@ -14,8 +14,8 @@ package simu5g.stack.phy.radio;
 //
 // The receiver of a cellular radio: noise figure and cable loss, the
 // reception decision and its random draw, and the SINR statistics; the error
-// model computes the packet error rate the decision is drawn against. So far
-// it holds the noise figure and the cable loss.
+// model computes the packet error rate the decision is drawn against. The
+// decision is one uniform draw from this module's RNG.
 //
 module CellularReceiver
 {

@@ -178,6 +178,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     double getAntennaGain() override;
     double getNoiseFigure() override;
     double getCableLoss() override;
+    CellularReceiver *getReceiver() override;
 
     /**
      * Delivers a decoded packet to the upper (stack) layer: records the
