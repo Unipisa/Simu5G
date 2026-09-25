@@ -22,12 +22,14 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpTunnel.h"
 #include "simu5g/stack/rrc/DrbDesc.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
+class GtpUser;
 class TrafficFlowFilter;
 
 /**
@@ -99,6 +101,44 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // QFI-rule delivery (see deliverQfiRules(); base stations do not register --
     // no rules are installed there)
     std::vector<TrafficFlowFilter *> trafficFlowFilters_;
+
+    // A GTP-U tunnel endpoint of a base station, a UPF/PGW or a MEC host's UPF, as it
+    // registered itself (see registerGtpEndpoint()). As the receiving end of tunnels it
+    // owns a TEID space, from which this module allocates on its behalf.
+    struct GtpEndpoint {
+        GtpUser *module = nullptr;
+        CoreNodeType type = ENB;
+        MacNodeId bsId = NODEID_NONE;   // base stations only
+        std::string gateway;            // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
+        Teid lastTeid = TEID_NONE;      // the TEID allocated last (see allocateTeid())
+    };
+    std::vector<GtpEndpoint> gtpEndpoints_;       // in registration order
+    std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
+
+    // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
+    // the UE first has a serving node, released when the UE leaves (see
+    // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
+    // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
+    // end of the tunnel (see switchPath()).
+    struct CoreSession {
+        cModule *ueModule = nullptr;
+        SessionId id = SessionId(0);
+        MacNodeId lteNodeId = NODEID_NONE;          // the UE's node id on each stack
+        MacNodeId nrNodeId = NODEID_NONE;
+        int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
+        FTeid ulAnchor;                             // uplink F-TEID at the anchor
+        std::map<inet::L3Address, Teid> ulMecHosts; // uplink TEIDs at the MEC host UPFs of the anchor's core network, by their address
+        MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
+        FTeid dl;                                   // downlink F-TEID at dlBaseStation
+        std::map<MacNodeId, Teid> dlTeids;          // the downlink TEID at each base station the downlink has entered at, kept until release
+    };
+    typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
+    std::map<CoreSessionKey, CoreSession> sessions_;
+    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's PDU session
+
+    // False until the last initialization stage, where the PDU sessions of the UEs
+    // attached by then are established; from then on, as UEs attach
+    bool pduSessionsEstablished_ = false;
 
 
   protected:
@@ -174,9 +214,50 @@ class BearerConfigurator : public cSimpleModule, public cListener
     /**
      * Binder::nodeUnregisteredSignal_: forget the DRB identity pools of a node that has
      * left the simulation. drbIdsInUse_ is keyed by node pair, so a departed id survives
-     * inside every pair it took part in and would keep those identities reserved.
+     * inside every pair it took part in and would keep those identities reserved. A
+     * departing UE's PDU session is released.
+     *
+     * Binder::servingNodeChangedSignal_: a UE's serving node has changed. Its PDU session
+     * is established if it has none yet, or else its downlink path is switched.
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
+
+    // Hand out the next TEID of the endpoint's TEID space. TEIDs are allocated in
+    // increasing order and never reused within a run, so a G-PDU still in flight on a
+    // released tunnel cannot be taken for a later session's.
+    virtual Teid allocateTeid(GtpEndpoint& endpoint);
+
+    // The transport address of a tunnel endpoint: that of its network node
+    virtual inet::L3Address getGtpEndpointAddress(const GtpEndpoint& endpoint);
+
+    // The node a gateway parameter names, or nullptr
+    virtual cModule *findGatewayNode(const std::string& gateway);
+
+    // The UPF/PGW endpoint the gateway parameter of the given endpoint names; throws if
+    // there is none
+    virtual int findGatewayEndpoint(const std::string& gateway, const GtpEndpoint& from);
+
+    // The base station a downlink packet for the UE enters the RAN at: the master of the
+    // serving node of the stack the core network addresses the UE by, the LTE one while
+    // it is attached and else the NR one (as Binder::getMacNodeId() resolves a UE
+    // address); NODEID_NONE if the UE is attached nowhere
+    virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
+
+    // Establish the PDU sessions of the UEs attached at the end of initialization
+    virtual void establishPduSessions();
+
+    // Establish the PDU session of the UE with the given node id, anchored at the gateway
+    // of its downlink base station. Does nothing if the UE is attached nowhere yet, or its
+    // base station is not connected to a core network.
+    virtual void establishSession(MacNodeId ueNodeId);
+
+    // Move the downlink end of the session's tunnel to the base station the UE's downlink
+    // enters the RAN at now (the path switch, TS 23.502 4.9.1.2.2), allocating the
+    // session's downlink TEID there if it has none yet
+    virtual void switchPath(CoreSession& session);
+
+    // Release the PDU session of the UE with the given node id, if it has one
+    virtual void releaseSession(MacNodeId ueNodeId);
 
     virtual bool isDualConnectivityRequired(const FlowId& flow);
     virtual void createConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp);
@@ -188,6 +269,12 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // QFI-rule delivery; called from TrafficFlowFilter::initialize() at
     // INITSTAGE_LOCAL, before deliverQfiRules() runs.
     virtual void registerTrafficFlowFilter(TrafficFlowFilter *tff);
+
+    // A GTP-U tunnel endpoint announces itself, for the TEIDs of the PDU sessions'
+    // tunnels to be allocated from its TEID space; called from GtpUser::initialize() at
+    // INITSTAGE_LOCAL. gateway is the endpoint's "gateway" parameter if it is a base
+    // station connected to the core network or a MEC host's UPF, and empty otherwise.
+    virtual void registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type, MacNodeId bsId, const std::string& gateway);
 
     // A node has joined a multicast group (RRC registration tells us). If a sender has
     // already established that group's bearer, the node missed the RX-leg provisioning

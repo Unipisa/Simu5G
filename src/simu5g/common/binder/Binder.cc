@@ -34,6 +34,7 @@ using namespace inet;
 Define_Module(Binder);
 
 simsignal_t Binder::nodeUnregisteredSignal_ = cComponent::registerSignal("nodeUnregistered");
+simsignal_t Binder::servingNodeChangedSignal_ = cComponent::registerSignal("servingNodeChanged");
 
 void Binder::registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
@@ -271,6 +272,7 @@ void Binder::registerServingNode(MacNodeId enbId, MacNodeId ueId)
     if (servingNode_.size() <= num(ueId))
         servingNode_.resize(num(ueId) + 1);
     servingNode_[num(ueId)] = enbId;
+    emit(servingNodeChangedSignal_, (long)num(ueId));
 }
 
 void Binder::unregisterServingNode(MacNodeId enbId, MacNodeId ueId)
@@ -284,6 +286,7 @@ void Binder::unregisterServingNode(MacNodeId enbId, MacNodeId ueId)
     if (servingNode_.size() <= num(ueId))
         return;
     servingNode_[num(ueId)] = NODEID_NONE;
+    emit(servingNodeChangedSignal_, (long)num(ueId));
 }
 
 MacNodeId Binder::getServingNode(MacNodeId ueId)

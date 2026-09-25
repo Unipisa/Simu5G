@@ -244,6 +244,14 @@ class Binder : public cSimpleModule
     static simsignal_t nodeUnregisteredSignal_;
 
     /**
+     * Emitted (with the UE's node id as a long) by registerServingNode() and
+     * unregisterServingNode(), after the change, so that state which follows a UE's
+     * attachment -- the downlink tunnels of its PDU sessions, see BearerConfigurator --
+     * changes at the same instant as the Binder does. Carries no statistic.
+     */
+    static simsignal_t servingNodeChangedSignal_;
+
+    /**
      * Un-registers a node from the global Binder module.
      */
     virtual void unregisterNode(MacNodeId id);

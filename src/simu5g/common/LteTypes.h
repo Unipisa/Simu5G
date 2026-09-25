@@ -81,6 +81,14 @@ SIMU5G_STRONG_TYPEDEF(Qfi, uint8_t)
 // apart from a packet classified onto the default flow
 constexpr Qfi QFI_NONE = Qfi(255);
 
+/// GTP-U Tunnel Endpoint Identifier (TS 29.281), chosen by the receiving end of the tunnel
+SIMU5G_STRONG_TYPEDEF(Teid, uint32_t)
+// "no tunnel": TEIDs are handed out from 1 (see BearerConfigurator::allocateTeid())
+constexpr Teid TEID_NONE = Teid(0);
+
+/// PDU Session ID (TS 24.007: 1..15, 0 = none assigned)
+SIMU5G_STRONG_TYPEDEF(SessionId, uint8_t)
+
 /// Logical Channel Group id, as reported in Buffer Status Reports
 SIMU5G_STRONG_TYPEDEF(Lcg, uint8_t)
 // LTE has 4 LCGs (TS 36.321), NR allows up to 8 (TS 38.321); the LCG schedulers serve

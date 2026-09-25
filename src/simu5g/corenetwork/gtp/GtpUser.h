@@ -30,6 +30,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class BearerConfigurator;
+
 /**
  * GtpUser is used for building data tunnels between GTP peers.
  * GtpUser can receive two kinds of packets:
@@ -48,8 +50,13 @@ class GtpUser : public cSimpleModule
     // the GTP protocol Port
     unsigned int tunnelPeerPort_;
 
-    // IP address of the gateway to the Internet
+    // the core network gateway (the "gateway" parameter) of a base station connected to
+    // the core network or of a MEC host's UPF, and its IP address; empty otherwise
+    std::string gateway_;
     inet::L3Address gwAddress_;
+
+    // the SMF stand-in, which this tunnel endpoint registers with
+    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
 
     // specifies the type of the node that contains this filter (it can be ENB or PGW)
     CoreNodeType ownerType_;

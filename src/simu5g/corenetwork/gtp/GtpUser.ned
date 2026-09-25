@@ -30,6 +30,7 @@ simple GtpUser
 {
     parameters:
         string binderModule = default("binder");
+        string bearerConfiguratorModule = default("bearerConfigurator");  // The SMF stand-in this tunnel endpoint registers with, see ~BearerConfigurator
         int localPort = default(31);
         int tunnelPeerPort = default(31);
         string gateway = default("");			// Optional

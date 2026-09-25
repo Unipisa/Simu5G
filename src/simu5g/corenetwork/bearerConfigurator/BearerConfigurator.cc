@@ -9,13 +9,16 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ModuleAccess.h>
 #include <inet/common/PatternMatcher.h>
 #include <inet/common/stlutils.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/common/InitStages.h"
 #include "simu5g/common/QfiRuleSet.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include <algorithm>
+#include "simu5g/corenetwork/gtp/GtpUser.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
@@ -50,6 +53,7 @@ void BearerConfigurator::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         binder_->subscribe(Binder::nodeUnregisteredSignal_, this);
+        binder_->subscribe(Binder::servingNodeChangedSignal_, this);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known,
@@ -59,6 +63,7 @@ void BearerConfigurator::initialize(int stage)
         deliverQfiRules();
     }
     else if (stage == inet::INITSTAGE_LAST) {
+        establishPduSessions();
         establishStaticDrbs();
     }
 }
@@ -741,6 +746,162 @@ void BearerConfigurator::registerTrafficFlowFilter(TrafficFlowFilter *tff)
     trafficFlowFilters_.push_back(tff);
 }
 
+void BearerConfigurator::registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type, MacNodeId bsId, const std::string& gateway)
+{
+    Enter_Method_Silent("registerGtpEndpoint");
+    GtpEndpoint endpoint;
+    endpoint.module = gtpUser;
+    endpoint.type = type;
+    endpoint.bsId = bsId;
+    endpoint.gateway = gateway;
+    if (isBaseStation(type)) {
+        if (bsGtpEndpoints_.count(bsId) != 0)
+            throw cRuntimeError("BearerConfigurator: base station %d has a second GTP-U endpoint, %s",
+                    num(bsId), gtpUser->getFullPath().c_str());
+        bsGtpEndpoints_[bsId] = gtpEndpoints_.size();
+    }
+    gtpEndpoints_.push_back(endpoint);
+}
+
+Teid BearerConfigurator::allocateTeid(GtpEndpoint& endpoint)
+{
+    if (endpoint.lastTeid == Teid(UINT32_MAX))
+        throw cRuntimeError("BearerConfigurator::allocateTeid - the TEID space of %s is exhausted", endpoint.module->getFullPath().c_str());
+    endpoint.lastTeid = Teid(num(endpoint.lastTeid) + 1);
+    return endpoint.lastTeid;
+}
+
+L3Address BearerConfigurator::getGtpEndpointAddress(const GtpEndpoint& endpoint)
+{
+    return L3AddressResolver().resolve(getContainingNode(endpoint.module)->getFullPath().c_str());
+}
+
+cModule *BearerConfigurator::findGatewayNode(const std::string& gateway)
+{
+    // a gateway parameter names its node relative to the network
+    std::string path = std::string(getSystemModule()->getFullPath()) + "." + gateway;
+    return getSimulation()->findModuleByPath(path.c_str());
+}
+
+int BearerConfigurator::findGatewayEndpoint(const std::string& gateway, const GtpEndpoint& from)
+{
+    cModule *node = findGatewayNode(gateway);
+    for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
+        const GtpEndpoint& endpoint = gtpEndpoints_[i];
+        if ((endpoint.type == UPF || endpoint.type == PGW) && node != nullptr && getContainingNode(endpoint.module) == node)
+            return i;
+    }
+    throw cRuntimeError("BearerConfigurator: the gateway '%s' of %s is no UPF or PGW with a GTP-U endpoint",
+            gateway.c_str(), from.module->getFullPath().c_str());
+}
+
+MacNodeId BearerConfigurator::findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId)
+{
+    for (MacNodeId nodeId : {lteNodeId, nrNodeId}) {
+        if (nodeId == NODEID_NONE)
+            continue;
+        MacNodeId servingNode = binder_->getServingNode(nodeId);
+        if (servingNode != NODEID_NONE)
+            return binder_->getMasterNodeOrSelf(servingNode);
+    }
+    return NODEID_NONE;
+}
+
+void BearerConfigurator::establishPduSessions()
+{
+    // in node id order, so the TEIDs are allocated in a reproducible order
+    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
+        if (getNodeTypeById(nodeId) == UE && info.moduleRef != nullptr && sessionOfNode_.count(nodeId) == 0)
+            establishSession(nodeId);
+    pduSessionsEstablished_ = true;
+}
+
+void BearerConfigurator::establishSession(MacNodeId ueNodeId)
+{
+    cModule *ueModule = binder_->getNodeModule(ueNodeId);
+    ASSERT(ueModule != nullptr);
+
+    CoreSession session;
+    session.ueModule = ueModule;
+    session.id = SessionId(1);
+    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
+        if (info.moduleRef == ueModule)
+            (isNrUe(nodeId) ? session.nrNodeId : session.lteNodeId) = nodeId;
+
+    // The LTE id, which every UE has, is the UE's identity: once it is unregistered,
+    // the UE is leaving the simulation, and its remaining stack's detachment must not
+    // establish a new session
+    if (session.lteNodeId == NODEID_NONE)
+        return;
+
+    MacNodeId dlBaseStation = findDlBaseStation(session.lteNodeId, session.nrNodeId);
+    if (dlBaseStation == NODEID_NONE)
+        return;   // established when the UE attaches
+    const GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
+    if (bsEndpoint.gateway.empty()) {
+        EV_INFO << "BearerConfigurator: " << ueModule->getFullPath() << " is attached to base station " << dlBaseStation
+                << ", which is not connected to a core network: no PDU session" << endl;
+        return;
+    }
+
+    // The anchor is the core network gateway of the base station the UE's downlink
+    // enters the RAN at, and the session gets an uplink tunnel to each MEC host UPF of
+    // that core network too, i.e. those whose gateway is the anchor
+    session.anchor = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
+    GtpEndpoint& anchor = gtpEndpoints_[session.anchor];
+    session.ulAnchor = FTeid{getGtpEndpointAddress(anchor), allocateTeid(anchor)};
+    cModule *anchorNode = getContainingNode(anchor.module);
+    for (GtpEndpoint& endpoint : gtpEndpoints_)
+        if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchorNode)
+            session.ulMecHosts[getGtpEndpointAddress(endpoint)] = allocateTeid(endpoint);
+
+    CoreSessionKey key(ueModule->getId(), session.id);
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        if (nodeId != NODEID_NONE)
+            sessionOfNode_[nodeId] = key;
+    CoreSession& established = sessions_[key] = session;
+    EV_INFO << "BearerConfigurator: PDU session " << established.id << " of " << ueModule->getFullPath()
+            << " established, anchored at " << anchor.module->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
+    for (const auto& [address, teid] : established.ulMecHosts)
+        EV_INFO << ", to MEC host UPF " << FTeid{address, teid};
+    EV_INFO << endl;
+    switchPath(established);
+}
+
+void BearerConfigurator::switchPath(CoreSession& session)
+{
+    MacNodeId dlBaseStation = findDlBaseStation(session.lteNodeId, session.nrNodeId);
+    if (dlBaseStation == session.dlBaseStation)
+        return;
+    session.dlBaseStation = dlBaseStation;
+    if (dlBaseStation == NODEID_NONE) {
+        session.dl = FTeid();
+        EV_INFO << "BearerConfigurator: " << session.ueModule->getFullPath() << " is attached nowhere, the downlink of PDU session "
+                << session.id << " has no tunnel" << endl;
+        return;
+    }
+    GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
+    Teid& teid = session.dlTeids[dlBaseStation];
+    if (teid == TEID_NONE)
+        teid = allocateTeid(bsEndpoint);
+    session.dl = FTeid{getGtpEndpointAddress(bsEndpoint), teid};
+    EV_INFO << "BearerConfigurator: the downlink of PDU session " << session.id << " of " << session.ueModule->getFullPath()
+            << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
+}
+
+void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
+{
+    auto it = sessionOfNode_.find(ueNodeId);
+    if (it == sessionOfNode_.end())
+        return;
+    CoreSessionKey key = it->second;
+    const CoreSession& session = sessions_.at(key);
+    EV_INFO << "BearerConfigurator: PDU session " << session.id << " of " << session.ueModule->getFullPath() << " released" << endl;
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        sessionOfNode_.erase(nodeId);
+    sessions_.erase(key);
+}
+
 void BearerConfigurator::deliverQfiRules()
 {
     // delivery-site module paths in the rule tables are relative to the network,
@@ -1186,8 +1347,24 @@ const DrbDesc *BearerConfigurator::findBearerDefinition(const FlowId& flow)
 
 void BearerConfigurator::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
 {
-    ASSERT(signalID == Binder::nodeUnregisteredSignal_);
+    Enter_Method_Silent("receiveSignal");
     MacNodeId id = MacNodeId(nodeId);
+
+    if (signalID == Binder::servingNodeChangedSignal_) {
+        // during initialization, attachments are still being settled; the sessions of
+        // the UEs attached by the end of it are established in the last stage
+        if (!pduSessionsEstablished_)
+            return;
+        auto it = sessionOfNode_.find(id);
+        if (it != sessionOfNode_.end())
+            switchPath(sessions_.at(it->second));
+        else if (binder_->nodeExists(id))
+            establishSession(id);
+        return;
+    }
+
+    ASSERT(signalID == Binder::nodeUnregisteredSignal_);
+    releaseSession(id);
 
     // the pools are keyed by node pair, so the departed id sits in every pair it took part in
     for (auto it = drbIdsInUse_.begin(); it != drbIdsInUse_.end(); ) {

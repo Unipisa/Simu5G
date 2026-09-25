@@ -33,6 +33,20 @@ package simu5g.corenetwork.bearerConfigurator;
 // relative to the toplevel network, so in such a setup the entries (and the
 // module-path parameters) name their nodes by qualified paths, e.g. "networkA.ue[*]".
 //
+// As the SMF, this module keeps a PDU session per UE (PDU Session ID 1), established
+// when the UE first has a serving node and released when the UE leaves the
+// simulation. The GTP-U tunnel endpoints of the network (~GtpUser) register here, and
+// the tunnel endpoint ids (TEIDs) of the sessions' tunnels are allocated on behalf of
+// their receiving ends, in increasing order and never reused within a run: an uplink
+// TEID at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's core
+// network, and a downlink TEID at each base station the session's downlink has
+// entered the RAN at. The anchor is the core network gateway of the base station the
+// UE's downlink enters the RAN at when the session is established, and it stays for
+// the lifetime of the session (SSC mode 1): a handover only moves the downlink end of
+// the tunnel (the path switch, TS 23.502 4.9.1.2.2), at the instant the ~Binder
+// records the new serving node. N4 signalling, intermediate UPFs (I-UPF) and SSC
+// modes 2 and 3 are not modeled.
+//
 // Modeling abstractions and current limitations:
 //  - Bearer establishment is a direct call into the RRC of each node involved; no
 //    signalling procedure carries it.

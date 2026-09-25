@@ -37,5 +37,9 @@ simple Binder
         // unregistered, so that holders of per-node state outside this module -- notably the
         // optional D2D layer, which the core must not reference -- can purge it.
         @signal[nodeUnregistered](type=long);
+        // Notification (not a statistic): carries the id of a UE whose serving node has just
+        // changed, so that state following the UE's attachment -- the downlink tunnels of its
+        // PDU sessions, see ~BearerConfigurator -- changes at the same instant.
+        @signal[servingNodeChanged](type=long);
         @display("i=block/cogwheel");
 }

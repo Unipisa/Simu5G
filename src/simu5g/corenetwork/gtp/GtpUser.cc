@@ -10,6 +10,7 @@
 // and cannot be removed from it.
 //
 #include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
@@ -30,6 +31,32 @@ void GtpUser::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
+    if (stage == inet::INITSTAGE_LOCAL) {
+        networkNode_ = getContainingNode(this);
+
+        ownerType_ = selectOwnerType(networkNode_->par("nodeType"));
+
+        if (isBaseStation(ownerType_))
+            myMacNodeID = MacNodeId(networkNode_->par("macNodeId").intValue());
+        else
+            myMacNodeID = NODEID_NONE;
+
+        // the core network gateway: that of a base station (unless it is a secondary
+        // node, not connected to the core network), or of a MEC host's UPF
+        bool connectedBS = isBaseStation(ownerType_) && networkNode_->gate("ppp$o")->isConnected();
+        if (connectedBS || ownerType_ == UPF_MEC) {
+            gateway_ = par("gateway").stdstringValue();
+            if (gateway_.empty())
+                throw cRuntimeError("The required 'gateway' parameter is empty.");
+        }
+
+        // announce this tunnel endpoint to the bearer configurator, which allocates the
+        // tunnel endpoint ids of the PDU sessions' tunnels, standing in for the SMF
+        bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
+        bearerConfigurator_->registerGtpEndpoint(this, ownerType_, myMacNodeID, gateway_);
+        return;
+    }
+
     // wait until all the IP addresses are configured
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
@@ -44,27 +71,9 @@ void GtpUser::initialize(int stage)
 
     tunnelPeerPort_ = par("tunnelPeerPort");
 
-    networkNode_ = getContainingNode(this);
-
-    ownerType_ = selectOwnerType(networkNode_->par("nodeType"));
-
     // find the address of the core network gateway
-    if (ownerType_ != PGW && ownerType_ != UPF) {
-        // check if this is a gNB connected as a secondary node
-        bool connectedBS = isBaseStation(ownerType_) && networkNode_->gate("ppp$o")->isConnected();
-
-        if (connectedBS || ownerType_ == UPF_MEC) {
-            if (par("gateway").isEmptyString())
-                throw cRuntimeError("The required 'gateway' parameter is empty.");
-            std::string gateway = binder_->getNetworkName() + "." + par("gateway").stdstringValue();
-            gwAddress_ = L3AddressResolver().resolve(gateway.c_str());
-        }
-    }
-
-    if (isBaseStation(ownerType_))
-        myMacNodeID = MacNodeId(networkNode_->par("macNodeId").intValue());
-    else
-        myMacNodeID = NODEID_NONE;
+    if (!gateway_.empty())
+        gwAddress_ = L3AddressResolver().resolve((binder_->getNetworkName() + "." + gateway_).c_str());
 }
 
 CoreNodeType GtpUser::selectOwnerType(const char *type)
