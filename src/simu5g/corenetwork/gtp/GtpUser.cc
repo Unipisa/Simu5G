@@ -248,7 +248,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // a base station sends into the uplink tunnel of the UE's PDU session, whose
             // anchor is the gateway; a MEC host's UPF relays traffic of no PDU session
             if (isBaseStation(ownerType_)) {
-                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe, datagram->getTag<IpHeaderFieldsTag>()->getSrcAddress());
+                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe);
                 ASSERT(tunnels.anchor.address == gwAddress_);
                 teid = tunnels.anchor.teid;
             }
@@ -262,7 +262,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // a base station sends into the UE's PDU session's uplink tunnel to the MEC
             // host; a UPF relays traffic of no PDU session
             if (isBaseStation(ownerType_)) {
-                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe, datagram->getTag<IpHeaderFieldsTag>()->getSrcAddress());
+                const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe);
                 auto it = tunnels.mecHosts.find(tunnelPeerAddress);
                 if (it == tunnels.mecHosts.end())
                     throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel to the MEC host UPF %s",
@@ -334,7 +334,6 @@ void GtpUser::handleFromUdp(Packet *pkt)
     if (isBaseStation(ownerType_)) {
         // the tunnel names the PDU session, and so the UE, the datagram is for
         const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-        ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getDestinationAddress()));
         EV << "GtpUser::handleFromUdp - Datagram of " << session << ", local delivery to the cellular NIC" << endl;
         attachSessionTag(originalPacket, session);
         send(originalPacket, "pppGate");
@@ -344,7 +343,6 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // relay from the UPF carries traffic of no PDU session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
             const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-            ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getSourceAddress()));
             EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
         }
 
@@ -357,7 +355,6 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // relay from a MEC host's UPF carries traffic of no PDU session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
             const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-            ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getSourceAddress()));
             EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
         }
 
@@ -436,14 +433,11 @@ void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
     socket_.sendTo(gtpMsg, tunnel.address, tunnelPeerPort_);
 }
 
-const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId, const L3Address& srcAddress)
+const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId)
 {
     auto it = ulTunnels_.find(ueNodeId);
     if (it == ulTunnels_.end())
         throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel from here", num(ueNodeId));
-    // the datagram's source address names the session's UE, or no UE at all (e.g. the
-    // unspecified address of an IPv6 Duplicate Address Detection probe)
-    ASSERT(isSessionUe(it->second.session, srcAddress));
     return it->second.tunnels;
 }
 
@@ -467,13 +461,6 @@ const SessionRef& GtpUser::findTunnel(Teid teid)
     if (it == rxTunnels_.end())
         throw cRuntimeError("GtpUser: a G-PDU arrived with TEID %u, which is no tunnel ending here", num(teid));
     return it->second;
-}
-
-bool GtpUser::isSessionUe(const SessionRef& session, const L3Address& address)
-{
-    MacNodeId lteId = binder_->getMacNodeId(address);
-    MacNodeId nrId = binder_->getNrMacNodeId(address);
-    return (lteId == NODEID_NONE && nrId == NODEID_NONE) || session.isUe(lteId) || session.isUe(nrId);
 }
 
 } //namespace

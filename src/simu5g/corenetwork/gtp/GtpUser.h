@@ -110,9 +110,8 @@ class GtpUser : public cSimpleModule
     // attached nowhere
     const FTeid *findDownlinkTunnel(MacNodeId ueNodeId);
 
-    // At a base station: the uplink tunnels of the PDU session of the UE with the given
-    // node id, which sent a datagram with the given source address
-    const UplinkTunnels& getUplinkTunnels(MacNodeId ueNodeId, const inet::L3Address& srcAddress);
+    // At a base station: the uplink tunnels of the PDU session of the UE with the given node id
+    const UplinkTunnels& getUplinkTunnels(MacNodeId ueNodeId);
 
     // At a base station: the PDU session of a UE whose uplink enters the core network
     // here, by one of the UE's node ids; throws if it has none
@@ -121,8 +120,6 @@ class GtpUser : public cSimpleModule
     // The PDU session of a tunnel ending here; throws for an unknown TEID
     const SessionRef& findTunnel(Teid teid);
 
-    // True if the address is one of the session UE's, or no UE's at all (any more)
-    bool isSessionUe(const SessionRef& session, const inet::L3Address& address);
 
   public:
     // The tunnels of the PDU sessions, as the bearer configurator (the SMF stand-in)

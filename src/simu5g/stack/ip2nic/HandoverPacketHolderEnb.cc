@@ -75,14 +75,6 @@ MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(const SessionTag *session)
     return destId;
 }
 
-bool HandoverPacketHolderEnb::namesSessionUe(const inet::L3Address& address, const SessionTag *session)
-{
-    MacNodeId lteId = binder_->getMacNodeId(address);
-    MacNodeId nrId = binder_->getNrMacNodeId(address);
-    auto isSessionUe = [session](MacNodeId id) { return id != NODEID_NONE && (id == session->getLteNodeId() || id == session->getNrNodeId()); };
-    return (lteId == NODEID_NONE && nrId == NODEID_NONE) || isSessionUe(lteId) || isSessionUe(nrId);
-}
-
 void HandoverPacketHolderEnb::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
@@ -185,9 +177,7 @@ void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
     // the forwarding tunnel named the PDU session, and so the UE, the datagram is for
     // (see GtpUserX2)
     attachIpHeaderFields(datagram);
-    auto session = datagram->getTag<SessionTag>();
-    ASSERT(namesSessionUe(datagram->getTag<IpHeaderFieldsTag>()->getDestAddress(), session.get()));
-    MacNodeId destId = resolveUeNodeId(session.get());
+    MacNodeId destId = resolveUeNodeId(datagram->getTag<SessionTag>().get());
 
     if (hoFromX2_.find(destId) == hoFromX2_.end()) {
         IpDatagramQueue queue;

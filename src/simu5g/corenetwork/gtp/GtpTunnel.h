@@ -50,9 +50,6 @@ struct SessionRef
     MacNodeId lteNodeId = NODEID_NONE;
     MacNodeId nrNodeId = NODEID_NONE;
     SessionId id = SessionId(0);
-
-    // true if nodeId is one of the UE's node ids
-    bool isUe(MacNodeId nodeId) const { return nodeId != NODEID_NONE && (nodeId == lteNodeId || nodeId == nrNodeId); }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const SessionRef& session)
