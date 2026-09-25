@@ -32,13 +32,13 @@ void CellularRadioMedium::initialize(int stage)
     }
 }
 
-void CellularRadioMedium::addRadio(MacNodeId nodeId, IRadioEndpoint *radio)
+void CellularRadioMedium::addRadio(MacNodeId nodeId, IRadioEndpoint *radio, cModule *radioModule)
 {
     Enter_Method("addRadio");
     if (nodeId != NODEID_NONE && !radios.emplace(nodeId, radio).second)
         throw cRuntimeError("CellularRadioMedium::addRadio(): a radio is already registered for node %d", (int)num(nodeId));
-    if (auto module = dynamic_cast<cModule *>(radio))
-        radioModules[module->getId()] = RadioModule{radio, module, module->gate("radioIn")->getPathStartGate()};
+    if (radioModule != nullptr)
+        radioModules[check_and_cast<cModule *>(radio)->getId()] = RadioModule{radio, radioModule->gate("radioIn")->getPathStartGate()};
 }
 
 void CellularRadioMedium::removeRadio(IRadioEndpoint *radio)
@@ -64,10 +64,9 @@ IRadioEndpoint *CellularRadioMedium::findRadio(MacNodeId nodeId) const
     return it == radios.end() ? nullptr : it->second;
 }
 
-void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, AirFrame *frame, simtime_t duration)
+void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, cSimpleModule *sendingModule, AirFrame *frame, simtime_t duration)
 {
-    // NOTE: no Enter_Method(): the copies are sent by the sending radio
-    auto senderModule = check_and_cast<cSimpleModule *>(sender);
+    // NOTE: no Enter_Method(): the copies are sent by the sending radio module
     const inet::Coord& senderPosition = sender->getCoord();
     double maxDistanceSquared = maxInterferenceDistance * maxInterferenceDistance;
     for (const auto& [moduleId, radioModule] : radioModules) {
@@ -76,7 +75,7 @@ void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, AirFrame *fram
         if (senderPosition.sqrdist(radioModule.radio->getCoord()) < maxDistanceSquared) {
             EV << "sending message to radio\n";
             // no propagation delay, as for the frames the PHY sends to a single radio
-            senderModule->sendDirect(frame->dup(), 0, duration, radioModule.radioInGate);
+            sendingModule->sendDirect(frame->dup(), 0, duration, radioModule.radioInGate);
         }
     }
     // the radios in range got copies; the original frame can be deleted

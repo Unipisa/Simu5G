@@ -13,15 +13,21 @@ package simu5g.stack.phy.radio;
 
 //
 // The radio of a cellular PHY leg: the node-side counterpart of the radio
-// medium, holding the antenna, the transmitter and the receiver. It is not
-// used by the model yet; the PHY and its channel models still transmit and
-// receive.
+// medium, holding the antenna, the transmitter and the receiver. Every frame
+// the PHY transmits passes through it (the PHY says where it goes), and every
+// frame that arrives for the node's PHY leg enters through it; the PHY and its
+// channel models still decide everything else.
 //
 module CellularRadio
 {
     parameters:
+        string radioMediumModule = default("radioMedium"); // The network's radio medium
         @class(CellularRadio);
         @display("i=device/antennatower");
+    gates:
+        input radioIn @directIn;    // frames from other radios
+        input upperLayerIn;         // frames to transmit, from the PHY
+        output upperLayerOut;       // received frames, to the PHY
     submodules:
         antenna: CellularAntenna {
             @display("p=100,100");

@@ -38,8 +38,9 @@ class ChannelModelBase;
  * Base class of the physical layer of the LTE and NR NICs.
  *
  * Packets from the stack (#upperGateIn_) are encapsulated into AirFrames and
- * sent directly to the receiving PHYs; received AirFrames arrive on
- * #radioInGate_ and are handled by the subclasses.
+ * handed to this leg's radio, which sends them directly to the receiving
+ * nodes' radios; received AirFrames arrive from the radio on #radioInGate_
+ * and are handled by the subclasses.
  *
  * The PHY also registers its radio, under its MacNodeId, with the network's
  * radioMedium, and keeps the radio's position up to date from the host's
@@ -74,6 +75,10 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     int upperGateOut_ = -1;
     /** The id of the radioIn gate to receive AirFrames */
     int radioInGate_ = -1;
+    /** The id of the gate frames to transmit leave on, to the radio */
+    int radioOutGate_ = -1;
+    /// this leg's radio, which sends the frames this PHY transmits
+    opp_component_ptr<cModule> radio_;
 
     /// the network's radio medium: this radio is in its registry, and it delivers broadcast frames
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;

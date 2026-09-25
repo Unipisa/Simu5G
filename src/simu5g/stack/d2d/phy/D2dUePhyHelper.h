@@ -46,7 +46,7 @@ class D2dUePhyHelper
     // D2D Tx power
     double d2dTxPower_ = 0.0;
 
-    // used in multicast D2D to prevent a sendDirect towards out-of-range UEs;
+    // used in multicast D2D to skip the copies for out-of-range UEs;
     // the range is given by multicastD2DRange_
     bool multicastD2DRangeCheckEnabled_ = false;
     double multicastD2DRange_ = NAN;

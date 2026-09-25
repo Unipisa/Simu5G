@@ -36,15 +36,14 @@ class IRadioEndpoint;
 class CellularRadioMedium : public cSimpleModule
 {
   protected:
-    /** A radio that is a module, and so can be sent frames. */
+    /** A radio that can be sent frames. */
     struct RadioModule {
         IRadioEndpoint *radio = nullptr;
-        cModule *module = nullptr;
         cGate *radioInGate = nullptr; // where frames sent to the radio enter its node
     };
 
     std::map<MacNodeId, IRadioEndpoint *> radios; // the radios with a node id
-    std::map<int, RadioModule> radioModules; // by module id: the order broadcast frames are delivered in
+    std::map<int, RadioModule> radioModules; // by the endpoint's (PHY's) module id: the order broadcast frames are delivered in
     double maxInterferenceDistance = 0; // the range of a broadcast
 
   protected:
@@ -54,10 +53,11 @@ class CellularRadioMedium : public cSimpleModule
   public:
     /**
      * Adds a radio under the node id of its PHY. A radio registered with
-     * NODEID_NONE is on the medium, but cannot be looked up. Throws if the id
-     * is taken.
+     * NODEID_NONE is on the medium, but cannot be looked up. If radioModule is
+     * given, broadcast frames are sent to its radioIn gate (entering at the
+     * node). Throws if the id is taken.
      */
-    virtual void addRadio(MacNodeId nodeId, IRadioEndpoint *radio);
+    virtual void addRadio(MacNodeId nodeId, IRadioEndpoint *radio, cModule *radioModule = nullptr);
 
     /** Removes the radio. Throws if it is not on the medium. */
     virtual void removeRadio(IRadioEndpoint *radio);
@@ -72,9 +72,9 @@ class CellularRadioMedium : public cSimpleModule
      * Sends a copy of the frame to every other radio closer to the sender than
      * the broadcast range, in the order of their module ids, with no
      * propagation delay and the given duration; deletes the original. Called
-     * by the sending radio, in whose context the copies are sent.
+     * by the sending radio module, which sends the copies.
      */
-    virtual void sendToNeighbors(IRadioEndpoint *sender, AirFrame *frame, simtime_t duration);
+    virtual void sendToNeighbors(IRadioEndpoint *sender, cSimpleModule *sendingModule, AirFrame *frame, simtime_t duration);
 };
 
 } // namespace simu5g

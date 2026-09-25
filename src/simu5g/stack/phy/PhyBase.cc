@@ -14,6 +14,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 #include <inet/common/InitStages.h>
 #include <inet/common/ModuleAccess.h>
@@ -69,6 +70,8 @@ void PhyBase::initialize(int stage)
         upperGateIn_ = findGate("upperGateIn");
         upperGateOut_ = findGate("upperGateOut");
         radioInGate_ = findGate("radioIn");
+        radioOutGate_ = findGate("radioOut");
+        radio_ = getModuleByPath(par("radioModule"));
 
         // Initialize and watch statistics
         ueTxPower_ = par("ueTxPower");
@@ -81,7 +84,7 @@ void PhyBase::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         // a PHY without a node id is on the medium, but cannot be looked up by id
-        radioMedium_->addRadio(nodeId_, this);
+        radioMedium_->addRadio(nodeId_, this, radio_);
         registeredWithMedium_ = true;
     }
     else if (stage == inet::INITSTAGE_SINGLE_MOBILITY) {
@@ -261,8 +264,13 @@ void PhyBase::sendBroadcast(AirFrame *airFrame, simtime_t duration)
         delete userControlInfo;
     }
 
-    // the medium delivers it to the radios in range
-    radioMedium_->sendToNeighbors(this, airFrame, duration);
+    // the radio has the medium deliver it to the radios in range
+    auto request = new RadioTransmissionRequest();
+    request->broadcast = true;
+    request->sender = this;
+    request->duration = duration;
+    airFrame->setControlInfo(request);
+    send(airFrame, radioOutGate_);
 }
 
 void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)
@@ -285,7 +293,12 @@ void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)
         delete userControlInfo;
     }
 
-    sendDirect(frame, 0, duration, receiver, getReceiverGateIndex(receiver, dest));
+    // the radio sends it to the receiving node's radio
+    auto request = new RadioTransmissionRequest();
+    request->targets.push_back(receiver->gate(getReceiverGateIndex(receiver, dest)));
+    request->duration = duration;
+    frame->setControlInfo(request);
+    send(frame, radioOutGate_);
 }
 
 int PhyBase::getReceiverGateIndex(const cModule *receiver, MacNodeId dest) const

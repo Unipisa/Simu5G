@@ -19,6 +19,7 @@
 #include "simu5g/stack/d2d/phy/D2dUePhyHelper.h"
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 namespace simu5g {
 
@@ -135,7 +136,7 @@ class D2dUePhy : public Base
         info->setD2dTxPower(d2dHelper_.getD2dTxPower());
     }
 
-    /// one-to-many D2D transmissions go out via sendDirect to all group members
+    /// one-to-many D2D transmissions go out through the radio, a copy to each group member
     void transmitFrame(AirFrame *frame, const UserControlInfo *info, simtime_t duration) override
     {
         if (info->getDirection() == D2D_MULTI)
@@ -210,7 +211,10 @@ void D2dUePhy<Base>::sendMulticast(AirFrame *frame, simtime_t duration)
     frame->setAdditionalInfo(*ci);
     delete frame->removeControlInfo();
 
-    // send the frame to nodes belonging to the multicast group only
+    // the radio sends a copy to each node of the multicast group
+    auto request = new RadioTransmissionRequest();
+    request->copyPerTarget = true;
+    request->duration = duration;
     for (auto [destId, nodeInfo] : this->binder_->getNodeInfoMap()) {
         // if the node in the list does not use the same LTE/NR technology of this PHY module, skip it
         if (isNrUe(destId) != this->isNr_)
@@ -240,14 +244,12 @@ void D2dUePhy<Base>::sendMulticast(AirFrame *frame, simtime_t duration)
 
             EV << NOW << " D2dUePhy::sendMulticast - sending frame to node " << destId << endl;
 
-            // Create a duplicate frame before sending
-            AirFrame *frameToSend = frame->dup();
-            this->sendDirect(frameToSend, 0, duration, receiver, this->getReceiverGateIndex(receiver, destId));
+            request->targets.push_back(receiver->gate(this->getReceiverGateIndex(receiver, destId)));
         }
     }
 
-    // delete the original frame
-    delete frame;
+    frame->setControlInfo(request);
+    this->send(frame, this->radioOutGate_);
 }
 
 } //namespace

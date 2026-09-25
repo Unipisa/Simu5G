@@ -39,5 +39,6 @@ moduleinterface IPhy
         input upperGateIn;
         output upperGateOut;
         input radioIn;
+        output radioOut;
 }
 

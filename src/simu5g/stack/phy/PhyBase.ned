@@ -38,10 +38,12 @@ simple PhyBase like IPhy
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium"); // The network's radio medium
         string channelModelModule = default("^.channelModel[0]"); // Set to "^.nrChannelModel[0]" on an NR leg, see ~NrNicUe
+        string radioModule = default("^.radio"); // This leg's radio; set to "^.nrRadio" on an NR leg, see ~NrNicUe
 
     gates:
         input upperGateIn;       // From upper layer
         output upperGateOut;    // To upper layer
-        input radioIn;           // Gate to receive message via sendDirect
+        input radioIn;           // Frames received by the radio
+        output radioOut;         // Frames to transmit, to the radio
 }
 

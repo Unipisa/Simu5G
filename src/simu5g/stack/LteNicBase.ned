@@ -132,8 +132,10 @@ module LteNicBase extends NetworkInterface like ICellularNic
         mac.phyOut --> phy.upperGateIn;
         mac.phyIn <-- phy.upperGateOut;
 
-        //# external: lower connection
-        radioIn --> phy.radioIn;
+        //# external: lower connection, through the radio
+        radioIn --> radio.radioIn;
+        radio.upperLayerOut --> phy.radioIn;
+        phy.radioOut --> radio.upperLayerIn;
         ip2nic.upperLayerOut --> {  delay = parent.processingDelayOut; } --> upperLayerOut;
         upperLayerIn --> {  delay = parent.processingDelayIn; } --> handoverPacketHolder.upperLayerIn;
 }

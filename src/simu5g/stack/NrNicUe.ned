@@ -66,6 +66,7 @@ module NrNicUe extends LteNicUe
         nrDlFbGen.macNodeId = parent.nrMacNodeId;
         rrc.nrConnectionControl.otherConnectionControlModule = "^.connectionControl";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
+        nrPhy.radioModule = "^.nrRadio";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.connectionControlModule = "^.rrc.nrConnectionControl";
         rrc.nrConnectionControl.macModule = "^.^.nrMac";
@@ -130,8 +131,10 @@ module NrNicUe extends LteNicUe
         nrMac.phyOut --> nrPhy.upperGateIn;
         nrMac.phyIn <-- nrPhy.upperGateOut;
 
-        //# external: lower connection
-        nrRadioIn --> nrPhy.radioIn;
+        //# external: lower connection, through the NR leg's radio
+        nrRadioIn --> nrRadio.radioIn;
+        nrRadio.upperLayerOut --> nrPhy.radioIn;
+        nrPhy.radioOut --> nrRadio.upperLayerIn;
 
         //# uplink QoS-flow classifier (optional, spliced above ip2nic)
         handoverPacketHolder.stackOut --> { @reconnect; } --> qosFlowClassifier.upperLayerIn if hasSdap;
