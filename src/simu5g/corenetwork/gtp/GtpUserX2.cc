@@ -12,6 +12,8 @@
 
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/stack/dcX2Forwarder/X2DcTunnelInd_m.h"
+#include "simu5g/common/LteControlInfo_m.h"
 
 #include <iostream>
 
@@ -81,9 +83,19 @@ void GtpUserX2::handleFromStack(Packet *pkt)
 
     auto gtpMsg = makeShared<GtpUserMsg>();
     gtpMsg->setChunkLength(B(8));
-    // forwarded downlink goes on the downlink tunnel of its PDU session at the target
+    // forwarded downlink goes on the downlink tunnel of its PDU session at the target,
+    // a dual connectivity PDU on its bearer's tunnel at the peer for its direction
     if (x2Msg->getType() == X2_HANDOVER_DATA_MSG)
         gtpMsg->setTeid(getForwardingTeid(pkt->removeTag<SessionTag>().get(), destId));
+    else if (x2Msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG) {
+        auto flow = pkt->removeTag<FlowControlInfo>();
+        MacNodeId ueNodeId = flow->getDirection() == DL ? flow->getDestId() : flow->getSourceId();
+        auto it = dcTxTeids_.find(std::make_tuple(ueNodeId, flow->getDrbId(), (Direction)flow->getDirection()));
+        if (it == dcTxTeids_.end())
+            throw cRuntimeError("GtpUserX2: the dual connectivity bearer of UE %d with DRB %d has no X2-U tunnel for direction %d",
+                    num(ueNodeId), (int)num(flow->getDrbId()), (int)flow->getDirection());
+        gtpMsg->setTeid(it->second);
+    }
     pkt->insertAtFront(gtpMsg);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::gtp);
 
@@ -101,14 +113,21 @@ void GtpUserX2::handleFromUdp(Packet *pkt)
     auto gtpMsg = pkt->popAtFront<GtpUserMsg>();
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
-    // forwarded downlink: the tunnel names the PDU session, and so the UE, it is for
-    if (gtpMsg->getTeid() != TEID_NONE) {
-        auto it = rxTunnels_.find(gtpMsg->getTeid());
-        if (it == rxTunnels_.end())
-            throw cRuntimeError("GtpUserX2: a G-PDU arrived with TEID %u, which is no tunnel ending here", num(gtpMsg->getTeid()));
+    // the tunnel names what the G-PDU carries: forwarded downlink of a PDU session, or a
+    // PDCP PDU of a dual connectivity bearer
+    Teid teid = gtpMsg->getTeid();
+    if (auto it = rxTunnels_.find(teid); it != rxTunnels_.end()) {
         EV << "GtpUserX2::handleFromUdp - Forwarded datagram of " << it->second << endl;
         attachSessionTag(pkt, it->second);
     }
+    else if (auto jt = dcRxTunnels_.find(teid); jt != dcRxTunnels_.end()) {
+        auto tunnelInd = pkt->addTag<X2DcTunnelInd>();
+        tunnelInd->setUeNodeId(jt->second.ueNodeId);
+        tunnelInd->setDrbId(jt->second.drbId);
+        tunnelInd->setDirection(jt->second.direction);
+    }
+    else
+        throw cRuntimeError("GtpUserX2: a G-PDU arrived with TEID %u, which is no tunnel ending here", num(teid));
 
     // send message to the X2 Manager
     send(pkt, "lteStackOut");
@@ -148,6 +167,24 @@ void GtpUserX2::removeSession(const SessionRef& session)
     Enter_Method_Silent("removeSession");
     for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
         forwardingTeids_.erase(nodeId);
+}
+
+void GtpUserX2::addDcTunnel(Teid teid, MacNodeId ueNodeId, DrbId drbId, Direction direction)
+{
+    Enter_Method_Silent("addDcTunnel");
+    ASSERT(teid != TEID_NONE);
+    if (rxTunnels_.count(teid) != 0 || !dcRxTunnels_.emplace(teid, DcTunnel{ueNodeId, drbId, direction}).second)
+        throw cRuntimeError("GtpUserX2::addDcTunnel - TEID %u is already in use", num(teid));
+    EV_INFO << "GtpUserX2::addDcTunnel - TEID " << teid << " carries " << (direction == DL ? "DL" : "UL")
+            << " PDCP PDUs of UE " << ueNodeId << ", DRB " << drbId << endl;
+}
+
+void GtpUserX2::setDcTunnelTeid(MacNodeId ueLteId, MacNodeId ueNrId, DrbId drbId, Direction direction, Teid teid)
+{
+    Enter_Method_Silent("setDcTunnelTeid");
+    for (MacNodeId nodeId : {ueLteId, ueNrId})
+        if (nodeId != NODEID_NONE)
+            dcTxTeids_[std::make_tuple(nodeId, drbId, direction)] = teid;
 }
 
 } //namespace

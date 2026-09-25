@@ -106,7 +106,8 @@ void DcX2Forwarder::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetN
 
     // copy FlowControlInfo Tag to the dcMsg region
     // this is necessary because otherwise it will be removed during the transmission over the X2
-    auto pktTag = pkt->removeTag<FlowControlInfo>();
+    // (the packet keeps its own, which names the bearer's X2-U tunnel to GtpUserX2)
+    auto pktTag = pkt->getTag<FlowControlInfo>();
     auto dcMsgTag = dcMsg->addTagIfAbsent<FlowControlInfo>();
     *dcMsgTag = *pktTag;
 

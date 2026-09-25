@@ -1386,10 +1386,31 @@ DrbId BearerConfigurator::establishDataConnection(const FlowId& flowIn, const Be
                              ueScgId :
                              binder_->getSecondaryNode(binder_->getMasterNodeOrSelf(destId));
         }
-        if (hasScgLeg)
+        if (hasScgLeg) {
             createConnection(nrFlow, req, false);
+            if (!isGroupcast && ueReg != nullptr) {
+                MacNodeId secondaryNodeB = getNodeTypeById(nrFlow.sourceId) == UE ? nrFlow.destId : nrFlow.sourceId;
+                setUpX2DcTunnels(masterNodeB, secondaryNodeB, ueReg->getLteNodeId(), ueReg->getNrNodeId(), ueMcgId, ueScgId, flow.drbId);
+            }
+        }
     }
     return flow.drbId;
+}
+
+void BearerConfigurator::setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondaryId, MacNodeId ueLteId, MacNodeId ueNrId,
+        MacNodeId ueMcgId, MacNodeId ueScgId, DrbId drbId)
+{
+    // The receiving end of each direction allocates its tunnel's TEID: the secondary for
+    // the downlink the master relays to it, the master for the uplink the secondary
+    // relays back. Each end keys the bearer by the UE's id on the stack it serves.
+    Teid dlTeid = allocateTeid(gtpEndpoints_.at(bsGtpEndpoints_.at(secondaryId)));
+    Teid ulTeid = allocateTeid(gtpEndpoints_.at(bsGtpEndpoints_.at(masterId)));
+    GtpUserX2 *masterX2 = bsX2GtpEndpoints_.at(masterId);
+    GtpUserX2 *secondaryX2 = bsX2GtpEndpoints_.at(secondaryId);
+    secondaryX2->addDcTunnel(dlTeid, ueScgId, drbId, DL);
+    masterX2->setDcTunnelTeid(ueLteId, ueNrId, drbId, DL, dlTeid);
+    masterX2->addDcTunnel(ulTeid, ueMcgId, drbId, UL);
+    secondaryX2->setDcTunnelTeid(ueLteId, ueNrId, drbId, UL, ulTeid);
 }
 
 // The definition a flow's bearer was authored from, if any: the entry whose UE and DRB id

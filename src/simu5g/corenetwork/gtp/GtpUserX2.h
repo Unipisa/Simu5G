@@ -14,6 +14,7 @@
 #define __GTP_USER_X2_H_
 
 #include <map>
+#include <tuple>
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
@@ -38,8 +39,10 @@ class BearerConfigurator;
  * Downlink data a handover source forwards travels on the downlink tunnel of the
  * datagram's PDU session at the target: the TEID the target allocated for the session
  * (the one the core network's downlink arrives with, see ~GtpUser), which the bearer
- * configurator tells the base stations of the session about. Dual connectivity data
- * carries no tunnel identity (TEID 0).
+ * configurator tells the base stations of the session about. A PDCP PDU of a dual
+ * connectivity bearer travels on the bearer's X2-U tunnel for its direction, whose TEID
+ * the receiving end allocated; the receiver names the bearer to ~DcMux in an
+ * X2DcTunnelInd tag.
  */
 class GtpUserX2 : public cSimpleModule
 {
@@ -62,6 +65,17 @@ class GtpUserX2 : public cSimpleModule
     // The TEID of each PDU session's downlink tunnel at the other base stations it has
     // one at, by each of the UE's node ids, then by base station
     std::map<MacNodeId, std::map<MacNodeId, Teid>> forwardingTeids_;
+
+    // The dual connectivity bearer of each X2-U tunnel ending here (rx), and the TEID of
+    // each bearer's tunnel at the peer node for the direction this node sends (tx),
+    // by each of the UE's node ids, the DRB and the direction
+    struct DcTunnel {
+        MacNodeId ueNodeId = NODEID_NONE;   // the UE, by the id this node keys the bearer by
+        DrbId drbId;
+        Direction direction = DL;
+    };
+    std::map<Teid, DcTunnel> dcRxTunnels_;
+    std::map<std::tuple<MacNodeId, DrbId, Direction>, Teid> dcTxTeids_;
 
   protected:
 
@@ -90,6 +104,15 @@ class GtpUserX2 : public cSimpleModule
 
     // The session is released: forget the TEIDs to forward it with
     virtual void removeSession(const SessionRef& session);
+
+    // A dual connectivity bearer's X2-U tunnel ending at this node, for the given
+    // direction: G-PDUs arriving with the TEID carry PDCP PDUs of the bearer the UE
+    // with the given id (this node's key for the bearer) has with the given DRB id
+    virtual void addDcTunnel(Teid teid, MacNodeId ueNodeId, DrbId drbId, Direction direction);
+
+    // The TEID of a dual connectivity bearer's X2-U tunnel at the peer node, for the
+    // direction this node sends; the UE is named by both of its node ids
+    virtual void setDcTunnelTeid(MacNodeId ueLteId, MacNodeId ueNrId, DrbId drbId, Direction direction, Teid teid);
 };
 
 } //namespace

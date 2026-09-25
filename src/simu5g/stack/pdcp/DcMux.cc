@@ -13,6 +13,7 @@
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/dcX2Forwarder/X2DcTunnelInd_m.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
 #include <inet/common/ModuleAccess.h>
 #include <inet/networklayer/common/NetworkInterface.h>
@@ -42,11 +43,17 @@ void DcMux::handleMessage(cMessage *msg)
         auto tag = pkt->removeTag<X2SourceNodeInd>();
         MacNodeId sourceNode = tag->getSourceNode();
 
+        // the bearer's X2-U tunnel names the bearer; the tag the PDU carries across X2
+        // must name the same one, with no D2D fields set
+        auto tunnel = pkt->removeTag<X2DcTunnelInd>();
         auto ctrlInfo = pkt->getTag<FlowControlInfo>();
+        ASSERT(tunnel->getDirection() == ctrlInfo->getDirection());
+        ASSERT(ctrlInfo->getD2dTxPeerId() == NODEID_NONE && ctrlInfo->getD2dRxPeerId() == NODEID_NONE && ctrlInfo->getD2dGroupId() == NODEID_NONE);
         if (ctrlInfo->getDirection() == DL) {
             // DL: master sent data for a UE — dispatch to this bearer's X2 relay
             MacNodeId destId = ctrlInfo->getDestId();
             DrbKey id = DrbKey(destId, ctrlInfo->getDrbId());
+            ASSERT(DrbKey(tunnel->getUeNodeId(), tunnel->getDrbId()) == id && ctrlInfo->getSourceId() == nodeId_);
             cModule *relay = bearerManagement_->lookupPdcpRelayEntityModule(id);
             ASSERT(relay != nullptr);
 
@@ -68,6 +75,7 @@ void DcMux::handleMessage(cMessage *msg)
             if (binder_->getServingNode(sourceId) != nodeId_)
                 sourceId = binder_->getUeNodeId(sourceId, !isNrUe(sourceId));
             DrbKey id = DrbKey(sourceId, lteInfo->getDrbId());
+            ASSERT(DrbKey(tunnel->getUeNodeId(), tunnel->getDrbId()) == id);
             cModule *pdcpEnt = bearerManagement_->lookupPdcpEntityModule(id);
             ASSERT(pdcpEnt != nullptr);
 

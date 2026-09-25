@@ -274,6 +274,12 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // Release the PDU session of the UE with the given node id, if it has one
     virtual void releaseSession(MacNodeId ueNodeId);
 
+    // Set up the X2-U tunnels of a dual connectivity bearer, one per direction, each at
+    // its receiving end: the secondary for the downlink the master relays, the master
+    // for the uplink the secondary relays back (see GtpUserX2, DcMux)
+    virtual void setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondaryId, MacNodeId ueLteId, MacNodeId ueNrId,
+            MacNodeId ueMcgId, MacNodeId ueScgId, DrbId drbId);
+
     virtual bool isDualConnectivityRequired(const FlowId& flow);
     virtual void createConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp);
     virtual void createIncomingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
