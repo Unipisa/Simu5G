@@ -179,6 +179,16 @@ void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
     attachIpHeaderFields(datagram);
     MacNodeId destId = resolveUeNodeId(datagram->getTag<SessionTag>().get());
 
+    // A datagram the source forwards after the handover has completed here (it reached
+    // the source late, see fromIpBs()) goes down right away; the queue below is drained
+    // only at completion
+    if (hoHolding_.find(destId) == hoHolding_.end() && binder_->getServingNodeOrSelf(destId) == nodeId_) {
+        EV << "HandoverPacketHolder::receiveTunneledPacketOnHandover - UE " << destId << " is served here, sending the datagram down" << endl;
+        datagram->trim();
+        toStackBs(datagram);
+        return;
+    }
+
     if (hoFromX2_.find(destId) == hoFromX2_.end()) {
         IpDatagramQueue queue;
         hoFromX2_[destId] = queue;
