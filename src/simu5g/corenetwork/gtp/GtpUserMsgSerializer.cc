@@ -27,7 +27,7 @@ void GtpUserMsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const
     auto startPosition = stream.getLength();
     const auto& gtpUserMsg = staticPtrCast<const GtpUserMsg>(chunk);
     stream.writeUint32Be(B(gtpUserMsg->getChunkLength()).get());
-    stream.writeUint32Be(gtpUserMsg->getTeid());
+    stream.writeUint32Be(num(gtpUserMsg->getTeid()));
 
     int64_t remainders = B(gtpUserMsg->getChunkLength() - (stream.getLength() - startPosition)).get();
     if (remainders < 0)
@@ -40,7 +40,7 @@ const Ptr<Chunk> GtpUserMsgSerializer::deserialize(MemoryInputStream& stream) co
     auto startPosition = stream.getPosition();
     auto gtpUserMsg = makeShared<GtpUserMsg>();
     B dataLength = B(stream.readUint32Be());
-    gtpUserMsg->setTeid(stream.readUint32Be());
+    gtpUserMsg->setTeid(Teid(stream.readUint32Be()));
     gtpUserMsg->setQfi(Qfi(0));   // this simplified wire format does not carry the QFI; incoming traffic joins the default flow
 
     B remainders = dataLength - (stream.getPosition() - startPosition);

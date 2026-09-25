@@ -17,7 +17,7 @@ import simu5g.common.LteCommon;
 namespace simu5g;
 
 class GtpUserMsg extends inet::FieldsChunk {
-    unsigned int teid;
+    Teid teid;  // Allocated by the receiving end of the tunnel; TEID_NONE on relays between core network nodes, which carry no PDU session's traffic
     Qfi qfi;  // QoS Flow Identifier (carried in PDU Session Container in real GTP-U)
     chunkLength = inet::B(1); // TODO: size 0
 }

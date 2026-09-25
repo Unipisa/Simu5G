@@ -97,8 +97,19 @@ class GtpUser : public cSimpleModule
     // receive a reply of the Neighbor Discovery responder (UPF/PGW only), and tunnel it to the UE's base station
     void handleFromNdResponder(inet::Packet *datagram);
 
-    // encapsulate a datagram into GTP-U, and send it through the tunnel to the given base station
-    void tunnelToBaseStation(inet::Packet *datagram, MacNodeId bsId, Qfi qfi);
+    // encapsulate a datagram for the UE with the given address into GTP-U, and send it
+    // through the downlink tunnel of the UE's PDU session, to the given base station
+    void tunnelToBaseStation(inet::Packet *datagram, const inet::L3Address& ueAddress, MacNodeId bsId, Qfi qfi);
+
+    // The TEID of the downlink tunnel of the PDU session of the UE with the given
+    // address, which leads to the base station with the given address
+    Teid getDownlinkTeid(const inet::L3Address& ueAddress, const inet::L3Address& bsAddress);
+
+    // The PDU session of a tunnel ending here; throws for an unknown TEID
+    const SessionRef& findTunnel(Teid teid);
+
+    // True if the address is one of the session UE's, or no UE's at all (any more)
+    bool isSessionUe(const SessionRef& session, const inet::L3Address& address);
 
   public:
     // The tunnels of the PDU sessions, as the bearer configurator (the SMF stand-in)

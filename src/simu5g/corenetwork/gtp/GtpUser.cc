@@ -209,19 +209,8 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         // the packet is ready to be tunneled via GTP to another node in the core network
         L3Address destAddr = datagram->getTag<IpHeaderFieldsTag>()->getDestAddress();
 
-        // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
-        auto header = makeShared<GtpUserMsg>();
-        header->setTeid(0);
-        header->setQfi(qfi);
-        header->setChunkLength(B(8));
-        auto gtpPacket = new Packet(datagram->getName());
-        gtpPacket->insertAtFront(header);
-        auto data = datagram->peekData();
-        gtpPacket->insertAtBack(data);
-
-        delete datagram;
-
         L3Address tunnelPeerAddress;
+        Teid teid = TEID_NONE;
         if (flowId == TFT_EXTERNAL_DESTINATION) { // send to the gateway
             if (gwAddress_.isUnspecified())
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
@@ -243,7 +232,21 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             std::string  symbolicName = binder_->getNodeModule(MacNodeId(flowId))->getFullPath();
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << symbolicName << endl;
             tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
+            teid = getDownlinkTeid(destAddr, tunnelPeerAddress);
         }
+
+        // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
+        auto header = makeShared<GtpUserMsg>();
+        header->setTeid(teid);
+        header->setQfi(qfi);
+        header->setChunkLength(B(8));
+        auto gtpPacket = new Packet(datagram->getName());
+        gtpPacket->insertAtFront(header);
+        auto data = datagram->peekData();
+        gtpPacket->insertAtBack(data);
+
+        delete datagram;
+
         socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
     }
 }
@@ -287,7 +290,10 @@ void GtpUser::handleFromUdp(Packet *pkt)
     delete pkt;
 
     if (isBaseStation(ownerType_)) {
-        EV << "GtpUser::handleFromUdp - Datagram local delivery to the cellular NIC" << endl;
+        // the tunnel names the PDU session, and so the UE, the datagram is for
+        const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
+        ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getDestinationAddress()));
+        EV << "GtpUser::handleFromUdp - Datagram of " << session << ", local delivery to the cellular NIC" << endl;
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == UPF_MEC) {
@@ -319,7 +325,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
             if (networkNode_->getFullPath() == gwFullPath) {
                 // the destination is a Base Station under the same core network as this PGW/UPF,
                 // tunnel the packet toward that BS, preserving the QFI of the incoming GTP-U
-                tunnelToBaseStation(originalPacket, destMaster, gtpUserMsg->getQfi());
+                tunnelToBaseStation(originalPacket, destAddr, destMaster, gtpUserMsg->getQfi());
                 return;
             }
         }
@@ -345,10 +351,10 @@ void GtpUser::handleFromNdResponder(Packet *datagram)
         delete datagram;
         return;
     }
-    tunnelToBaseStation(datagram, binder_->getMasterNodeOrSelf(servingNode), Qfi(0));  // the default QoS flow
+    tunnelToBaseStation(datagram, destAddr, binder_->getMasterNodeOrSelf(servingNode), Qfi(0));  // the default QoS flow
 }
 
-void GtpUser::tunnelToBaseStation(Packet *datagram, MacNodeId bsId, Qfi qfi)
+void GtpUser::tunnelToBaseStation(Packet *datagram, const L3Address& ueAddress, MacNodeId bsId, Qfi qfi)
 {
     std::string symbolicName = binder_->getNodeModule(bsId)->getFullPath();
     L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
@@ -358,7 +364,7 @@ void GtpUser::tunnelToBaseStation(Packet *datagram, MacNodeId bsId, Qfi qfi)
     // * create a new GtpUserMessage
     // * encapsulate the datagram within the GtpUserMsg
     auto header = makeShared<GtpUserMsg>();
-    header->setTeid(0);
+    header->setTeid(getDownlinkTeid(ueAddress, tunnelPeerAddress));
     header->setQfi(qfi);
     header->setChunkLength(B(8));
     auto gtpMsg = new Packet(datagram->getName());
@@ -369,6 +375,31 @@ void GtpUser::tunnelToBaseStation(Packet *datagram, MacNodeId bsId, Qfi qfi)
 
     EV << "GtpUser::tunnelToBaseStation - Tunneling datagram to " << tunnelPeerAddress.str() << endl;
     socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
+}
+
+Teid GtpUser::getDownlinkTeid(const L3Address& ueAddress, const L3Address& bsAddress)
+{
+    MacNodeId ueId = binder_->getMacNodeId(ueAddress);
+    auto it = dlTunnels_.find(ueId);
+    if (it == dlTunnels_.end())
+        throw cRuntimeError("GtpUser: the PDU session of UE %d (%s) has no downlink tunnel from here", num(ueId), ueAddress.str().c_str());
+    ASSERT(it->second.address == bsAddress);
+    return it->second.teid;
+}
+
+const SessionRef& GtpUser::findTunnel(Teid teid)
+{
+    auto it = rxTunnels_.find(teid);
+    if (it == rxTunnels_.end())
+        throw cRuntimeError("GtpUser: a G-PDU arrived with TEID %u, which is no tunnel ending here", num(teid));
+    return it->second;
+}
+
+bool GtpUser::isSessionUe(const SessionRef& session, const L3Address& address)
+{
+    MacNodeId lteId = binder_->getMacNodeId(address);
+    MacNodeId nrId = binder_->getNrMacNodeId(address);
+    return (lteId == NODEID_NONE && nrId == NODEID_NONE) || session.isUe(lteId) || session.isUe(nrId);
 }
 
 } //namespace

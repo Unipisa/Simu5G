@@ -94,6 +94,19 @@ class Qfi {
     @fromValue(Qfi($.intValue()));
 };
 
+/// GTP-U Tunnel Endpoint Identifier (TS 29.281)
+class Teid {
+    @existingClass; // enum class Teid : uint32_t;
+    @descriptor(false);
+    @primitive;
+    @castFunction(false);
+    @fromString(Teid(string2int64($)));
+    @toString(int642string(num($)));
+    @defaultValue(TEID_NONE);
+    @toValue((omnetpp::intval_t)(num($)));
+    @fromValue(Teid($.intValue()));
+};
+
 /// Logical Channel Group id (LTE: 4 groups, NR: up to 8; TS 36.321 / TS 38.321)
 class Lcg {
     @existingClass; // enum class Lcg : uint8_t;
