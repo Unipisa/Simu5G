@@ -14,6 +14,7 @@
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
+#include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/UplinkUeTag_m.h"
 #include <iostream>
 #include <inet/networklayer/common/L3AddressResolver.h>
@@ -207,6 +208,14 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         // handleFromUdp() restores it for tunneled traffic -- SDAP relies on
         // QfiReq being present on the gNB DL path
         datagram->addTagIfAbsent<QfiReq>()->setQfi(qfi);
+        // no tunnel names the destination UE on this shortcut between two UEs of this
+        // base station: the traffic flow filter chose it by the destination address,
+        // which names one of the UEs whose sessions enter the core network here
+        const L3Address& destAddr = datagram->getTag<IpHeaderFieldsTag>()->getDestAddress();
+        MacNodeId destUe = binder_->getMacNodeId(destAddr);
+        if (destUe == NODEID_NONE)
+            destUe = binder_->getNrMacNodeId(destAddr);
+        attachSessionTag(datagram, getServedSession(destUe));
         send(datagram, "pppGate");  // to the cellular NIC
     }
     else {
@@ -315,6 +324,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
         const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
         ASSERT(isSessionUe(session, peekIpHeader(originalPacket)->getDestinationAddress()));
         EV << "GtpUser::handleFromUdp - Datagram of " << session << ", local delivery to the cellular NIC" << endl;
+        attachSessionTag(originalPacket, session);
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == UPF_MEC) {
@@ -434,6 +444,22 @@ const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId, const L3Addre
     // unspecified address of an IPv6 Duplicate Address Detection probe)
     ASSERT(isSessionUe(it->second.session, srcAddress));
     return it->second.tunnels;
+}
+
+const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
+{
+    auto it = ulTunnels_.find(ueNodeId);
+    if (it == ulTunnels_.end())
+        throw cRuntimeError("GtpUser: UE %d has no PDU session entering the core network here", num(ueNodeId));
+    return it->second.session;
+}
+
+void GtpUser::attachSessionTag(Packet *datagram, const SessionRef& session)
+{
+    auto tag = datagram->addTag<SessionTag>();
+    tag->setSessionId(session.id);
+    tag->setLteNodeId(session.lteNodeId);
+    tag->setNrNodeId(session.nrNodeId);
 }
 
 const SessionRef& GtpUser::findTunnel(Teid teid)

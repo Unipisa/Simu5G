@@ -17,6 +17,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/UplinkUeTag_m.h"
 
 namespace simu5g {
@@ -132,21 +133,20 @@ void Ip2Nic::setServingNodeIds(MacNodeId servingNodeId, MacNodeId nrServingNodeI
     nrServingNodeId_ = nrServingNodeId;
 }
 
-void Ip2Nic::getStackAvailability(const L3Address& destAddr, bool& hasLte, bool& hasNr)
+void Ip2Nic::getOwnStackAvailability(bool& hasLte, bool& hasNr)
 {
-    if (nodeType_ == NODEB) {
-        // the packet travels to the UE the destination address names
-        MacNodeId ueId = binder_->getMacNodeId(destAddr);
-        MacNodeId nrUeId = binder_->getNrMacNodeId(destAddr);
-        hasLte = (binder_->getServingNodeOrSelf(ueId) != NODEID_NONE);
-        hasNr = (binder_->getServingNodeOrSelf(nrUeId) != NODEID_NONE);
-    }
-    else {
-        // this UE's own attachment, as RRC pushed it -- current as of handover start,
-        // ahead of the Binder (see BearerManagement::pushServingNodeIds())
-        hasLte = (lteServingNodeId_ != NODEID_NONE);
-        hasNr = (nrServingNodeId_ != NODEID_NONE);
-    }
+    ASSERT(nodeType_ == UE);
+    // this UE's own attachment, as RRC pushed it -- current as of handover start,
+    // ahead of the Binder (see BearerManagement::pushServingNodeIds())
+    hasLte = (lteServingNodeId_ != NODEID_NONE);
+    hasNr = (nrServingNodeId_ != NODEID_NONE);
+}
+
+void Ip2Nic::getUeStackAvailability(const SessionTag *session, bool& hasLte, bool& hasNr)
+{
+    ASSERT(nodeType_ == NODEB);
+    hasLte = (binder_->getServingNodeOrSelf(session->getLteNodeId()) != NODEID_NONE);
+    hasNr = (binder_->getServingNodeOrSelf(session->getNrNodeId()) != NODEID_NONE);
 }
 
 MacNodeId Ip2Nic::ueSourceNodeId()
@@ -178,7 +178,7 @@ void Ip2Nic::toStackUe(Packet *pkt)
     }
 
     bool hasLte, hasNr;
-    getStackAvailability(destAddr, hasLte, hasNr);
+    getOwnStackAvailability(hasLte, hasNr);
     if (!hasLte && !hasNr) {
         EV << "Ip2Nic::toStackUe - this UE is attached to no serving node; dropping UL packet" << endl;
         delete pkt;
@@ -239,11 +239,13 @@ void Ip2Nic::toStackBs(Packet *pkt)
     const L3Address& destAddr = ipFields->getDestAddress();
     short int tos = ipFields->getTos();
 
+    // the UE the packet travels to: the one of its PDU session
+    auto session = pkt->getTag<SessionTag>();
+
     // Drop DL packets destined to a UE whose context was released after RLF
     // (UE Context Release: discard rather than push at a torn-down bearer).
     if (!releasedUes_.empty()) {
-        if (releasedUes_.count(binder_->getMacNodeId(destAddr)) ||
-            releasedUes_.count(binder_->getNrMacNodeId(destAddr))) {
+        if (releasedUes_.count(session->getLteNodeId()) || releasedUes_.count(session->getNrNodeId())) {
             EV << "Ip2Nic::toStackBs - UE context released (RLF); dropping DL packet for " << destAddr << endl;
             delete pkt;
             return;
@@ -251,7 +253,7 @@ void Ip2Nic::toStackBs(Packet *pkt)
     }
 
     bool hasLte, hasNr;
-    getStackAvailability(destAddr, hasLte, hasNr);
+    getUeStackAvailability(session.get(), hasLte, hasNr);
     if (!hasLte && !hasNr) {
         EV << "Ip2Nic::toStackBs - the destination UE is attached to no serving node; dropping DL packet" << endl;
         delete pkt;
@@ -262,6 +264,8 @@ void Ip2Nic::toStackBs(Packet *pkt)
     if (!hasSdap_)   // with SDAP, it maps the QoS flow onto a DRB itself
         assignBearer(pkt, srcAddr, destAddr, tos);
 
+    // node-local: it does not travel over the air
+    pkt->removeTag<SessionTag>();
     send(pkt, stackGateOut_);
 }
 
@@ -289,46 +293,49 @@ void Ip2Nic::releaseFlowBindings(DrbKey bearer)
 
 MacNodeId Ip2Nic::getNextHopNodeId(const L3Address& destAddr, MacNodeId sourceId)
 {
-    bool isEnb = (nodeType_ == NODEB);
+    ASSERT(nodeType_ == UE);
+    // No D2D: the packet goes to the serving node; the UE is subject to handovers, so
+    // the master may change. For LTE that node is nodeId_'s master; for NR it is the
+    // master of the (technology-selected) source node passed in.
+    if (!isNr_)
+        return binder_->getServingNodeOrSelf(nodeId_);
+    return binder_->getServingNodeOrSelf(sourceId);
+}
 
-    if (isEnb) {
-        // ENB variants: resolve the UE by the id this node addresses it with. Under dual
-        // connectivity that is the anchor cell group's id -- the id space of this node's
-        // own technology -- whatever leg later carries the PDU. Outside dual connectivity
-        // it is the id of the stack the UE is attached with (at most one).
-        MacNodeId destId;
-        if (dualConnectivityEnabled_) {
-            destId = anchorNr_ ? binder_->getNrMacNodeId(destAddr) : binder_->getMacNodeId(destAddr);
-        }
-        else {
-            MacNodeId nrUeId = isNr_ ? binder_->getNrMacNodeId(destAddr) : NODEID_NONE;
-            bool nrAttached = nrUeId != NODEID_NONE && binder_->getServingNodeOrSelf(nrUeId) != NODEID_NONE;
-            destId = nrAttached ? nrUeId : binder_->getMacNodeId(destAddr);
-        }
+MacNodeId Ip2Nic::getDownlinkNextHopNodeId(const SessionTag *session)
+{
+    ASSERT(nodeType_ == NODEB);
+    MacNodeId ueId = session->getLteNodeId();
+    MacNodeId nrUeId = session->getNrNodeId();
 
-        // master of this UE (myself)
-        MacNodeId master = binder_->getServingNodeOrSelf(destId);
+    // Resolve the UE by the id this node addresses it with. Under dual connectivity
+    // that is the anchor cell group's id -- the id space of this node's own
+    // technology -- whatever leg later carries the PDU. Outside dual connectivity it is
+    // the id of the stack the UE is attached with (at most one).
+    MacNodeId destId;
+    if (dualConnectivityEnabled_) {
+        destId = anchorNr_ ? nrUeId : ueId;
+    }
+    else {
+        MacNodeId nrId = isNr_ ? nrUeId : NODEID_NONE;
+        bool nrAttached = nrId != NODEID_NONE && binder_->getServingNodeOrSelf(nrId) != NODEID_NONE;
+        destId = nrAttached ? nrId : ueId;
+    }
+
+    // master of this UE (myself)
+    MacNodeId master = binder_->getServingNodeOrSelf(destId);
+    if (master != nodeId_) {
+        destId = master;
+    }
+    else {
+        // for dual connectivity
+        master = binder_->getMasterNodeOrSelf(master);
         if (master != nodeId_) {
             destId = master;
         }
-        else {
-            // for dual connectivity
-            master = binder_->getMasterNodeOrSelf(master);
-            if (master != nodeId_) {
-                destId = master;
-            }
-        }
-        // else UE is directly attached
-        return destId;
     }
-    else {
-        // UE variants (no D2D): the packet goes to the serving node; the UE is subject
-        // to handovers, so the master may change. For LTE that node is nodeId_'s master;
-        // for NR it is the master of the (technology-selected) source node passed in.
-        if (!isNr_)
-            return binder_->getServingNodeOrSelf(nodeId_);
-        return binder_->getServingNodeOrSelf(sourceId);
-    }
+    // else UE is directly attached
+    return destId;
 }
 
 void Ip2Nic::attachFlowControlInfo(inet::Packet *pkt, const L3Address& srcAddr, const L3Address& destAddr, uint16_t typeOfService)
@@ -351,7 +358,7 @@ void Ip2Nic::attachFlowControlInfo(inet::Packet *pkt, const L3Address& srcAddr, 
     // flow direction here; no-op otherwise
     classifyConnection(pkt, lteInfo.get(), destAddr, localNodeId, isEnb);
 
-    assignEndpointIds(lteInfo.get(), destAddr, isEnb);
+    assignEndpointIds(pkt, lteInfo.get(), destAddr, isEnb);
 }
 
 void Ip2Nic::assignBearer(inet::Packet *pkt, const L3Address& srcAddr, const L3Address& destAddr, uint16_t typeOfService)
@@ -371,7 +378,7 @@ void Ip2Nic::assignBearer(inet::Packet *pkt, const L3Address& srcAddr, const L3A
        << " (ToS=" << typeOfService << ") is carried by DRB " << drbId << endl;
 }
 
-void Ip2Nic::assignEndpointIds(FlowControlInfo *lteInfo, const L3Address& destAddr, bool isEnb)
+void Ip2Nic::assignEndpointIds(inet::Packet *pkt, FlowControlInfo *lteInfo, const L3Address& destAddr, bool isEnb)
 {
     if (isNr_) {
         // For PDCP entity dispatch, always use technology-neutral (LTE/master-leg) IDs.
@@ -382,7 +389,7 @@ void Ip2Nic::assignEndpointIds(FlowControlInfo *lteInfo, const L3Address& destAd
             if (lteInfo->getD2dGroupId() != NODEID_NONE)
                 lteInfo->setDestId(nodeId_);
             else
-                lteInfo->setDestId(getNextHopNodeId(destAddr, nodeId_));
+                lteInfo->setDestId(getDownlinkNextHopNodeId(pkt->getTag<SessionTag>().get()));
         }
         else {
             // UE: the anchor stack's UE ID when DC is enabled (both legs share one PDCP
@@ -402,10 +409,13 @@ void Ip2Nic::assignEndpointIds(FlowControlInfo *lteInfo, const L3Address& destAd
         lteInfo->setSourceId(nodeId_);
         if (lteInfo->getD2dGroupId() != NODEID_NONE)  // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
             lteInfo->setDestId(nodeId_);
+        else if (isEnb)
+            lteInfo->setDestId(getDownlinkNextHopNodeId(pkt->getTag<SessionTag>().get()));
         else
             lteInfo->setDestId(getNextHopNodeId(destAddr, lteInfo->getSourceId()));
     }
 }
+
 
 DrbId Ip2Nic::establishBearerOnDemand(const FlowBindingKey& key, FlowControlInfo *lteInfo, inet::Packet *pkt)
 {

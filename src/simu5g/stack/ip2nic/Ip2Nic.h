@@ -20,6 +20,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/SessionTag_m.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 
 namespace simu5g {
@@ -65,10 +66,12 @@ class Ip2Nic : public cSimpleModule
     bool hasSdap_ = false;
     bool establishBearersOnDemand_ = true;
 
-    // Whether the UE this packet travels to/from is attached with its LTE stack, its NR
-    // stack, both (dual connectivity only), or neither -- a packet whose UE is attached
-    // with neither is dropped.
-    virtual void getStackAvailability(const inet::L3Address& destAddr, bool& hasLte, bool& hasNr);
+    // Whether a UE is attached with its LTE stack, its NR stack, both (dual connectivity
+    // only), or neither -- a packet whose UE is attached with neither is dropped.
+    // UE only: this UE itself, as RRC pushed its attachment
+    virtual void getOwnStackAvailability(bool& hasLte, bool& hasNr);
+    // Base station only: the UE of the given PDU session, which a downlink packet travels to
+    virtual void getUeStackAvailability(const SessionTag *session, bool& hasLte, bool& hasNr);
 
     // UE only: the id this UE's outgoing flows carry as their source -- the anchor
     // stack's id under dual connectivity (which leg carries a PDU is the bearer
@@ -90,7 +93,8 @@ class Ip2Nic : public cSimpleModule
 
     // Fills in the flow's endpoint ids: this node on the near side, and on the far side
     // the next hop towards the destination (the multicast group's sender, for multicast).
-    virtual void assignEndpointIds(FlowControlInfo *lteInfo, const inet::L3Address& destAddr, bool isEnb);
+    // At a base station the destination is the UE of the packet's SessionTag.
+    virtual void assignEndpointIds(inet::Packet *pkt, FlowControlInfo *lteInfo, const inet::L3Address& destAddr, bool isEnb);
 
     // Establishes a bearer for a flow that has none, and returns the DRB id it got. This
     // is the data plane asking RRC for a bearer, so it is the packet path's one
@@ -148,7 +152,12 @@ class Ip2Nic : public cSimpleModule
     /// a direction-agnostic key; the NR and D2D stacks key by the actual flow
     /// direction.
     virtual Direction bindingDirection(FlowControlInfo *lteInfo) { return isNr_ ? (Direction)lteInfo->getDirection() : Direction(0xFFFF); }
+    // UE only: the node an uplink packet from the given source stack goes to
     virtual MacNodeId getNextHopNodeId(const inet::L3Address& destAddr, MacNodeId sourceId);
+    // Base station only: the node a downlink packet for the UE of the given PDU session
+    // goes to -- the UE itself when this node serves it directly, else the node the
+    // packet is relayed through (the UE's serving node, or this node's master)
+    virtual MacNodeId getDownlinkNextHopNodeId(const SessionTag *session);
 
   public:
     // Configuration push: RRC binds a flow to the bearer carrying it, at both endpoints

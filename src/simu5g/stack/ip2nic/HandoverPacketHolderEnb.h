@@ -15,6 +15,7 @@
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/SessionTag_m.h"
 
 namespace simu5g {
 
@@ -52,8 +53,8 @@ class HandoverPacketHolderEnb : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
-    // The UE the address names, by the id of this node's own cell group
-    virtual MacNodeId resolveUeNodeId(const inet::L3Address& destAddr);
+    // The UE of the datagram's PDU session, by the id of this node's own cell group
+    virtual MacNodeId resolveUeNodeId(const SessionTag *session);
     void handleMessage(cMessage *msg) override;
 
     virtual void fromIpBs(inet::Packet *datagram);

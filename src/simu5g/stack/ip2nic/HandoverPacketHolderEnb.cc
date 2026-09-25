@@ -63,15 +63,15 @@ void HandoverPacketHolderEnb::initialize(int stage)
     }
 }
 
-MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(const inet::L3Address& destAddr)
+MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(const SessionTag *session)
 {
     // The UE's id on this node's own cell group: an NR node serves, holds and forwards
     // NR ids, an LTE node LTE ids -- a dual-stack UE has both, and picking by this node's
     // technology (rather than LTE-first) is what lets an NR node be the master. The
     // other-stack id is the fallback for a single-stack UE of the other technology.
-    MacNodeId destId = amNr_ ? binder_->getNrMacNodeId(destAddr) : binder_->getMacNodeId(destAddr);
+    MacNodeId destId = amNr_ ? session->getNrNodeId() : session->getLteNodeId();
     if (destId == NODEID_NONE)
-        destId = amNr_ ? binder_->getMacNodeId(destAddr) : binder_->getNrMacNodeId(destAddr);
+        destId = amNr_ ? session->getLteNodeId() : session->getNrNodeId();
     return destId;
 }
 
@@ -97,10 +97,10 @@ void HandoverPacketHolderEnb::fromIpBs(Packet *pkt)
     pkt->removeTagIfPresent<InterfaceReq>();
 
     // the base station's downlink user-plane entry
-    auto ipFields = attachIpHeaderFields(pkt);
+    attachIpHeaderFields(pkt);
 
     // handle "forwarding" of packets during handover
-    MacNodeId destId = resolveUeNodeId(ipFields->getDestAddress());
+    MacNodeId destId = resolveUeNodeId(pkt->getTag<SessionTag>().get());
 
     if (hoForwarding_.find(destId) != hoForwarding_.end()) {
         // data packet must be forwarded (via X2) to another eNB
@@ -166,6 +166,9 @@ void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, Mac
     auto tag = datagram->addTagIfAbsent<X2TargetReq>();
     tag->setTargetNode(targetEnb);
 
+    // node-local: the target learns the datagram's PDU session on its own
+    datagram->removeTag<SessionTag>();
+
     // Send packet to handover manager via gate instead of direct method call
     send(datagram, "hoManagerOut");
 }
@@ -173,9 +176,14 @@ void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, Mac
 void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 {
     EV << "HandoverPacketHolder::receiveTunneledPacketOnHandover - received packet via X2" << endl;
-    // the base station's entry for downlink traffic forwarded by the handover source
+    // the base station's entry for downlink traffic forwarded by the handover source.
+    // The X2 forwarding carries no tunnel identity, so the PDU session's UE is the one
+    // the destination address names
     auto ipFields = attachIpHeaderFields(datagram);
-    MacNodeId destId = resolveUeNodeId(ipFields->getDestAddress());
+    auto session = datagram->addTag<SessionTag>();
+    session->setLteNodeId(binder_->getMacNodeId(ipFields->getDestAddress()));
+    session->setNrNodeId(binder_->getNrMacNodeId(ipFields->getDestAddress()));
+    MacNodeId destId = resolveUeNodeId(session.get());
 
     if (hoFromX2_.find(destId) == hoFromX2_.end()) {
         IpDatagramQueue queue;

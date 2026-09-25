@@ -30,10 +30,8 @@ void Ip2NicD2D::initialize(int stage)
 
 MacNodeId Ip2NicD2D::getNextHopNodeId(const L3Address& destAddr, MacNodeId sourceId)
 {
-    if (nodeType_ == NODEB)
-        return Ip2Nic::getNextHopNodeId(destAddr, sourceId);  // eNB next-hop is D2D-agnostic
-
-    // D2D-capable UE: check if direct D2D communication is possible
+    // D2D-capable UE (a base station's downlink next hop is D2D-agnostic, see
+    // getDownlinkNextHopNodeId()): check if direct D2D communication is possible
     MacNodeId destId = binder_->getMacNodeId(destAddr);
 
     // check whether the destination is inside the LTE network and D2D is active
