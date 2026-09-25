@@ -21,7 +21,7 @@ namespace simu5g;
 class BurstPacket extends inet::FieldsChunk
 {
     unsigned int msgId;
-    simtime_t arrivalTime;
+    simtime_t arrivalTime;   // Not on the wire; nothing sets it
     simtime_t payloadTimestamp;
     unsigned int payloadSize;
 }
