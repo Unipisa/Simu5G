@@ -22,8 +22,8 @@ class VoipPacket extends inet::FieldsChunk {
     unsigned int IDtalk;
     unsigned int nframes;
     unsigned int IDframe;
-    simtime_t arrivalTime;
-    simtime_t playoutTime;
+    simtime_t arrivalTime;       // Set by the receiver; not on the wire
+    simtime_t playoutTime;       // Set by the receiver; not on the wire
     simtime_t payloadTimestamp;
     unsigned int payloadSize;
 }

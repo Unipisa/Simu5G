@@ -21,7 +21,11 @@
 namespace simu5g {
 
 /**
- * Converts between VoipPacket and binary (network byte order) packet.
+ * Converts between VoipPacket and binary (network byte order) packet: a 4-octet
+ * length, then the fields the sender sets (talk spurt id, frame count, frame id,
+ * the timestamp as an 8-octet raw simulation time, payload size), then padding up
+ * to the length, 28 octets at least. The arrival and playout times are the
+ * receiver's own bookkeeping, and not on the wire.
  */
 class VoipPacketSerializer : public inet::FieldsChunkSerializer
 {

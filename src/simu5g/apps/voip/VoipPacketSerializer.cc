@@ -34,8 +34,6 @@ void VoipPacketSerializer::serialize(MemoryOutputStream& stream, const Ptr<const
     stream.writeUint32Be(voipPacket->getNframes());
     stream.writeUint32Be(voipPacket->getIDframe());
     stream.writeUint64Be(voipPacket->getPayloadTimestamp().raw());
-    stream.writeUint64Be(voipPacket->getArrivalTime().raw());
-    stream.writeUint64Be(voipPacket->getPlayoutTime().raw());
     stream.writeUint32Be(voipPacket->getPayloadSize());
 
     int64_t remainders = B(voipPacket->getChunkLength() - (stream.getLength() - startPosition)).get();
@@ -53,8 +51,6 @@ const Ptr<Chunk> VoipPacketSerializer::deserialize(MemoryInputStream& stream) co
     voipPacket->setNframes(stream.readUint32Be());
     voipPacket->setIDframe(stream.readUint32Be());
     voipPacket->getPayloadTimestamp().setRaw(stream.readUint64Be());
-    voipPacket->getArrivalTime().setRaw(stream.readUint64Be());
-    voipPacket->getPlayoutTime().setRaw(stream.readUint64Be());
     voipPacket->setPayloadSize(stream.readUint32Be());
 
     B remainders = dataLength - (stream.getPosition() - startPosition);
