@@ -3,25 +3,22 @@
 The RadioLink builders of StochasticChannelModel: linkFor(), which turns a
 received packet's control information into the link to evaluate, and
 cellularLink(), its node-id form. A RadioLink carries, as data, which end
-transmits, whose antenna gains and noise figure apply, and whose channel state
-to use -- so these two functions are where every one of those choices is
-made.
+transmits and whose channel state to use -- so these two functions are where
+those choices are made. (The link budget is not part of the link: it is the
+two radios'.)
 
 linkFor() is checked for the four cases it distinguishes: downlink data, which
 the UE decodes; uplink data, which the base station decodes; and the feedback
 variants, which the base station evaluates for a CQI. In each: the endpoints,
-the geometry, the link budget, and the channel state -- keyed on the UE, fed by
-the UE's position, and read from the UE's side only for a downlink CQI.
+the geometry, and the channel state -- keyed on the UE, fed by the UE's
+position, and read from the UE's side only for a downlink CQI.
 
 The property that matters most is stated on its own. The link a downlink CQI
 is computed on, at the base station, and the link the UE decodes downlink data
 on are the same physical link evaluated from its two ends: same endpoints,
-positions, gains, noise figure and state key, differing in nothing but where
-the state is read. That is the geometric half of what the Jakes and shadowing
-tests assert about the state itself.
-
-The four gain and noise-figure parameters are set to four distinct values, so
-that each field of the budget can only have come from one of them.
+positions and state key, differing in nothing but where the state is read.
+That is the geometric half of what the Jakes and shadowing tests assert about
+the state itself.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -50,8 +47,7 @@ static bool sameLinkExceptSide(const RadioLink& a, const RadioLink& b)
 {
     return a.txId == b.txId && a.rxId == b.rxId && a.txCoord == b.txCoord && a.rxCoord == b.rxCoord
            && a.stateKey == b.stateKey && a.stateNodeId == b.stateNodeId && a.stateCoord == b.stateCoord
-           && a.txAntennaGain == b.txAntennaGain && a.rxAntennaGain == b.rxAntennaGain
-           && a.noiseFigure == b.noiseFigure && a.txIsBaseStation == b.txIsBaseStation
+           && a.txIsBaseStation == b.txIsBaseStation
            && a.cellId == b.cellId && a.dir == b.dir;
 }
 
@@ -84,12 +80,6 @@ sim-time-limit = 1s
 **.cellInfoModule = ""
 *.binder.printTrafficGeneratorConfig = false
 
-# Four distinct values, so each budget field can only come from one of them.
-**.antennGainEnB = 18dBi
-**.antennaGainUe = 3dBi
-**.ueNoiseFigure = 7dBm
-**.bsNoiseFigure = 5dBm
-
 %no-default-inifile: 1
 
 %activity:
@@ -106,9 +96,6 @@ bs->setPhy(&enbEndpoint);
 ue->setPhy(&ueEndpoint);
 ChannelModelProbe atEnb(bs), atUe(ue);
 
-const double gEnb = bs->par("antennGainEnB").doubleValue(), gUe = bs->par("antennaGainUe").doubleValue();
-const double nfUe = bs->par("ueNoiseFigure").doubleValue(), nfBs = bs->par("bsNoiseFigure").doubleValue();
-
 //
 // --- linkFor() ---
 //
@@ -119,8 +106,6 @@ const double nfUe = bs->par("ueNoiseFigure").doubleValue(), nfBs = bs->par("bsNo
     c.check("DL data: the base station transmits to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
-    c.check("...with the downlink budget: base station gain out, UE gain in, UE noise figure",
-            l.txAntennaGain == gEnb && l.rxAntennaGain == gUe && l.noiseFigure == nfUe);
     c.check("...and the UE's state, read from the decoder's own maps",
             l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
 }
@@ -131,8 +116,6 @@ const double nfUe = bs->par("ueNoiseFigure").doubleValue(), nfBs = bs->par("bsNo
     c.check("UL data: the UE transmits to the base station",
             l.txId == ueId && l.rxId == enbId && !l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
-    c.check("...with the uplink budget: UE gain out, base station gain in, base station noise figure",
-            l.txAntennaGain == gUe && l.rxAntennaGain == gEnb && l.noiseFigure == nfBs);
     c.check("...and the UE's state -- always the UE's, fed by the UE's position -- from the base station's maps",
             l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
 }
@@ -145,7 +128,6 @@ const double nfUe = bs->par("ueNoiseFigure").doubleValue(), nfBs = bs->par("bsNo
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
     c.check("...evaluated where the report arrived, from the UE's reported position",
             l.txCoord == enbPos && l.rxCoord == uePos && l.stateCoord == uePos);
-    c.check("...with the downlink budget", l.txAntennaGain == gEnb && l.rxAntennaGain == gUe && l.noiseFigure == nfUe);
     c.check("...and the state read from the UE's side", l.useUeSideMaps);
 }
 {
@@ -188,16 +170,12 @@ const double nfUe = bs->par("ueNoiseFigure").doubleValue(), nfBs = bs->par("bsNo
     c.check("cellularLink takes the side of the state from its argument",
             atEnb.cellularLink(ueId, DL, uePos, true).useUeSideMaps
             && !atEnb.cellularLink(ueId, DL, uePos, false).useUeSideMaps);
-    c.check("cellularLink, DL: the downlink budget, as linkFor gives it",
-            dl.txAntennaGain == gEnb && dl.rxAntennaGain == gUe && dl.noiseFigure == nfUe);
-    c.check("cellularLink, UL: the uplink budget, as linkFor gives it",
-            ul.txAntennaGain == gUe && ul.rxAntennaGain == gEnb && ul.noiseFigure == nfBs);
 }
 
 c.summary();
 
 %contains: stdout
-modelchecks=22 modelfailures=0
+modelchecks=17 modelfailures=0
 
 %not-contains: stdout
 FAILED

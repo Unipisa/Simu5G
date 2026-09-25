@@ -43,8 +43,8 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
     /*
      * Build the RadioLink for a UE-to-UE transmission, so that the core
      * propagation path can evaluate it. Both endpoints being UEs is the whole of
-     * what makes a D2D link different: same antenna gain on both sides, the UE
-     * noise figure, and no sectorial antenna (hence no angular attenuation).
+     * what makes a D2D link different: no sectorial antenna (hence no angular
+     * attenuation); the gains and the noise figure are the two UEs' radios'.
      */
     RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord, bool useUeSideMaps);
 

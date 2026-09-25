@@ -44,8 +44,8 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     link.rxCoord = destCoord;
 
     // Both endpoints are UEs.
-    link.txAntennaGain = link.rxAntennaGain = antennaGainUe_;
-    link.noiseFigure = ueNoiseFigure_;
+    link.txRadio = radioMedium_->findRadio(srcId);
+    link.rxRadio = radioMedium_->findRadio(destId);
     link.txIsBaseStation = false; // omnidirectional: no angular attenuation
 
     // The channel state is keyed on the *link*, so a UE's several D2D peers each
@@ -226,8 +226,7 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
                 EV << NOW << " D2dChannelModel::computeD2DInterference - Interference from UE: " << ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
                 // get tx power and attenuation from this UE
-                double rxPwr = txPwr - cableLoss_ + 2 * antennaGainUe_;
-                ASSERT(isRadiosLinkBudget(ueId, destId, antennaGainUe_, antennaGainUe_, cableLoss_));
+                double rxPwr = txPwr - cableLossOf(destId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(destId, antennaGainUe_);
                 // interferer -> our receiver; the eNB-side maps are used for interferers
                 double att = getAttenuation(d2dLink(ueId, ueCoord, destId, destCoord, false));
                 (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm

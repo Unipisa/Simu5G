@@ -123,14 +123,12 @@ const MacNodeId UE_C = MacNodeId(1027);
             fresh.txId == NODEID_NONE && fresh.rxId == NODEID_NONE);
     c.check("...no cell", fresh.cellId == NODEID_NONE);
     c.check("...and no direction", fresh.dir == UNKNOWN_DIRECTION);
-    c.check("...and it claims no antenna gain it has not been given",
-            fresh.txAntennaGain == 0.0 && fresh.rxAntennaGain == 0.0 && fresh.noiseFigure == 0.0);
 }
 
 c.summary();
 
 %contains: stdout
-modelchecks=18 modelfailures=0
+modelchecks=17 modelfailures=0
 
 %not-contains: stdout
 FAILED

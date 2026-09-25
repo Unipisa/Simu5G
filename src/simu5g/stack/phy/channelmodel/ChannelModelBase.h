@@ -108,10 +108,13 @@ struct RadioLink
     inet::Coord stateCoord;      // position feeding computeSpeed + correlation distance
     bool useUeSideMaps = false;  // the former 'cqiDl' flag
 
-    // ---- link budget ----
-    double txAntennaGain = 0.0;
-    double rxAntennaGain = 0.0;
-    double noiseFigure = 0.0;
+    // ---- radios ----
+    // The link budget is not part of the link: the antenna gains, the cable loss
+    // and the noise figure are those of the two radios. They are resolved where
+    // the link is built -- the local one is the evaluating model's own -- and not
+    // from txId and rxId, which a frame evaluated as a broadcast leaves unset.
+    IRadioEndpoint *txRadio = nullptr;
+    IRadioEndpoint *rxRadio = nullptr;
     bool txIsBaseStation = false;   // gates angular attenuation
 
     // The cell this link belongs to. Only the interference computation needs it --

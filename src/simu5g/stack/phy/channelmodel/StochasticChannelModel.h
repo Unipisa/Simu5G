@@ -34,8 +34,8 @@ class PathLossModel;
  * propagation, and covers:
  * - path loss per deployment scenario, LOS/NLOS state, and log-normal shadowing;
  * - multipath fading, Jakes or Rayleigh;
- * - the antenna pattern attenuation and the link budget (antenna gains, cable
- *   loss, noise figures, thermal noise);
+ * - the antenna pattern attenuation and the link budget (the two radios'
+ *   antenna gains, the receiver's cable loss and noise figure; thermal noise);
  * - interference from other cells -- downlink, uplink, external cells and
  *   background cells;
  * - the assembly of all of the above into a per-band SINR, and the mapping of
@@ -384,13 +384,6 @@ class StochasticChannelModel : public ChannelModelBase
     virtual RadioLink linkFor(UserControlInfo *lteInfo);
 
     /*
-     * Fill a cellular link's budget -- antenna gains and noise figure -- from its
-     * direction: the base station's and the UE's parameters, receiver side's
-     * noise figure.
-     */
-    void setCellularBudget(RadioLink& link) const;
-
-    /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
      * local module is one endpoint, 'coord' the other, and 'dir' says which of
      * the two is the UE.
@@ -410,18 +403,17 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr);
 
     /*
-     * Whether the antenna gains and cable loss used for the link from txId to
-     * rxId are those of the two radios on the medium (the transmitter's and
-     * the receiver's gain, the receiver's cable loss). True if either end is
-     * not a radio on the medium.
+     * The antenna gain of a node's radio, or gainIfNoRadio if the node is not
+     * a radio on the medium: a background cell or UE, whose link budget is
+     * still the model's own parameters.
      */
-    bool isRadiosLinkBudget(MacNodeId txId, MacNodeId rxId, double txAntennaGain, double rxAntennaGain, double cableLoss) const;
+    double antennaGainOf(MacNodeId nodeId, double gainIfNoRadio) const;
 
     /*
-     * Whether the noise figure used for a reception at rxId is that radio's.
-     * True if rxId is not a radio on the medium.
+     * The cable loss of a node's radio as a receiver, or the model's own
+     * cableLoss if the node is not a radio on the medium.
      */
-    bool isReceiversNoiseFigure(MacNodeId rxId, double noiseFigure) const;
+    double cableLossOf(MacNodeId nodeId) const;
 
     /*
      * Fill den[] with the per-band interference-plus-noise denominator, in dBm,

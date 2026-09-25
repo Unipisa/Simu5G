@@ -135,21 +135,6 @@ void StochasticChannelModel::initialize(int stage)
     }
 }
 
-void StochasticChannelModel::setCellularBudget(RadioLink& link) const
-{
-    if (link.dir == DL) {
-        link.noiseFigure = ueNoiseFigure_;    // dB
-        link.txAntennaGain = antennaGainEnB_; // dB
-        link.rxAntennaGain = antennaGainUe_;  // dB
-    }
-    else { // if( dir == UL )
-        // TODO check if antennaGainEnB should be added in UL direction too
-        link.txAntennaGain = antennaGainUe_;
-        link.rxAntennaGain = antennaGainEnB_;
-        link.noiseFigure = bsNoiseFigure_;
-    }
-}
-
 RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord, bool cqiDl)
 {
     // The local module is one endpoint and 'coord' the other; 'dir' says which
@@ -161,7 +146,6 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     link.stateKey = LinkKey(ueId);
     link.stateNodeId = ueId;
     link.useUeSideMaps = cqiDl;
-    setCellularBudget(link);
 
     if (dir == DL) { // the local module is the UE, 'coord' is the BS
         link.txIsBaseStation = true;
@@ -169,6 +153,7 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
         link.rxCoord = phy_->getCoord();
         link.stateCoord = phy_->getCoord();
         link.rxId = ueId;
+        link.rxRadio = phy_;
     }
     else { // the local module is the BS, 'coord' is the UE
         link.txIsBaseStation = false;
@@ -176,6 +161,8 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
         link.rxCoord = phy_->getCoord();
         link.stateCoord = coord;
         link.txId = ueId;
+        link.txRadio = radioMedium_->findRadio(ueId);
+        link.rxRadio = phy_;
     }
     return link;
 }
@@ -217,7 +204,6 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.useUeSideMaps = (link.dir == DL);
     }
 
-    setCellularBudget(link);
     if (link.dir == DL) {
         link.txIsBaseStation = true;
         link.txId = eNbId;
@@ -231,6 +217,20 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.rxId = eNbId;
         link.txCoord = ueCoord;
         link.rxCoord = enbCoord;
+    }
+
+    // the two radios: the local one is this model's own, the other the peer's
+    if (link.dir == DL && lteInfo->getFrameType() != FEEDBACKPKT) { // decoding at the UE
+        link.txRadio = radioMedium_->findRadio(eNbId);
+        link.rxRadio = phy_;
+    }
+    else if (link.dir == DL) { // a DL CQI, at the base station
+        link.txRadio = phy_;
+        link.rxRadio = radioMedium_->findRadio(ueId);
+    }
+    else { // UL data or a UL CQI, at the base station
+        link.txRadio = radioMedium_->findRadio(ueId);
+        link.rxRadio = phy_;
     }
 
     // The UE owns the channel state, and it is always the UE's position that feeds
@@ -486,8 +486,9 @@ std::vector<double> StochasticChannelModel::getSINR(const RadioLink& link, UserC
      */
 
     // compute and linearize total noise
-    ASSERT(isReceiversNoiseFigure(link.rxId, link.noiseFigure));
-    double totN = dBmToLinear(thermalNoise_ + link.noiseFigure);
+    if (link.rxRadio == nullptr)
+        throw cRuntimeError("StochasticChannelModel::getSINR(): the receiver of the link to node %d is not a radio on the medium", (int)num(link.rxId));
+    double totN = dBmToLinear(thermalNoise_ + link.rxRadio->getNoiseFigure());
 
     // per-band interference-plus-noise denominator, in dBm
     std::vector<double> den(numBands_, 0.0);
@@ -607,9 +608,18 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
        << " - txPwr " << txPower
        << " - txCoord[" << link.txCoord << "] - rxCoord[" << link.rxCoord << "]" << endl;
 
+    // the link budget of the two radios: their antenna gains, the receiver's cable loss
+    IRadioEndpoint *tx = link.txRadio;
+    IRadioEndpoint *rx = link.rxRadio;
+    if (tx == nullptr || rx == nullptr)
+        throw cRuntimeError("StochasticChannelModel::getRSRP(): the link from node %d to node %d has an end that is not a radio on the medium",
+                (int)num(link.txId), (int)num(link.rxId));
+    double txAntennaGain = tx->getAntennaGain();
+    double rxAntennaGain = rx->getAntennaGain();
+    double cableLoss = rx->getCableLoss();
+
     // =============== PATH LOSS + SHADOWING + FADING =================
-    EV << "\t using parameters - noiseFigure=" << link.noiseFigure
-       << " - antennaGainTx=" << link.txAntennaGain << " - antennaGainRx=" << link.rxAntennaGain
+    EV << "\t using parameters - antennaGainTx=" << txAntennaGain << " - antennaGainRx=" << rxAntennaGain
        << " - txPwr=" << txPower << " - for nodeId=" << link.stateKey << endl;
 
     // Speed must be read BEFORE getAttenuation(), which appends to positionHistory_:
@@ -624,21 +634,18 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
     recvPower -= attenuation; // (dBm-dB)=dBm
 
     // add antenna gain
-    recvPower += link.txAntennaGain; // (dBm+dB)=dBm
-    recvPower += link.rxAntennaGain; // (dBm+dB)=dBm
+    recvPower += txAntennaGain; // (dBm+dB)=dBm
+    recvPower += rxAntennaGain; // (dBm+dB)=dBm
 
     // sub cable loss
-    recvPower -= cableLoss_; // (dBm-dB)=dBm
-    ASSERT(isRadiosLinkBudget(link.txId, link.rxId, link.txAntennaGain, link.rxAntennaGain, cableLoss_));
+    recvPower -= cableLoss; // (dBm-dB)=dBm
 
     // =============== ANGULAR ATTENUATION =================
     // Only a base station has a sectorial antenna; a UE-to-UE link never gets here.
     if (link.txIsBaseStation) {
-        IRadioEndpoint *bsEndpoint = radioMedium_->findRadio(link.txId);
-
-        if (bsEndpoint && bsEndpoint->getTxDirection() == ANISOTROPIC) {
+        if (tx->getTxDirection() == ANISOTROPIC) {
             // get tx angle
-            double txAngle = bsEndpoint->getTxAngle();
+            double txAngle = tx->getTxAngle();
 
             // compute the angle between the receiver position and the reference axis,
             // considering the transmitting BS as center
@@ -689,9 +696,8 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
         EV << " StochasticChannelModel::getRSRP node " << link.stateKey
            << " band " << i << " recvPower " << recvPower
            << " direction " << dirToA(link.dir) << " antenna gain tx "
-           << link.txAntennaGain << " antenna gain rx " << link.rxAntennaGain
-           << " noise figure " << link.noiseFigure
-           << " cable loss   " << cableLoss_
+           << txAntennaGain << " antenna gain rx " << rxAntennaGain
+           << " cable loss   " << cableLoss
            << " attenuation (pathloss + shadowing) " << attenuation
            << " speed " << speed << " thermal noise " << thermalNoise_
            << " fading attenuation " << fadingAttenuation << endl;
@@ -1108,19 +1114,16 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
     return true;
 }
 
-bool StochasticChannelModel::isRadiosLinkBudget(MacNodeId txId, MacNodeId rxId, double txAntennaGain, double rxAntennaGain, double cableLoss) const
+double StochasticChannelModel::antennaGainOf(MacNodeId nodeId, double gainIfNoRadio) const
 {
-    IRadioEndpoint *tx = radioMedium_->findRadio(txId);
-    IRadioEndpoint *rx = radioMedium_->findRadio(rxId);
-    if (tx == nullptr || rx == nullptr)
-        return true;
-    return tx->getAntennaGain() == txAntennaGain && rx->getAntennaGain() == rxAntennaGain && rx->getCableLoss() == cableLoss;
+    IRadioEndpoint *radio = radioMedium_->findRadio(nodeId);
+    return radio != nullptr ? radio->getAntennaGain() : gainIfNoRadio;
 }
 
-bool StochasticChannelModel::isReceiversNoiseFigure(MacNodeId rxId, double noiseFigure) const
+double StochasticChannelModel::cableLossOf(MacNodeId nodeId) const
 {
-    IRadioEndpoint *rx = radioMedium_->findRadio(rxId);
-    return rx == nullptr || rx->getNoiseFigure() == noiseFigure;
+    IRadioEndpoint *radio = radioMedium_->findRadio(nodeId);
+    return radio != nullptr ? radio->getCableLoss() : cableLoss_;
 }
 
 void StochasticChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
@@ -1485,8 +1488,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         // else, antenna is omni-directional
         //=============== END ANGULAR ATTENUATION =================
 
-        double txPwr = enbInfo->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
-        ASSERT(isRadiosLinkBudget(id, ueId, antennaGainEnB_, antennaGainUe_, cableLoss_));
+        double txPwr = enbInfo->txPwr - angularAtt - cableLossOf(ueId) + antennaGainOf(id, antennaGainEnB_) + antennaGainOf(ueId, antennaGainUe_);
 
         unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
@@ -1574,8 +1576,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
                     EV << NOW << " StochasticChannelModel::computeUplinkInterference - Interference from UE: " << ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
                     // get rx power and attenuation from this UE
-                    double rxPwr = txPwr - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-                    ASSERT(isRadiosLinkBudget(ueId, eNbId, antennaGainUe_, antennaGainEnB_, cableLoss_));
+                    double rxPwr = txPwr - cableLossOf(eNbId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(eNbId, antennaGainEnB_);
                     double att = getAttenuation(ueId, UL, ueCoord, false);
                     (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
@@ -1618,8 +1619,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
                     EV << NOW << " StochasticChannelModel::computeUplinkInterference - Interference from UE: " << ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
                     // get tx power and attenuation from this UE
-                    double rxPwr = txPwr - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-                    ASSERT(isRadiosLinkBudget(ueId, eNbId, antennaGainUe_, antennaGainEnB_, cableLoss_));
+                    double rxPwr = txPwr - cableLossOf(eNbId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(eNbId, antennaGainEnB_);
                     double att = getAttenuation(ueId, UL, ueCoord, false);
                     (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 

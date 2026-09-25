@@ -5,12 +5,13 @@ medium's registry, checked with stub radios registered there -- the
 lookups that went through the node's module path before and so could not be
 given a stub.
 
-getRSRP(): the angular attenuation of a downlink depends on the transmitting
-base station's antenna, which the model finds in the medium by the link's
-transmitter id. An omnidirectional base station adds nothing; a sectorial
-one subtracts exactly computeAngularAttenuation() of the receiver's angles,
-on every band; a base station with no radio on the medium is treated as
-omnidirectional.
+getRSRP(): the link budget and the angular attenuation are the two radios',
+found in the medium by the link's transmitter and receiver ids. A transmitter
+or receiver antenna gain adds exactly its value, and the receiver's cable
+loss subtracts exactly its value, on every band. An omnidirectional base
+station adds no angular term; a sectorial one subtracts exactly
+computeAngularAttenuation() of the receiver's angles, on every band. A link
+whose transmitter is not on the medium cannot be evaluated.
 
 emitRcvdSinr(): a downlink SINR is emitted by the receiving (UE-side) model
 itself; an uplink SINR is emitted, from the base station's model, on the
@@ -95,14 +96,6 @@ const Coord enbPos(0, 0, 25), uePos(120, 45, 1.5);
 StubEndpoint enbEndpoint, ueEndpoint;
 enbEndpoint.coord = enbPos;
 ueEndpoint.coord = uePos;
-// The radios hold the link budget the channel models are configured with:
-// getRSRP() asserts that the two agree.
-enbEndpoint.antennaGain = ue->par("antennGainEnB").doubleValue();
-enbEndpoint.cableLoss = bs->par("cableLoss").doubleValue();
-enbEndpoint.noiseFigure = bs->par("bsNoiseFigure").doubleValue();
-ueEndpoint.antennaGain = ue->par("antennaGainUe").doubleValue();
-ueEndpoint.cableLoss = ue->par("cableLoss").doubleValue();
-ueEndpoint.noiseFigure = ue->par("ueNoiseFigure").doubleValue();
 ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
 bs->setPhy(&enbEndpoint);
 ue->setPhy(&ueEndpoint);
@@ -139,13 +132,31 @@ c.check("...and a node with no radio on the medium finds none", medium->findRadi
     c.check("a sectorial base station's antenna attenuates the downlink by the pattern at the UE's angles, on every band",
             everyBand && expected > 0, "expected " + std::to_string(expected) + " dB");
 
-    // The same geometry from a base station that has no radio on the medium.
+    // The link budget: each term shifts every band by exactly its value.
     enbEndpoint.txDirection = OMNI;
+    auto shiftedBy = [&] (double delta) {
+        std::vector<double> rsrp = ue->getRSRP(link, txPower);
+        bool exact = rsrp.size() == omni.size();
+        for (size_t band = 0; exact && band < rsrp.size(); band++)
+            exact = fabs((rsrp[band] - omni[band]) - delta) < 1e-9;
+        return exact;
+    };
+    enbEndpoint.antennaGain = 3;
+    c.check("the transmitter's antenna gain is added, on every band", shiftedBy(3));
+    enbEndpoint.antennaGain = 0;
+    ueEndpoint.antennaGain = 2;
+    c.check("...and the receiver's", shiftedBy(2));
+    ueEndpoint.antennaGain = 0;
+    ueEndpoint.cableLoss = 1;
+    c.check("...and the receiver's cable loss subtracted", shiftedBy(-1));
+    ueEndpoint.cableLoss = 0;
+
+    // The same geometry from a base station that has no radio on the medium.
     UserControlInfo fromOther = downlinkData(otherEnbId, ueId, enbPos);
     RadioLink otherLink = atUe.linkFor(&fromOther);
-    otherLink.stateKey = link.stateKey; // the same channel state, so only the antenna can differ
-    c.check("a base station with no radio on the medium is treated as omnidirectional",
-            ue->getRSRP(otherLink, txPower) == omni);
+    c.expectRejected("a link whose transmitter is not on the medium is rejected", [&] {
+        ue->getRSRP(otherLink, txPower);
+    });
 }
 
 //
@@ -175,7 +186,7 @@ c.check("...and a node with no radio on the medium finds none", medium->findRadi
 c.summary();
 
 %contains: stdout
-modelchecks=7 modelfailures=0
+modelchecks=10 modelfailures=0
 
 %not-contains: stdout
 FAILED

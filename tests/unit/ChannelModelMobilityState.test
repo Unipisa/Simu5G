@@ -187,6 +187,9 @@ wait(1.0);
     wait(1.0);
     const Coord now(40, 0, 1.5);
 
+    // the link's two radios, whose budget getRSRP applies
+    StubEndpoint bsRadio, ueRadio;
+
     RadioLink link;
     link.dir = DL;
     link.txId = MacNodeId(1);
@@ -196,6 +199,8 @@ wait(1.0);
     link.stateKey = LinkKey(id);
     link.stateNodeId = id;
     link.stateCoord = now;
+    link.txRadio = &bsRadio;
+    link.rxRadio = &ueRadio;
     link.txIsBaseStation = false;   // no angular term: this is about speed only
 
     // The two orders' speeds, from the state before the call.
