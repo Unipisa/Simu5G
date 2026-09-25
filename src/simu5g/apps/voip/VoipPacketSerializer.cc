@@ -50,7 +50,7 @@ const Ptr<Chunk> VoipPacketSerializer::deserialize(MemoryInputStream& stream) co
     voipPacket->setIDtalk(stream.readUint32Be());
     voipPacket->setNframes(stream.readUint32Be());
     voipPacket->setIDframe(stream.readUint32Be());
-    voipPacket->getPayloadTimestamp().setRaw(stream.readUint64Be());
+    voipPacket->setPayloadTimestamp(SimTime::fromRaw(stream.readUint64Be()));
     voipPacket->setPayloadSize(stream.readUint32Be());
 
     B remainders = dataLength - (stream.getPosition() - startPosition);
