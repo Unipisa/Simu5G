@@ -34,6 +34,7 @@ using inet::Coord;
 
 %file: harness.ned
 import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
 
@@ -41,6 +42,7 @@ network Harness
 {
     submodules:
         binder: Binder;
+        radioMedium: CellularRadioMedium;
         carrierAggregation: CarrierAggregation;
         bsChannelModel: Tr38901ChannelModel;
         test: Test;

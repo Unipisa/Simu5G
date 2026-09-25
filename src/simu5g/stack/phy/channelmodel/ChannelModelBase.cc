@@ -19,6 +19,7 @@ void ChannelModelBase::initialize(int stage)
 {
     if (stage == INITSTAGE_SIMU5G_POSTLOCAL) {
         binder_.reference(this, "binderModule", true);
+        radioMedium_.reference(this, "radioMediumModule", true);
 
         componentCarrier_.reference(this, "componentCarrierModule", true);
 

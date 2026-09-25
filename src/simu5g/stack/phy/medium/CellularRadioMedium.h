@@ -44,6 +44,9 @@ class CellularRadioMedium : public cSimpleModule
 
     /** The radio of the given node id, or nullptr if none is registered. */
     virtual IRadioEndpoint *findRadio(MacNodeId nodeId) const;
+
+    /** The radio of the given node id. Throws if none is registered. */
+    virtual IRadioEndpoint *getRadio(MacNodeId nodeId) const;
 };
 
 } // namespace simu5g

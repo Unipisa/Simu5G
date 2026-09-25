@@ -17,6 +17,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -84,6 +85,8 @@ class BackgroundCellChannelModel : public cSimpleModule
 
     //pointer to Binder module
     inet::ModuleRefByPar<Binder> binder_;
+    // the radio medium, whose registry holds the radios of all nodes
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
 
     //Cable loss
     double cableLoss_;

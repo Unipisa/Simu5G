@@ -35,4 +35,12 @@ IRadioEndpoint *CellularRadioMedium::findRadio(MacNodeId nodeId) const
     return it == radios.end() ? nullptr : it->second;
 }
 
+IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const
+{
+    IRadioEndpoint *radio = findRadio(nodeId);
+    if (radio == nullptr)
+        throw cRuntimeError("CellularRadioMedium::getRadio(): no radio is registered for node %d", (int)num(nodeId));
+    return radio;
+}
+
 } // namespace simu5g

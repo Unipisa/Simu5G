@@ -1,0 +1,173 @@
+%description:
+
+What a channel model looks up about other nodes' radios through the radio
+medium's registry, checked with stub radios registered there -- the
+lookups that went through the node's module path before and so could not be
+given a stub.
+
+getRSRP(): the angular attenuation of a downlink depends on the transmitting
+base station's antenna, which the model finds in the medium by the link's
+transmitter id. An omnidirectional base station adds nothing; a sectorial
+one subtracts exactly computeAngularAttenuation() of the receiver's angles,
+on every band; a base station with no radio on the medium is treated as
+omnidirectional.
+
+emitRcvdSinr(): a downlink SINR is emitted by the receiving (UE-side) model
+itself; an uplink SINR is emitted, from the base station's model, on the
+sending UE's own channel model on that carrier, found through the medium.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+static UserControlInfo downlinkData(MacNodeId enb, MacNodeId ue, const Coord& enbPosition)
+{
+    UserControlInfo info;
+    info.setDirection(DL);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(enb);
+    info.setDestId(ue);
+    info.setCoord(enbPosition);
+    return info;
+}
+
+// Remembers the last value each component emitted on the signals it is subscribed to.
+class LastValues : public cListener
+{
+  public:
+    std::map<std::pair<const cComponent *, simsignal_t>, double> values;
+    virtual void receiveSignal(cComponent *source, simsignal_t signal, double value, cObject *) override
+    {
+        values[{source, signal}] = value;
+    }
+    bool has(const cComponent *source, simsignal_t signal) const { return values.count({source, signal}) != 0; }
+    double get(const cComponent *source, simsignal_t signal) const { return values.at({source, signal}); }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Path loss only: no shadowing or fading, so repeated evaluations of a link agree.
+**.shadowing = false
+**.fading = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+
+const MacNodeId enbId = MacNodeId(1), otherEnbId = MacNodeId(2), ueId = MacNodeId(1025);
+const Coord enbPos(0, 0, 25), uePos(120, 45, 1.5);
+StubEndpoint enbEndpoint, ueEndpoint;
+enbEndpoint.coord = enbPos;
+ueEndpoint.coord = uePos;
+ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
+bs->setPhy(&enbEndpoint);
+ue->setPhy(&ueEndpoint);
+StubRadioRegistration enbRadio(medium, enbId, &enbEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe atEnb(bs), atUe(ue);
+
+c.check("a registered radio is the one the medium finds", medium->findRadio(enbId) == &enbEndpoint);
+c.check("...and a node with no radio on the medium finds none", medium->findRadio(otherEnbId) == nullptr);
+
+//
+// --- getRSRP(): the transmitting base station's antenna ---
+//
+{
+    const double txPower = 40; // dBm
+    UserControlInfo fromEnb = downlinkData(enbId, ueId, enbPos);
+    RadioLink link = atUe.linkFor(&fromEnb);
+
+    enbEndpoint.txDirection = OMNI;
+    std::vector<double> omni = ue->getRSRP(link, txPower);
+
+    enbEndpoint.txDirection = ANISOTROPIC;
+    enbEndpoint.txAngle = 0;
+    std::vector<double> sector = ue->getRSRP(link, txPower);
+
+    double recvAngle = fabs(0 - ue->computeAngle(enbPos, uePos));
+    if (recvAngle > 180)
+        recvAngle = 360 - recvAngle;
+    double expected = ue->computeAngularAttenuation(recvAngle, ue->computeVerticalAngle(enbPos, uePos));
+    bool everyBand = omni.size() == sector.size() && !omni.empty();
+    for (size_t band = 0; everyBand && band < omni.size(); band++)
+        if (fabs((omni[band] - sector[band]) - expected) > 1e-9)
+            everyBand = false;
+    c.check("a sectorial base station's antenna attenuates the downlink by the pattern at the UE's angles, on every band",
+            everyBand && expected > 0, "expected " + std::to_string(expected) + " dB");
+
+    // The same geometry from a base station that has no radio on the medium.
+    enbEndpoint.txDirection = OMNI;
+    UserControlInfo fromOther = downlinkData(otherEnbId, ueId, enbPos);
+    RadioLink otherLink = atUe.linkFor(&fromOther);
+    otherLink.stateKey = link.stateKey; // the same channel state, so only the antenna can differ
+    c.check("a base station with no radio on the medium is treated as omnidirectional",
+            ue->getRSRP(otherLink, txPower) == omni);
+}
+
+//
+// --- emitRcvdSinr(): whose statistic ---
+//
+{
+    simsignal_t dl = cComponent::registerSignal("rcvdSinrDl"), ul = cComponent::registerSignal("rcvdSinrUl");
+    LastValues seen;
+    for (cComponent *model : {(cComponent *)bs, (cComponent *)ue})
+        for (simsignal_t signal : {dl, ul})
+            model->subscribe(signal, &seen);
+
+    atEnb.emitRcvdSinr(UL, ueId, ue->getCarrierFrequency(), 12.5);
+    c.check("an uplink SINR is emitted on the sending UE's channel model",
+            seen.has(ue, ul) && seen.get(ue, ul) == 12.5);
+    c.check("...not on the base station's", !seen.has(bs, ul));
+
+    atUe.emitRcvdSinr(DL, ueId, ue->getCarrierFrequency(), 7.0);
+    c.check("a downlink SINR is emitted by the receiving model itself",
+            seen.has(ue, dl) && seen.get(ue, dl) == 7.0 && !seen.has(bs, dl));
+
+    for (cComponent *model : {(cComponent *)bs, (cComponent *)ue})
+        for (simsignal_t signal : {dl, ul})
+            model->unsubscribe(signal, &seen);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=7 modelfailures=0
+
+%not-contains: stdout
+FAILED

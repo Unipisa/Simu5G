@@ -26,6 +26,7 @@ simple BackgroundCellChannelModel
 
         // Module references
         string binderModule = default("binder");
+        string radioMediumModule = default("radioMedium");
 
         // Enable/disable shadowing
         bool shadowing = default(true);

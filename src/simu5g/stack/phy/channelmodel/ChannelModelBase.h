@@ -22,6 +22,7 @@
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -148,6 +149,9 @@ class ChannelModelBase : public cSimpleModule
   protected:
     // Reference to Binder module
     inet::ModuleRefByPar<Binder> binder_;
+
+    // The radio medium, whose registry holds the radios of all nodes
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
 
     // Reference to cell info module
     inet::ModuleRefByPar<CellInfo> cellInfo_;

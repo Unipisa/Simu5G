@@ -20,6 +20,7 @@
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/channelmodel/PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/StochasticChannelModel.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 namespace unittest {
@@ -95,6 +96,30 @@ class StubUeRegistration
 };
 
 /**
+ * Registers a stub endpoint with the radio medium, as a PHY registers its
+ * radio, for the lifetime of the object -- so that a channel model looking up
+ * another node's radio through the medium finds the stub.
+ */
+class StubRadioRegistration
+{
+  private:
+    CellularRadioMedium *medium_;
+    MacNodeId id_;
+
+  public:
+    StubRadioRegistration(CellularRadioMedium *medium, MacNodeId id, IRadioEndpoint *endpoint)
+        : medium_(medium), id_(id)
+    {
+        medium_->addRadio(id_, endpoint);
+    }
+
+    ~StubRadioRegistration() { medium_->removeRadio(id_); }
+
+    StubRadioRegistration(const StubRadioRegistration&) = delete;
+    StubRadioRegistration& operator=(const StubRadioRegistration&) = delete;
+};
+
+/**
  * The protected parts of StochasticChannelModel, for a test that has to look at
  * the model's state or call its internal steps directly.
  *
@@ -126,6 +151,7 @@ class ChannelModelProbe
         static auto updatePositionHistoryPtr() { return &Access::updatePositionHistory; }
         static auto obtainUeJakesMapPtr() { return &Access::obtainUeJakesMap; }
         static auto obtainShadowingMapPtr() { return &Access::obtainShadowingMap; }
+        static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
     };
 
     StochasticChannelModel *model_;
@@ -163,6 +189,10 @@ class ChannelModelProbe
     void updatePositionHistory(MacNodeId id, inet::Coord coord) { (model_->*Access::updatePositionHistoryPtr())(id, coord); }
     auto *obtainUeJakesMap(MacNodeId id) { return (model_->*Access::obtainUeJakesMapPtr())(id); }
     auto *obtainShadowingMap(MacNodeId id) { return (model_->*Access::obtainShadowingMapPtr())(id); }
+    void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
+    {
+        (model_->*Access::emitRcvdSinrPtr())(dir, ueId, carrierFrequency, sinr);
+    }
 };
 
 /**

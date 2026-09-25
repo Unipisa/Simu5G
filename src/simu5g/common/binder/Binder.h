@@ -22,7 +22,6 @@
 #include "simu5g/common/blerCurves/PhyPisaData.h"
 #include "simu5g/nodes/ExtCell.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -51,9 +50,6 @@ class Binder : public cSimpleModule
 
     // name of the system (top-level) module
     std::string networkName_;
-
-    // the network's radio medium, whose registry findPhy() is checked against; nullptr if there is none
-    opp_component_ptr<CellularRadioMedium> radioMedium_;
 
     // A node may be known under several addresses: a UE under those of its cellular
     // interface (several with IPv6, of either family on a dual-stack UE), a base station
@@ -640,17 +636,6 @@ class Binder : public cSimpleModule
     virtual CellInfo *getCellInfoByNodeId(MacNodeId nodeId);
     virtual cModule *getPhyByNodeId(MacNodeId nodeId);
 
-    /**
-     * A node's PHY as a channel model sees it -- for an NR UE its NR PHY, as
-     * with getPhyByNodeId(). Throws if the node is not in the simulation.
-     */
-    virtual IRadioEndpoint *getPhy(MacNodeId nodeId);
-
-    /**
-     * As getPhy(), but returns nullptr for a node that is not in the simulation
-     * (a UE may have left it).
-     */
-    virtual IRadioEndpoint *findPhy(MacNodeId nodeId);
     virtual cModule *getMacByNodeId(MacNodeId nodeId);
     virtual cModule *getRrcByNodeId(MacNodeId nodeId);
     virtual cModule *getIp2NicByNodeId(MacNodeId nodeId);
