@@ -11,28 +11,76 @@
 
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
+#include <inet/common/INETMath.h>
+
+#include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+
 namespace simu5g {
 
 Define_Module(CellularRadioMedium);
 
+void CellularRadioMedium::initialize(int stage)
+{
+    if (stage == inet::INITSTAGE_LOCAL) {
+        // the distance at which a free-space transmission at pMax falls to the sat threshold
+        double waveLength = SPEED_OF_LIGHT / par("carrierFrequency").doubleValue();
+        double minReceivePower = pow(10.0, par("sat").doubleValue() / 10.0);
+        maxInterferenceDistance = pow(waveLength * waveLength * par("pMax").doubleValue()
+                / (16.0 * M_PI * M_PI * minReceivePower), 1.0 / par("alpha").doubleValue());
+        EV << "max interference distance:" << maxInterferenceDistance << endl;
+    }
+}
+
 void CellularRadioMedium::addRadio(MacNodeId nodeId, IRadioEndpoint *radio)
 {
     Enter_Method("addRadio");
-    if (!radios.emplace(nodeId, radio).second)
+    if (nodeId != NODEID_NONE && !radios.emplace(nodeId, radio).second)
         throw cRuntimeError("CellularRadioMedium::addRadio(): a radio is already registered for node %d", (int)num(nodeId));
+    if (auto module = dynamic_cast<cModule *>(radio))
+        radioModules[module->getId()] = RadioModule{radio, module, module->gate("radioIn")->getPathStartGate()};
 }
 
-void CellularRadioMedium::removeRadio(MacNodeId nodeId)
+void CellularRadioMedium::removeRadio(IRadioEndpoint *radio)
 {
     Enter_Method("removeRadio");
-    if (radios.erase(nodeId) == 0)
-        throw cRuntimeError("CellularRadioMedium::removeRadio(): no radio is registered for node %d", (int)num(nodeId));
+    bool found = false;
+    for (auto it = radios.begin(); it != radios.end(); ++it) {
+        if (it->second == radio) {
+            radios.erase(it);
+            found = true;
+            break;
+        }
+    }
+    if (auto module = dynamic_cast<cModule *>(radio))
+        found = radioModules.erase(module->getId()) != 0 || found;
+    if (!found)
+        throw cRuntimeError("CellularRadioMedium::removeRadio(): the radio is not on the medium");
 }
 
 IRadioEndpoint *CellularRadioMedium::findRadio(MacNodeId nodeId) const
 {
     auto it = radios.find(nodeId);
     return it == radios.end() ? nullptr : it->second;
+}
+
+void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, AirFrame *frame, simtime_t duration)
+{
+    // NOTE: no Enter_Method(): the copies are sent by the sending radio
+    auto senderModule = check_and_cast<cSimpleModule *>(sender);
+    const inet::Coord& senderPosition = sender->getCoord();
+    double maxDistanceSquared = maxInterferenceDistance * maxInterferenceDistance;
+    for (const auto& [moduleId, radioModule] : radioModules) {
+        if (radioModule.radio == sender)
+            continue;
+        if (senderPosition.sqrdist(radioModule.radio->getCoord()) < maxDistanceSquared) {
+            EV << "sending message to radio\n";
+            // no propagation delay, as for the frames the PHY sends to a single radio
+            senderModule->sendDirect(frame->dup(), 0, duration, radioModule.radioInGate);
+        }
+    }
+    // the radios in range got copies; the original frame can be deleted
+    delete frame;
 }
 
 IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const

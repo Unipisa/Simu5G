@@ -47,20 +47,14 @@ static int parseInt(const char *s, int defaultValue)
 
 PhyBase::~PhyBase()
 {
-    // channelControl_ is nullptr if the ChannelControl module has already been deleted
-    if (channelControl_ != nullptr && radioRef_ != nullptr)
-        channelControl_->unregisterRadio(radioRef_);
     // radioMedium_ is unset if the medium has already been deleted
     if (radioMedium_ && registeredWithMedium_)
-        radioMedium_->removeRadio(nodeId_);
+        radioMedium_->removeRadio(this);
 }
 
 void PhyBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        channelControl_ = dynamic_cast<ChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
-        if (!channelControl_)
-            throw cRuntimeError("Could not find ChannelControl module with name 'channelControl' in the top-level network.");
         radioMedium_.reference(this, "radioMediumModule", true);
         hostModule_ = inet::getContainingNode(this);
         // register to get a notification when position changes
@@ -86,12 +80,9 @@ void PhyBase::initialize(int stage)
         WATCH(numAirFrameNotReceived_);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
-        radioRef_ = channelControl_->registerRadio(this);
-        // a PHY without a node id is not a radio on the medium
-        if (nodeId_ != NODEID_NONE) {
-            radioMedium_->addRadio(nodeId_, this);
-            registeredWithMedium_ = true;
-        }
+        // a PHY without a node id is on the medium, but cannot be looked up by id
+        radioMedium_->addRadio(nodeId_, this);
+        registeredWithMedium_ = true;
     }
     else if (stage == inet::INITSTAGE_SINGLE_MOBILITY) {
         if (!positionUpdateArrived_ && hostModule_->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this)) {
@@ -111,7 +102,6 @@ void PhyBase::initialize(int stage)
                       " from '@display' attribute, or configure Mobility for this host.",
                         hostModule_->getFullPath().c_str());
         }
-        channelControl_->setRadioPosition(radioRef_, radioPos_);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS2) {
         initializeChannelModel();
@@ -130,9 +120,6 @@ void PhyBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *o
         inet::IMobility *mobility = check_and_cast<inet::IMobility *>(obj);
         radioPos_ = mobility->getCurrentPosition();
         positionUpdateArrived_ = true;
-
-        if (radioRef_ != nullptr)
-            channelControl_->setRadioPosition(radioRef_, radioPos_);
 
         // emit serving cell and the distance from it
         emitMobilityStats();
@@ -274,8 +261,8 @@ void PhyBase::sendBroadcast(AirFrame *airFrame, simtime_t duration)
         delete userControlInfo;
     }
 
-    // ChannelControl delivers it to the radios in range
-    channelControl_->sendToChannel(radioRef_, airFrame, duration);
+    // the medium delivers it to the radios in range
+    radioMedium_->sendToNeighbors(this, airFrame, duration);
 }
 
 void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)

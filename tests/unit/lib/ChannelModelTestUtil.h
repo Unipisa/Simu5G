@@ -104,16 +104,16 @@ class StubRadioRegistration
 {
   private:
     CellularRadioMedium *medium_;
-    MacNodeId id_;
+    IRadioEndpoint *endpoint_;
 
   public:
     StubRadioRegistration(CellularRadioMedium *medium, MacNodeId id, IRadioEndpoint *endpoint)
-        : medium_(medium), id_(id)
+        : medium_(medium), endpoint_(endpoint)
     {
-        medium_->addRadio(id_, endpoint);
+        medium_->addRadio(id, endpoint_);
     }
 
-    ~StubRadioRegistration() { medium_->removeRadio(id_); }
+    ~StubRadioRegistration() { medium_->removeRadio(endpoint_); }
 
     StubRadioRegistration(const StubRadioRegistration&) = delete;
     StubRadioRegistration& operator=(const StubRadioRegistration&) = delete;

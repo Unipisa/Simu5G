@@ -20,7 +20,6 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/common/Units.h>
 
-#include "simu5g/world/radio/ChannelControl.h"
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
@@ -42,11 +41,10 @@ class ChannelModelBase;
  * sent directly to the receiving PHYs; received AirFrames arrive on
  * #radioInGate_ and are handled by the subclasses.
  *
- * The PHY also registers its radio with the ChannelControl module and keeps
- * the radio's position up to date from the host's mobility module; the
- * ChannelControl uses both to deliver broadcast frames (the base station
- * beacons) to the radios in range. It registers the same radio, under its
- * MacNodeId, with the network's radioMedium.
+ * The PHY also registers its radio, under its MacNodeId, with the network's
+ * radioMedium, and keeps the radio's position up to date from the host's
+ * mobility module; the medium uses both to deliver broadcast frames (the base
+ * station beacons) to the radios in range.
  */
 class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
 {
@@ -77,11 +75,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     /** The id of the radioIn gate to receive AirFrames */
     int radioInGate_ = -1;
 
-    /// the ChannelControl module, which delivers broadcast frames to the radios in range
-    opp_component_ptr<ChannelControl> channelControl_;
-    /// identifies this radio in the ChannelControl module
-    ChannelControl::RadioRef radioRef_ = nullptr;
-    /// the network's radio medium, in whose registry this radio is (if it has a node id)
+    /// the network's radio medium: this radio is in its registry, and it delivers broadcast frames
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
     /// whether this radio is registered with radioMedium_
     bool registeredWithMedium_ = false;
@@ -139,8 +133,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
 
     /**
      * Called when the host's mobility module reports a position change:
-     * updates the radio position in ChannelControl and emits the mobility
-     * statistics.
+     * updates the radio position and emits the mobility statistics.
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
@@ -220,7 +213,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     void handleMessage(cMessage *msg) override;
 
     /**
-     * Sends a frame to all radios in range (see ChannelControl), with zero
+     * Sends a frame to all radios in range (see CellularRadioMedium), with zero
      * propagation delay; the transmission lasts for the given duration.
      */
     virtual void sendBroadcast(AirFrame *airFrame, simtime_t duration);
