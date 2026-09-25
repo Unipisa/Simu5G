@@ -24,6 +24,7 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpTunnel.h"
 #include "simu5g/corenetwork/gtp/GtpUserMsg_m.h"
 
 namespace simu5g {
@@ -66,6 +67,19 @@ class GtpUser : public cSimpleModule
 
     opp_component_ptr<cModule> networkNode_;
 
+    // The tunnels ending here: the PDU session of each TEID allocated at this endpoint.
+    // A released session's tunnels stay known, so that a G-PDU still in flight can be
+    // attributed; TEIDs are not reused.
+    std::map<Teid, SessionRef> rxTunnels_;
+
+    // At a base station: the uplink tunnels of the PDU sessions of the UEs it serves or
+    // has served, by each of the UE's node ids
+    std::map<MacNodeId, UplinkTunnels> ulTunnels_;
+
+    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of each PDU session it serves,
+    // by each of the UE's node ids; none while the UE is attached nowhere
+    std::map<MacNodeId, FTeid> dlTunnels_;
+
     CoreNodeType selectOwnerType(const char *type);
 
   protected:
@@ -85,6 +99,23 @@ class GtpUser : public cSimpleModule
 
     // encapsulate a datagram into GTP-U, and send it through the tunnel to the given base station
     void tunnelToBaseStation(inet::Packet *datagram, MacNodeId bsId, Qfi qfi);
+
+  public:
+    // The tunnels of the PDU sessions, as the bearer configurator (the SMF stand-in)
+    // sets them up and moves them.
+
+    // A tunnel ending at this endpoint: G-PDUs arriving with the TEID belong to the session
+    virtual void addTunnel(Teid teid, const SessionRef& session);
+
+    // At a base station: the session's uplink tunnels
+    virtual void setUplinkTunnels(const SessionRef& session, const UplinkTunnels& tunnels);
+
+    // At a UPF/PGW or a MEC host's UPF: the session's downlink tunnel, which the path
+    // switch moves; an unset F-TEID while the UE is attached nowhere
+    virtual void setDownlinkTunnel(const SessionRef& session, const FTeid& tunnel);
+
+    // The session is released: forget its uplink and downlink tunnels
+    virtual void removeSession(const SessionRef& session);
 };
 
 } //namespace

@@ -823,18 +823,18 @@ void BearerConfigurator::establishSession(MacNodeId ueNodeId)
 
     CoreSession session;
     session.ueModule = ueModule;
-    session.id = SessionId(1);
+    session.ref.id = SessionId(1);
     for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
         if (info.moduleRef == ueModule)
-            (isNrUe(nodeId) ? session.nrNodeId : session.lteNodeId) = nodeId;
+            (isNrUe(nodeId) ? session.ref.nrNodeId : session.ref.lteNodeId) = nodeId;
 
     // The LTE id, which every UE has, is the UE's identity: once it is unregistered,
     // the UE is leaving the simulation, and its remaining stack's detachment must not
     // establish a new session
-    if (session.lteNodeId == NODEID_NONE)
+    if (session.ref.lteNodeId == NODEID_NONE)
         return;
 
-    MacNodeId dlBaseStation = findDlBaseStation(session.lteNodeId, session.nrNodeId);
+    MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
     if (dlBaseStation == NODEID_NONE)
         return;   // established when the UE attaches
     const GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
@@ -850,43 +850,79 @@ void BearerConfigurator::establishSession(MacNodeId ueNodeId)
     session.anchor = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
     GtpEndpoint& anchor = gtpEndpoints_[session.anchor];
     session.ulAnchor = FTeid{getGtpEndpointAddress(anchor), allocateTeid(anchor)};
+    anchor.module->addTunnel(session.ulAnchor.teid, session.ref);
     cModule *anchorNode = getContainingNode(anchor.module);
-    for (GtpEndpoint& endpoint : gtpEndpoints_)
-        if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchorNode)
-            session.ulMecHosts[getGtpEndpointAddress(endpoint)] = allocateTeid(endpoint);
+    for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
+        GtpEndpoint& endpoint = gtpEndpoints_[i];
+        if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchorNode) {
+            Teid teid = allocateTeid(endpoint);
+            session.ulMecHosts[i] = teid;
+            endpoint.module->addTunnel(teid, session.ref);
+        }
+    }
 
-    CoreSessionKey key(ueModule->getId(), session.id);
-    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+    CoreSessionKey key(ueModule->getId(), session.ref.id);
+    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
         if (nodeId != NODEID_NONE)
             sessionOfNode_[nodeId] = key;
     CoreSession& established = sessions_[key] = session;
-    EV_INFO << "BearerConfigurator: PDU session " << established.id << " of " << ueModule->getFullPath()
+    EV_INFO << "BearerConfigurator: PDU session " << established.ref.id << " of " << ueModule->getFullPath()
             << " established, anchored at " << anchor.module->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
-    for (const auto& [address, teid] : established.ulMecHosts)
-        EV_INFO << ", to MEC host UPF " << FTeid{address, teid};
+    for (const auto& [index, teid] : established.ulMecHosts)
+        EV_INFO << ", to MEC host UPF " << FTeid{getGtpEndpointAddress(gtpEndpoints_[index]), teid};
     EV_INFO << endl;
     switchPath(established);
 }
 
 void BearerConfigurator::switchPath(CoreSession& session)
 {
-    MacNodeId dlBaseStation = findDlBaseStation(session.lteNodeId, session.nrNodeId);
+    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId}) {
+        if (nodeId == NODEID_NONE)
+            continue;
+        MacNodeId servingNode = binder_->getServingNode(nodeId);
+        if (servingNode != NODEID_NONE)
+            setUpRanTunnels(session, binder_->getMasterNodeOrSelf(servingNode));
+    }
+
+    MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
     if (dlBaseStation == session.dlBaseStation)
         return;
     session.dlBaseStation = dlBaseStation;
     if (dlBaseStation == NODEID_NONE) {
         session.dl = FTeid();
         EV_INFO << "BearerConfigurator: " << session.ueModule->getFullPath() << " is attached nowhere, the downlink of PDU session "
-                << session.id << " has no tunnel" << endl;
-        return;
+                << session.ref.id << " has no tunnel" << endl;
     }
-    GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
-    Teid& teid = session.dlTeids[dlBaseStation];
-    if (teid == TEID_NONE)
-        teid = allocateTeid(bsEndpoint);
-    session.dl = FTeid{getGtpEndpointAddress(bsEndpoint), teid};
-    EV_INFO << "BearerConfigurator: the downlink of PDU session " << session.id << " of " << session.ueModule->getFullPath()
-            << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
+    else {
+        session.dl = FTeid{getGtpEndpointAddress(gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation))), session.dlTeids.at(dlBaseStation)};
+        EV_INFO << "BearerConfigurator: the downlink of PDU session " << session.ref.id << " of " << session.ueModule->getFullPath()
+                << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
+    }
+
+    // the UPFs that send the session's downlink: the anchor, and the MEC host UPFs
+    gtpEndpoints_[session.anchor].module->setDownlinkTunnel(session.ref, session.dl);
+    for (const auto& [index, teid] : session.ulMecHosts)
+        gtpEndpoints_[index].module->setDownlinkTunnel(session.ref, session.dl);
+}
+
+void BearerConfigurator::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
+{
+    if (session.dlTeids.count(bsId) != 0)
+        return;
+    GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId));
+    Teid teid = allocateTeid(bsEndpoint);
+    session.dlTeids[bsId] = teid;
+    bsEndpoint.module->addTunnel(teid, session.ref);
+    bsEndpoint.module->setUplinkTunnels(session.ref, getUplinkTunnels(session));
+}
+
+UplinkTunnels BearerConfigurator::getUplinkTunnels(const CoreSession& session)
+{
+    UplinkTunnels tunnels;
+    tunnels.anchor = session.ulAnchor;
+    for (const auto& [index, teid] : session.ulMecHosts)
+        tunnels.mecHosts[getGtpEndpointAddress(gtpEndpoints_[index])] = teid;
+    return tunnels;
 }
 
 void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
@@ -896,8 +932,16 @@ void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
         return;
     CoreSessionKey key = it->second;
     const CoreSession& session = sessions_.at(key);
-    EV_INFO << "BearerConfigurator: PDU session " << session.id << " of " << session.ueModule->getFullPath() << " released" << endl;
-    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+    EV_INFO << "BearerConfigurator: PDU session " << session.ref.id << " of " << session.ueModule->getFullPath() << " released" << endl;
+
+    // the tunnel ends forget the session's tunnels
+    gtpEndpoints_[session.anchor].module->removeSession(session.ref);
+    for (const auto& [index, teid] : session.ulMecHosts)
+        gtpEndpoints_[index].module->removeSession(session.ref);
+    for (const auto& [bsId, teid] : session.dlTeids)
+        gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).module->removeSession(session.ref);
+
+    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
         sessionOfNode_.erase(nodeId);
     sessions_.erase(key);
 }

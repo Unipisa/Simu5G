@@ -119,18 +119,17 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // the UE first has a serving node, released when the UE leaves (see
     // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
     // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
-    // end of the tunnel (see switchPath()).
+    // end of the tunnel (see switchPath()). The tunnel ends are told about every change
+    // (GtpUser::addTunnel() etc.).
     struct CoreSession {
         cModule *ueModule = nullptr;
-        SessionId id = SessionId(0);
-        MacNodeId lteNodeId = NODEID_NONE;          // the UE's node id on each stack
-        MacNodeId nrNodeId = NODEID_NONE;
+        SessionRef ref;                          // the UE's node ids and the PDU Session ID
         int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
         FTeid ulAnchor;                             // uplink F-TEID at the anchor
-        std::map<inet::L3Address, Teid> ulMecHosts; // uplink TEIDs at the MEC host UPFs of the anchor's core network, by their address
+        std::map<int, Teid> ulMecHosts;             // uplink TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
         MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
         FTeid dl;                                   // downlink F-TEID at dlBaseStation
-        std::map<MacNodeId, Teid> dlTeids;          // the downlink TEID at each base station the downlink has entered at, kept until release
+        std::map<MacNodeId, Teid> dlTeids;          // the downlink TEID at each base station the UE has been attached through, kept until release
     };
     typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
     std::map<CoreSessionKey, CoreSession> sessions_;
@@ -251,10 +250,19 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // base station is not connected to a core network.
     virtual void establishSession(MacNodeId ueNodeId);
 
-    // Move the downlink end of the session's tunnel to the base station the UE's downlink
-    // enters the RAN at now (the path switch, TS 23.502 4.9.1.2.2), allocating the
-    // session's downlink TEID there if it has none yet
+    // Follow a change of the UE's attachment. Every base station the UE is attached
+    // through (the master of a stack's serving node) takes the UE's uplink into the core
+    // network, so it is given the session's uplink tunnels and a downlink TEID on first
+    // use. If the base station the UE's downlink enters the RAN at has changed, the
+    // downlink end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2).
     virtual void switchPath(CoreSession& session);
+
+    // Set up the session's tunnels at a base station the UE is attached through, unless
+    // they are there already
+    virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
+
+    // The session's uplink tunnels, as a base station uses them
+    virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
 
     // Release the PDU session of the UE with the given node id, if it has one
     virtual void releaseSession(MacNodeId ueNodeId);

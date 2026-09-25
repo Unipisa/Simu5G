@@ -76,6 +76,49 @@ void GtpUser::initialize(int stage)
         gwAddress_ = L3AddressResolver().resolve((binder_->getNetworkName() + "." + gateway_).c_str());
 }
 
+void GtpUser::addTunnel(Teid teid, const SessionRef& session)
+{
+    Enter_Method_Silent("addTunnel");
+    ASSERT(teid != TEID_NONE);
+    if (!rxTunnels_.emplace(teid, session).second)
+        throw cRuntimeError("GtpUser::addTunnel - TEID %u is already in use", num(teid));
+    EV_INFO << "GtpUser::addTunnel - TEID " << teid << " belongs to " << session << endl;
+}
+
+void GtpUser::setUplinkTunnels(const SessionRef& session, const UplinkTunnels& tunnels)
+{
+    Enter_Method_Silent("setUplinkTunnels");
+    ASSERT(isBaseStation(ownerType_));
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        if (nodeId != NODEID_NONE)
+            ulTunnels_[nodeId] = tunnels;
+    EV_INFO << "GtpUser::setUplinkTunnels - " << session << " enters the core network at " << tunnels.anchor << endl;
+}
+
+void GtpUser::setDownlinkTunnel(const SessionRef& session, const FTeid& tunnel)
+{
+    Enter_Method_Silent("setDownlinkTunnel");
+    ASSERT(!isBaseStation(ownerType_));
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId}) {
+        if (nodeId == NODEID_NONE)
+            continue;
+        if (tunnel.isSet())
+            dlTunnels_[nodeId] = tunnel;
+        else
+            dlTunnels_.erase(nodeId);
+    }
+    EV_INFO << "GtpUser::setDownlinkTunnel - the downlink of " << session << " is tunneled to " << tunnel << endl;
+}
+
+void GtpUser::removeSession(const SessionRef& session)
+{
+    Enter_Method_Silent("removeSession");
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId}) {
+        ulTunnels_.erase(nodeId);
+        dlTunnels_.erase(nodeId);
+    }
+}
+
 CoreNodeType GtpUser::selectOwnerType(const char *type)
 {
     EV << "GtpUser::selectOwnerType - setting owner type to " << type << endl;
