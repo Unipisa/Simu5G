@@ -11,10 +11,13 @@
 
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
+#include <algorithm>
+
 #include <inet/common/INETMath.h>
 
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/PhyBase.h"
 
 namespace simu5g {
 
@@ -30,6 +33,13 @@ void CellularRadioMedium::initialize(int stage)
                 / (16.0 * M_PI * M_PI * minReceivePower), 1.0 / par("alpha").doubleValue());
         EV << "max interference distance:" << maxInterferenceDistance << endl;
     }
+}
+
+CellularRadioMedium::~CellularRadioMedium()
+{
+    for (auto& [carrier, carrierTransmissions] : transmissions)
+        for (auto transmission : carrierTransmissions)
+            delete transmission;
 }
 
 void CellularRadioMedium::addRadio(MacNodeId nodeId, IRadioEndpoint *radio, cModule *radioModule)
@@ -80,6 +90,63 @@ void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, cSimpleModule 
     }
     // the radios in range got copies; the original frame can be deleted
     delete frame;
+}
+
+void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
+{
+    Enter_Method("addTransmission");
+    transmission->id = nextTransmissionId++;
+    auto& carrierTransmissions = transmissions[transmission->carrierFrequency];
+    simtime_t now = simTime();
+    auto ended = std::remove_if(carrierTransmissions.begin(), carrierTransmissions.end(), [now] (const CellularTransmission *t) {
+        if (t->getEndTime() < now) {
+            delete t;
+            return true;
+        }
+        return false;
+    });
+    carrierTransmissions.erase(ended, carrierTransmissions.end());
+    carrierTransmissions.push_back(transmission);
+}
+
+bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const
+{
+    // the registry's view, band by band
+    std::vector<std::vector<const CellularTransmission *>> view(map.size());
+    auto it = transmissions.find(carrierFrequency);
+    if (it != transmissions.end()) {
+        for (auto t : it->second) {
+            bool uplink = t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI;
+            if (!uplink || t->frameType != DATAPKT || t->getEndTime() != simTime())
+                continue;
+            auto antennaIt = t->grantedBlocks.find(MACRO);
+            if (antennaIt == t->grantedBlocks.end())
+                continue;
+            for (const auto& [band, allocation] : antennaIt->second) {
+                if (allocation == 0)
+                    continue;
+                if (band >= view.size())
+                    return false;
+                view[band].push_back(t);
+            }
+        }
+    }
+    for (size_t band = 0; band < map.size(); band++) {
+        size_t i = 0;
+        for (const auto& info : map[band]) {
+            if (info.trafficGen != nullptr)
+                continue; // a background UE: not a radio on the medium
+            if (i >= view[band].size())
+                return false;
+            auto t = view[band][i++];
+            if (info.nodeId != t->sourceId || info.dir != t->direction
+                    || static_cast<IRadioEndpoint *>(info.phy) != t->transmitter)
+                return false;
+        }
+        if (i != view[band].size())
+            return false;
+    }
+    return true;
 }
 
 IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const

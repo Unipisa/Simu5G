@@ -295,6 +295,7 @@ void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)
 
     // the radio sends it to the receiving node's radio
     auto request = new RadioTransmissionRequest();
+    request->sender = this;
     request->targets.push_back(receiver->gate(getReceiverGateIndex(receiver, dest)));
     request->duration = duration;
     frame->setControlInfo(request);

@@ -19,6 +19,7 @@
 #include <inet/common/INETDefs.h>
 
 #include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
 
 namespace simu5g {
 
@@ -45,12 +46,16 @@ class CellularRadioMedium : public cSimpleModule
     std::map<MacNodeId, IRadioEndpoint *> radios; // the radios with a node id
     std::map<int, RadioModule> radioModules; // by the endpoint's (PHY's) module id: the order broadcast frames are delivered in
     double maxInterferenceDistance = 0; // the range of a broadcast
+    long nextTransmissionId = 0;
+    std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
 
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
   public:
+    virtual ~CellularRadioMedium();
+
     /**
      * Adds a radio under the node id of its PHY. A radio registered with
      * NODEID_NONE is on the medium, but cannot be looked up. If radioModule is
@@ -75,6 +80,20 @@ class CellularRadioMedium : public cSimpleModule
      * by the sending radio module, which sends the copies.
      */
     virtual void sendToNeighbors(IRadioEndpoint *sender, cSimpleModule *sendingModule, AirFrame *frame, simtime_t duration);
+
+    /**
+     * Adds a transmission, giving it the next id; the medium owns it. The
+     * transmissions on the same carrier that ended before now are dropped.
+     */
+    virtual void addTransmission(CellularTransmission *transmission);
+
+    /**
+     * Whether the uplink transmissions on the carrier that end now -- data
+     * frames sent in UL or on the sidelink -- are, band by band and in
+     * creation order, the entries of a PHY in the Binder's uplink
+     * transmission map (the entries of a background UE are left out).
+     */
+    virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const;
 };
 
 } // namespace simu5g

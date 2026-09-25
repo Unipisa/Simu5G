@@ -14,15 +14,26 @@
 
 #include <omnetpp.h>
 
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
+
+class UserControlInfo;
 
 /**
  * See the NED documentation of CellularTransmitter.
  */
 class CellularTransmitter : public cSimpleModule
 {
+  public:
+    /**
+     * The transmission of a frame with the given control information, sent
+     * now by the given radio, lasting for the given duration. The caller owns
+     * the result.
+     */
+    virtual CellularTransmission *createTransmission(IRadioEndpoint *radio, const UserControlInfo& info, simtime_t duration) const;
 };
 
 } // namespace simu5g

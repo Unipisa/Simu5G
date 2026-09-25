@@ -12,8 +12,10 @@
 package simu5g.stack.phy.radio;
 
 //
-// The transmitter of a cellular radio: power, resource-block allocation,
-// carrier and slot of the transmissions it makes. It holds nothing yet.
+// The transmitter of a cellular radio: it turns each frame the radio sends
+// into the transmission the medium keeps -- power, resource-block allocation,
+// carrier, direction, frame type, start and duration -- taken from the frame's
+// control information.
 //
 simple CellularTransmitter
 {

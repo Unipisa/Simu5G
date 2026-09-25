@@ -196,6 +196,8 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
     // CQI computation checks the slot occupation of the current TTI;
     // error computation checks the occupation of the previous TTI
     ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, isCqi ? CURR_TTI : PREV_TTI);
+    // for the completed slot, the medium's registry holds the same transmissions
+    ASSERT(isCqi || ulTransmissionMap == nullptr || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, *ulTransmissionMap));
     if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty()) {
         for (unsigned int i = 0; i < numBands_; i++) {
             // get the UEs transmitting on the same band

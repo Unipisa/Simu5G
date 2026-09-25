@@ -12,6 +12,7 @@
 #include "simu5g/stack/phy/radio/CellularRadio.h"
 
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 namespace simu5g {
@@ -52,6 +53,9 @@ void CellularRadio::handleMessage(cMessage *msg)
 void CellularRadio::transmit(AirFrame *frame)
 {
     auto request = check_and_cast<RadioTransmissionRequest *>(frame->removeControlInfo());
+    // every frame that leaves the radio is a transmission on the medium, in the order they are created
+    auto transmitter = check_and_cast<CellularTransmitter *>(getSubmodule("transmitter"));
+    radioMedium_->addTransmission(transmitter->createTransmission(request->sender, frame->getAdditionalInfo(), request->duration));
     if (request->broadcast)
         radioMedium_->sendToNeighbors(request->sender, this, frame, request->duration);
     else if (request->copyPerTarget) {

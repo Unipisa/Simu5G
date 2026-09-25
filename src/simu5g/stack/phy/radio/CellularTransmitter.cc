@@ -11,8 +11,26 @@
 
 #include "simu5g/stack/phy/radio/CellularTransmitter.h"
 
+#include "simu5g/common/LteControlInfo.h"
+
 namespace simu5g {
 
 Define_Module(CellularTransmitter);
+
+CellularTransmission *CellularTransmitter::createTransmission(IRadioEndpoint *radio, const UserControlInfo& info, simtime_t duration) const
+{
+    auto transmission = new CellularTransmission();
+    transmission->transmitter = radio;
+    transmission->sourceId = info.getSourceId();
+    transmission->destId = info.getDestId();
+    transmission->direction = (Direction)info.getDirection();
+    transmission->frameType = (LtePhyFrameType)info.getFrameType();
+    transmission->carrierFrequency = info.getCarrierFrequency();
+    transmission->grantedBlocks = info.getGrantedBlocks();
+    transmission->txPower = info.getTxPower();
+    transmission->startTime = simTime();
+    transmission->duration = duration;
+    return transmission;
+}
 
 } // namespace simu5g

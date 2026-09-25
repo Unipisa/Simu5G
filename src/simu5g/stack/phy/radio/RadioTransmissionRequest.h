@@ -37,7 +37,7 @@ class RadioTransmissionRequest : public cObject
     bool copyPerTarget = false;
     /** Whether the frame goes to every radio in range of the sender instead. */
     bool broadcast = false;
-    /** The sending radio's endpoint, for a broadcast: its position, and not itself. */
+    /** The sending radio's endpoint. */
     IRadioEndpoint *sender = nullptr;
     /** How long the transmission lasts. */
     simtime_t duration;
