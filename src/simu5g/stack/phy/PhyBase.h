@@ -21,6 +21,7 @@
 #include <inet/common/Units.h>
 
 #include "simu5g/world/radio/ChannelControl.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
@@ -44,7 +45,8 @@ class ChannelModelBase;
  * The PHY also registers its radio with the ChannelControl module and keeps
  * the radio's position up to date from the host's mobility module; the
  * ChannelControl uses both to deliver broadcast frames (the base station
- * beacons) to the radios in range.
+ * beacons) to the radios in range. It registers the same radio, under its
+ * MacNodeId, with the network's radioMedium.
  */
 class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
 {
@@ -79,6 +81,10 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     opp_component_ptr<ChannelControl> channelControl_;
     /// identifies this radio in the ChannelControl module
     ChannelControl::RadioRef radioRef_ = nullptr;
+    /// the network's radio medium, in whose registry this radio is (if it has a node id)
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
+    /// whether this radio is registered with radioMedium_
+    bool registeredWithMedium_ = false;
     /// the host that contains this PHY
     opp_component_ptr<cModule> hostModule_;
     /// the position of the radio, kept up to date from the host's mobility module

@@ -12,18 +12,38 @@
 #ifndef STACK_PHY_MEDIUM_CELLULARRADIOMEDIUM_H_
 #define STACK_PHY_MEDIUM_CELLULARRADIOMEDIUM_H_
 
+#include <map>
+
 #include <omnetpp.h>
+
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
+class IRadioEndpoint;
+
 /**
- * The radio medium of a cellular network (see the NED documentation). It
- * holds no state and handles no messages yet.
+ * The radio medium of a cellular network (see the NED documentation). So far
+ * it keeps the registry of the radios on the medium: every PHY registers its
+ * radio endpoint under its own MacNodeId, so a dual-stack UE's two PHYs are
+ * two radios.
  */
 class CellularRadioMedium : public cSimpleModule
 {
+  protected:
+    std::map<MacNodeId, IRadioEndpoint *> radios;
+
+  public:
+    /** Adds a radio under the node id of its PHY. Throws if the id is taken. */
+    virtual void addRadio(MacNodeId nodeId, IRadioEndpoint *radio);
+
+    /** Removes the radio of the given node id. Throws if there is none. */
+    virtual void removeRadio(MacNodeId nodeId);
+
+    /** The radio of the given node id, or nullptr if none is registered. */
+    virtual IRadioEndpoint *findRadio(MacNodeId nodeId) const;
 };
 
 } // namespace simu5g

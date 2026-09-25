@@ -50,6 +50,9 @@ PhyBase::~PhyBase()
     // channelControl_ is nullptr if the ChannelControl module has already been deleted
     if (channelControl_ != nullptr && radioRef_ != nullptr)
         channelControl_->unregisterRadio(radioRef_);
+    // radioMedium_ is unset if the medium has already been deleted
+    if (radioMedium_ && registeredWithMedium_)
+        radioMedium_->removeRadio(nodeId_);
 }
 
 void PhyBase::initialize(int stage)
@@ -58,6 +61,7 @@ void PhyBase::initialize(int stage)
         channelControl_ = dynamic_cast<ChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
         if (!channelControl_)
             throw cRuntimeError("Could not find ChannelControl module with name 'channelControl' in the top-level network.");
+        radioMedium_.reference(this, "radioMediumModule", true);
         hostModule_ = inet::getContainingNode(this);
         // register to get a notification when position changes
         if (hostModule_->findSubmodule("mobility") != -1)
@@ -83,6 +87,11 @@ void PhyBase::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         radioRef_ = channelControl_->registerRadio(this);
+        // a PHY without a node id is not a radio on the medium
+        if (nodeId_ != NODEID_NONE) {
+            radioMedium_->addRadio(nodeId_, this);
+            registeredWithMedium_ = true;
+        }
     }
     else if (stage == inet::INITSTAGE_SINGLE_MOBILITY) {
         if (!positionUpdateArrived_ && hostModule_->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this)) {

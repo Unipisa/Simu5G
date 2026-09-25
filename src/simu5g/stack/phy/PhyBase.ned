@@ -36,6 +36,7 @@ simple PhyBase like IPhy
         double txAngle @unit(deg) = default(0deg);
 
         string binderModule = default("binder");
+        string radioMediumModule = default("radioMedium"); // The network's radio medium
         string channelModelModule = default("^.channelModel[0]"); // Set to "^.nrChannelModel[0]" on an NR leg, see ~NrNicUe
 
     gates:
