@@ -75,6 +75,14 @@ MacNodeId HandoverPacketHolderEnb::resolveUeNodeId(const SessionTag *session)
     return destId;
 }
 
+bool HandoverPacketHolderEnb::namesSessionUe(const inet::L3Address& address, const SessionTag *session)
+{
+    MacNodeId lteId = binder_->getMacNodeId(address);
+    MacNodeId nrId = binder_->getNrMacNodeId(address);
+    auto isSessionUe = [session](MacNodeId id) { return id != NODEID_NONE && (id == session->getLteNodeId() || id == session->getNrNodeId()); };
+    return (lteId == NODEID_NONE && nrId == NODEID_NONE) || isSessionUe(lteId) || isSessionUe(nrId);
+}
+
 void HandoverPacketHolderEnb::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
@@ -166,9 +174,6 @@ void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, Mac
     auto tag = datagram->addTagIfAbsent<X2TargetReq>();
     tag->setTargetNode(targetEnb);
 
-    // node-local: the target learns the datagram's PDU session on its own
-    datagram->removeTag<SessionTag>();
-
     // Send packet to handover manager via gate instead of direct method call
     send(datagram, "hoManagerOut");
 }
@@ -176,13 +181,12 @@ void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, Mac
 void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 {
     EV << "HandoverPacketHolder::receiveTunneledPacketOnHandover - received packet via X2" << endl;
-    // the base station's entry for downlink traffic forwarded by the handover source.
-    // The X2 forwarding carries no tunnel identity, so the PDU session's UE is the one
-    // the destination address names
-    auto ipFields = attachIpHeaderFields(datagram);
-    auto session = datagram->addTag<SessionTag>();
-    session->setLteNodeId(binder_->getMacNodeId(ipFields->getDestAddress()));
-    session->setNrNodeId(binder_->getNrMacNodeId(ipFields->getDestAddress()));
+    // the base station's entry for downlink traffic forwarded by the handover source:
+    // the forwarding tunnel named the PDU session, and so the UE, the datagram is for
+    // (see GtpUserX2)
+    attachIpHeaderFields(datagram);
+    auto session = datagram->getTag<SessionTag>();
+    ASSERT(namesSessionUe(datagram->getTag<IpHeaderFieldsTag>()->getDestAddress(), session.get()));
     MacNodeId destId = resolveUeNodeId(session.get());
 
     if (hoFromX2_.find(destId) == hoFromX2_.end()) {

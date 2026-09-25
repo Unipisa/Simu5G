@@ -30,6 +30,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class GtpUser;
+class GtpUserX2;
 class TrafficFlowFilter;
 
 /**
@@ -114,6 +115,11 @@ class BearerConfigurator : public cSimpleModule, public cListener
     };
     std::vector<GtpEndpoint> gtpEndpoints_;       // in registration order
     std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
+
+    // The X2-U tunnel endpoint of each base station, which forwards downlink traffic to
+    // a handover target, and receives it, with the TEIDs the base stations allocate for
+    // the sessions' downlink tunnels (see registerX2GtpEndpoint())
+    std::map<MacNodeId, GtpUserX2 *> bsX2GtpEndpoints_;
 
     // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
     // the UE first has a serving node, released when the UE leaves (see
@@ -257,8 +263,9 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // downlink end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2).
     virtual void switchPath(CoreSession& session);
 
-    // Set up the session's tunnels at a base station the UE is attached through, unless
-    // they are there already
+    // Set up the session's tunnels at a base station the UE is attached through, or is
+    // handing over to, unless they are there already. The base stations of the session
+    // also learn each other's downlink TEIDs, to forward the downlink over X2 with.
     virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
 
     // The session's uplink tunnels, as a base station uses them
@@ -283,6 +290,17 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // INITSTAGE_LOCAL. gateway is the endpoint's "gateway" parameter if it is a base
     // station connected to the core network or a MEC host's UPF, and empty otherwise.
     virtual void registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type, MacNodeId bsId, const std::string& gateway);
+
+    // A base station's X2-U tunnel endpoint announces itself; called from
+    // GtpUserX2::initialize() at INITSTAGE_LOCAL. It learns the tunnels ending at the
+    // base station, and the downlink TEIDs the other base stations of a session have.
+    virtual void registerX2GtpEndpoint(GtpUserX2 *gtpUserX2, MacNodeId bsId);
+
+    // A stack of a UE starts handing over to the given node (handover preparation): the
+    // base station its downlink will enter the RAN at allocates the session's downlink
+    // TEID now, and gets the session's uplink tunnels, so the source can forward the
+    // downlink to it over X2 until the path switch (TS 23.502 4.9.1.2.2)
+    virtual void prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId);
 
     // A node has joined a multicast group (RRC registration tells us). If a sender has
     // already established that group's bearer, the node missed the RX-leg provisioning

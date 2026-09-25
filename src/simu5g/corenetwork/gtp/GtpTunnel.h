@@ -15,9 +15,11 @@
 #include <map>
 #include <ostream>
 
+#include <inet/common/packet/Packet.h>
 #include <inet/networklayer/common/L3Address.h>
 
 #include "simu5g/common/LteTypes.h"
+#include "simu5g/common/SessionTag_m.h"
 
 namespace simu5g {
 
@@ -56,6 +58,18 @@ struct SessionRef
 inline std::ostream& operator<<(std::ostream& os, const SessionRef& session)
 {
     return os << "PDU session " << session.id << " of UE " << session.lteNodeId << "/" << session.nrNodeId;
+}
+
+/**
+ * Tells the modules after a tunnel end which PDU session, and so which UE, a datagram
+ * that arrived on the tunnel belongs to (see SessionTag).
+ */
+inline void attachSessionTag(inet::Packet *datagram, const SessionRef& session)
+{
+    auto tag = datagram->addTag<SessionTag>();
+    tag->setSessionId(session.id);
+    tag->setLteNodeId(session.lteNodeId);
+    tag->setNrNodeId(session.nrNodeId);
 }
 
 /**

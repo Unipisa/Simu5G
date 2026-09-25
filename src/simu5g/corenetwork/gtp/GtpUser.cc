@@ -461,14 +461,6 @@ const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
     return it->second.session;
 }
 
-void GtpUser::attachSessionTag(Packet *datagram, const SessionRef& session)
-{
-    auto tag = datagram->addTag<SessionTag>();
-    tag->setSessionId(session.id);
-    tag->setLteNodeId(session.lteNodeId);
-    tag->setNrNodeId(session.nrNodeId);
-}
-
 const SessionRef& GtpUser::findTunnel(Teid teid)
 {
     auto it = rxTunnels_.find(teid);

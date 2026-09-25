@@ -26,6 +26,7 @@ simple GtpUserX2
 {
     parameters:
         string binderModule = default("binder");
+        string bearerConfiguratorModule = default("bearerConfigurator");  // The SMF stand-in this tunnel endpoint registers with, see ~BearerConfigurator
 
         int localPort = default(32);
         int tunnelPeerPort = default(32);

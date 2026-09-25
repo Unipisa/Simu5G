@@ -118,10 +118,6 @@ class GtpUser : public cSimpleModule
     // here, by one of the UE's node ids; throws if it has none
     const SessionRef& getServedSession(MacNodeId ueNodeId);
 
-    // Tells the modules after this tunnel end which PDU session, and so which UE, the
-    // datagram belongs to (see SessionTag)
-    void attachSessionTag(inet::Packet *datagram, const SessionRef& session);
-
     // The PDU session of a tunnel ending here; throws for an unknown TEID
     const SessionRef& findTunnel(Teid teid);
 

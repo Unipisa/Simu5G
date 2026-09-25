@@ -19,6 +19,7 @@
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include <algorithm>
 #include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/gtp/GtpUserX2.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
@@ -763,6 +764,24 @@ void BearerConfigurator::registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type
     gtpEndpoints_.push_back(endpoint);
 }
 
+void BearerConfigurator::registerX2GtpEndpoint(GtpUserX2 *gtpUserX2, MacNodeId bsId)
+{
+    Enter_Method_Silent("registerX2GtpEndpoint");
+    if (!bsX2GtpEndpoints_.emplace(bsId, gtpUserX2).second)
+        throw cRuntimeError("BearerConfigurator: base station %d has a second X2-U tunnel endpoint, %s",
+                num(bsId), gtpUserX2->getFullPath().c_str());
+}
+
+void BearerConfigurator::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)
+{
+    Enter_Method_Silent("prepareHandover");
+    auto it = sessionOfNode_.find(ueNodeId);
+    if (it == sessionOfNode_.end())
+        return;   // a UE without a PDU session has no downlink to forward
+    CoreSession& session = sessions_.at(it->second);
+    setUpRanTunnels(session, binder_->getMasterNodeOrSelf(targetNodeId));
+}
+
 Teid BearerConfigurator::allocateTeid(GtpEndpoint& endpoint)
 {
     if (endpoint.lastTeid == Teid(UINT32_MAX))
@@ -911,9 +930,18 @@ void BearerConfigurator::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
         return;
     GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId));
     Teid teid = allocateTeid(bsEndpoint);
-    session.dlTeids[bsId] = teid;
     bsEndpoint.module->addTunnel(teid, session.ref);
     bsEndpoint.module->setUplinkTunnels(session.ref, getUplinkTunnels(session));
+
+    // the same TEID receives the downlink a handover source forwards over X2, and the
+    // base stations of the session learn each other's, to forward with
+    GtpUserX2 *bsX2 = bsX2GtpEndpoints_.at(bsId);
+    bsX2->addTunnel(teid, session.ref);
+    for (const auto& [otherBsId, otherTeid] : session.dlTeids) {
+        bsX2GtpEndpoints_.at(otherBsId)->setForwardingTeid(session.ref, bsId, teid);
+        bsX2->setForwardingTeid(session.ref, otherBsId, otherTeid);
+    }
+    session.dlTeids[bsId] = teid;
 }
 
 UplinkTunnels BearerConfigurator::getUplinkTunnels(const CoreSession& session)
@@ -938,8 +966,10 @@ void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
     gtpEndpoints_[session.anchor].module->removeSession(session.ref);
     for (const auto& [index, teid] : session.ulMecHosts)
         gtpEndpoints_[index].module->removeSession(session.ref);
-    for (const auto& [bsId, teid] : session.dlTeids)
+    for (const auto& [bsId, teid] : session.dlTeids) {
         gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).module->removeSession(session.ref);
+        bsX2GtpEndpoints_.at(bsId)->removeSession(session.ref);
+    }
 
     for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
         sessionOfNode_.erase(nodeId);

@@ -11,6 +11,7 @@
 //
 
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
+#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 
 #include <iostream>
 
@@ -29,6 +30,15 @@ using namespace inet;
 void GtpUserX2::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
+
+    if (stage == inet::INITSTAGE_LOCAL) {
+        // announce this tunnel endpoint to the bearer configurator, which allocates the
+        // tunnel endpoint ids of the PDU sessions' tunnels, standing in for the SMF
+        MacNodeId bsId = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
+        bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
+        bearerConfigurator_->registerX2GtpEndpoint(this, bsId);
+        return;
+    }
 
     // wait until all the IP addresses are configured
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
@@ -71,6 +81,9 @@ void GtpUserX2::handleFromStack(Packet *pkt)
 
     auto gtpMsg = makeShared<GtpUserMsg>();
     gtpMsg->setChunkLength(B(8));
+    // forwarded downlink goes on the downlink tunnel of its PDU session at the target
+    if (x2Msg->getType() == X2_HANDOVER_DATA_MSG)
+        gtpMsg->setTeid(getForwardingTeid(pkt->removeTag<SessionTag>().get(), destId));
     pkt->insertAtFront(gtpMsg);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::gtp);
 
@@ -88,8 +101,53 @@ void GtpUserX2::handleFromUdp(Packet *pkt)
     auto gtpMsg = pkt->popAtFront<GtpUserMsg>();
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
+    // forwarded downlink: the tunnel names the PDU session, and so the UE, it is for
+    if (gtpMsg->getTeid() != TEID_NONE) {
+        auto it = rxTunnels_.find(gtpMsg->getTeid());
+        if (it == rxTunnels_.end())
+            throw cRuntimeError("GtpUserX2: a G-PDU arrived with TEID %u, which is no tunnel ending here", num(gtpMsg->getTeid()));
+        EV << "GtpUserX2::handleFromUdp - Forwarded datagram of " << it->second << endl;
+        attachSessionTag(pkt, it->second);
+    }
+
     // send message to the X2 Manager
     send(pkt, "lteStackOut");
+}
+
+Teid GtpUserX2::getForwardingTeid(const SessionTag *session, MacNodeId targetBs)
+{
+    auto it = forwardingTeids_.find(session->getLteNodeId());
+    if (it != forwardingTeids_.end()) {
+        auto jt = it->second.find(targetBs);
+        if (jt != it->second.end())
+            return jt->second;
+    }
+    throw cRuntimeError("GtpUserX2: the PDU session of UE %d has no downlink tunnel at base station %d to forward to",
+            num(session->getLteNodeId()), num(targetBs));
+}
+
+void GtpUserX2::addTunnel(Teid teid, const SessionRef& session)
+{
+    Enter_Method_Silent("addTunnel");
+    ASSERT(teid != TEID_NONE);
+    if (!rxTunnels_.emplace(teid, session).second)
+        throw cRuntimeError("GtpUserX2::addTunnel - TEID %u is already in use", num(teid));
+}
+
+void GtpUserX2::setForwardingTeid(const SessionRef& session, MacNodeId bsId, Teid teid)
+{
+    Enter_Method_Silent("setForwardingTeid");
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        if (nodeId != NODEID_NONE)
+            forwardingTeids_[nodeId][bsId] = teid;
+    EV_INFO << "GtpUserX2::setForwardingTeid - " << session << " is forwarded to base station " << bsId << " with TEID " << teid << endl;
+}
+
+void GtpUserX2::removeSession(const SessionRef& session)
+{
+    Enter_Method_Silent("removeSession");
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        forwardingTeids_.erase(nodeId);
 }
 
 } //namespace

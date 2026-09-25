@@ -55,6 +55,9 @@ class HandoverPacketHolderEnb : public cSimpleModule
 
     // The UE of the datagram's PDU session, by the id of this node's own cell group
     virtual MacNodeId resolveUeNodeId(const SessionTag *session);
+
+    // True if the address is one of the session UE's, or no UE's at all (any more)
+    virtual bool namesSessionUe(const inet::L3Address& address, const SessionTag *session);
     void handleMessage(cMessage *msg) override;
 
     virtual void fromIpBs(inet::Packet *datagram);
