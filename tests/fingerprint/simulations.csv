@@ -1,166 +1,166 @@
 # workingdir,                            args,                                             simtimelimit,     fingerprint,                   expected result, tags
-/showcases/nr/standalone/,               -f omnetpp.ini -c Standalone -r 0,                      5s,         1360-1a1f/tplx;546c-50ba/tilx;4871-706a/~tNl;c502-5889/sz, PASS, radio
-/showcases/nr/standalone/,               -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         95fc-4d99/tplx;1d00-62ac/tilx;38bc-a45c/~tNl;9556-0c92/sz, PASS, radio
-/showcases/nr/standalone/,               -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         bee2-c65d/tplx;82d0-9213/tilx;0899-e803/~tNl;7765-4989/sz, PASS, radio
-/simulations/channelmodel/,              -f omnetpp.ini -c InH-38901 -r 0,               20s,        4d72-433f/tplx;2795-7936/tilx;7319-c19e/~tNl;8fb5-1229/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMi-38901 -r 0,               20s,        566b-bfe2/tplx;2d73-27ef/tilx;6a44-c304/~tNl;ee78-4527/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMa-38901 -r 0,               20s,        2f39-1373/tplx;4194-5c64/tilx;21cf-dd27/~tNl;22dd-939a/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c RMa-38901 -r 0,               20s,        c49f-fdb2/tplx;c3d9-8295/tilx;3659-6d65/~tNl;3cec-ffbf/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c InH-36873 -r 0,               20s,        cf65-9914/tplx;2295-7344/tilx;b219-69ce/~tNl;dc09-0fd0/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMi-36873 -r 0,               20s,        628a-4f89/tplx;262a-831b/tilx;2bc3-06a3/~tNl;32ef-7067/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMa-36873 -r 0,               20s,        ad72-1335/tplx;9389-4c75/tilx;51d7-8fd2/~tNl;2332-5d22/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c RMa-36873 -r 0,               20s,        848a-7bfe/tplx;be32-9dec/tilx;f473-b46c/~tNl;c9a1-a767/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c SMa-36873 -r 0,               20s,        6f91-979e/tplx;fba0-cc49/tilx;f119-5563/~tNl;d9f5-8fa4/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c InH-36814 -r 0,               20s,        cf65-9914/tplx;2295-7344/tilx;b219-69ce/~tNl;dc09-0fd0/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMi-36814 -r 0,               20s,        628a-4f89/tplx;262a-831b/tilx;2bc3-06a3/~tNl;32ef-7067/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c UMa-36814 -r 0,               20s,        40ca-c3fe/tplx;35c4-caa8/tilx;46f4-4177/~tNl;3d32-cf74/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c RMa-36814 -r 0,               20s,        848a-7bfe/tplx;be32-9dec/tilx;f473-b46c/~tNl;c9a1-a767/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c SMa-36814 -r 0,               20s,        4fbb-059a/tplx;cb04-3d39/tilx;4815-4216/~tNl;24f7-12cf/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c FixedLos-38901 -r 0,          20s,        b4a0-afd3/tplx;ac5b-e315/tilx;acc8-ffac/~tNl;3de2-fe78/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c Penetration-36873 -r 0,       20s,        3a6b-2e4b/tplx;a726-8ed4/tilx;74f5-9c7e/~tNl;9e62-5ec3/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c PenetrationLow-38901 -r 0,    20s,        de95-d4ea/tplx;6f77-718d/tilx;5281-c889/~tNl;1b24-cde7/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c PenetrationHigh-38901 -r 0,   20s,        95d5-f227/tplx;2ede-deb6/tilx;9be2-9afb/~tNl;ff0a-29bc/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c Rayleigh-38901 -r 0,          20s,        d243-90e0/tplx;6ce7-fc5d/tilx;1018-7c21/~tNl;0222-25f9/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c Anisotropic-36873 -r 0,       20s,        789e-04ef/tplx;ba7a-2d9e/tilx;17f4-a184/~tNl;ad24-7797/sz, PASS, radio propagation anisotropic
-/simulations/channelmodel/,              -f omnetpp.ini -c SMa-38901 -r 0,               20s,        6f91-979e/tplx;fba0-cc49/tilx;f119-5563/~tNl;d9f5-8fa4/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c TallUe-38901 -r 0,            20s,        7288-563c/tplx;b120-4716/tilx;26bb-165e/~tNl;f5f6-7734/sz, PASS, radio propagation
-/simulations/channelmodel/,              -f omnetpp.ini -c TallUe-36873 -r 0,            20s,        9f51-429b/tplx;5a28-e1d5/tilx;9e4d-1848/~tNl;bf7f-abea/sz, PASS, radio propagation
-/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,                          5s,         b846-a5f1/tplx;2e8a-ec81/tilx;1a65-06a9/~tNl;f337-2fce/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,                          5s,         5c9b-ddbe/tplx;37e8-4642/tilx;63f9-c08a/~tNl;6eba-b585/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-UL -r 0,                          5s,         4332-caae/tplx;97fa-86e8/tilx;ae81-90df/~tNl;5452-36ad/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,                          5s,         e26b-de35/tplx;ca03-2b6c/tilx;37c1-cf25/~tNl;7048-a1ae/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c MixedTraffic -r 0,                    5s,         39fb-4a11/tplx;0198-247b/tilx;c4d7-285a/~tNl;92e1-caf8/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,                  5s,         5f9b-d143/tplx;f79c-4d3f/tilx;b881-cb93/~tNl;dcac-0122/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,                 5s,         de86-c252/tplx;a337-75e2/tilx;8945-13eb/~tNl;2bd6-9544/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,                  5s,         5084-3750/tplx;5ffa-3c16/tilx;29f3-278f/~tNl;6587-31ab/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP -r 0,                            5s,         1d5a-52df/tplx;1bc7-880e/tilx;4e21-f184/~tNl;6b85-7eb6/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,                      5s,         9ed6-517d/tplx;234a-1eda/tilx;f7c6-296e/~tNl;8c8e-7c49/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         b566-b706/tplx;25f9-2c4f/tilx;e406-2239/~tNl;51b4-40fb/sz, PASS, radio
-/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         3317-599d/tplx;d2b8-d8f6/tilx;908d-2e99/~tNl;ac3b-c225/sz, PASS, radio
-/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 0,                5s,         c9f4-a24f/tplx;99c8-30c4/tilx;685e-319b/~tNl;e143-f5ea/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 1,                5s,         e0aa-11a7/tplx;4db9-0b9a/tilx;70f3-8ef2/~tNl;6604-8bfd/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 2,                5s,         3cc2-0dae/tplx;50c4-1a7e/tilx;685e-319b/~tNl;83c5-442f/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-AllOn -r 0,                5s,         55d6-7534/tplx;45a0-b8ff/tilx;2707-b1d1/~tNl;edb3-3b3f/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoDownlink -r 0,                5s,         2a47-4d61/tplx;f584-72aa/tilx;04be-0256/~tNl;22ce-772f/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoUplink -r 0,                5s,         9647-5817/tplx;363b-02db/tilx;402f-a539/~tNl;8e41-11cf/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoExtCell -r 0,                5s,         55d6-7534/tplx;45a0-b8ff/tilx;2707-b1d1/~tNl;f7d8-f125/sz, PASS, radio interference anisotropic
-/simulations/lte/multicell/,             -f omnetpp.ini -c VoIP -r 0,                            5s,         7e97-aff1/tplx;7004-0c90/tilx;aec6-9caa/~tNl;a5f7-2e52/sz, PASS, radio interference
-/simulations/lte/test_handover/,         -f omnetpp.ini -c FileTransfer-DL_UL -r 0,             15s,         fdad-d492/tplx;7bfd-77a5/tilx;9794-139c/~tNl;092f-cd0d/sz, PASS, radio nofading
-/simulations/lte/test_handover/,         -f omnetpp.ini -c Handover-General -r 0,               15s,         60c3-5bb7/tplx;ff90-cffc/tilx;7f57-793f/~tNl;2fcc-0288/sz, PASS, radio nofading
-/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL -r 0,                        15s,         9232-e321/tplx;3cb0-1146/tilx;d3be-35b4/~tNl;5617-6d4f/sz, PASS, radio nofading
-/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL-StaticDrb -r 0,              15s,         fd41-e27f/tplx;0e4d-b755/tilx;57d0-2eb7/~tNl;fb93-897e/sz, PASS, radio nofading
-/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL_UL -r 0,                     15s,         a433-d290/tplx;73c5-6369/tilx;b249-677a/~tNl;b801-c21f/sz, PASS, radio nofading
-/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-UL -r 0,                        15s,         dc2c-4822/tplx;4605-cd76/tilx;2996-287c/~tNl;b73f-b6f4/sz, PASS, radio nofading
-/simulations/lte/tutorial/,              -f omnetpp.ini -c MultiCell-DL -r 0,                    5s,         7ecf-e86f/tplx;634f-5ce8/tilx;5c23-5b9c/~tNl;93ad-6a42/sz, PASS, radio anisotropic
-/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-DL -r 0,                   5s,         6811-0ee5/tplx;44e6-7667/tilx;73ca-55da/~tNl;0a2d-23b9/sz, PASS, radio
-/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-DL-OnDemandDrb -r 0,       5s,         6811-0ee5/tplx;44e6-7667/tilx;73ca-55da/~tNl;0a2d-23b9/sz, PASS, radio
-/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-UL -r 0,                   5s,         6fb7-0a8c/tplx;50be-d61f/tilx;d52c-b0d3/~tNl;d6b5-1d98/sz, PASS, radio
-/simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-balanced -r 0,                5s,         e140-7cb5/tplx;4eab-e03e/tilx;8030-a778/~tNl;819a-1bd2/sz, PASS, radio interference anisotropic
-/simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-unbalanced -r 0,              5s,         c89b-89c6/tplx;a009-ac85/tilx;94d6-0930/~tNl;4e4d-7d01/sz, PASS, radio interference anisotropic
+/showcases/nr/standalone/,               -f omnetpp.ini -c Standalone -r 0,                      5s,         a04a-5d38/tplx;e024-2726/tilx;0b51-515e/~tNl;c502-5889/sz, PASS, radio
+/showcases/nr/standalone/,               -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         5146-58c6/tplx;6a00-1e22/tilx;a397-e763/~tNl;9556-0c92/sz, PASS, radio
+/showcases/nr/standalone/,               -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         068e-4305/tplx;76e4-fe21/tilx;d6a8-3787/~tNl;7765-4989/sz, PASS, radio
+/simulations/channelmodel/,              -f omnetpp.ini -c InH-38901 -r 0,               20s,        8c71-96d5/tplx;28a6-6a00/tilx;6d85-e339/~tNl;8fb5-1229/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMi-38901 -r 0,               20s,        acc0-f11d/tplx;5e14-2cf3/tilx;7d94-9742/~tNl;ee78-4527/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMa-38901 -r 0,               20s,        3842-97a4/tplx;fd02-c0a4/tilx;fb05-c89e/~tNl;22dd-939a/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c RMa-38901 -r 0,               20s,        7588-db0d/tplx;d9d2-636b/tilx;2037-7dda/~tNl;3cec-ffbf/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c InH-36873 -r 0,               20s,        ded8-bbfe/tplx;1192-f4ba/tilx;0651-9b04/~tNl;dc09-0fd0/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMi-36873 -r 0,               20s,        9108-3c26/tplx;3f8a-2952/tilx;7143-de7a/~tNl;32ef-7067/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMa-36873 -r 0,               20s,        b6be-f9c9/tplx;96a2-9725/tilx;bb95-c582/~tNl;2332-5d22/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c RMa-36873 -r 0,               20s,        cdf4-ba7d/tplx;ee7f-a075/tilx;9bf9-db69/~tNl;c9a1-a767/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c SMa-36873 -r 0,               20s,        0115-a659/tplx;b4c9-904c/tilx;7c71-db47/~tNl;d9f5-8fa4/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c InH-36814 -r 0,               20s,        ded8-bbfe/tplx;1192-f4ba/tilx;0651-9b04/~tNl;dc09-0fd0/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMi-36814 -r 0,               20s,        9108-3c26/tplx;3f8a-2952/tilx;7143-de7a/~tNl;32ef-7067/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c UMa-36814 -r 0,               20s,        a956-fadd/tplx;05cf-1194/tilx;0d2f-edd3/~tNl;3d32-cf74/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c RMa-36814 -r 0,               20s,        cdf4-ba7d/tplx;ee7f-a075/tilx;9bf9-db69/~tNl;c9a1-a767/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c SMa-36814 -r 0,               20s,        abd1-dd81/tplx;0e23-4da1/tilx;9a8e-d388/~tNl;24f7-12cf/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c FixedLos-38901 -r 0,          20s,        fcd4-acfe/tplx;9a6a-39b7/tilx;dcb3-703d/~tNl;3de2-fe78/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c Penetration-36873 -r 0,       20s,        8bf8-f072/tplx;f232-c1e4/tilx;6215-209b/~tNl;9e62-5ec3/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c PenetrationLow-38901 -r 0,    20s,        4f72-fdf6/tplx;976e-5072/tilx;9625-0fe9/~tNl;1b24-cde7/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c PenetrationHigh-38901 -r 0,   20s,        9d0c-7e22/tplx;7730-3cf1/tilx;dee2-fc04/~tNl;ff0a-29bc/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c Rayleigh-38901 -r 0,          20s,        fff8-4562/tplx;7424-42b2/tilx;0ccf-cc88/~tNl;0222-25f9/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c Anisotropic-36873 -r 0,       20s,        0880-dd53/tplx;8d93-b9da/tilx;d373-42c7/~tNl;ad24-7797/sz, PASS, radio propagation anisotropic
+/simulations/channelmodel/,              -f omnetpp.ini -c SMa-38901 -r 0,               20s,        0115-a659/tplx;b4c9-904c/tilx;7c71-db47/~tNl;d9f5-8fa4/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c TallUe-38901 -r 0,            20s,        4f06-1da6/tplx;a0ec-bb50/tilx;1619-ce06/~tNl;f5f6-7734/sz, PASS, radio propagation
+/simulations/channelmodel/,              -f omnetpp.ini -c TallUe-36873 -r 0,            20s,        6941-feb5/tplx;b7d0-4c2c/tilx;77c8-1b28/~tNl;bf7f-abea/sz, PASS, radio propagation
+/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,                          5s,         d814-6958/tplx;8ebb-c089/tilx;eb11-d32f/~tNl;f337-2fce/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,                          5s,         40c0-6d59/tplx;8869-44f4/tilx;ecdb-84dc/~tNl;6eba-b585/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-UL -r 0,                          5s,         ecd2-3f6b/tplx;1ea2-706c/tilx;2e1b-bb4f/~tNl;5452-36ad/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,                          5s,         2c64-f39b/tplx;e27b-40ce/tilx;547e-af80/~tNl;7048-a1ae/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c MixedTraffic -r 0,                    5s,         a86e-fec3/tplx;9cca-0675/tilx;b411-3c79/~tNl;92e1-caf8/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,                  5s,         6ff7-6997/tplx;f1f5-1d70/tilx;4554-7aaa/~tNl;dcac-0122/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,                 5s,         926a-b341/tplx;1867-95e8/tilx;ecae-0b06/~tNl;2bd6-9544/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,                  5s,         7964-a350/tplx;1ccf-ca74/tilx;7543-8fe6/~tNl;6587-31ab/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP -r 0,                            5s,         9c4e-8542/tplx;b355-d417/tilx;65ce-9622/~tNl;6b85-7eb6/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,                      5s,         14b5-e94f/tplx;6a3e-1dc2/tilx;cc46-f826/~tNl;8c8e-7c49/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         8d40-9772/tplx;7926-7944/tilx;5721-d7b9/~tNl;51b4-40fb/sz, PASS, radio
+/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         e542-0189/tplx;921d-969b/tilx;87ee-753e/~tNl;ac3b-c225/sz, PASS, radio
+/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 0,                5s,         8693-2b5e/tplx;c113-3124/tilx;de0b-0360/~tNl;e143-f5ea/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 1,                5s,         e205-117e/tplx;58ec-6a49/tilx;1eb4-e5d7/~tNl;6604-8bfd/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c InterferenceTest -r 2,                5s,         56d2-70ae/tplx;c0b3-ac03/tilx;de0b-0360/~tNl;83c5-442f/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-AllOn -r 0,                5s,         3bbb-75eb/tplx;ea55-0e9e/tilx;3aa8-528f/~tNl;edb3-3b3f/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoDownlink -r 0,                5s,         b7cc-d662/tplx;6440-5253/tilx;a008-aa4f/~tNl;22ce-772f/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoUplink -r 0,                5s,         d7e0-6a2b/tplx;b26c-e7f0/tilx;2c68-fbdd/~tNl;8e41-11cf/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c Interference-NoExtCell -r 0,                5s,         3bbb-75eb/tplx;ea55-0e9e/tilx;3aa8-528f/~tNl;f7d8-f125/sz, PASS, radio interference anisotropic
+/simulations/lte/multicell/,             -f omnetpp.ini -c VoIP -r 0,                            5s,         5ffb-ef1b/tplx;5f5b-27d1/tilx;fc10-a27a/~tNl;a5f7-2e52/sz, PASS, radio interference
+/simulations/lte/test_handover/,         -f omnetpp.ini -c FileTransfer-DL_UL -r 0,             15s,         8dff-4367/tplx;a168-7b92/tilx;a753-cba1/~tNl;092f-cd0d/sz, PASS, radio nofading
+/simulations/lte/test_handover/,         -f omnetpp.ini -c Handover-General -r 0,               15s,         1f67-a394/tplx;b744-1675/tilx;50b5-22c0/~tNl;2fcc-0288/sz, PASS, radio nofading
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL -r 0,                        15s,         2c9f-e8f6/tplx;9884-7930/tilx;a283-393a/~tNl;5617-6d4f/sz, PASS, radio nofading
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL-StaticDrb -r 0,              15s,         f320-6bf4/tplx;8f01-9df2/tilx;26ed-2239/~tNl;fb93-897e/sz, PASS, radio nofading
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL_UL -r 0,                     15s,         77df-a105/tplx;2533-127d/tilx;870f-fdfe/~tNl;b801-c21f/sz, PASS, radio nofading
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-UL -r 0,                        15s,         4eca-ffe0/tplx;fe37-c43d/tilx;d0ff-c376/~tNl;b73f-b6f4/sz, PASS, radio nofading
+/simulations/lte/tutorial/,              -f omnetpp.ini -c MultiCell-DL -r 0,                    5s,         ce0e-3ca9/tplx;bf36-dfcf/tilx;425e-9b33/~tNl;93ad-6a42/sz, PASS, radio anisotropic
+/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-DL -r 0,                   5s,         0b98-0a35/tplx;ae10-9bd2/tilx;a09c-9f45/~tNl;0a2d-23b9/sz, PASS, radio
+/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-DL-OnDemandDrb -r 0,       5s,         0b98-0a35/tplx;ae10-9bd2/tilx;a09c-9f45/~tNl;0a2d-23b9/sz, PASS, radio
+/simulations/lte/tutorial/,              -f omnetpp.ini -c SingleCell-UL -r 0,                   5s,         9876-8e71/tplx;74e2-148b/tilx;1ab5-0a8b/~tNl;d6b5-1d98/sz, PASS, radio
+/simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-balanced -r 0,                5s,         4dac-7aa1/tplx;206c-ae41/tilx;6dba-2671/~tNl;819a-1bd2/sz, PASS, radio interference anisotropic
+/simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-unbalanced -r 0,              5s,         f476-848b/tplx;8187-6f47/tilx;4ff3-d498/~tNl;4e4d-7d01/sz, PASS, radio interference anisotropic
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-MeshTopology -r 0,                 5s,         829a-a5dd/tplx;1335-99c2/tilx;f7ac-b770/~tNl;ee5e-365e/sz, PASS, radio interference anisotropic
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 0,                          5s,         04a5-d45c/tplx;7cde-86a1/tilx;7cb3-e68a/~tNl;83a1-a730/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 1,                          5s,         f861-cb52/tplx;bbcb-4a78/tilx;7cb3-e68a/~tNl;2199-b4a5/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 2,                          5s,         a66f-1ed1/tplx;5734-f018/tilx;170c-fe53/~tNl;be47-e74c/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 0,                          5s,         66dc-537f/tplx;4032-13d0/tilx;7cb3-e68a/~tNl;43a4-892a/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 1,                          5s,         7ac9-8771/tplx;ae5b-0b91/tilx;7cb3-e68a/~tNl;c1b6-5e8f/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 2,                          5s,         d151-ff47/tplx;d042-f9e4/tilx;7cb3-e68a/~tNl;6213-ea33/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         dc31-68af/tplx;efcc-c216/tilx;58ae-124c/~tNl;4950-605d/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         9cc3-59f4/tplx;3279-6549/tilx;5a13-52f4/~tNl;c70a-c8a1/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         31e6-5761/tplx;2edc-c896/tilx;6a82-b9b0/~tNl;fe4f-b0bf/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         4932-c409/tplx;9dcf-95b3/tilx;876c-d6f8/~tNl;e075-43a7/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         053f-a1d3/tplx;865e-93e2/tilx;da75-7582/~tNl;de23-a0ce/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         7641-c043/tplx;7b53-1135/tilx;a312-209d/~tNl;83fa-d359/sz, PASS, radio bgcell bgue
-/simulations/nr/mec/multiMecHost/,       -f omnetpp.ini -c MultiMec -r 0,                        20s,        f47d-da49/tplx;a5bc-048e/tilx;c8a0-de25/~tNl;f035-24f3/sz,  PASS, radio interference
-/simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_MultiMec -r 0,          20s,        4827-0480/tplx;59f6-d096/tilx;1fd6-6758/~tNl;1552-7c94/sz,  PASS, radio interference multicarrier
-/simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_SingleMec -r 0,         20s,        4ee0-19e2/tplx;9411-ad3f/tilx;065c-0d63/~tNl;5d3c-ae7f/sz,  PASS, radio interference multicarrier
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c best_case -r 0,                       10s,        b7af-d44f/tplx;67a6-6cc8/tilx;2450-63d9/~tNl;fca1-705b/sz, PASS, radio interference bgue
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c best_case_load_gen -r 0,              10s,        7297-b48f/tplx;543e-18ba/tilx;02ad-9095/~tNl;fca1-705b/sz, PASS, radio interference bgue
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c bgUEs_gnb1 -r 0,                      10s,        ceaa-62d0/tplx;1e5e-f513/tilx;835a-b804/~tNl;814b-e755/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c bgUEs_gnb2 -r 0,                      10s,        ceaa-62d0/tplx;1e5e-f513/tilx;835a-b804/~tNl;814b-e755/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c farRNI -r 0,                          10s,        2c56-b90b/tplx;f6fc-e069/tilx;2d55-6b27/~tNl;daf7-a291/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c MultiMec -r 0,                        10s,        ceaa-62d0/tplx;1e5e-f513/tilx;835a-b804/~tNl;814b-e755/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI -r 0,                         10s,        8a58-6a1d/tplx;566c-ede2/tilx;174e-1806/~tNl;9440-f238/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI_bgUEs_gnb1 -r 0,              10s,        8a58-6a1d/tplx;566c-ede2/tilx;174e-1806/~tNl;9440-f238/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI_bgUEs_gnb2 -r 0,              10s,        8a58-6a1d/tplx;566c-ede2/tilx;174e-1806/~tNl;9440-f238/sz, PASS, radio interference
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case -r 0,                      10s,        ff1f-3b72/tplx;3009-dd24/tilx;ef9a-d953/~tNl;3c71-d85e/sz, PASS, radio interference bgue
-/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case_load_gen -r 0,             10s,        d117-320a/tplx;2420-e3cc/tilx;3cf5-f30e/~tNl;84a2-4893/sz, PASS, radio interference bgue
-/simulations/nr/mec/rnisTest/,           -f omnetpp.ini -c RnisTest -r 0,                        5s,         5119-b931/tplx;1dd7-6ab3/tilx;e73a-db16/~tNl;aec9-5907/sz, PASS, radio
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c BgGeneratorApp -r 0,                  5s,         796a-e246/tplx;c617-003e/tilx;79cd-171d/~tNl;bf10-3134/sz, PASS, radio
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c LoadGenerator -r 0,                   5s,         ad7f-c6c2/tplx;b285-2a5b/tilx;f214-1a3d/~tNl;bf10-3134/sz, PASS, radio
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c OneFg_NindependentMecApps -r 0,       5s,         a074-4017/tplx;d058-e99d/tilx;5853-0447/~tNl;bf10-3134/sz, PASS, radio
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c SingleMec -r 0,                       5s,         8787-78a3/tplx;0447-ade0/tilx;2fc0-df54/~tNl;bf10-3134/sz, PASS, radio
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c ThreeFg_NindependentMecApps -r 0,     5s,         d098-8dec/tplx;7cdf-517d/tilx;9ffb-a117/~tNl;bf10-3134/sz, PASS, radio
-/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-DL -r 0,                         20s,         27c1-6cfb/tplx;e490-a1ae/tilx;9976-9623/~tNl;4c24-6229/sz, PASS, radio interference
-/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-UL -r 0,                         20s,         eb02-683a/tplx;a876-121b/tilx;05dd-2521/~tNl;67d9-9ad5/sz, PASS, radio interference
-/simulations/nr/standalone/,             -f omnetpp.ini -c Standalone -r 0,                      5s,         1360-1a1f/tplx;546c-50ba/tilx;4871-706a/~tNl;c502-5889/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         95fc-4d99/tplx;1d00-62ac/tilx;38bc-a45c/~tNl;9556-0c92/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         bee2-c65d/tplx;82d0-9213/tilx;0899-e803/~tNl;7765-4989/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-AM -r 0,              5s,         840a-afeb/tplx;b5bc-7509/tilx;bba7-2539/~tNl;7dfe-f5ff/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-AM-Lossy -r 0,        5s,         702b-530c/tplx;baad-540d/tilx;1905-993c/~tNl;9f9c-e9ae/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-AM -r 0,              5s,         b207-01ef/tplx;f675-f06a/tilx;7422-4b59/~tNl;832d-4a69/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-UM-NR -r 0,           5s,         95fc-4d99/tplx;1d00-62ac/tilx;38bc-a45c/~tNl;9556-0c92/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-UM-NR -r 0,           5s,         bee2-c65d/tplx;82d0-9213/tilx;0899-e803/~tNl;7765-4989/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c Standalone -r 0,                      5s,         6df2-3bb3/tplx;da48-02d2/tilx;43e8-e082/~tNl;15e3-f189/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         8261-f005/tplx;3312-3039/tilx;e97f-e2a2/~tNl;e77e-97a8/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi -r 0,                5s,         1e0a-2b4b/tplx;2582-59fa/tilx;e64f-c81f/~tNl;8a09-0787/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-5qiProfiles -r 0,    5s,         13f0-62e8/tplx;7d25-356f/tilx;e127-592e/~tNl;b80c-663c/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-Heavy -r 0,          5s,         8c07-efdc/tplx;340e-14a2/tilx;760e-2f71/~tNl;8e0d-dc3a/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-NoOnDemand -r 0,     5s,         1e0a-2b4b/tplx;2582-59fa/tilx;e64f-c81f/~tNl;8a09-0787/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-OnDemandDrb -r 0,    5s,         1e0a-2b4b/tplx;8ed5-567a/tilx;e64f-c81f/~tNl;bb2e-0785/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         3583-eac8/tplx;eed3-5e89/tilx;bc8b-370a/~tNl;39e2-f7a8/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-FilterRules -r 0,             5s,         f9ad-d1bb/tplx;7424-1c95/tilx;bc8b-370a/~tNl;39e2-f7a8/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg -r 0,                5s,         16ce-06a8/tplx;87ba-a3b2/tilx;6d55-c3d2/~tNl;10f9-b7f1/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg-Heavy -r 0,          5s,         c919-d6f8/tplx;e14a-43f2/tilx;5602-0693/~tNl;23fe-854b/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-NoDrbConfig -r 0,             5s,         9770-a935/tplx;005f-62c7/tilx;b5c6-1d21/~tNl;039d-105e/sz, PASS, radio
-/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-DL -r 0,             5s,         f512-20d5/tplx;c08c-87b7/tilx;b99e-608d/~tNl;52c9-8aec/sz, PASS, radio interference multicarrier
-/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,             5s,         dc3d-3a25/tplx;bb58-222c/tilx;681c-b4e3/~tNl;19ea-b462/sz, PASS, radio interference multicarrier
-/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-DL -r 0,            5s,         5191-636f/tplx;6204-08d9/tilx;f77e-72ae/~tNl;df04-a2eb/sz, PASS, radio interference
-/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-UL -r 0,            5s,         2f2d-7fe4/tplx;38ac-98b1/tilx;d254-733f/~tNl;c74e-bb8c/sz, PASS, radio interference
-/simulations/nr/tutorial/,               -f omnetpp.ini -c BgTraffic -r 0,                       5s,         1e0f-891f/tplx;19b9-e43d/tilx;8d5c-4e25/~tNl;34dd-6df5/sz, PASS, radio bgcell
-/simulations/nr/tutorial/,               -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         bdeb-4111/tplx;8214-51a4/tilx;8a93-5160/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
-/simulations/nr/tutorial/,               -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         4ac4-f0f2/tplx;0ef4-cbde/tilx;1bf1-761c/~tNl;1ef4-bf21/sz, PASS, radio bgcell
-/simulations/nr/tutorial/,               -f omnetpp.ini -c Numerology -r 0,                      5s,         bdeb-4111/tplx;8214-51a4/tilx;8a93-5160/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
-/simulations/nr/tutorial/,               -f omnetpp.ini -c Single-UE -r 0,                       5s,         4bd4-bb86/tplx;1345-fd2c/tilx;def8-0ff3/~tNl;e516-71b8/sz, PASS, radio
-/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        e497-a3fa/tplx;ee37-02bf/tilx;e4c1-bfa4/~tNl;9255-94ea/sz, PASS, radio interference bgcell bgue
-/tutorials/nr/,                          -f omnetpp.ini -c BgTraffic -r 0,                       5s,         1e0f-891f/tplx;19b9-e43d/tilx;8d5c-4e25/~tNl;34dd-6df5/sz, PASS, radio bgcell
-/tutorials/nr/,                          -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         bdeb-4111/tplx;8214-51a4/tilx;8a93-5160/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
-/tutorials/nr/,                          -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         4ac4-f0f2/tplx;0ef4-cbde/tilx;1bf1-761c/~tNl;1ef4-bf21/sz, PASS, radio bgcell
-/tutorials/nr/,                          -f omnetpp.ini -c Numerology -r 0,                      5s,         bdeb-4111/tplx;8214-51a4/tilx;8a93-5160/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
-/tutorials/nr/,                          -f omnetpp.ini -c Single-UE -r 0,                       5s,         4bd4-bb86/tplx;1345-fd2c/tilx;def8-0ff3/~tNl;e516-71b8/sz, PASS, radio
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Clean -r 0,                        5s,         e22f-c94f/tplx;3ae5-1072/tilx;87c6-a9df/~tNl;bec6-a8d3/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Lossy -r 2,                        5s,         c008-8a07/tplx;8174-09a8/tilx;64b1-86b9/~tNl;1a20-59f6/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Segmentation -r 0,                 5s,         cebb-014b/tplx;a187-9b20/tilx;b19f-e36d/~tNl;1233-68fa/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-WindowStall -r 0,                  5s,         def8-5d21/tplx;4f0c-5461/tilx;2648-99d1/~tNl;765f-f3a2/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-RLF -r 0,                          10s,        120f-d4f3/tplx;f333-f8dc/tilx;3cba-b265/~tNl;b790-bef5/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-RLF-Reestablish -r 0,              14s,        1f36-cb8b/tplx;58c4-6685/tilx;0569-bc34/~tNl;6e08-8bb6/sz, PASS, idealchannel
-/simulations/nr/rlc/,                    -f omnetpp.ini -c UM-Lossy -r 2,                        5s,         f5b0-d97a/tplx;a60c-d140/tilx;5218-7453/~tNl;badf-a518/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Clean -r 0,                        5s,         0572-2a3b/tplx;33a5-6a6f/tilx;5a1c-b517/~tNl;459f-5348/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Lossy -r 2,                        5s,         c489-b750/tplx;0cfd-b9f7/tilx;bb0b-853e/~tNl;8941-148e/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Concatenation -r 0,                5s,         6a27-22bb/tplx;0cc9-42ba/tilx;a60a-f194/~tNl;e972-7fa3/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Segmentation -r 0,                 5s,         071b-3c1a/tplx;e8da-e46f/tilx;16cf-6a58/~tNl;d5cf-224c/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-WindowStall -r 0,                  5s,         a3e5-4d45/tplx;fc17-0971/tilx;ffef-e141/~tNl;16bb-fb0b/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-RLF -r 0,                          10s,        ab95-36ff/tplx;d4df-0174/tilx;ef67-8387/~tNl;f902-ce63/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-RLF-Reestablish -r 0,              14s,        4453-bce1/tplx;304d-f08e/tilx;42b4-42d1/~tNl;0cf6-9300/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c UM-Lossy -r 2,                        5s,         fcea-f0c3/tplx;a94c-4310/tilx;b264-c369/~tNl;9a0b-257e/sz, PASS, idealchannel
-/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-AM -r 0,                         5s,         0911-9bb3/tplx;344c-198e/tilx;3d88-6108/~tNl;a3eb-88a3/sz, PASS, radio
-/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Lossy-UL -r 0,                     5s,         a585-6e6d/tplx;0242-e6bc/tilx;d55e-8dc5/~tNl;f3ab-0b86/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Lossy-UL -r 0,                     5s,         28b5-a483/tplx;c938-62d2/tilx;ea4d-c8ca/~tNl;c70a-185a/sz, PASS, idealchannel
-/simulations/lte/rlc/,                   -f omnetpp.ini -c TCP-AM -r 0,                          5s,         c84c-4f9f/tplx;64fc-c2e4/tilx;f1ef-f4f4/~tNl;d3fa-db3f/sz, PASS, idealchannel
-/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-AM-Handover -r 0,               15s,         870d-2bfc/tplx;b95d-e7f3/tilx;eb6d-05f6/~tNl;90b8-dd06/sz, PASS, radio nofading
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-Rohc -r 0,                      5s,        4b67-3a8b/tplx;d897-2e15/tilx;f84b-74bf/~tNl;f1fa-a63d/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv6 -r 0,                      5s,        c0b9-e80c/tplx;5622-2a01/tilx;eae1-d381/~tNl;9f41-8786/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-IPv6 -r 0,                      10s,       3e1d-f86c/tplx;70b0-4b53/tilx;8f05-538b/~tNl;c9ab-8a49/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv4v6 -r 0,                    5s,        7ed5-3a3e/tplx;21fa-30ff/tilx;dea1-b607/~tNl;37a3-810a/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-IPv4v6 -r 0,                    5s,        6c2e-0643/tplx;aebd-3855/tilx;9a6a-6c2d/~tNl;d043-1a4e/sz, PASS, radio
-/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv6-Rohc -r 0,                 5s,        7b5e-4634/tplx;2558-0303/tilx;4d22-fb92/~tNl;c38b-147d/sz, PASS, radio
-/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured -r 0,                    5s,         e5f0-5861/tplx;7faf-70fd/tilx;d5a1-ba97/~tNl;6b06-0c9f/sz, PASS, radio
-/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Ipv4N6 -r 0,             5s,         a0fa-1efe/tplx;68b3-775f/tilx;a886-2432/~tNl;ca16-7898/sz, PASS, radio
-/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Handover -r 0,           5s,         fb26-11be/tplx;e6df-63aa/tilx;064d-d385/~tNl;8c2e-4e2d/sz, PASS, radio
-/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Mixed -r 0,              5s,         b088-74b1/tplx;7e69-404d/tilx;d08f-66f9/~tNl;5a92-9ad7/sz, PASS, radio
-/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Hosts -r 0,          5s,         bb7d-380b/tplx;ee4f-1c9e/tilx;db41-85be/~tNl;c2f2-41ec/sz, PASS, radio
-/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Bridge -r 0,         5s,         b0d4-1bb2/tplx;cdc6-b79d/tilx;c3a4-8f39/~tNl;6567-d00b/sz, PASS, radio
-/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Handover -r 0,       5s,         bbd4-1fa9/tplx;c6fd-9d4e/tilx;a68d-2b17/~tNl;5fb8-d512/sz, PASS, radio
-/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Mixed -r 0,          5s,         7f95-8b1f/tplx;b7cc-5567/tilx;7fcd-b472/~tNl;d568-c4d9/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-IPv6 -r 0,             5s,        a473-cf4f/tplx;57a3-dd0b/tilx;19f8-532b/~tNl;7bd9-af6d/sz, PASS, radio
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-FilterRules-IPv6 -r 0,          5s,        0d67-2c14/tplx;1389-708a/tilx;43b1-2327/~tNl;8dbc-93cb/sz, PASS, radio
-/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-DL-IPv6 -r 1,                       20s,       a78e-662d/tplx;3b17-6cd6/tilx;74d0-7fb4/~tNl;b658-b6ca/sz, PASS, radio interference
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 0,                          5s,         3957-f612/tplx;25e0-739c/tilx;e800-b05c/~tNl;83a1-a730/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 1,                          5s,         2fc0-ed3b/tplx;c1a9-6d57/tilx;e800-b05c/~tNl;2199-b4a5/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 2,                          5s,         2504-928c/tplx;73a5-7381/tilx;c586-4ac2/~tNl;be47-e74c/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 0,                          5s,         dd8c-8e2a/tplx;f74c-c9eb/tilx;e800-b05c/~tNl;43a4-892a/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 1,                          5s,         92d1-28f5/tplx;b73a-54f0/tilx;e800-b05c/~tNl;c1b6-5e8f/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 2,                          5s,         2390-c033/tplx;3fe8-9412/tilx;e800-b05c/~tNl;6213-ea33/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         6bb7-e0c5/tplx;58bb-a109/tilx;7c17-bf89/~tNl;4950-605d/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         7ddb-23b8/tplx;10aa-96d1/tilx;9cb8-96e8/~tNl;c70a-c8a1/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         61b4-b430/tplx;7628-775a/tilx;d450-1391/~tNl;fe4f-b0bf/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         c0f3-b77b/tplx;1795-e773/tilx;2c5f-01d4/~tNl;e075-43a7/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         4c49-c649/tplx;71e4-fb7c/tilx;e68f-4fd0/~tNl;de23-a0ce/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         f7ce-b5be/tplx;4687-d6b4/tilx;8c8e-1998/~tNl;83fa-d359/sz, PASS, radio bgcell bgue
+/simulations/nr/mec/multiMecHost/,       -f omnetpp.ini -c MultiMec -r 0,                        20s,        d2c8-d467/tplx;f4a3-e222/tilx;6f84-36fc/~tNl;f035-24f3/sz,  PASS, radio interference
+/simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_MultiMec -r 0,          20s,        b6f4-0316/tplx;b6c4-ef23/tilx;723d-28c8/~tNl;1552-7c94/sz,  PASS, radio interference multicarrier
+/simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_SingleMec -r 0,         20s,        5003-4026/tplx;c980-de50/tilx;5c90-1522/~tNl;5d3c-ae7f/sz,  PASS, radio interference multicarrier
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c best_case -r 0,                       10s,        5d75-87e0/tplx;c73c-1674/tilx;7760-9f19/~tNl;fca1-705b/sz, PASS, radio interference bgue
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c best_case_load_gen -r 0,              10s,        bd36-f92d/tplx;35a1-4161/tilx;ccc9-e25c/~tNl;fca1-705b/sz, PASS, radio interference bgue
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c bgUEs_gnb1 -r 0,                      10s,        44b5-542b/tplx;794a-c02b/tilx;c85b-683d/~tNl;814b-e755/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c bgUEs_gnb2 -r 0,                      10s,        44b5-542b/tplx;794a-c02b/tilx;c85b-683d/~tNl;814b-e755/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c farRNI -r 0,                          10s,        a406-a692/tplx;6496-ceda/tilx;b0b0-c6ed/~tNl;daf7-a291/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c MultiMec -r 0,                        10s,        44b5-542b/tplx;794a-c02b/tilx;c85b-683d/~tNl;814b-e755/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI -r 0,                         10s,        9d54-d672/tplx;76bf-4136/tilx;985a-2237/~tNl;9440-f238/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI_bgUEs_gnb1 -r 0,              10s,        9d54-d672/tplx;76bf-4136/tilx;985a-2237/~tNl;9440-f238/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c nearRNI_bgUEs_gnb2 -r 0,              10s,        9d54-d672/tplx;76bf-4136/tilx;985a-2237/~tNl;9440-f238/sz, PASS, radio interference
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case -r 0,                      10s,        fa73-edd0/tplx;210d-0bdd/tilx;e923-2f9a/~tNl;3c71-d85e/sz, PASS, radio interference bgue
+/simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case_load_gen -r 0,             10s,        f77b-b29c/tplx;5546-e3f5/tilx;eecb-6701/~tNl;84a2-4893/sz, PASS, radio interference bgue
+/simulations/nr/mec/rnisTest/,           -f omnetpp.ini -c RnisTest -r 0,                        5s,         2c4e-38ac/tplx;0676-451e/tilx;1c4f-3ee8/~tNl;aec9-5907/sz, PASS, radio
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c BgGeneratorApp -r 0,                  5s,         4412-c0bd/tplx;d559-e8cb/tilx;e4d0-7c96/~tNl;bf10-3134/sz, PASS, radio
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c LoadGenerator -r 0,                   5s,         4bef-57d1/tplx;b1b0-ed84/tilx;13ba-237b/~tNl;bf10-3134/sz, PASS, radio
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c OneFg_NindependentMecApps -r 0,       5s,         5559-c574/tplx;221f-08a5/tilx;3b76-edc4/~tNl;bf10-3134/sz, PASS, radio
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c SingleMec -r 0,                       5s,         f104-22de/tplx;a926-1bc7/tilx;6e8e-587a/~tNl;bf10-3134/sz, PASS, radio
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c ThreeFg_NindependentMecApps -r 0,     5s,         0e15-e631/tplx;d2f1-1884/tilx;7f12-3e8e/~tNl;bf10-3134/sz, PASS, radio
+/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-DL -r 0,                         20s,         ee3c-69d2/tplx;4a93-8585/tilx;7503-503a/~tNl;4c24-6229/sz, PASS, radio interference
+/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-UL -r 0,                         20s,         fbcc-89c3/tplx;1cfa-3f28/tilx;e3d7-6c0c/~tNl;67d9-9ad5/sz, PASS, radio interference
+/simulations/nr/standalone/,             -f omnetpp.ini -c Standalone -r 0,                      5s,         a04a-5d38/tplx;e024-2726/tilx;0b51-515e/~tNl;c502-5889/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         5146-58c6/tplx;6a00-1e22/tilx;a397-e763/~tNl;9556-0c92/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         068e-4305/tplx;76e4-fe21/tilx;d6a8-3787/~tNl;7765-4989/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-AM -r 0,              5s,         422d-5c8f/tplx;444f-a5fa/tilx;1973-c083/~tNl;7dfe-f5ff/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-AM-Lossy -r 0,        5s,         9132-45ca/tplx;dfa6-fc2a/tilx;ee51-9821/~tNl;9f9c-e9ae/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-AM -r 0,              5s,         836f-fcf1/tplx;dffa-f32a/tilx;ecc0-99f5/~tNl;832d-4a69/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-UM-NR -r 0,           5s,         5146-58c6/tplx;6a00-1e22/tilx;a397-e763/~tNl;9556-0c92/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-UM-NR -r 0,           5s,         068e-4305/tplx;76e4-fe21/tilx;d6a8-3787/~tNl;7765-4989/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c Standalone -r 0,                      5s,         a1e4-d3a6/tplx;676c-5683/tilx;3ae5-796a/~tNl;15e3-f189/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL -r 0,                         5s,         01af-0096/tplx;7618-f36f/tilx;d5f3-8d7f/~tNl;e77e-97a8/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi -r 0,                5s,         e860-525d/tplx;fdf5-b463/tilx;acc2-2532/~tNl;8a09-0787/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-5qiProfiles -r 0,    5s,         1fbc-0cdb/tplx;c8a9-7d4e/tilx;f833-311a/~tNl;b80c-663c/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-Heavy -r 0,          5s,         4dc1-7c51/tplx;66aa-a1eb/tilx;2750-9c17/~tNl;8e0d-dc3a/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-NoOnDemand -r 0,     5s,         e860-525d/tplx;fdf5-b463/tilx;acc2-2532/~tNl;8a09-0787/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-OnDemandDrb -r 0,    5s,         e860-525d/tplx;ba6b-826a/tilx;acc2-2532/~tNl;bb2e-0785/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         b68c-735b/tplx;f876-4ea3/tilx;2a57-0021/~tNl;39e2-f7a8/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-FilterRules -r 0,             5s,         746f-c467/tplx;c143-a027/tilx;2a57-0021/~tNl;39e2-f7a8/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg -r 0,                5s,         0837-d94f/tplx;eb6b-a1a6/tilx;2fb6-4dd1/~tNl;10f9-b7f1/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg-Heavy -r 0,          5s,         5506-dfd7/tplx;5c21-8334/tilx;27c7-cc10/~tNl;23fe-854b/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-NoDrbConfig -r 0,             5s,         5959-0daf/tplx;3cd5-00d5/tilx;bbe5-a51c/~tNl;039d-105e/sz, PASS, radio
+/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-DL -r 0,             5s,         6b5d-3d22/tplx;f352-d658/tilx;22e6-5628/~tNl;52c9-8aec/sz, PASS, radio interference multicarrier
+/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,             5s,         c06a-120f/tplx;81ce-0b8b/tilx;f625-75cf/~tNl;19ea-b462/sz, PASS, radio interference multicarrier
+/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-DL -r 0,            5s,         08c8-9c17/tplx;59d3-6f62/tilx;e870-c5e1/~tNl;df04-a2eb/sz, PASS, radio interference
+/simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-UL -r 0,            5s,         270e-9538/tplx;0f79-1fb1/tilx;479a-4acf/~tNl;c74e-bb8c/sz, PASS, radio interference
+/simulations/nr/tutorial/,               -f omnetpp.ini -c BgTraffic -r 0,                       5s,         e83d-d3d9/tplx;2611-3692/tilx;41e6-1778/~tNl;34dd-6df5/sz, PASS, radio bgcell
+/simulations/nr/tutorial/,               -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
+/simulations/nr/tutorial/,               -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         ff84-3a01/tplx;2eb6-82be/tilx;cf70-5e71/~tNl;1ef4-bf21/sz, PASS, radio bgcell
+/simulations/nr/tutorial/,               -f omnetpp.ini -c Numerology -r 0,                      5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
+/simulations/nr/tutorial/,               -f omnetpp.ini -c Single-UE -r 0,                       5s,         ccd3-e58d/tplx;ff12-89aa/tilx;3c67-4ab3/~tNl;e516-71b8/sz, PASS, radio
+/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        b4a0-9f4a/tplx;87ea-3748/tilx;70d1-9a9f/~tNl;9255-94ea/sz, PASS, radio interference bgcell bgue
+/tutorials/nr/,                          -f omnetpp.ini -c BgTraffic -r 0,                       5s,         e83d-d3d9/tplx;2611-3692/tilx;41e6-1778/~tNl;34dd-6df5/sz, PASS, radio bgcell
+/tutorials/nr/,                          -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
+/tutorials/nr/,                          -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         ff84-3a01/tplx;2eb6-82be/tilx;cf70-5e71/~tNl;1ef4-bf21/sz, PASS, radio bgcell
+/tutorials/nr/,                          -f omnetpp.ini -c Numerology -r 0,                      5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;e4f6-2d1e/sz, PASS, radio bgcell multicarrier
+/tutorials/nr/,                          -f omnetpp.ini -c Single-UE -r 0,                       5s,         ccd3-e58d/tplx;ff12-89aa/tilx;3c67-4ab3/~tNl;e516-71b8/sz, PASS, radio
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Clean -r 0,                        5s,         3933-1e52/tplx;6ac8-798c/tilx;106a-ceb8/~tNl;bec6-a8d3/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Lossy -r 2,                        5s,         d1b9-a122/tplx;12a8-9036/tilx;4629-edc8/~tNl;1a20-59f6/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Segmentation -r 0,                 5s,         de5e-038e/tplx;dfd2-22dc/tilx;9ad8-a8f1/~tNl;1233-68fa/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-WindowStall -r 0,                  5s,         4ed8-ab97/tplx;cf25-b82e/tilx;3a2b-3552/~tNl;765f-f3a2/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-RLF -r 0,                          10s,        da82-299f/tplx;3645-caa6/tilx;32be-a034/~tNl;b790-bef5/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-RLF-Reestablish -r 0,              14s,        914e-bcec/tplx;445e-390e/tilx;af1c-7871/~tNl;6e08-8bb6/sz, PASS, idealchannel
+/simulations/nr/rlc/,                    -f omnetpp.ini -c UM-Lossy -r 2,                        5s,         4ab6-3a05/tplx;83fa-2d1d/tilx;b23d-173b/~tNl;badf-a518/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Clean -r 0,                        5s,         d891-c684/tplx;d3f2-5cec/tilx;af58-d844/~tNl;459f-5348/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Lossy -r 2,                        5s,         5005-c3fc/tplx;a2e2-2647/tilx;105c-4968/~tNl;8941-148e/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Concatenation -r 0,                5s,         ed2b-cf02/tplx;6dfa-56c4/tilx;fde1-7f1d/~tNl;e972-7fa3/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Segmentation -r 0,                 5s,         dcd3-3555/tplx;8a5e-24c8/tilx;ebbb-87dd/~tNl;d5cf-224c/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-WindowStall -r 0,                  5s,         0a21-d444/tplx;21c0-0654/tilx;cd80-681f/~tNl;16bb-fb0b/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-RLF -r 0,                          10s,        b78d-96e8/tplx;83e6-ee84/tilx;d05b-4d25/~tNl;f902-ce63/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-RLF-Reestablish -r 0,              14s,        af0c-99d0/tplx;445a-37b4/tilx;78f5-5d97/~tNl;0cf6-9300/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c UM-Lossy -r 2,                        5s,         48a8-113e/tplx;345a-4760/tilx;5614-18de/~tNl;9a0b-257e/sz, PASS, idealchannel
+/simulations/lte/demo/,                  -f omnetpp.ini -c VoIP-AM -r 0,                         5s,         dc1e-0fc7/tplx;6b5d-ff7b/tilx;a824-ff00/~tNl;a3eb-88a3/sz, PASS, radio
+/simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Lossy-UL -r 0,                     5s,         1d67-21eb/tplx;7db3-f1f8/tilx;e990-0e0d/~tNl;f3ab-0b86/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c AM-Lossy-UL -r 0,                     5s,         8f25-8f7f/tplx;5590-8f2d/tilx;d3c9-adad/~tNl;c70a-185a/sz, PASS, idealchannel
+/simulations/lte/rlc/,                   -f omnetpp.ini -c TCP-AM -r 0,                          5s,         00dd-7e7b/tplx;d8b1-c2b7/tilx;b686-265f/~tNl;d3fa-db3f/sz, PASS, idealchannel
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-AM-Handover -r 0,               15s,         14b4-59f4/tplx;4ef0-03c5/tilx;b01c-6a72/~tNl;90b8-dd06/sz, PASS, radio nofading
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-Rohc -r 0,                      5s,        3945-0efe/tplx;a482-1b10/tilx;6360-3780/~tNl;f1fa-a63d/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv6 -r 0,                      5s,        76a0-16c2/tplx;28c5-f609/tilx;5e46-a768/~tNl;9f41-8786/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-IPv6 -r 0,                      10s,       ab0a-ec5a/tplx;7ce4-a75c/tilx;ac8d-4d5a/~tNl;c9ab-8a49/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv4v6 -r 0,                    5s,        222a-7dc5/tplx;bf9f-5f33/tilx;6714-851c/~tNl;37a3-810a/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-UL-IPv4v6 -r 0,                    5s,        3710-bce6/tplx;9607-62d8/tilx;e6c3-a507/~tNl;d043-1a4e/sz, PASS, radio
+/simulations/nr/standalone/,             -f omnetpp.ini -c VoIP-DL-IPv6-Rohc -r 0,                 5s,        423c-470d/tplx;8e9d-337c/tilx;f985-8f7b/~tNl;c38b-147d/sz, PASS, radio
+/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured -r 0,                    5s,         628f-cadb/tplx;424a-2090/tilx;e521-3103/~tNl;6b06-0c9f/sz, PASS, radio
+/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Ipv4N6 -r 0,             5s,         6d75-ef73/tplx;e48e-75b4/tilx;1d57-e765/~tNl;ca16-7898/sz, PASS, radio
+/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Handover -r 0,           5s,         3ba9-0dd6/tplx;0f21-916a/tilx;fa4e-f257/~tNl;8c2e-4e2d/sz, PASS, radio
+/simulations/nr/unstructured/,           -f omnetpp.ini -c Unstructured-Mixed -r 0,              5s,         f7a5-c128/tplx;19fe-6903/tilx;341b-1951/~tNl;5a92-9ad7/sz, PASS, radio
+/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Hosts -r 0,          5s,         8f99-6b4e/tplx;b681-5e72/tilx;3831-5054/~tNl;c2f2-41ec/sz, PASS, radio
+/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Bridge -r 0,         5s,         783b-3384/tplx;b53d-f9c3/tilx;76fc-58d1/~tNl;6567-d00b/sz, PASS, radio
+/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Handover -r 0,       5s,         c0d5-40c0/tplx;29c5-29dc/tilx;e16f-1af9/~tNl;5fb8-d512/sz, PASS, radio
+/simulations/nr/ethernet/,               -f omnetpp.ini -c Ethernet-Mixed -r 0,          5s,         8d9e-4b47/tplx;b384-7cf8/tilx;02eb-af06/~tNl;d568-c4d9/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-MultiQfi-IPv6 -r 0,             5s,        a842-a047/tplx;3a80-dba1/tilx;ec78-5c01/~tNl;7bd9-af6d/sz, PASS, radio
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-FilterRules-IPv6 -r 0,          5s,        8a25-5801/tplx;7d79-a992/tilx;c1b8-d6c6/~tNl;8dbc-93cb/sz, PASS, radio
+/simulations/nr/standalone_multicell/,   -f omnetpp.ini -c CBR-DL-IPv6 -r 1,                       20s,       1946-7547/tplx;910e-4bd0/tilx;b05c-6e23/~tNl;b658-b6ca/sz, PASS, radio interference

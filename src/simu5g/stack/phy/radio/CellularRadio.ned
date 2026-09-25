@@ -18,6 +18,11 @@ package simu5g.stack.phy.radio;
 // frame that arrives for the node's PHY leg enters through it; the PHY and its
 // channel models still decide everything else.
 //
+// A frame arrives when its transmission starts. The radio holds it until the
+// transmission ends and passes it up to the PHY then, at the frame's own
+// scheduling priority; a frame that takes no air time (a beacon) is passed up
+// on arrival.
+//
 module CellularRadio
 {
     parameters:

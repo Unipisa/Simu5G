@@ -22,6 +22,8 @@ void CellularRadio::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         radioInGateId_ = findGate("radioIn");
+        // frames arrive at the start of their transmission
+        gate(radioInGateId_)->setDeliverImmediately(true);
         upperLayerInGateId_ = findGate("upperLayerIn");
         upperLayerOutGateId_ = findGate("upperLayerOut");
         radioMedium_.reference(this, "radioMediumModule", true);
@@ -30,8 +32,17 @@ void CellularRadio::initialize(int stage)
 
 void CellularRadio::handleMessage(cMessage *msg)
 {
-    if (msg->getArrivalGateId() == radioInGateId_)
+    if (msg->isSelfMessage())
+        // the end of a held frame's transmission
         send(msg, upperLayerOutGateId_);
+    else if (msg->getArrivalGateId() == radioInGateId_) {
+        auto frame = check_and_cast<cPacket *>(msg);
+        if (frame->getDuration() == 0)
+            send(frame, upperLayerOutGateId_);
+        else
+            // held until the transmission ends; the frame keeps its scheduling priority
+            scheduleAfter(frame->getDuration(), frame);
+    }
     else if (msg->getArrivalGateId() == upperLayerInGateId_)
         transmit(check_and_cast<AirFrame *>(msg));
     else

@@ -24,9 +24,10 @@ using namespace omnetpp;
 class AirFrame;
 
 /**
- * See the NED documentation of CellularRadio. Received frames are passed up
- * unchanged; a frame from the PHY carries a RadioTransmissionRequest that says
- * where to send it.
+ * See the NED documentation of CellularRadio. A received frame is held until
+ * the end of its transmission (it is rescheduled as a self-message) and then
+ * passed up unchanged; a frame from the PHY carries a RadioTransmissionRequest
+ * that says where to send it.
  */
 class CellularRadio : public cSimpleModule
 {
