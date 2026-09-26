@@ -280,13 +280,13 @@ void LteAmc::initialize(int stage)
     WATCH(lb_);
     WATCH(ub_);
     WATCH(cqiComputationWeight_);
-    WATCH_SET(remoteSet_);
-    WATCH_MAP(dlConnectedUe_);
-    WATCH_MAP(ulConnectedUe_);
-    WATCH_MAP(dlNodeIndex_);
-    WATCH_MAP(ulNodeIndex_);
-    WATCH_VECTOR(dlRevNodeIndex_);
-    WATCH_VECTOR(ulRevNodeIndex_);
+    WATCH(remoteSet_);
+    WATCH(dlConnectedUe_);
+    WATCH(ulConnectedUe_);
+    WATCH(dlNodeIndex_);
+    WATCH(ulNodeIndex_);
+    WATCH(dlRevNodeIndex_);
+    WATCH(ulRevNodeIndex_);
 }
 
 /*******************************************

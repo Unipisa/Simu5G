@@ -79,8 +79,8 @@ void LteSchedulerEnb::initialize(int stage)
     WATCH(direction_);
     WATCH(resourceBlocks_);
     WATCH(utilization_);
-    WATCH_SET(activeConnectionSet_);
-    WATCH_MAP(allocatedCws_);
+    WATCH(activeConnectionSet_);
+    WATCH(allocatedCws_);
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)

@@ -462,8 +462,8 @@ void LteMacBase::initialize(int stage)
 
         WATCH(queueSize_);
         WATCH(nodeId_);
-        // WATCH_MAP(connDescOut_);
-        // WATCH_MAP(connDescIn_);
+        // WATCH(connDescOut_);
+        // WATCH(connDescIn_);
     }
 }
 

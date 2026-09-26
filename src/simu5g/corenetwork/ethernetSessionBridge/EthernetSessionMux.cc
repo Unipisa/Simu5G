@@ -72,7 +72,7 @@ void EthernetSessionMux::initialize(int stage)
         macTable_.reference(this, "macTableModule", true);
         // the uplink frames of the sessions reach the bridge as the ethernetmac service
         registerService(Protocol::ethernetMac, gate("sessionIn"), SP_REQUEST);
-        WATCH_MAP(portOfGate_);
+        WATCH(portOfGate_);
     }
 }
 

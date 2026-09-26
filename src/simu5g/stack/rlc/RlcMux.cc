@@ -34,8 +34,8 @@ void RlcMux::initialize(int stage)
 
         bearerManagement_ = inet::getModuleFromPar<BearerManagement>(par("bearerManagementModule"), this);
 
-        WATCH_MAP(rxGateIndices_);
-        WATCH_MAP(txGateIndices_);
+        WATCH(rxGateIndices_);
+        WATCH(txGateIndices_);
     }
 }
 

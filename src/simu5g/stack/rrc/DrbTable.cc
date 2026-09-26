@@ -17,8 +17,8 @@ Define_Module(DrbTable);
 
 void DrbTable::initialize()
 {
-    WATCH_MAP(drbs_);
-    WATCH_MAP(configuredDrbs_);
+    WATCH(drbs_);
+    WATCH(configuredDrbs_);
 }
 
 void DrbTable::handleMessage(cMessage *msg)

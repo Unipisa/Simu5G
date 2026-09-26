@@ -329,30 +329,30 @@ void Binder::initialize(int stage)
 
         // Add WATCH macros for all member variables
         WATCH(networkName_);
-        WATCH_MAP(ipAddressToMacNodeId_);
-        WATCH_MAP(ipAddressToNrMacNodeId_);
-        // WATCH_MAP(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
-        WATCH_VECTOR(servingNode_);
-        WATCH_VECTOR(secondaryNodeToMasterNodeOrSelf_);
-        WATCH_SET(mecHostAddress_);
-        WATCH_MAP(mecHostToUpfAddress_);
-        // WATCH_MAP(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
-        // WATCH_MAP(bgSchedulerList_); // Commented out - contains vectors of BackgroundScheduler* pointers that don't have stream operators
-        WATCH_PTRVECTOR(enbList_); // Commented out - contains EnbInfo* pointers that don't have stream operators
-        WATCH_PTRVECTOR(ueList_); // Commented out - contains UeInfo* pointers that don't have stream operators
-        WATCH_PTRVECTOR(bgTrafficManagerList_); // Commented out - contains BgTrafficManagerInfo* pointers that don't have stream operators
+        WATCH(ipAddressToMacNodeId_);
+        WATCH(ipAddressToNrMacNodeId_);
+        // WATCH(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
+        WATCH(servingNode_);
+        WATCH(secondaryNodeToMasterNodeOrSelf_);
+        WATCH(mecHostAddress_);
+        WATCH(mecHostToUpfAddress_);
+        // WATCH(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
+        // WATCH(bgSchedulerList_); // Commented out - contains vectors of BackgroundScheduler* pointers that don't have stream operators
+        WATCH(enbList_); // Commented out - contains EnbInfo* pointers that don't have stream operators
+        WATCH(ueList_); // Commented out - contains UeInfo* pointers that don't have stream operators
+        WATCH(bgTrafficManagerList_); // Commented out - contains BgTrafficManagerInfo* pointers that don't have stream operators
         WATCH(totalBands_);
-        // WATCH_MAP(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
-        // WATCH_MAP(carrierUeMap_); // Commented out - contains sets that don't have stream operators
-        WATCH_MAP(carrierFreqToNumerologyIndex_);
-        WATCH_VECTOR(ueMaxNumerologyIndex_);
-        // WATCH_MAP(ueNumerologyIndex_); // Commented out - contains sets that don't have stream operators
-        // WATCH_MAP(ulTransmissionMap_); // Commented out - contains complex nested vectors that don't have stream operators
+        // WATCH(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
+        // WATCH(carrierUeMap_); // Commented out - contains sets that don't have stream operators
+        WATCH(carrierFreqToNumerologyIndex_);
+        WATCH(ueMaxNumerologyIndex_);
+        // WATCH(ueNumerologyIndex_); // Commented out - contains sets that don't have stream operators
+        // WATCH(ulTransmissionMap_); // Commented out - contains complex nested vectors that don't have stream operators
         WATCH(lastUpdateUplinkTransmissionInfo_);
         WATCH(lastUplinkTransmission_);
-        // WATCH_MAP(x2ListeningPorts_); // Commented out - contains lists that don't have stream operators
-        // WATCH_MAP(x2PeerAddress_); // Commented out - contains L3Address that doesn't have stream operator
-        // WATCH_MAP(multicastGroupMap_); // Commented out - contains sets that don't have stream operators
+        // WATCH(x2ListeningPorts_); // Commented out - contains lists that don't have stream operators
+        // WATCH(x2PeerAddress_); // Commented out - contains L3Address that doesn't have stream operator
+        // WATCH(multicastGroupMap_); // Commented out - contains sets that don't have stream operators
     }
 }
 

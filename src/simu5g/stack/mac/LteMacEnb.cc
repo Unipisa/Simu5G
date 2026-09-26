@@ -124,7 +124,7 @@ void LteMacEnb::initialize(int stage)
         cellInfo_.reference(this, "cellInfoModule", true);
 
         eNodeBCount = par("eNodeBCount");
-        WATCH_MAP(drbQosMap_);
+        WATCH(drbQosMap_);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         // Insert EnbInfo in the Binder

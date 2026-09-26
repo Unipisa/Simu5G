@@ -41,9 +41,9 @@ void D2dAmcHelper::initD2D(D2dBinder *d2dBinder)
 
     WATCH(mcsScaleD2D_);
     WATCH(fbhbCapacityD2D_);
-    WATCH_MAP(d2dConnectedUe_);
-    WATCH_MAP(d2dNodeIndex_);
-    WATCH_VECTOR(d2dRevNodeIndex_);
+    WATCH(d2dConnectedUe_);
+    WATCH(d2dNodeIndex_);
+    WATCH(d2dRevNodeIndex_);
 }
 
 void D2dAmcHelper::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, GHz carrierFrequency)
