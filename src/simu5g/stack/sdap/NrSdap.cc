@@ -41,6 +41,8 @@ void NrSdap::initialize()
     reflectiveQosOverridesQfi_ = par("reflectiveQosOverridesQfi").boolValue();
     if (!isUe && reflectiveQosTable.getNullable() != nullptr)
         throw cRuntimeError("Only UE may use a reflective QoS table");
+
+    WATCH(establishedBearers_);
 }
 
 void NrSdap::configureDrb(const DrbDesc& drb)

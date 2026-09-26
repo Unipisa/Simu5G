@@ -34,6 +34,13 @@ void RlcUmRxEntityBase::initialize(int stage)
         LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
         ownerNodeId_ = mac->getMacNodeId();
         initMode(mac);
+
+        WATCH(flowControlInfo_);
+        WATCH(isBurst_);
+        WATCH(totalBits_);
+        WATCH(ttiBits_);
+        WATCH(t1_);
+        WATCH(t2_);
     }
 }
 

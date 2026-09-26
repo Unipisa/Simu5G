@@ -56,6 +56,9 @@ void HandoverPacketHolderEnb::initialize(int stage)
 
         cModule *bs = getContainingNode(this);
         nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
+
+        WATCH(hoForwarding_);
+        WATCH(hoHolding_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         amNr_ = binder_->isNrNodeB(nodeId_);

@@ -32,6 +32,10 @@ void NrPdcpRxEntity::initialize(int stage)
 
         received_.resize(rxWindowDesc_.windowSize_, false);
         t_reordering_.setTimerId(REORDERING_T);
+
+        WATCH(sduBuffer_);
+        WATCH(rxWindowDesc_);
+        WATCH(t_reordering_);
     }
 }
 

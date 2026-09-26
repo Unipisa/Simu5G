@@ -35,6 +35,12 @@ void RlcAmRxEntityBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         initMode();
+
+        WATCH(flowControlInfo_);
+        WATCH(ackFlowControlInfo_);
+        WATCH(lastSentAck_);
+        WATCH(totalRcvdBytes_);
+        WATCH(totalPduRcvdBytes_);
     }
 }
 

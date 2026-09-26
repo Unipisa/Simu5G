@@ -69,6 +69,8 @@ void LtePdcpTxEntity::initialize(int stage) {
             default:
                 throw cRuntimeError("LtePdcpTxEntity::initialize(): invalid rlcMode param '%s'", par("rlcMode").stringValue());
         }
+
+        WATCH(sno_);
     }
 }
 

@@ -96,6 +96,10 @@ void BearerManagement::initialize(int stage)
         t301_ = par("t301");
 
         dualConnectivityEnabled_ = par("dualConnectivityEnabled");
+
+        WATCH(servingNodeId_);
+        WATCH(nrServingNodeId_);
+        WATCH(pendingRlf_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // Seed the stack attachment ledger from the Binder and deliver it (UE only; see

@@ -39,6 +39,10 @@ void LteRlcAmRxEntity::initMode()
     tReordering_ = par("t_Reordering");
     tStatusProhibitTimer_ = new cMessage("t_StatusProhibitTimer");
     tStatusProhibit_ = par("t_StatusProhibit");
+
+    WATCH(rxNextStatusTrigger_);
+    WATCH(statusReportPending_);
+    WATCH(pendingSdu_);
 }
 
 void LteRlcAmRxEntity::handleMessage(cMessage *msg)

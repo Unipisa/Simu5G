@@ -53,6 +53,11 @@ class LteRlcAmRxEntity : public RlcAmRxEntityBase
     struct PendingSdu {
         inet::Packet *pkt = nullptr;
         size_t accumulated = 0;
+
+        friend std::ostream& operator<<(std::ostream& os, const PendingSdu& e) {
+            os << "pkt=" << (e.pkt ? e.pkt->getName() : "null") << " accumulated=" << e.accumulated;
+            return os;
+        }
     } pendingSdu_;
 
   public:

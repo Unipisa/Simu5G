@@ -59,6 +59,13 @@ void DcPdcpLegSplitter::initialize(int stage)
         if (node->hasPar("nrMacNodeId"))
             nrNodeId_ = MacNodeId(node->par("nrMacNodeId").intValue());
         isUe_ = (getNodeTypeById(nodeId_) == UE);
+
+        WATCH(servingNodeId_);
+        WATCH(nrServingNodeId_);
+        WATCH(primaryPath_);
+        WATCH(splitThreshold_);
+        WATCH(currentPacketOrdinal_);
+        WATCH(packetsSteered_);
     }
 }
 

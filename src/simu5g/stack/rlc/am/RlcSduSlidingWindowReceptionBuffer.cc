@@ -20,6 +20,11 @@ RlcSduSlidingWindowReceptionBuffer::RlcSduSlidingWindowReceptionBuffer(
     uint32_t windowSize, const std::string &name)
     : amWindowSize_(windowSize), name_(name)
 {
+    WATCH(sduBuffer_);
+    WATCH(rxNext_);
+    WATCH(rxNextHighest_);
+    WATCH(rxHighestStatus_);
+    WATCH(consumed_);
 }
 
 RlcSduSlidingWindowReceptionBuffer::~RlcSduSlidingWindowReceptionBuffer()

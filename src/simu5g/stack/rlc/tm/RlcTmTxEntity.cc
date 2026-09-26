@@ -31,6 +31,9 @@ void RlcTmTxEntity::initialize(int stage)
 {
     if (stage == INITSTAGE_LOCAL) {
         queueSize_ = par("queueSize");
+
+        WATCH(flowControlInfo_);
+        WATCH(queuedPdus_);
     }
 }
 

@@ -69,6 +69,8 @@ void LteCompManagerBase::initialize(int stage)
             compClientTick_->setSchedulingPriority(2);        // compClientTick_ after MAC's TTI TICK. TODO check if it must be done before or after..
             scheduleAt(NOW + TTI, compClientTick_);
         }
+
+        WATCH(usableBands_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // get reference to the binder

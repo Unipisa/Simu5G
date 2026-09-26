@@ -49,6 +49,10 @@ void NrRlcUmRxEntity::initMode(LteMacBase *mac)
     t_Reassembly = par("t_Reassembly");
     // The mux feeding our "in" gate (for UL burst-throughput reporting).
     rlcMux_ = getModuleFromPar<RlcMux>(par("rlcMuxModule"), this);
+
+    WATCH(totalRcvdBytesNr_);
+    WATCH(recentCompleteSduSet_);
+    WATCH(totalPduRcvdBytes_);
 }
 
 void NrRlcUmRxEntity::emitRxStatistics(bool perPdu, double throughput, simtime_t delay)

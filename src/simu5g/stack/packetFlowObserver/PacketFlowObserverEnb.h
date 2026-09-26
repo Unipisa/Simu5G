@@ -35,6 +35,11 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     struct Grant {
         unsigned int grantId;
         simtime_t sendTimestamp;
+
+        friend std::ostream& operator<<(std::ostream& os, const Grant& e) {
+            os << "grantId=" << e.grantId << " sendTimestamp=" << e.sendTimestamp;
+            return os;
+        }
     };
 
     struct BurstStatus {
@@ -64,6 +69,12 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
             totalLossPdcp = 0;
             totalPdcpArrived = 0;
             totalPdcpSno = 0;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const PacketLoss& e) {
+            os << "lastPdcpSno=" << e.lastPdpcSno << " totalLossPdcp=" << e.totalLossPdcp
+               << " totalPdcpArrived=" << e.totalPdcpArrived << " totalPdcpSno=" << e.totalPdcpSno;
+            return os;
         }
     };
 

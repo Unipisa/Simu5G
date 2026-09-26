@@ -63,6 +63,13 @@ struct FlowKey {
     }
 };
 
+inline std::ostream& operator<<(std::ostream& os, const FlowKey& k)
+{
+    os << k.srcAddr << ":" << k.srcPort << "->" << k.dstAddr << ":" << k.dstPort
+       << "/" << (unsigned int)k.protocol;
+    return os;
+}
+
 // Structure to store reflective QoS flow information
 struct ReflectiveQosFlow {
     Qfi qfi = QFI_NONE;
@@ -75,6 +82,13 @@ struct ReflectiveQosFlow {
     ReflectiveQosFlow(Qfi q, const FlowKey& key)
         : qfi(q), flowKey(key), lastSeen(simTime()), isActive(true) {}
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ReflectiveQosFlow& f)
+{
+    os << "qfi=" << f.qfi << " flow=" << f.flowKey << " lastSeen=" << f.lastSeen
+       << (f.isActive ? " active" : " inactive");
+    return os;
+}
 
 /**
  * ReflectiveQosTable maintains a table of QoS flow mappings for reflective QoS.

@@ -51,6 +51,8 @@ void PacketFlowObserverBase::initialize(int stage)
         macModule->subscribe(registerSignal("rlcPduDiscarded"), this);
         macModule->subscribe(registerSignal("grantSent"), this);
         macModule->subscribe(registerSignal("ulMacPduArrived"), this);
+
+        WATCH(pktDiscardCounterTotal_);
     }
 }
 

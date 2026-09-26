@@ -19,7 +19,9 @@ using namespace omnetpp;
 
 void RlcTmRxEntity::initialize(int stage)
 {
-    // nothing to initialize
+    if (stage == inet::INITSTAGE_LOCAL) {
+        WATCH(flowControlInfo_);
+    }
 }
 
 void RlcTmRxEntity::handleMessage(cMessage *msg)

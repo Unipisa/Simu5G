@@ -40,6 +40,11 @@ Define_Module(PacketFlowObserverUe);
 void PacketFlowObserverUe::initialize(int stage)
 {
     PacketFlowObserverBase::initialize(stage);
+
+    if (stage == inet::INITSTAGE_LOCAL) {
+        WATCH(connectionMap_);
+        WATCH(pdcpDelay);
+    }
 }
 
 bool PacketFlowObserverUe::hasDrbId(DrbKey drbKey)

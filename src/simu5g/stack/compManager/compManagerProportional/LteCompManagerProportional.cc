@@ -20,6 +20,13 @@ using namespace inet;
 void LteCompManagerProportional::initialize(int stage)
 {
     LteCompManagerBase::initialize(stage);
+
+    if (stage == INITSTAGE_LOCAL) {
+        WATCH(provisionedBlocks_);
+        WATCH(reqBlocksMap_);
+        WATCH(partitioning_);
+        WATCH(offset_);
+    }
 }
 
 void LteCompManagerProportional::provisionalSchedule()

@@ -41,6 +41,12 @@ class LteRlcUmRxEntity : public RlcUmRxEntityBase
         inet::Packet *pkt = nullptr;
         size_t size = 0;
         unsigned int currentPduSno = 0;
+
+        friend std::ostream& operator<<(std::ostream& os, const Buffered& e) {
+            os << "pkt=" << (e.pkt ? e.pkt->getName() : "null") << " size=" << e.size
+               << " currentPduSno=" << e.currentPduSno;
+            return os;
+        }
     } buffered_;
     unsigned int lastPduReassembled_ = 0;
     bool init_ = false;

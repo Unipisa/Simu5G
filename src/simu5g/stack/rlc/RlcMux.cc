@@ -36,6 +36,7 @@ void RlcMux::initialize(int stage)
 
         WATCH(rxGateIndices_);
         WATCH(txGateIndices_);
+        WATCH(ulThroughput_);
     }
 }
 

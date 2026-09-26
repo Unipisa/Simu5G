@@ -18,6 +18,11 @@ using namespace inet;
 RlcSduSlidingWindowTransmissionBuffer::RlcSduSlidingWindowTransmissionBuffer(uint32_t windowSize, const std::string &name)
     : amWindowSize_(windowSize), name_(name)
 {
+    WATCH(txBuffer_);
+    WATCH(hasTransmitted_);
+    WATCH(highestSnTransmitted_);
+    WATCH(txNext_);
+    WATCH(txNextAck_);
 }
 
 RlcSduSlidingWindowTransmissionBuffer::~RlcSduSlidingWindowTransmissionBuffer()

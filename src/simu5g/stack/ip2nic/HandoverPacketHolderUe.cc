@@ -37,6 +37,10 @@ void HandoverPacketHolderUe::initialize()
 {
     stackGateOut_ = gate("stackOut");
     sessionType_ = aToSessionType(par("sessionType").stdstringValue());
+
+    WATCH(servingNodeId_);
+    WATCH(nrServingNodeId_);
+    WATCH(ueHold_);
 }
 
 void HandoverPacketHolderUe::setServingNodeIds(MacNodeId servingNodeId, MacNodeId nrServingNodeId)

@@ -50,6 +50,13 @@ struct PdcpRxWindowDesc
 
 };
 
+inline std::ostream& operator<<(std::ostream& os, const PdcpRxWindowDesc& w)
+{
+    os << "windowSize=" << w.windowSize_ << " rxNext=" << w.rxNext_
+       << " rxDeliv=" << w.rxDeliv_ << " rxReord=" << w.rxReord_;
+    return os;
+}
+
 enum PdcpRxTimerType
 {
     REORDERING_T = 0

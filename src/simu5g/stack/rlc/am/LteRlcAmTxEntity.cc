@@ -49,6 +49,20 @@ void LteRlcAmTxEntity::initialize(int stage)
 
         rtxBuffer_ = new RlcRetransmissionBuffer(maxRtxThreshold_);
         lastSduSample_ = NOW;
+
+        WATCH(flowControlInfo_);
+        WATCH(radioLinkFailureDetected_);
+        WATCH(frontOffset_);
+        WATCH(sduQueueBytes_);
+        WATCH(txWindow_);
+        WATCH(txNext_);
+        WATCH(txNextAck_);
+        WATCH(pduWithoutPoll_);
+        WATCH(byteWithoutPoll_);
+        WATCH(pollSn_);
+        WATCH(pollPending_);
+        WATCH(lastSduSample_);
+        WATCH(sduSampleBytes_);
     }
 }
 

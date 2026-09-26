@@ -40,6 +40,8 @@ void RlcUmTxEntityBase::initialize(int stage)
         ownerNodeId_ = mac->getMacNodeId();
 
         initMode();
+
+        WATCH(flowControlInfo_);
     }
 }
 

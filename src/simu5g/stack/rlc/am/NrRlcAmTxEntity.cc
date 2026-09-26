@@ -64,6 +64,18 @@ void NrRlcAmTxEntity::initialize(int stage)
         txBuffer_ = new RlcSduSlidingWindowTransmissionBuffer(amWindowSize_, nameEntity_ + "-tx-sliding window:");
         rtxBuffer_ = new RlcRetransmissionBuffer(maxRtxThreshold_);
         lastSduSample_ = NOW;
+
+        WATCH(flowControlInfo_);
+        WATCH(radioLinkFailureDetected_);
+        WATCH(sduBuffer_);
+        WATCH(sn_);
+        WATCH(pduWithoutPoll_);
+        WATCH(byteWithoutPoll_);
+        WATCH(pollSn_);
+        WATCH(pollPending_);
+        WATCH(lastSduSample_);
+        WATCH(sduSampleBytes_);
+        WATCH(receivedSdus_);
     }
 }
 

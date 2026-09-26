@@ -42,6 +42,15 @@ void PacketFlowObserverEnb::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LOCAL) {
         timesUe_.setName("delay");
+
+        WATCH(connectionMap_);
+        WATCH(ULPktDelay_);
+        WATCH(ulGrants_);
+        WATCH(packetLossRate_);
+        WATCH(pdcpDelay_);
+        WATCH(pdcpThroughput_);
+        WATCH(pktDiscardCounterPerUe_);
+        WATCH(sduDataVolume_);
     }
 }
 

@@ -27,6 +27,12 @@ void LteRlcUmTxEntity::initMode()
 {
     queueSize_ = par("queueSize");
     burstStatus_ = INACTIVE;
+
+    WATCH(burstStatus_);
+    WATCH(sduQueue_);
+    WATCH(firstIsFragment_);
+    WATCH(queueLength_);
+    WATCH(sno_);
 }
 
 bool LteRlcUmTxEntity::storeSdu(inet::Packet *pkt)

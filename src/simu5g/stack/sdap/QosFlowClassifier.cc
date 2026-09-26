@@ -29,6 +29,8 @@ void QosFlowClassifier::setQfiRules(QfiRuleSet&& rules)
 void QosFlowClassifier::initialize()
 {
     sessionType_ = aToSessionType(par("sessionType").stdstringValue());
+
+    WATCH(qfiRules_);
 }
 
 void QosFlowClassifier::handleMessage(cMessage *msg)

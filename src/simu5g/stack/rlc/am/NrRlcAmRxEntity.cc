@@ -47,6 +47,10 @@ void NrRlcAmRxEntity::initMode()
     tReassembly_ = par("t_Reassembly");
     tStatusProhibitTimer_ = new cMessage("t_StatusProhibitTimer");
     tStatusProhibit_ = par("t_StatusProhibit");
+
+    WATCH(passedUpSdus_);
+    WATCH(rxNextStatusTrigger_);
+    WATCH(statusReportPending_);
 }
 
 void NrRlcAmRxEntity::handleMessage(cMessage *msg)

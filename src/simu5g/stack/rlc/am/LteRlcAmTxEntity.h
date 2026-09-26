@@ -60,6 +60,11 @@ class LteRlcAmTxEntity : public RlcAmTxEntityBase
     struct TxPdu {
         inet::Packet *pdu = nullptr;    // the built LteRlcAmDataPdu packet
         uint32_t payloadLength = 0;     // data-field length in bytes
+
+        friend std::ostream& operator<<(std::ostream& os, const TxPdu& e) {
+            os << "pdu=" << (e.pdu ? e.pdu->getName() : "null") << " len=" << e.payloadLength;
+            return os;
+        }
     };
     std::map<uint32_t, TxPdu> txWindow_;
     uint32_t txNext_ = 0;

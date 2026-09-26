@@ -48,6 +48,16 @@ void LteRlcUmRxEntity::initMode(LteMacBase *mac)
     received_.resize(rxWindowDesc_.windowSize_);
     rlcMux_ = getModuleFromPar<RlcMux>(par("rlcMuxModule"), this);
     dir_ = mac->getNodeType() == NODEB ? UL : DL;
+
+    WATCH(pduBuffer_);
+    WATCH(rxWindowDesc_);
+    WATCH(t_reordering_);
+    WATCH(buffered_);
+    WATCH(lastPduReassembled_);
+    WATCH(init_);
+    WATCH(totalPduRcvdBytes_);
+    WATCH(totalRcvdBytes_);
+    WATCH(dir_);
 }
 
 void LteRlcUmRxEntity::handleMessage(cMessage *msg)
