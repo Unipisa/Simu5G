@@ -51,6 +51,8 @@ void BaseStationStatsCollector::initialize(int stage)
 
         ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
 
+        WATCH(ecgi_);
+
         dl_total_prb_usage_cell.init("dl_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));
         ul_total_prb_usage_cell.init("ul_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));
 

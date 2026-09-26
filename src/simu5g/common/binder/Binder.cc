@@ -327,32 +327,31 @@ void Binder::initialize(int stage)
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = getSystemModule()->getName();
 
-        // Add WATCH macros for all member variables
         WATCH(networkName_);
         WATCH(ipAddressToMacNodeId_);
         WATCH(ipAddressToNrMacNodeId_);
-        // WATCH(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
         WATCH(servingNode_);
         WATCH(secondaryNodeToMasterNodeOrSelf_);
         WATCH(mecHostAddress_);
         WATCH(mecHostToUpfAddress_);
-        // WATCH(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
-        // WATCH(bgSchedulerList_); // Commented out - contains vectors of BackgroundScheduler* pointers that don't have stream operators
-        WATCH(enbList_); // Commented out - contains EnbInfo* pointers that don't have stream operators
-        WATCH(ueList_); // Commented out - contains UeInfo* pointers that don't have stream operators
-        WATCH(bgTrafficManagerList_); // Commented out - contains BgTrafficManagerInfo* pointers that don't have stream operators
+        WATCH(enbList_);
+        WATCH(ueList_);
+        WATCH(bgTrafficManagerList_);
         WATCH(totalBands_);
-        // WATCH(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
-        // WATCH(carrierUeMap_); // Commented out - contains sets that don't have stream operators
+        WATCH(componentCarriers_);
+        WATCH(carrierUeMap_);
         WATCH(carrierFreqToNumerologyIndex_);
         WATCH(ueMaxNumerologyIndex_);
-        // WATCH(ueNumerologyIndex_); // Commented out - contains sets that don't have stream operators
-        // WATCH(ulTransmissionMap_); // Commented out - contains complex nested vectors that don't have stream operators
+        WATCH(ueNumerologyIndex_);
+        WATCH(ulTransmissionMap_);
         WATCH(lastUpdateUplinkTransmissionInfo_);
         WATCH(lastUplinkTransmission_);
-        // WATCH(x2ListeningPorts_); // Commented out - contains lists that don't have stream operators
-        // WATCH(x2PeerAddress_); // Commented out - contains L3Address that doesn't have stream operator
-        // WATCH(multicastGroupMap_); // Commented out - contains sets that don't have stream operators
+        WATCH(x2ListeningPorts_);
+        WATCH(x2PeerAddress_);
+        WATCH(nodeGroupMemberships_);
+        WATCH(multicastDestIdCounter_);
+        WATCH(multicastAddrToDestId_);
+        WATCH(multicastDestIdToAddr_);
     }
 }
 

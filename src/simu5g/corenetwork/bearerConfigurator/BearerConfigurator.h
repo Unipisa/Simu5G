@@ -56,6 +56,15 @@ class BearerConfigurator : public cSimpleModule
         bool onDemand = false;         // true = onDemandDrbs entry (ids assigned at first match, per pair)
         bool rohcByPolicy = false;     // desc.rohcProfiles come from the rohcForDrbProfiles policy, not from the entry's "rohc" field
         std::vector<std::unique_ptr<inet::PacketFilter>> filters;   // compiled desc.filters
+
+        friend std::ostream& operator<<(std::ostream& os, const AuthoredBearer& e)
+        {
+            // ueModule is not dereferenced here: it is not reset when a UE departs the
+            // simulation, so it can go stale while this record is still in authoredBearers_
+            os << "ue=" << static_cast<const void *>(e.ueModule) << " drbKey=" << e.desc.key
+               << " onDemand=" << e.onDemand << " filters=" << e.filters.size();
+            return os;
+        }
     };
 
   protected:

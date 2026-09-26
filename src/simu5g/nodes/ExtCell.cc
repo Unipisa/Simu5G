@@ -88,6 +88,10 @@ void ExtCell::initialize(int stage)
             ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
             scheduleAt(NOW + TTI, ttiTick_);
         }
+
+        WATCH(id_);
+        WATCH(bandStatus_);
+        WATCH(prevBandStatus_);
     }
     if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // add this cell to the binder

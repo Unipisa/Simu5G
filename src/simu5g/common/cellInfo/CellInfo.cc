@@ -57,6 +57,14 @@ void CellInfo::initialize(int stage)
 
         // MCS scaling factor
         calculateMcsScale();
+
+        WATCH(totalBands_);
+        WATCH(carrierMap_);
+        WATCH(carriersVector_);
+        WATCH(maxNumerologyIndex_);
+        WATCH(uePosition);
+        WATCH(mcsScaleUl_);
+        WATCH(mcsScaleDl_);
     }
 }
 

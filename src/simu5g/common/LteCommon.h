@@ -99,6 +99,13 @@ struct FlowId {
     FlowId reversed() const;    // same swaps as Binder's (former) makeReverseFlowControlInfo
 };
 
+inline std::ostream& operator<<(std::ostream& os, const FlowId& e)
+{
+    os << "src=" << e.sourceId << " dst=" << e.destId << " dir=" << e.direction << " drb=" << e.drbId
+       << " d2dGroup=" << e.d2dGroupId << " d2dTx=" << e.d2dTxPeerId << " d2dRx=" << e.d2dRxPeerId;
+    return os;
+}
+
 // Identity of an IP flow as the packet classifier sees it: the fields the flow -> DRB
 // bindings of ~Ip2Nic are keyed by. Not a packet filter (yet): the fields match exactly,
 // except that the plain-LTE stack stores a wildcard direction to keep its key
@@ -121,6 +128,12 @@ struct FlowBindingKey {
         return FlowBindingKey{dstAddr, srcAddr, typeOfService, revDir};
     }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const FlowBindingKey& k)
+{
+    os << k.srcAddr << "->" << k.dstAddr << " tos=" << k.typeOfService << " dir=" << k.direction;
+    return os;
+}
 
 struct FlowBindingKeyHash {
     static std::size_t hashAddress(const inet::L3Address& addr) {
@@ -154,6 +167,12 @@ struct BearerRequest {
     // (the bearer configurator's static definitions).
     std::optional<FlowBindingKey> flowBindingKey;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const BearerRequest& e)
+{
+    os << "rlcMode=" << e.rlcMode << " lcg=" << e.lcg << " hasFlowBindingKey=" << e.flowBindingKey.has_value();
+    return os;
+}
 
 /**
  * TODO
@@ -430,6 +449,12 @@ struct UeAllocationInfo {
     Direction dir;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const UeAllocationInfo& e)
+{
+    os << "node=" << e.nodeId << " cell=" << e.cellId << " dir=" << e.dir;
+    return os;
+}
+
 typedef std::vector<ExtCell *> ExtCellList;
 typedef std::vector<BackgroundScheduler *> BackgroundSchedulerList;
 
@@ -446,6 +471,12 @@ struct SlotFormat {
     unsigned int numFlexSymbols;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const SlotFormat& e)
+{
+    os << "tdd=" << e.tdd << " dl=" << e.numDlSymbols << " ul=" << e.numUlSymbols << " flex=" << e.numFlexSymbols;
+    return os;
+}
+
 struct CarrierInfo {
     GHz carrierFrequency;
     unsigned int numBands;
@@ -455,6 +486,15 @@ struct CarrierInfo {
     NumerologyIndex numerologyIndex;
     SlotFormat slotFormat;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const CarrierInfo& e)
+{
+    os << "freq=" << e.carrierFrequency << " numBands=" << e.numBands
+       << " bands=[" << e.firstBand << "," << e.lastBand << "] numerology=" << e.numerologyIndex
+       << " slot={" << e.slotFormat << "} bandLimitEntries=" << e.bandLimit.size();
+    return os;
+}
+
 typedef std::map<GHz, CarrierInfo> CarrierInfoMap;
 
 /*************************************

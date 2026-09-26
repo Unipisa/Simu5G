@@ -79,6 +79,13 @@ void TrafficFlowFilter::initialize(int stage)
         EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
     }
     //end mec
+
+    WATCH(gateway_);
+    WATCH(meHost);
+    WATCH(meHostAddress);
+    WATCH(meAppsExtAddress_);
+    WATCH(meAppsExtAddressMask_);
+    WATCH(qfiRules_);
 }
 
 void TrafficFlowFilter::setQfiRules(QfiRuleSet&& rules)

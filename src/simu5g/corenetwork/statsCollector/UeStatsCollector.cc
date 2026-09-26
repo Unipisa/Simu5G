@@ -56,6 +56,9 @@ void UeStatsCollector::initialize(int stage)
         // data volume
         ul_nongbr_data_volume_ue.init("ul_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
         dl_nongbr_data_volume_ue.init("dl_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
+
+        WATCH(associateId_);
+        WATCH(handover_);
     }
 }
 

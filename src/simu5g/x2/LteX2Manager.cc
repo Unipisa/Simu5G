@@ -67,6 +67,9 @@ void LteX2Manager::initialize(int stage)
             // bind the peerId to the output gate
             x2InterfaceTable_[peerId] = i;
         }
+
+        WATCH(dataInterfaceTable_);
+        WATCH(x2InterfaceTable_);
     }
 }
 

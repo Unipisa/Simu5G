@@ -78,6 +78,12 @@ class D2dBinder : public cSimpleModule, public cListener
         FlowId flow;
         BearerRequest req;
         bool withPdcp = false;
+
+        friend std::ostream& operator<<(std::ostream& os, const MulticastFlow& e)
+        {
+            os << "flow=[" << e.flow << "] req=[" << e.req << "] withPdcp=" << e.withPdcp;
+            return os;
+        }
     };
 
   private:

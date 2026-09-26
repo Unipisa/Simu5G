@@ -79,6 +79,8 @@ void GtpUser::initialize(int stage)
     // find the address of the core network gateway
     if (!gateway_.empty())
         gwAddress_ = L3AddressResolver().resolve((binder_->getNetworkName() + "." + gateway_).c_str());
+
+    WATCH(gwAddress_);
 }
 
 void GtpUser::addTunnel(Teid teid, const SessionRef& session, SessionType type)

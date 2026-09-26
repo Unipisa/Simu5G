@@ -65,6 +65,9 @@ void TrafficLightMobility::initialize(int stage)
         current_heading_deg_normalized_ = deg(heading_);
         enableTurns_ = par("enableTurns");
         getTrafficLights();
+
+        WATCH(heading_);
+        WATCH(current_heading_deg_normalized_);
     }
 }
 

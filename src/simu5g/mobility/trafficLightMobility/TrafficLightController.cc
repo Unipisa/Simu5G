@@ -75,6 +75,11 @@ void TrafficLightController::initialize(int stage)
 
     bidirectional_ = par("bidirectional");
 
+    WATCH(tlPosition_);
+    WATCH(state_);
+    WATCH(queuedCars_[0]);
+    WATCH(queuedCars_[1]);
+
     scheduleAt(simTime() + startTime_, stateMsg_);
 }
 
