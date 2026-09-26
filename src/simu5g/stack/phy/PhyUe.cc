@@ -42,7 +42,6 @@ void PhyUe::initialize(int stage)
         if (!hasListeners(averageCqiDlSignal_))
             throw cRuntimeError("no phy listeners");
 
-        WATCH(nodeType_);
         WATCH(servingNodeId_);
 
         txPower_ = ueTxPower_;

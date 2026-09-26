@@ -460,8 +460,6 @@ void LteMacBase::initialize(int stage)
         // statistics
         statDisplay_ = par("statDisplay");
 
-        WATCH(queueSize_);
-        WATCH(nodeId_);
         // WATCH(connDescOut_);
         // WATCH(connDescIn_);
     }

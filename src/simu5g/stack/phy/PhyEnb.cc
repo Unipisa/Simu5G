@@ -41,7 +41,6 @@ void PhyEnb::initialize(int stage)
         randomChannelIndex_ = intuniform(1, binder_->phyPisaData.maxChannel2()); // NOTE: moving this to the next stage (where it is used will change random number stream and CHANGE FINGERPRINTS!
 
         nodeType_ = NODEB;
-        WATCH(nodeType_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);

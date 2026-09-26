@@ -265,21 +265,6 @@ void LteAmc::initialize(int stage)
     else
         throw cRuntimeError("LteAmc::initialize - Unknown Pilot Mode %s", modeString.c_str());
 
-    WATCH(dlMcsTable_);
-    WATCH(ulMcsTable_);
-    WATCH(allocationType_);
-    WATCH(numBands_);
-    WATCH(nodeId_);
-    WATCH(cellId_);
-    WATCH(mcsScaleDl_);
-    WATCH(mcsScaleUl_);
-    WATCH(numAntennas_);
-    WATCH(fType_);
-    WATCH(fbhbCapacityDl_);
-    WATCH(fbhbCapacityUl_);
-    WATCH(lb_);
-    WATCH(ub_);
-    WATCH(cqiComputationWeight_);
     WATCH(remoteSet_);
     WATCH(dlConnectedUe_);
     WATCH(ulConnectedUe_);

@@ -55,11 +55,6 @@ void LteDlFeedbackGenerator::initialize(int stage)
         tAperiodicTx_ = new TTimer(this);
         tAperiodicTx_->setTimerId(APERIODIC_TX);
         feedbackComputationPisa_ = false;
-        WATCH(fbType_);
-        WATCH(rbAllocationType_);
-        WATCH(fbPeriod_);
-        WATCH(fbDelay_);
-        WATCH(usePeriodic_);
         WATCH(currentTxMode_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
@@ -83,8 +78,6 @@ void LteDlFeedbackGenerator::initialize(int stage)
 
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " feedback computation initialize" << endl;
-        WATCH(numBands_);
-        WATCH(numPreferredBands_);
         if (masterId_ != NODEID_NONE && usePeriodic_) {
             tPeriodicSensing_->start(0);
         }
