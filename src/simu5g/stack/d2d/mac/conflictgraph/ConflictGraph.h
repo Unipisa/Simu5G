@@ -60,6 +60,12 @@ struct CGVertex
 
 };
 
+inline std::ostream& operator<<(std::ostream& os, const CGVertex& v)
+{
+    os << "src=" << v.srcId << " dst=" << v.dstId;
+    return os;
+}
+
 typedef std::map<CGVertex, std::map<CGVertex, bool>> CGMatrix;
 class CellInfo;
 class LteMacEnb;

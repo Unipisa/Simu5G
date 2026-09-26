@@ -72,8 +72,13 @@ class RlcUmTxEntityD2D : public Base, public ID2dRlcUmTxEntity
     void initialize(int stage) override
     {
         Base::initialize(stage);
-        if (stage == inet::INITSTAGE_LOCAL)
+        if (stage == inet::INITSTAGE_LOCAL) {
             d2dModeController_.reference(this, "d2dModeControllerModule", false);
+            WATCH(registeredPeerId_);
+            WATCH(notifyEmptyBuffer_);
+            WATCH(holdingDownstreamInPackets_);
+            WATCH(sduHoldingQueue_);
+        }
     }
 
     void setFlowControlInfo(FlowControlInfo *info) override
@@ -301,6 +306,13 @@ class LteRlcUmRxEntityD2D : public RlcUmRxEntityD2D<LteRlcUmRxEntity>
   protected:
     // after a mode switch, the first PDU of the new-mode entity is forced in-sequence
     bool resetFlag_ = false;
+
+    void initialize(int stage) override
+    {
+        RlcUmRxEntityD2D<LteRlcUmRxEntity>::initialize(stage);
+        if (stage == inet::INITSTAGE_LOCAL)
+            WATCH(resetFlag_);
+    }
 
     void discardRxBufferForModeSwitch() override;
     void resetRxNumbering() override;

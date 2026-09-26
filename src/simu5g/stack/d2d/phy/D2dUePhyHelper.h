@@ -67,6 +67,9 @@ class D2dUePhyHelper
   public:
     D2dUePhyHelper(PhyBase *phy) : phy_(phy) {}
 
+    // one-time WATCH registration; call from the UE PHY's initialize()
+    void initWatches();
+
     // D2D Tx power
     double getD2dTxPower() const { return d2dTxPower_; }
     void setD2dTxPower(double v) { d2dTxPower_ = v; }

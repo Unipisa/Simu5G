@@ -39,6 +39,12 @@ class D2dModeSelectionBase : public cSimpleModule
         FlowId flow;
         LteD2DMode oldMode;
         LteD2DMode newMode;
+
+        friend std::ostream& operator<<(std::ostream& os, const FlowModeInfo& f)
+        {
+            os << "flow=(" << f.flow.first << "->" << f.flow.second << ") old=" << f.oldMode << " new=" << f.newMode;
+            return os;
+        }
     };
     typedef std::list<FlowModeInfo> SwitchList;
     SwitchList switchList_;  // a list of pairs of nodeIds, where the first node represents the transmitter

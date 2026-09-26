@@ -161,8 +161,10 @@ template<class Base>
 void D2dUeMacBase<Base>::initialize(int stage)
 {
     Base::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
+    if (stage == inet::INITSTAGE_LOCAL) {
         macBufferOverflowD2DSignal_ = cComponent::registerSignal("macBufferOverFlowD2D");
+        d2dUeHelper_.initWatches();
+    }
 
     if (stage == INITSTAGE_SIMU5G_AMC_ATTACHUSER) {
         // get parameters

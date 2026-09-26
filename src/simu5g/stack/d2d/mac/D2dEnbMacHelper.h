@@ -64,6 +64,9 @@ class D2dEnbMacHelper
     D2dEnbMacHelper& operator=(const D2dEnbMacHelper&) = delete;
     ~D2dEnbMacHelper();
 
+    // one-time WATCH registration; call from the eNB/gNB MAC's initialize()
+    void initWatches();
+
     // mirror H-ARQ buffers
     std::map<GHz, HarqBuffersMirrorD2D>& getHarqBuffersMirrorD2DMap() { return harqBuffersMirrorD2D_; }
     HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(GHz carrierFrequency);

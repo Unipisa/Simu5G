@@ -1,5 +1,6 @@
 #include "simu5g/stack/d2d/rrc/D2DModeController.h"
 #include "simu5g/stack/d2d/rlc/ID2dRlcUmTxEntity.h"
+#include "simu5g/common/InitStages.h"
 
 namespace simu5g {
 
@@ -7,6 +8,8 @@ Define_Module(D2DModeController);
 
 void D2DModeController::initialize(int stage)
 {
+    if (stage == inet::INITSTAGE_LOCAL)
+        WATCH(perPeerTxEntities_);
 }
 
 void D2DModeController::registerD2DPeerTxEntity(MacNodeId peerId, ID2dRlcUmTxEntity *umTxEnt)

@@ -172,6 +172,7 @@ void D2dUePhy<Base>::initialize(int stage)
         d2dHelper_.setMulticastD2DRangeCheckEnabled(this->par("enableMulticastD2DRangeCheck"));
         d2dHelper_.setMulticastD2DRange(this->par("multicastD2DRange"));
         d2dBinder_.reference(this, "d2dBinderModule", true);
+        d2dHelper_.initWatches();
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // Publish this PHY under its node id, so that a peer's one-to-many transmit

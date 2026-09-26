@@ -23,6 +23,7 @@ using namespace omnetpp;
  */
 ConflictGraph::ConflictGraph(Binder *binder, LteMacEnb *macEnb, bool reuseD2D, bool reuseD2DMulti) : binder_(binder), macEnb_(macEnb), cellInfo_(macEnb_->getCellInfo()), reuseD2D_(reuseD2D), reuseD2DMulti_(reuseD2DMulti)
 {
+    WATCH(conflictGraph_);
 }
 
 // reset Conflict Graph

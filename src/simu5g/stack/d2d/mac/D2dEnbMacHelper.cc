@@ -32,6 +32,11 @@ D2dEnbMacHelper::~D2dEnbMacHelper()
     delete conflictGraph_;
 }
 
+void D2dEnbMacHelper::initWatches()
+{
+    WATCH(harqBuffersMirrorD2D_);
+}
+
 HarqBuffersMirrorD2D *D2dEnbMacHelper::getHarqBuffersMirrorD2D(GHz carrierFrequency)
 {
     if (harqBuffersMirrorD2D_.find(carrierFrequency) == harqBuffersMirrorD2D_.end())

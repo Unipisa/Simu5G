@@ -33,6 +33,12 @@ D2dUeMacHelper::~D2dUeMacHelper()
     delete preconfiguredTxParams_;
 }
 
+void D2dUeMacHelper::initWatches()
+{
+    WATCH(racD2DMulticastRequested_);
+    WATCH(bsrD2DMulticastTriggered_);
+}
+
 //Function to create only a BSR for the eNB
 Packet *D2dUeMacHelper::makeBsr(int size)
 {

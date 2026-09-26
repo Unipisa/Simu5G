@@ -25,6 +25,13 @@ namespace simu5g {
 
 using namespace inet;
 
+void D2dUePhyHelper::initWatches()
+{
+    WATCH(nearestDistance_);
+    WATCH(bestRsrpMean_);
+    WATCH(bestRsrpVector_);
+}
+
 void D2dUePhyHelper::storeAirFrame(LteAirFrame *newFrame)
 {
     // Implements the capture effect

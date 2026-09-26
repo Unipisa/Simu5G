@@ -138,6 +138,7 @@ void D2dEnbMacBase<Base>::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         connectionControl_.reference(this, "connectionControlModule", true);
         d2dBinder_.reference(this, "d2dBinderModule", true);
+        d2dEnbHelper_.initWatches();
     }
     // (the AMC pilot/mode-switch parameter setup historically also ran at
     // INITSTAGE_PHYSICAL_ENVIRONMENT -- an identical, idempotent copy of the

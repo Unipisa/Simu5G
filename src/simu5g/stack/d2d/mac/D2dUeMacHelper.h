@@ -61,6 +61,9 @@ class D2dUeMacHelper
         : mac_(mac), rcvdD2DModeSwitchNotificationSignal_(cComponent::registerSignal("rcvdD2DModeSwitchNotification")) {}
     ~D2dUeMacHelper();
 
+    // one-time WATCH registration; call from the UE MAC's initialize()
+    void initWatches();
+
     // serving eNB's D2D MAC view
     ID2dMacEnb *getEnb() const { return enb_; }
     void setEnb(ID2dMacEnb *enb) { enb_ = enb; }
