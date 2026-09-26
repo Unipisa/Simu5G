@@ -59,6 +59,10 @@ void MecOrchestrator::initialize(int stage)
 
         getConnectedMecHosts();
         onboardApplicationPackages();
+
+        WATCH(contextIdCounter);
+        WATCH(meAppMap);
+        WATCH(mecApplicationDescriptors_);
     }
 }
 

@@ -41,6 +41,8 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
     cQueue httpMessageQueue;
     std::string bufferedData;
 
+    void initialize() override;
+
     // internal: inet::TcpSocket::CallbackInterface methods
     void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { dataArrived(packet, urgent); }
     void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }

@@ -105,6 +105,19 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     //reserve resources of the background apps!
     reserveResourcesBGApps();
+
+    WATCH(mecAppLocalAddress_);
+    WATCH(mecAppRemoteAddress_);
+    WATCH(mp1Address_);
+    WATCH(currentMEApps);
+    WATCH(mecAppPortCounter);
+    WATCH(nameCounter);
+    WATCH(bgAppIdCounter);
+    WATCH(freeGates);
+    WATCH(mecAppMap);
+    WATCH(allocatedRam);
+    WATCH(allocatedDisk);
+    WATCH(allocatedCPU);
 }
 
 void VirtualisationInfrastructureManager::handleMessage(cMessage *msg)

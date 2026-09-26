@@ -53,6 +53,9 @@ void UalcmpApp::initialize(int stage)
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         baseSubscriptionLocation_ = host_ + baseUriSubscriptions_ + "/";
         mecOrchestrator_.reference(this, "mecOrchestratorHostname", true);
+
+        WATCH(requestSno);
+        WATCH(pendingRequests);
     }
 }
 

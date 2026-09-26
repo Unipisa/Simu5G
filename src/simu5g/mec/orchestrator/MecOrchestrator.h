@@ -55,6 +55,13 @@ struct MecAppMapEntry
 
 };
 
+inline std::ostream& operator<<(std::ostream& os, const MecAppMapEntry& e) {
+    os << "ctx=" << e.contextId << " app=" << e.mecAppName << " instance=" << e.mecAppInstanceId
+       << " ueAppId=" << e.mecUeAppID << " ue=" << e.ueAddress << ":" << e.uePort
+       << " mecApp=" << e.mecAppAddress << ":" << e.mecAppPort;
+    return os;
+}
+
 class UalcmpMessage;
 class MecOrchestratorMessage;
 class SelectionPolicyBase;

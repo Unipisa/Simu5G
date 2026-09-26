@@ -46,6 +46,11 @@ class UalcmpApp : public MecServiceBase
         int connId;    // to retrieve the socket for the response
         unsigned int requestId;
         nlohmann::json appCont; // for POST the app context used in the request is sent back with new fields (according to the result)
+
+        friend std::ostream& operator<<(std::ostream& os, const LcmRequestStatus& e) {
+            os << "connId=" << e.connId << " requestId=" << e.requestId << " appCont=" << e.appCont;
+            return os;
+        }
     };
 
     inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator_; // reference to the MecOrchestrator used to get AppList

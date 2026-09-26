@@ -24,6 +24,14 @@ using namespace omnetpp;
 Register_Class(SocketManager);
 Define_Module(SocketManager);
 
+void SocketManager::initialize()
+{
+    cSimpleModule::initialize();
+
+    WATCH(currentHttpMessage);
+    WATCH(bufferedData);
+}
+
 void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
     EV << "SocketManager::dataArrived" << endl;
     msg->removeControlInfo();

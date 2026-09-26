@@ -43,6 +43,12 @@ struct MecAppEntry
     ResourceDescriptor resources;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const MecAppEntry& e) {
+    os << "gate=" << e.meAppGateIndex << " ue=" << e.ueAddress << ":" << e.uePort
+       << " ueAppId=" << e.ueAppID << " port=" << e.meAppPort << " " << e.resources;
+    return os;
+}
+
 struct MecAppInstanceInfo
 {
     bool status;

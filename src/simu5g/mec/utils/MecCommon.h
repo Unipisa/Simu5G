@@ -13,6 +13,7 @@
 #ifndef  _MECCOMMON_H_
 #define _MECCOMMON_H_
 
+#include <ostream>
 #include <string>
 
 #include <inet/networklayer/common/L3Address.h>
@@ -39,20 +40,44 @@ struct Delay {
     simtime_t time = 0;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Delay& e)
+{
+    os << "pktCount=" << e.pktCount << " time=" << e.time;
+    return os;
+}
+
 struct Throughput {
     unsigned int pktSizeCount = 0;
     simtime_t time = 0;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Throughput& e)
+{
+    os << "pktSizeCount=" << e.pktSizeCount << " time=" << e.time;
+    return os;
+}
 
 struct DiscardedPkts {
     unsigned int discarded = 0;
     unsigned int total = 0;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const DiscardedPkts& e)
+{
+    os << "discarded=" << e.discarded << " total=" << e.total;
+    return os;
+}
+
 struct DataVolume {
     uint64_t ulBits = 0;
     uint64_t dlBits = 0;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const DataVolume& e)
+{
+    os << "ulBits=" << e.ulBits << " dlBits=" << e.dlBits;
+    return os;
+}
 
 struct SockAddr {
     inet::L3Address addr;
@@ -95,6 +120,12 @@ struct ResourceDescriptor {
     double cpu;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const ResourceDescriptor& e)
+{
+    os << "ram=" << e.ram << " disk=" << e.disk << " cpu=" << e.cpu;
+    return os;
+}
+
 namespace mec {
 
 /*
@@ -116,6 +147,12 @@ struct AssociateId
     std::string value;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const AssociateId& e)
+{
+    os << "type=" << e.type << " value=" << e.value;
+    return os;
+}
+
 /*
  * Public Land Mobile Network Identity as defined in ETSI TS 136 413
  *
@@ -127,6 +164,12 @@ struct Plmn
     std::string mcc;
     std::string mnc;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Plmn& e)
+{
+    os << "mcc=" << e.mcc << " mnc=" << e.mnc;
+    return os;
+}
 
 /*
  * E-UTRAN Cell Global Identifier as defined in ETSI TS 136 413
@@ -140,6 +183,12 @@ struct Ecgi
     Plmn plmn;
     MacCellId cellId;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Ecgi& e)
+{
+    os << "plmn=[" << e.plmn << "] cellId=" << e.cellId;
+    return os;
+}
 
 struct Timestamp
 {

@@ -65,6 +65,13 @@ void MecServiceBase::initialize(int stage)
         meHost_ = getParentModule() // MecPlatform
                     ->getParentModule(); // MeHost
         // ---- <<<<< ---- not found in UalcmpApp ----
+
+        WATCH(host_);
+        WATCH(baseSubscriptionLocation_);
+        WATCH(subscriptionId_);
+        WATCH(subscriptions_);
+        WATCH(currentRequestMessageServed_);
+        WATCH(lastFGRequestArrived_);
     }
 }
 

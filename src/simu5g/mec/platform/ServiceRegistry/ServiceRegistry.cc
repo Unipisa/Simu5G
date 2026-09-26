@@ -39,6 +39,9 @@ void ServiceRegistry::initialize(int stage)
 
     if (stage == INITSTAGE_SIMU5G_SERVICE_PLATFORM_SETUP) {
         baseSubscriptionLocation_ = host_ + baseUriSubscriptions_ + "/";
+
+        WATCH(mecServices_);
+        WATCH(servIdCounter);
     }
 }
 
