@@ -46,6 +46,10 @@ void BurstSender::initialize(int stage)
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         initTraffic_ = new cMessage("initTraffic");
         initTraffic();
+
+        WATCH(burstId_);
+        WATCH(frameId_);
+        WATCH(destAddress_);
     }
 }
 

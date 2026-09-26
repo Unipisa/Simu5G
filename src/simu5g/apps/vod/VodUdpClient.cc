@@ -60,6 +60,8 @@ void VodUdpClient::initialize(int stage)
 
     cMessage *timer = new cMessage("Timer");
     scheduleAt(simTime(), timer);
+
+    WATCH(totalRcvdBytes_);
 }
 
 void VodUdpClient::finish()

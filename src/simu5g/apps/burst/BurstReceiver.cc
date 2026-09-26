@@ -31,6 +31,8 @@ void BurstReceiver::initialize(int stage)
             socket.bind(port);
             socket.setCallback(this);
         }
+
+        WATCH(numReceived_);
     }
 }
 

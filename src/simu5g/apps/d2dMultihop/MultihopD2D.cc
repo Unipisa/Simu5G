@@ -115,6 +115,12 @@ void MultihopD2D::initialize(int stage)
 
         // global statistics recorder
         stat_.reference(this, "multihopD2DStatisticsModule", true);
+
+        WATCH(senderAppId_);
+        WATCH(localMsgId_);
+        WATCH(destAddress_);
+        WATCH(relayedMsgMap_);
+        WATCH(counter_);
     }
 }
 

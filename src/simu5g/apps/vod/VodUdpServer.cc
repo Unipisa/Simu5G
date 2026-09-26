@@ -76,6 +76,9 @@ void VodUdpServer::initialize(int stage)
     double start = par("startTime");
     double offset = start + simTime().dbl();
     scheduleAt(offset, timer);
+
+    WATCH(clientAddr);
+    WATCH(numStreams);
 }
 
 void VodUdpServer::finish()

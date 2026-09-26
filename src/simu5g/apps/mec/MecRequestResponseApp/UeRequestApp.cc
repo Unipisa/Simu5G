@@ -89,6 +89,12 @@ void UeRequestApp::initialize(int stage)
 
     //testing
     EV << "UeRequestApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
+
+    WATCH(sno_);
+    WATCH(start_);
+    WATCH(deviceAppAddress_);
+    WATCH(mecAppAddress_);
+    WATCH(mecAppPort_);
 }
 
 void UeRequestApp::handleMessage(cMessage *msg)

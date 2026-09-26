@@ -36,6 +36,10 @@ void CbrReceiver::initialize(int stage)
             socket.bind(port);
             socket.setCallback(this);
         }
+
+        WATCH(numReceived_);
+        WATCH(totFrames_);
+        WATCH(recvBytes_);
     }
 }
 

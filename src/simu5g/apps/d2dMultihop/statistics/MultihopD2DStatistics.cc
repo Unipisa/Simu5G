@@ -30,6 +30,10 @@ simsignal_t MultihopD2DStatistics::d2dMultihopEventCompleteDeliveriesSignal_ = r
 
 void MultihopD2DStatistics::initialize(int stage)
 {
+    if (stage == inet::INITSTAGE_LOCAL) {
+        WATCH(eventDeliveryInfo_);
+        WATCH(eventTransmissionInfo_);
+    }
 }
 
 void MultihopD2DStatistics::recordNewBroadcast(unsigned int msgId, UeSet& destinations)

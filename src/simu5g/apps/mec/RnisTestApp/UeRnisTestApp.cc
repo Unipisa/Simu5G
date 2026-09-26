@@ -80,6 +80,10 @@ void UeRnisTestApp::initialize(int stage)
     EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSymbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSymbolicAddress).str() << "]" << endl;
     EV << "UeRnisTestApp::initialize - destAddress: " << deviceSymbolicAppAddress << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "UeRnisTestApp::initialize - binding to port: local:" << localPort << " , dest:" << deviceAppPort_ << endl;
+
+    WATCH(deviceAppAddress_);
+    WATCH(mecAppAddress_);
+    WATCH(mecAppPort_);
 }
 
 void UeRnisTestApp::handleMessage(cMessage *msg)

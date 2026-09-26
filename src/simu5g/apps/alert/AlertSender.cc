@@ -83,6 +83,9 @@ void AlertSender::initialize(int stage)
 
     scheduleAt(offset, selfSender_);
     EV << "\t starting traffic in " << offset << " seconds " << endl;
+
+    WATCH(nextSno_);
+    WATCH(destAddress_);
 }
 
 void AlertSender::handleMessage(cMessage *msg)

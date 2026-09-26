@@ -56,6 +56,16 @@ void VoipSender::initialize(int stage)
 
     initTraffic_ = new cMessage("initTraffic");
     initTraffic();
+
+    WATCH(durTalk_);
+    WATCH(durSil_);
+    WATCH(isTalk_);
+    WATCH(iDtalk_);
+    WATCH(nframes_);
+    WATCH(iDframe_);
+    WATCH(nframesTmp_);
+    WATCH(totalSentBytes_);
+    WATCH(destAddress_);
 }
 
 void VoipSender::handleMessage(cMessage *msg)

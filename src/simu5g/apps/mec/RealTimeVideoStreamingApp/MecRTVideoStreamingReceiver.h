@@ -37,6 +37,13 @@ class MecRTVideoStreamingReceiver : public MecAppBase
         int numberOfFragments;
         int numberOfFragmentsReceived;
         double playoutTime;
+
+        friend std::ostream& operator<<(std::ostream& os, const ReceivingFrameStatus& e) {
+            os << "frameNumber=" << e.frameNumber << " frameSize=" << e.frameSize
+               << " currentSize=" << e.currentSize << " numFrags=" << e.numberOfFragments
+               << " fragsRecvd=" << e.numberOfFragmentsReceived << " playoutTime=" << e.playoutTime;
+            return os;
+        }
     };
 
     std::map<uint32_t, ReceivingFrameStatus> playoutBuffer_;

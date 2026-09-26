@@ -60,6 +60,10 @@ void MecRnisTestApp::initialize(int stage)
     // connect with the service registry
     cMessage *msg = new cMessage("connectMp1");
     scheduleAt(simTime() + 0, msg);
+
+    WATCH(ueAppAddress);
+    WATCH(ueAppPort);
+    WATCH(rnisQueryingPeriod_);
 }
 
 void MecRnisTestApp::handleUeMessage(cMessage *msg)

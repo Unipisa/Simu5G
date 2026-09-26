@@ -88,6 +88,10 @@ void UeWarningAlertApp::initialize(int stage)
     EV << "UeWarningAlertApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str() << "]" << endl;
     EV << "UeWarningAlertApp::initialize - destAddress: " << deviceSimbolicAppAddress_ << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "UeWarningAlertApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
+
+    WATCH(deviceAppAddress_);
+    WATCH(mecAppAddress_);
+    WATCH(mecAppPort_);
 }
 
 void UeWarningAlertApp::handleMessage(cMessage *msg)

@@ -64,6 +64,13 @@ void VoipReceiver::initialize(int stage)
     }
 
     warmUpPer_ = getSimulation()->getWarmupPeriod();
+
+    WATCH(mBufferSpace_);
+    WATCH(mPlayoutDelay_);
+    WATCH(mCurrentTalkspurt_);
+    WATCH(mInit_);
+    WATCH(totalRcvdBytes_);
+    WATCH(numPacketsRcvd_);
 }
 
 void VoipReceiver::handleMessage(cMessage *msg)

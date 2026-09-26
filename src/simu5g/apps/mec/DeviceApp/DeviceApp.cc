@@ -328,6 +328,18 @@ void DeviceApp::initialize(int stage) {
 
     cMessage *msg = new cMessage("connect");
     scheduleAt(simTime() + 0.0, msg);
+
+    WATCH(appState);
+    WATCH(ualcmpAddress);
+    WATCH(UalcmpMessage);
+    WATCH(ualcmpMessageBuffer);
+    WATCH(ueAppAddress);
+    WATCH(ueAppPort);
+    WATCH(appContextUri);
+    WATCH(mecAppEndPoint);
+    WATCH(appName);
+    WATCH(devAppIds);
+    WATCH(deviceAppIdCounter);
 }
 
 void DeviceApp::handleMessage(cMessage *msg)

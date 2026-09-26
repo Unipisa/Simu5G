@@ -72,6 +72,12 @@ void MecAppBase::initialize(int stage)
     serviceRegistry.reference(this, "serviceRegistryModule", true);
 
     processMessage_ = new cMessage("processedMessage");
+
+    WATCH(packetQueue_);
+    WATCH(mecAppId);
+    WATCH(mp1Address);
+    WATCH(serviceAddress);
+    WATCH(servicePort);
 }
 
 void MecAppBase::connect(inet::TcpSocket *socket, const inet::L3Address& address, const int port)

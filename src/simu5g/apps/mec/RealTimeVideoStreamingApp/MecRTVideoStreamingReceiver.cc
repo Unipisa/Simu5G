@@ -77,6 +77,18 @@ void MecRTVideoStreamingReceiver::initialize(int stage)
     firstFrameDisplayed = false;
 
     displayFrame = new cMessage("displayFrame");
+
+    WATCH(playoutBuffer_);
+    WATCH(dropPackets_);
+    WATCH(stopped);
+    WATCH(fps);
+    WATCH(ueAppAddress);
+    WATCH(ueAppPort);
+    WATCH(currentSessionId_);
+    WATCH(firstFrameDisplayed);
+    WATCH(lastFrameDisplayed_);
+    WATCH(expectedFrameDisplayed_);
+    WATCH(lastfragment_);
 }
 
 void MecRTVideoStreamingReceiver::handleMessage(cMessage *msg)

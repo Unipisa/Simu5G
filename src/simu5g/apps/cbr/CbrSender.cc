@@ -55,6 +55,10 @@ void CbrSender::initialize(int stage)
 
         initTrafficTimer_ = new cMessage("initTraffic");
         initTraffic();
+
+        WATCH(frameId_);
+        WATCH(txBytes_);
+        WATCH(destAddress_);
     }
 }
 

@@ -71,6 +71,14 @@ void MecWarningAlertApp::initialize(int stage)
     // connect with the service registry
     cMessage *msg = new cMessage("connectMp1");
     scheduleAt(simTime() + 0, msg);
+
+    WATCH(ueAppAddress);
+    WATCH(ueAppPort);
+    WATCH(subId);
+    WATCH(circle);
+    WATCH(centerPositionX);
+    WATCH(centerPositionY);
+    WATCH(radius);
 }
 
 void MecWarningAlertApp::handleUeMessage(cMessage *msg)

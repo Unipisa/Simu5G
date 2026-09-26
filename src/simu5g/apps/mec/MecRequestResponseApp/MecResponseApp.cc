@@ -68,6 +68,16 @@ void MecResponseApp::initialize(int stage)
     mp1Socket_ = addNewSocket();
 
     connect(mp1Socket_, mp1Address, mp1Port);
+
+    WATCH(currentRequestfMsg_);
+    WATCH(msgArrived_);
+    WATCH(getRequestSent_);
+    WATCH(getRequestArrived_);
+    WATCH(processingTime_);
+    WATCH(ueAppAddress);
+    WATCH(ueAppPort);
+    WATCH(serviceAddress_);
+    WATCH(servicePort_);
 }
 
 void MecResponseApp::handleProcessedMessage(cMessage *msg)

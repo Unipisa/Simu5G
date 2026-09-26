@@ -41,6 +41,9 @@ void EventGenerator::initialize(int stage)
             scheduleAt(offset, selfMessage_);
             EV << "\t sending event notification in " << offset << " seconds " << endl;
         }
+
+        WATCH(eventId_);
+        WATCH(lteNodeIdSet_);
     }
 }
 

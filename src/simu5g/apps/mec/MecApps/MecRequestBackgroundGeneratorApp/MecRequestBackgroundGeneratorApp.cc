@@ -135,6 +135,9 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage) {
 
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         EV << "MecRequestBackgroundGeneratorApp::initialize" << endl;
+
+        WATCH(burstFlag);
+
         numberOfApplications_ = par("numberOfApplications");
 
         if (numberOfApplications_ != 0) {

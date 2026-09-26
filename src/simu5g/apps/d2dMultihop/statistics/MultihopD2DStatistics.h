@@ -44,6 +44,11 @@ class MultihopD2DStatistics : public cSimpleModule
     struct ReceptionStatus {
         simtime_t delay_;
         int hops_;
+
+        friend std::ostream& operator<<(std::ostream& os, const ReceptionStatus& e) {
+            os << "delay=" << e.delay_ << " hops=" << e.hops_;
+            return os;
+        }
     };
     typedef std::map<MacNodeId, ReceptionStatus> DeliveryStatus;
 
@@ -58,6 +63,11 @@ class MultihopD2DStatistics : public cSimpleModule
         unsigned int numDuplicates_ = 0;
 
         TransmissionInfo()  { }
+
+        friend std::ostream& operator<<(std::ostream& os, const TransmissionInfo& e) {
+            os << "sent=" << e.numSent_ << " suppressed=" << e.numSuppressed_ << " duplicates=" << e.numDuplicates_;
+            return os;
+        }
     };
     std::map<unsigned short, TransmissionInfo> eventTransmissionInfo_;
 

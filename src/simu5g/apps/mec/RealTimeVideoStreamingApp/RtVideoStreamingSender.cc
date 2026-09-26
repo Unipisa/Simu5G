@@ -125,6 +125,15 @@ void RtVideoStreamingSender::initialize(int stage)
 
     mobilityStats_ = new cMessage("mobilityStats", KIND_SELF_MOBILITY_STATS);
     scheduleAfter(mobilityUpdateInterval_, mobilityStats_);
+
+    WATCH(deviceAppAddress_);
+    WATCH(mecAppAddress_);
+    WATCH(mecAppPort_);
+    WATCH(_initialDelay);
+    WATCH(_framesPerSecond);
+    WATCH(_frameNumber);
+    WATCH(_sequenceNumber);
+    WATCH(sessionId_);
 }
 
 void RtVideoStreamingSender::handleMessage(cMessage *msg)

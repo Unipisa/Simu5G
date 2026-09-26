@@ -52,6 +52,8 @@ void AlertReceiver::initialize(int stage)
         // -------------------- //
     }
 
+    WATCH(delaySum);
+    WATCH(nrReceived);
 }
 
 void AlertReceiver::handleMessage(cMessage *msg)
