@@ -70,6 +70,9 @@ void ChannelAccess::initialize(int stage)
             // register to get a notification when position changes
             hostModule->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         }
+
+        WATCH(radioPos);
+        WATCH(positionUpdateArrived);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         myRadioRef = cc->registerRadio(this);

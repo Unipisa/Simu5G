@@ -137,6 +137,12 @@ class BackgroundCellChannelModel : public cSimpleModule
     {
         std::vector<double> angleOfArrival;
         std::vector<simtime_t> delaySpread;
+
+        friend std::ostream& operator<<(std::ostream& os, const JakesFadingData& e)
+        {
+            os << "paths=" << e.angleOfArrival.size();
+            return os;
+        }
     };
 
     // for each node and for each band we store information about jakes fading

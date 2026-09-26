@@ -56,6 +56,10 @@ void LteDlFeedbackGenerator::initialize(int stage)
         tAperiodicTx_->setTimerId(APERIODIC_TX);
         feedbackComputationPisa_ = false;
         WATCH(currentTxMode_);
+        WATCH(masterId_);
+        WATCH(tPeriodicSensing_);
+        WATCH(tPeriodicTx_);
+        WATCH(tAperiodicTx_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         masterId_ = binder_->getServingNode(nodeId_);

@@ -72,6 +72,11 @@ void BackgroundCellChannelModel::initialize(int stage)
 
         //get binder
         binder_.reference(this, "binderModule", true);
+
+        WATCH(lastComputedSF_);
+        WATCH(losMap_);
+        WATCH(lastCorrelationPoint_);
+        WATCH(jakesFadingMap_);
     }
     else if (stage == INITSTAGE_SIMU5G_AMC_SETUP) {
         // carrierFrequencyHz_/GHz_/log10CarrierFrequencyGHz_ are set by

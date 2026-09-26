@@ -52,6 +52,15 @@ void BackgroundScheduler::initialize(int stage)
         prevBandStatus_[DL].resize(numBands_, 0);
         ulPrevBandAllocation_.resize(numBands_, NODEID_NONE);
         ulBandAllocation_.resize(numBands_, NODEID_NONE);
+
+        WATCH(pos_);
+        WATCH(id_);
+        WATCH(bandStatus_[UL]);
+        WATCH(bandStatus_[DL]);
+        WATCH(prevBandStatus_[UL]);
+        WATCH(prevBandStatus_[DL]);
+        WATCH(ulBandAllocation_);
+        WATCH(ulPrevBandAllocation_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         binder_.reference(this, "binderModule", true);

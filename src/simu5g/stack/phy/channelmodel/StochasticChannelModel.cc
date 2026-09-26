@@ -114,6 +114,12 @@ void StochasticChannelModel::initialize(int stage)
 
         //clear jakes fading map structure
         jakesFadingMap_.clear();
+
+        WATCH(lastCorrelationPoint_);
+        WATCH(losMap_);
+        WATCH(lastComputedSF_);
+        WATCH(jakesFadingMap_);
+        WATCH(jakesFadingMapBgUe_);
     }
     else if (stage == INITSTAGE_SIMU5G_POSTLOCAL) {
         // carrierFrequencyHz_/GHz_/log10CarrierFrequencyGHz_ have just been set

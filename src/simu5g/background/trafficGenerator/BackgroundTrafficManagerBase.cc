@@ -57,6 +57,12 @@ void BackgroundTrafficManagerBase::initialize(int stage)
             bgUe_.push_back(check_and_cast<TrafficGeneratorBase *>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
 
         phyPisaData_ = &(binder_->phyPisaData);
+
+        WATCH(backloggedBgUes_[UL]);
+        WATCH(backloggedBgUes_[DL]);
+        WATCH(backloggedRtxBgUes_[UL]);
+        WATCH(backloggedRtxBgUes_[DL]);
+        WATCH(waitingForRac_);
     }
     if (stage == INITSTAGE_SIMU5G_BACKGROUNDTRAFFICMANAGER) {
         BgTrafficManagerInfo *info = new BgTrafficManagerInfo();

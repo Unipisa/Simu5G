@@ -43,6 +43,13 @@ void PhyUe::initialize(int stage)
             throw cRuntimeError("no phy listeners");
 
         WATCH(servingNodeId_);
+        WATCH(lastFeedback_);
+        WATCH(cqiDlSamples_);
+        WATCH(cqiUlSamples_);
+        WATCH(cqiDlSum_);
+        WATCH(cqiUlSum_);
+        WATCH(cqiDlCount_);
+        WATCH(cqiUlCount_);
 
         txPower_ = ueTxPower_;
 

@@ -112,6 +112,15 @@ void TrafficGeneratorBase::initialize(int stage)
         // register to get a notification when positions change
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;
+
+        WATCH(bufferedBytes_[DL]);
+        WATCH(bufferedBytes_[UL]);
+        WATCH(bufferedBytesRtx_[DL]);
+        WATCH(bufferedBytesRtx_[UL]);
+        WATCH(pos_);
+        WATCH(positionUpdated_);
+        WATCH(cqi_[DL]);
+        WATCH(cqi_[UL]);
     }
 }
 
