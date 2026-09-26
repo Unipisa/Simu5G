@@ -60,7 +60,9 @@ void BearerConfigurator::initialize(int stage)
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known,
         // and before INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION, where the scheduler takes
-        // the address of the QoS map that this fills through RRC.
+        // the address of the QoS map that this fills through RRC. The tunnel endpoints
+        // come first: configuring the dual connectivity bearers sets up X2-U tunnels.
+        takeGtpEndpoints();
         configureDrbs();
         deliverQfiRules();
     }
@@ -748,29 +750,19 @@ void BearerConfigurator::registerTrafficFlowFilter(TrafficFlowFilter *tff)
     trafficFlowFilters_.push_back(tff);
 }
 
-void BearerConfigurator::registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type, MacNodeId bsId, const std::string& gateway)
+void BearerConfigurator::takeGtpEndpoints()
 {
-    Enter_Method_Silent("registerGtpEndpoint");
-    GtpEndpoint endpoint;
-    endpoint.module = gtpUser;
-    endpoint.type = type;
-    endpoint.bsId = bsId;
-    endpoint.gateway = gateway;
-    if (isBaseStation(type)) {
-        if (bsGtpEndpoints_.count(bsId) != 0)
-            throw cRuntimeError("BearerConfigurator: base station %d has a second GTP-U endpoint, %s",
-                    num(bsId), gtpUser->getFullPath().c_str());
-        bsGtpEndpoints_[bsId] = gtpEndpoints_.size();
+    for (const auto& registration : binder_->getGtpEndpoints()) {
+        GtpEndpoint endpoint;
+        endpoint.module = registration.module;
+        endpoint.type = registration.type;
+        endpoint.bsId = registration.bsId;
+        endpoint.gateway = registration.gateway;
+        if (isBaseStation(endpoint.type))
+            bsGtpEndpoints_[endpoint.bsId] = gtpEndpoints_.size();
+        gtpEndpoints_.push_back(endpoint);
     }
-    gtpEndpoints_.push_back(endpoint);
-}
-
-void BearerConfigurator::registerX2GtpEndpoint(GtpUserX2 *gtpUserX2, MacNodeId bsId)
-{
-    Enter_Method_Silent("registerX2GtpEndpoint");
-    if (!bsX2GtpEndpoints_.emplace(bsId, gtpUserX2).second)
-        throw cRuntimeError("BearerConfigurator: base station %d has a second X2-U tunnel endpoint, %s",
-                num(bsId), gtpUserX2->getFullPath().c_str());
+    bsX2GtpEndpoints_ = binder_->getX2GtpEndpoints();
 }
 
 void BearerConfigurator::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)

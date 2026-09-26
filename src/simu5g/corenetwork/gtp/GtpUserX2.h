@@ -28,7 +28,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class BearerConfigurator;
 
 /**
  * GtpUserX2 is used for building data tunnels between GTP peers over X2, for handover procedures.
@@ -51,9 +50,6 @@ class GtpUserX2 : public cSimpleModule
 
     // reference to the LTE Binder module
     inet::ModuleRefByPar<Binder> binder_;
-
-    // the SMF stand-in, which allocates the TEIDs of the PDU sessions' tunnels
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
 
     // the GTP protocol Port
     unsigned int tunnelPeerPort_;

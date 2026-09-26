@@ -11,7 +11,6 @@
 //
 
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/stack/dcX2Forwarder/X2DcTunnelInd_m.h"
 #include "simu5g/common/LteControlInfo_m.h"
 
@@ -34,11 +33,12 @@ void GtpUserX2::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
-        // announce this tunnel endpoint to the bearer configurator, which allocates the
-        // tunnel endpoint ids of the PDU sessions' tunnels, standing in for the SMF
+        // register this tunnel endpoint with the Binder, from which the bearer
+        // configurator, standing in for the SMF, takes the endpoints it tells about the
+        // PDU sessions' tunnels
         MacNodeId bsId = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
-        bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
-        bearerConfigurator_->registerX2GtpEndpoint(this, bsId);
+        binder_.reference(this, "binderModule", true);
+        binder_->registerX2GtpEndpoint(bsId, this);
         return;
     }
 
@@ -46,9 +46,6 @@ void GtpUserX2::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
     localPort_ = par("localPort");
-
-    // get reference to the binder
-    binder_.reference(this, "binderModule", true);
 
     socket_.setOutputGate(gate("socketOut"));
     socket_.bind(localPort_);

@@ -10,7 +10,6 @@
 // and cannot be removed from it.
 //
 #include "simu5g/corenetwork/gtp/GtpUser.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
@@ -52,10 +51,11 @@ void GtpUser::initialize(int stage)
                 throw cRuntimeError("The required 'gateway' parameter is empty.");
         }
 
-        // announce this tunnel endpoint to the bearer configurator, which allocates the
-        // tunnel endpoint ids of the PDU sessions' tunnels, standing in for the SMF
-        bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
-        bearerConfigurator_->registerGtpEndpoint(this, ownerType_, myMacNodeID, gateway_);
+        // register this tunnel endpoint with the Binder, from which the bearer
+        // configurator, standing in for the SMF, takes the endpoints whose TEID spaces
+        // it allocates the PDU sessions' tunnel endpoint ids from
+        binder_.reference(this, "binderModule", true);
+        binder_->registerGtpEndpoint(this, ownerType_, myMacNodeID, gateway_);
         return;
     }
 
@@ -63,9 +63,6 @@ void GtpUser::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
     localPort_ = par("localPort");
-
-    // get reference to the binder
-    binder_.reference(this, "binderModule", true);
 
     // transport layer access
     socket_.setOutputGate(gate("socketOut"));

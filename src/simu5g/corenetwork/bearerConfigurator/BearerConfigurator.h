@@ -104,8 +104,8 @@ class BearerConfigurator : public cSimpleModule, public cListener
     std::vector<TrafficFlowFilter *> trafficFlowFilters_;
 
     // A GTP-U tunnel endpoint of a base station, a UPF/PGW or a MEC host's UPF, as it
-    // registered itself (see registerGtpEndpoint()). As the receiving end of tunnels it
-    // owns a TEID space, from which this module allocates on its behalf.
+    // registered with the Binder (see takeGtpEndpoints()). As the receiving end of
+    // tunnels it owns a TEID space, from which this module allocates on its behalf.
     struct GtpEndpoint {
         GtpUser *module = nullptr;
         CoreNodeType type = ENB;
@@ -118,7 +118,7 @@ class BearerConfigurator : public cSimpleModule, public cListener
 
     // The X2-U tunnel endpoint of each base station, which forwards downlink traffic to
     // a handover target, and receives it, with the TEIDs the base stations allocate for
-    // the sessions' downlink tunnels (see registerX2GtpEndpoint())
+    // the sessions' downlink tunnels (see takeGtpEndpoints())
     std::map<MacNodeId, GtpUserX2 *> bsX2GtpEndpoints_;
 
     // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
@@ -228,6 +228,11 @@ class BearerConfigurator : public cSimpleModule, public cListener
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
 
+    // Take the GTP-U and X2-U tunnel endpoints the network's nodes registered with the
+    // Binder at INITSTAGE_LOCAL, in registration order, which is the order their TEID
+    // spaces are listed in. Before the first tunnel is set up.
+    virtual void takeGtpEndpoints();
+
     // Hand out the next TEID of the endpoint's TEID space. TEIDs are allocated in
     // increasing order and never reused within a run, so a G-PDU still in flight on a
     // released tunnel cannot be taken for a later session's.
@@ -291,17 +296,6 @@ class BearerConfigurator : public cSimpleModule, public cListener
     // QFI-rule delivery; called from TrafficFlowFilter::initialize() at
     // INITSTAGE_LOCAL, before deliverQfiRules() runs.
     virtual void registerTrafficFlowFilter(TrafficFlowFilter *tff);
-
-    // A GTP-U tunnel endpoint announces itself, for the TEIDs of the PDU sessions'
-    // tunnels to be allocated from its TEID space; called from GtpUser::initialize() at
-    // INITSTAGE_LOCAL. gateway is the endpoint's "gateway" parameter if it is a base
-    // station connected to the core network or a MEC host's UPF, and empty otherwise.
-    virtual void registerGtpEndpoint(GtpUser *gtpUser, CoreNodeType type, MacNodeId bsId, const std::string& gateway);
-
-    // A base station's X2-U tunnel endpoint announces itself; called from
-    // GtpUserX2::initialize() at INITSTAGE_LOCAL. It learns the tunnels ending at the
-    // base station, and the downlink TEIDs the other base stations of a session have.
-    virtual void registerX2GtpEndpoint(GtpUserX2 *gtpUserX2, MacNodeId bsId);
 
     // A stack of a UE starts handing over to the given node (handover preparation): the
     // base station its downlink will enter the RAN at allocates the session's downlink

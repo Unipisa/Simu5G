@@ -27,6 +27,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class GtpUser;
+class GtpUserX2;
 class UeStatsCollector;
 
 
@@ -148,6 +150,20 @@ class Binder : public cSimpleModule
     std::set<MacNodeId> ueHandoverTriggered_;
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
 
+  public:
+    // A GTP-U tunnel endpoint of a base station, a UPF/PGW or a MEC host's UPF, as it
+    // registered (see registerGtpEndpoint())
+    struct GtpEndpointRegistration {
+        GtpUser *module = nullptr;
+        CoreNodeType type = ENB;
+        MacNodeId bsId = NODEID_NONE;   // base stations only
+        std::string gateway;            // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
+    };
+
+  private:
+    std::vector<GtpEndpointRegistration> gtpEndpoints_;     // in registration order
+    std::map<MacNodeId, GtpUserX2 *> x2GtpEndpoints_;       // by base station id
+
   protected:
     void initialize(int stages) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -255,6 +271,20 @@ class Binder : public cSimpleModule
      * Un-registers a node from the global Binder module.
      */
     virtual void unregisterNode(MacNodeId id);
+
+    /**
+     * The GTP-U tunnel endpoints of the network register here during initialization,
+     * at INITSTAGE_LOCAL: those of the base stations, UPFs/PGWs and MEC hosts' UPFs
+     * (GtpUser), and the X2-U endpoints of the base stations (GtpUserX2). The
+     * BearerConfigurator, which allocates the TEIDs of the PDU sessions' tunnels from
+     * the receiving endpoints' TEID spaces and tells the endpoints about them, takes
+     * them from here. gateway is that of a base station connected to the core network
+     * or of a MEC host's UPF, and empty otherwise.
+     */
+    virtual void registerGtpEndpoint(GtpUser *module, CoreNodeType type, MacNodeId bsId, const std::string& gateway);
+    virtual void registerX2GtpEndpoint(MacNodeId bsId, GtpUserX2 *module);
+    const std::vector<GtpEndpointRegistration>& getGtpEndpoints() const { return gtpEndpoints_; }
+    const std::map<MacNodeId, GtpUserX2 *>& getX2GtpEndpoints() const { return x2GtpEndpoints_; }
 
     /**
      * Binds an UE with its serving eNodeB/gNodeB. Invoked at the start of

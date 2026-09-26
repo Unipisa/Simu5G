@@ -17,6 +17,8 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/gtp/GtpUserX2.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/stack/mac/LteMacUe.h"
@@ -140,6 +142,27 @@ SlotFormat Binder::getSlotFormat(GHz carrierFrequency)
         throw cRuntimeError("Binder::getSlotFormat - Carrier [%fGHz] not found", carrierFrequency.get());
 
     return it->second.slotFormat;
+}
+
+void Binder::registerGtpEndpoint(GtpUser *module, CoreNodeType type, MacNodeId bsId, const std::string& gateway)
+{
+    Enter_Method_Silent("registerGtpEndpoint");
+    if (getSimulation()->getContextType() != CTX_INITIALIZE)
+        throw cRuntimeError("Binder: GTP-U endpoints register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
+    if (isBaseStation(type))
+        for (const auto& registration : gtpEndpoints_)
+            if (registration.bsId == bsId && isBaseStation(registration.type))
+                throw cRuntimeError("Binder: base station %d has a second GTP-U endpoint, %s", num(bsId), check_and_cast<cModule *>(module)->getFullPath().c_str());
+    gtpEndpoints_.push_back(GtpEndpointRegistration{module, type, bsId, gateway});
+}
+
+void Binder::registerX2GtpEndpoint(MacNodeId bsId, GtpUserX2 *module)
+{
+    Enter_Method_Silent("registerX2GtpEndpoint");
+    if (getSimulation()->getContextType() != CTX_INITIALIZE)
+        throw cRuntimeError("Binder: X2-U tunnel endpoints register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
+    if (!x2GtpEndpoints_.emplace(bsId, module).second)
+        throw cRuntimeError("Binder: base station %d has a second X2-U tunnel endpoint, %s", num(bsId), check_and_cast<cModule *>(module)->getFullPath().c_str());
 }
 
 void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType type, bool isNr)
