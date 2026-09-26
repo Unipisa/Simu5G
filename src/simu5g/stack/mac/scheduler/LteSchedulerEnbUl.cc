@@ -22,6 +22,15 @@ using namespace omnetpp;
 
 Define_Module(LteSchedulerEnbUl);
 
+void LteSchedulerEnbUl::initialize(int stage)
+{
+    LteSchedulerEnb::initialize(stage);
+    if (stage == INITSTAGE_SIMU5G_AMC_SETUP) {
+        WATCH(harqStatus_);
+        WATCH(racStatus_);
+    }
+}
+
 bool LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency)
 {
     HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);

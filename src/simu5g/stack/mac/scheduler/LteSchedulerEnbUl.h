@@ -36,6 +36,8 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     //! RAC request flags: signals whether a UE shall be granted the RAC allocation
     std::map<GHz, RacStatus> racStatus_;
 
+    void initialize(int stage) override;
+
   protected:
 
     /**

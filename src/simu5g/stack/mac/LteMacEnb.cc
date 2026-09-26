@@ -125,6 +125,9 @@ void LteMacEnb::initialize(int stage)
 
         eNodeBCount = par("eNodeBCount");
         WATCH(drbQosMap_);
+        WATCH(soExpectedSdus_);
+        WATCH(needRtx_);
+        WATCH_EXPR("ulBacklog", ulBacklog_.mirrors());
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         // Insert EnbInfo in the Binder

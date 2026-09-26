@@ -460,8 +460,21 @@ void LteMacBase::initialize(int stage)
         // statistics
         statDisplay_ = par("statDisplay");
 
-        // WATCH(connDescOut_);
-        // WATCH(connDescIn_);
+        WATCH(cellId_);
+        WATCH(totalOverflowedBytes_);
+        WATCH(lcConfig_);
+        WATCH(numerologyPeriodCounter_);
+        WATCH(resetHarq_);
+        WATCH(harqTxBuffers_);
+        WATCH(harqRxBuffers_);
+        WATCH(nrFromUpper_);
+        WATCH(nrFromLower_);
+        WATCH(nrToUpper_);
+        WATCH(nrToLower_);
+        WATCH(totalHarqErrorRateDlSum_);
+        WATCH(totalHarqErrorRateUlSum_);
+        WATCH(totalHarqErrorRateDlCount_);
+        WATCH(totalHarqErrorRateUlCount_);
     }
 }
 

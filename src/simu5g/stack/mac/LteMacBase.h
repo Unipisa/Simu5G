@@ -61,6 +61,12 @@ struct LogicalChannelConfig {
     Lcg lcg = Lcg(0);                   // logicalChannelGroup
 };
 
+inline std::ostream& operator<<(std::ostream& os, const LogicalChannelConfig& e) {
+    os << "rlcMode=" << e.rlcMode << " soFraming=" << e.soFraming
+       << " snFieldLength=" << e.snFieldLength << " lcg=" << e.lcg;
+    return os;
+}
+
 /**
  * @brief MAC Layer
  *
@@ -192,6 +198,11 @@ class LteMacBase : public cSimpleModule
     struct NumerologyPeriodCounter {
         unsigned int max;
         unsigned int current;
+
+        friend std::ostream& operator<<(std::ostream& os, const NumerologyPeriodCounter& e) {
+            os << "max=" << e.max << " current=" << e.current;
+            return os;
+        }
     };
     std::map<NumerologyIndex, NumerologyPeriodCounter> numerologyPeriodCounter_;
 

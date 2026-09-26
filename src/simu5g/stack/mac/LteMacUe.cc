@@ -66,6 +66,20 @@ void LteMacUe::initialize(int stage)
         maxRacBackoff_ = par("racBackoffMax");
         raRespWinStart_ = par("raResponseWindow");
         bsrRtxTimerStart_ = par("retxBsrTimer");
+
+        WATCH(firstTx);
+        WATCH(soFrontIsContinuation_);
+        WATCH(currentHarq_);
+        WATCH(periodCounter_);
+        WATCH(expirationCounter_);
+        WATCH(requestedSdus_);
+        WATCH(racRequested_);
+        WATCH(racBackoffTimer_);
+        WATCH(currentRacTry_);
+        WATCH(raRespTimer_);
+        WATCH(bsrRtxTimer_);
+        WATCH(bsrTriggered_);
+        WATCH(emptyScheduleList_);
     }
     else if (stage == INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION) {
         cellId_ = binder_->getServingNode(nodeId_);

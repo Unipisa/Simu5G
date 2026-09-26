@@ -159,6 +159,12 @@ class LteAllocationModule
         AllocatedRbsPerBandInfo()
         {
         }
+
+        friend std::ostream& operator<<(std::ostream& os, const AllocatedRbsPerBandInfo& e) {
+            os << "allocated=" << e.allocated_ << " ueRbs=" << e.ueAllocatedRbsMap_.size()
+               << " ueBytes=" << e.ueAllocatedBytesMap_.size();
+            return os;
+        }
     };
 
     typedef std::map<Band, AllocatedRbsPerBandInfo> AllocatedRbsPerBandMap;

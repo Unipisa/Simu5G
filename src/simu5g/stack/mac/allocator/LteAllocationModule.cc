@@ -20,6 +20,13 @@ using namespace inet;
 
 LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction) : mac_(mac), dir_(direction)
 {
+    WATCH(usedInLastSlot_);
+    WATCH(totalRbsMatrix_);
+    WATCH(allocatedRbsMatrix_);
+    WATCH(freeRbsMatrix_);
+    WATCH(allocatedRbsUe_);
+    WATCH(allocatedRbsPerBand_);
+    WATCH(prevAllocatedRbsPerBand_);
 }
 
 void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned int bands)

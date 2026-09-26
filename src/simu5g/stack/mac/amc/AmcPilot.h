@@ -56,6 +56,7 @@ class AmcPilot
      */
     AmcPilot(Binder *binder, LteAmc *amc) : binder_(binder), amc_(amc), name_("NONE")
     {
+        WATCH(usableBandsList_);
     }
 
     /**
