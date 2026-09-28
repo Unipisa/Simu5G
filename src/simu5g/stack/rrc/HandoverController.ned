@@ -47,7 +47,6 @@ simple HandoverController like IHandoverController
         double hysteresisFactor = default(10);
 
         string binderModule = default("binder");
-        string coreControlModule = default("coreControl");  // Told about handover preparation, to set up the target's tunnels (see ~CoreControl)
         string macModule = default("^.^.mac");
         string bearerManagementModule = default("^.bearerManagement");
         string handoverPacketHolderModule = default("^.^.handoverPacketHolder");

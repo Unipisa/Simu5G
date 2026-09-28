@@ -147,7 +147,9 @@ void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb)
 {
     EV << NOW << " HandoverX2Forwarder::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    handoverPacketHolder_->triggerHandoverTarget(ueId, enb);
+    // Nothing left to do: the target holds the leg's downlink from the source's
+    // HANDOVER REQUEST on (ConnectionControlEnb::handoverRequest()). The message
+    // itself goes in the next commit.
 }
 
 void HandoverX2Forwarder::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)

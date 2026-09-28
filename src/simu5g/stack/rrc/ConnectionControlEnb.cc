@@ -98,19 +98,113 @@ HandoverController *ConnectionControlEnb::ueControl(MacNodeId legId)
     return ue;
 }
 
+ConnectionControlEnb::UeContext& ConnectionControlEnb::ueContext(MacNodeId legId)
+{
+    auto it = ues_.find(legId);
+    if (it == ues_.end())
+        throw cRuntimeError("ConnectionControlEnb: base station %d has no context of leg %d", (int)num(nodeId_), (int)num(legId));
+    return it->second;
+}
+
+SessionResource *ConnectionControlEnb::findSession(const SessionRef& session)
+{
+    for (SessionResource& resource : sessions_)
+        if (resource.ref.lteNodeId == session.lteNodeId && resource.ref.nrNodeId == session.nrNodeId && resource.ref.id == session.id)
+            return &resource;
+    return nullptr;
+}
+
+std::vector<SessionResource> ConnectionControlEnb::sessionsOf(MacNodeId legId)
+{
+    std::vector<SessionResource> sessions;
+    for (const SessionResource& resource : sessions_)
+        if (resource.ref.lteNodeId == legId || resource.ref.nrNodeId == legId)
+            sessions.push_back(resource);
+    return sessions;
+}
+
 // ---- handover ----
 
 void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementReport& report)
 {
     Enter_Method("measurementReport");
+    UeContext& ctx = ueContext(legId);
+    if (ctx.state != UeContext::CONNECTED)
+        throw cRuntimeError("ConnectionControlEnb: leg %d reports measurements to base station %d while its handover is in progress", (int)num(legId), (int)num(nodeId_));
     MacNodeId target = selectHandoverTarget(legId, report);
     if (target == NODEID_NONE) {
         EV_INFO << "ConnectionControlEnb: no handover for leg " << legId << " on its report (serving " << report.servingCell
                 << " at " << report.servingRssi << ", best " << report.bestCell << " at " << report.bestRssi << ")" << endl;
         return;
     }
-    handoverTargets_[legId] = target;
-    ueControl(legId)->handoverCommand(target);
+    ctx.state = UeContext::HO_SOURCE_PREPARING;
+    ctx.hoPeer = target;
+    HandoverRequest request{legId, ctx.ueModule, ctx.ueRrc, sessionsOf(legId)};
+    baseStationControl(target)->handoverRequest(request, this);
+}
+
+void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, ConnectionControlEnb *source)
+{
+    Enter_Method("handoverRequest");
+    MacNodeId legId = request.legId;
+    auto [it, inserted] = ues_.try_emplace(legId);
+    UeContext& ctx = it->second;
+    if (!inserted && ctx.state == UeContext::CONNECTED)
+        throw cRuntimeError("ConnectionControlEnb: base station %d is asked to take leg %d over, which it serves already", (int)num(nodeId_), (int)num(legId));
+    ctx = UeContext{request.ueModule, request.ueRrc};
+    ctx.state = UeContext::HO_TARGET_PREPARED;
+    ctx.hoPeer = source->getNodeId();
+
+    // The session's tunnels at the base station the UE's downlink will enter the RAN
+    // at: this node's master under dual connectivity, as the core network sets them up
+    // at attachment. That base station learns the source's downlink TEIDs, to forward
+    // to; the source learns this end's from the acknowledgement.
+    MacNodeId ranBsId = binder_->getMasterNodeOrSelf(nodeId_);
+    ConnectionControlEnb *ranBs = baseStationControl(ranBsId);
+    for (const SessionResource& atSource : request.sessions) {
+        SessionResource here = atSource;
+        if (ranBs == this) {
+            here.dl = setUpSessionTunnels(here.ref, here.uplink);
+            gtpUserX2_->setForwardingTeid(here.ref, ctx.hoPeer, atSource.dl.teid);
+        }
+        else {
+            here.dl = ranBs->sessionTunnelSetup(here.ref, here.uplink);
+            ranBs->setForwardingTeid(here.ref, ctx.hoPeer, atSource.dl.teid);
+        }
+        ctx.sessions.push_back(here);
+    }
+
+    handoverPacketHolder_->triggerHandoverTarget(legId, ctx.hoPeer);
+    source->handoverRequestAck(legId, ctx.sessions);
+}
+
+void ConnectionControlEnb::handoverRequestAck(MacNodeId legId, const std::vector<SessionResource>& admitted)
+{
+    Enter_Method("handoverRequestAck");
+    UeContext& ctx = ueContext(legId);
+    if (ctx.state != UeContext::HO_SOURCE_PREPARING)
+        throw cRuntimeError("ConnectionControlEnb: base station %d gets a handover acknowledgement for leg %d, which it is not handing over", (int)num(nodeId_), (int)num(legId));
+    ctx.state = UeContext::HO_SOURCE_EXECUTING;
+    MacNodeId target = ctx.hoPeer;
+
+    // the downlink TEIDs at the base station the leg's downlink will enter the RAN at
+    // (the target's master under dual connectivity), to forward the downlink with
+    MacNodeId ranTargetId = binder_->getMasterNodeOrSelf(target);
+    for (const SessionResource& atTarget : admitted)
+        gtpUserX2_->setForwardingTeid(atTarget.ref, ranTargetId, atTarget.dl.teid);
+
+    // the leg is commanded first, then its downlink is forwarded (TS 38.300 9.2.3.2.1)
+    ctx.ueRrc->handoverCommand(target);
+    handoverPacketHolder_->triggerHandoverSource(legId, target);
+}
+
+void ConnectionControlEnb::handoverCancel(MacNodeId legId)
+{
+    Enter_Method("handoverCancel");
+    auto it = ues_.find(legId);
+    if (it == ues_.end() || it->second.state != UeContext::HO_TARGET_PREPARED)
+        throw cRuntimeError("ConnectionControlEnb: base station %d is asked to cancel a handover of leg %d it was not prepared for", (int)num(nodeId_), (int)num(legId));
+    ues_.erase(it);
 }
 
 MacNodeId ConnectionControlEnb::selectHandoverTarget(MacNodeId legId, const MeasurementReport& report)
@@ -118,23 +212,30 @@ MacNodeId ConnectionControlEnb::selectHandoverTarget(MacNodeId legId, const Meas
     return report.bestCell;
 }
 
-void ConnectionControlEnb::reconfigurationComplete(MacNodeId legId, MacNodeId sourceBsId)
+void ConnectionControlEnb::reconfigurationComplete(MacNodeId legId)
 {
     Enter_Method("reconfigurationComplete");
+    UeContext& ctx = ueContext(legId);
+    if (ctx.state != UeContext::HO_TARGET_PREPARED)
+        throw cRuntimeError("ConnectionControlEnb: leg %d completes a handover to base station %d, which was not prepared for it", (int)num(legId), (int)num(nodeId_));
+    MacNodeId source = ctx.hoPeer;
+    ctx.state = UeContext::CONNECTED;
+    ctx.hoPeer = NODEID_NONE;
     attachAtAmc(legId);
-    coreControl_->pathSwitchRequest(legId, this);
-    baseStationControl(sourceBsId)->ueContextRelease(legId);
+    coreControl_->pathSwitchRequest(legId, this, ctx.sessions);
+    ctx.sessions.clear();
+    baseStationControl(source)->ueContextRelease(legId);
     handoverPacketHolder_->signalHandoverCompleteTarget(legId);
 }
 
 void ConnectionControlEnb::ueContextRelease(MacNodeId legId)
 {
     Enter_Method("ueContextRelease");
-    auto it = handoverTargets_.find(legId);
-    if (it == handoverTargets_.end())
+    auto it = ues_.find(legId);
+    if (it == ues_.end() || it->second.state != UeContext::HO_SOURCE_EXECUTING)
         throw cRuntimeError("ConnectionControlEnb: base station %d is no handover source of leg %d", (int)num(nodeId_), (int)num(legId));
-    MacNodeId target = it->second;
-    handoverTargets_.erase(it);
+    MacNodeId target = it->second.hoPeer;
+    ues_.erase(it);
     releaseLeg(legId);
     detachAtAmc(legId);
     handoverPacketHolder_->signalHandoverCompleteSource(legId, target);
@@ -143,6 +244,13 @@ void ConnectionControlEnb::ueContextRelease(MacNodeId legId)
 void ConnectionControlEnb::connectionLost(MacNodeId legId)
 {
     Enter_Method("connectionLost");
+    auto it = ues_.find(legId);
+    if (it == ues_.end())
+        throw cRuntimeError("ConnectionControlEnb: base station %d does not serve leg %d, which lost its connection", (int)num(nodeId_), (int)num(legId));
+    // a leg lost while its handover is being prepared or executed: the target is told
+    if (it->second.state == UeContext::HO_SOURCE_PREPARING || it->second.state == UeContext::HO_SOURCE_EXECUTING)
+        baseStationControl(it->second.hoPeer)->handoverCancel(legId);
+    ues_.erase(it);
     releaseLeg(legId);
     detachAtAmc(legId);
     coreControl_->ueContextReleaseRequest(legId);
@@ -211,11 +319,16 @@ FTeid ConnectionControlEnb::sessionTunnelSetup(const SessionRef& session, const 
 
 FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink)
 {
+    // once per session: a handover to a base station the UE was attached through
+    // before finds them in place
+    if (const SessionResource *existing = findSession(session))
+        return existing->dl;
     FTeid dl{getAddress(), allocateTeid()};
     gtpUser_->addTunnel(dl.teid, session);
     gtpUser_->setUplinkTunnels(session, uplink);
     // the same TEID receives the downlink a handover source forwards over X2-U
     gtpUserX2_->addTunnel(dl.teid, session);
+    sessions_.push_back(SessionResource{session, uplink, dl});
     return dl;
 }
 
@@ -224,6 +337,10 @@ FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const
 void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc)
 {
     Enter_Method("connectionSetupRequest");
+    auto [it, inserted] = ues_.try_emplace(legId);
+    if (!inserted && it->second.state == UeContext::CONNECTED)
+        throw cRuntimeError("ConnectionControlEnb: leg %d requests a connection at base station %d, which serves it already", (int)num(legId), (int)num(nodeId_));
+    it->second = UeContext{ueModule, check_and_cast<HandoverController *>(ueRrc)};
     // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
     if (getSimulation()->getContextType() != CTX_INITIALIZE)
         attachAtAmc(legId);
@@ -299,6 +416,8 @@ void ConnectionControlEnb::sessionRelease(const SessionRef& session)
     Enter_Method("sessionRelease");
     gtpUser_->removeSession(session);
     gtpUserX2_->removeSession(session);
+    if (SessionResource *resource = findSession(session))
+        sessions_.erase(sessions_.begin() + (resource - sessions_.data()));
 }
 
 Teid ConnectionControlEnb::addDcTunnel(MacNodeId ueNodeId, DrbId drbId, Direction direction)

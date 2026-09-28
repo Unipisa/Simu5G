@@ -31,11 +31,10 @@ package simu5g.corenetwork.coreControl;
 // node itself. The anchor is the core network gateway of the base station the UE's
 // downlink enters the RAN at when the session is established, and it stays for the
 // lifetime of the session (SSC mode 1): a handover only moves the downlink end of the
-// tunnel (the path switch, TS 23.502 4.9.1.2.2), at the instant the ~Binder records
-// the new serving node, and the anchor closes the old path with an End Marker.
-// Before that, at handover preparation, the target base station gets the session's
-// tunnels, so the source can forward the downlink to it over X2 (the UEs' handover
-// controllers announce the preparation with a signal this module listens to).
+// tunnel (the path switch, TS 23.502 4.9.1.2.2), on the target base station's PATH
+// SWITCH REQUEST, and the anchor closes the old path with an End Marker. The target's
+// tunnels are set up at handover preparation, between the base stations over Xn, and
+// reported with the request.
 //
 // The module also delivers the QFI classification rules authored in the
 // ~BearerConfigurator (its dlQfiRules and ulQfiRules parameters) to their evaluation

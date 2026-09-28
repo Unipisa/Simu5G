@@ -74,14 +74,29 @@ void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long n
     releaseSession(id);
 }
 
-void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs)
+void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, const std::vector<SessionResource>& sessions)
 {
     Enter_Method("pathSwitchRequest");
     auto it = sessionOfNode_.find(legId);
     if (it == sessionOfNode_.end())
         return;   // a UE without a PDU session (its base stations have no core network)
     CoreSession& session = sessions_.at(it->second);
-    setUpRanTunnels(session, binder_->getMasterNodeOrSelf(bs->getNodeId()));   // set up by the handover preparation already
+    MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
+
+    // the tunnels the handover preparation set up at the base station: new to this
+    // module unless the UE was attached through that base station before
+    for (const SessionResource& resource : sessions) {
+        if (resource.ref.id != session.ref.id)
+            throw cRuntimeError("CoreControl: base station %d switches a PDU session of %s that is not the UE's",
+                    (int)num(bsId), session.ueModule->getFullPath().c_str());
+        auto known = session.dlTunnels.find(bsId);
+        if (known == session.dlTunnels.end())
+            registerRanTunnel(session, bsId, resource.dl);
+        else if (known->second.teid != resource.dl.teid)
+            throw cRuntimeError("CoreControl: base station %d reports a downlink TEID for the PDU session of %s other than the one it ends it under",
+                    (int)num(bsId), session.ueModule->getFullPath().c_str());
+    }
+    setUpRanTunnels(session, bsId);   // a base station the preparation gave no tunnels
     updateDownlinkPath(session);
 }
 
@@ -129,16 +144,6 @@ void CoreControl::deliverQfiRules()
     for (const GtpEndpoint& endpoint : gtpEndpoints_)
         if (endpoint.userPlaneNode != nullptr)
             endpoint.userPlaneNode->setDownlinkClassifierRules(bearerConfigurator_->getDownlinkQfiRules(endpoint.node));
-}
-
-void CoreControl::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)
-{
-    Enter_Method_Silent("prepareHandover");
-    auto it = sessionOfNode_.find(ueNodeId);
-    if (it == sessionOfNode_.end())
-        return;   // a UE without a PDU session has no downlink to forward
-    CoreSession& session = sessions_.at(it->second);
-    setUpRanTunnels(session, binder_->getMasterNodeOrSelf(targetNodeId));
 }
 
 cModule *CoreControl::findGatewayNode(const std::string& gateway)

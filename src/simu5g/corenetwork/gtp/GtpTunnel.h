@@ -83,6 +83,19 @@ struct UplinkTunnels
 };
 
 /**
+ * A PDU session's resources at a base station: the session, its uplink tunnels into
+ * the core network, and the base station's downlink F-TEID, under which the session's
+ * downlink -- from the core network, or forwarded by a handover source over X2-U --
+ * enters the node (see ConnectionControlEnb::sessionTunnelSetup()).
+ */
+struct SessionResource
+{
+    SessionRef ref;
+    UplinkTunnels uplink;
+    FTeid dl;
+};
+
+/**
  * The GTP-U header of a G-PDU (TS 29.281) that carries a T-PDU of the given length on
  * the tunnel with the given TEID; with a PDU Session Container that carries the QFI
  * (TS 38.415), unless container is PDU_SESSION_CONTAINER_NONE.

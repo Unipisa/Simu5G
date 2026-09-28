@@ -125,8 +125,8 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // base station is told (ConnectionControlEnb::downlinkPathSwitched())
     virtual void updateDownlinkPath(CoreSession& session);
 
-    // Set up the session's tunnels at a base station the UE is attached through, or is
-    // handing over to, unless they are there already (see registerRanTunnel())
+    // Set up the session's tunnels at a base station the UE is attached through, unless
+    // they are there already (see registerRanTunnel())
     virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
 
     // Record the session's downlink tunnel at a base station. The base stations of the
@@ -150,21 +150,18 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
 
     // PATH SWITCH REQUEST (N2), from the base station a leg arrived at by handover: the
     // UE's session now enters the RAN at that base station (the master of it, under
-    // dual connectivity), whose tunnels the handover preparation set up; the downlink
-    // path is switched if the base station the downlink enters at changed
-    virtual void pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs);
+    // dual connectivity), with the downlink F-TEIDs the handover preparation set up
+    // there (the session resources "to be switched in downlink"); a base station the
+    // preparation gave no tunnels (a secondary node's source has none to transfer)
+    // gets them now. The downlink path is switched if the base station the downlink
+    // enters at changed.
+    virtual void pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, const std::vector<SessionResource>& sessions);
 
     // UE CONTEXT RELEASE REQUEST (N2), from the base station a leg left without a
     // handover: the leg is attached nowhere; the downlink path follows the UE's
     // remaining attachment, if any. The UE's session stays until the UE leaves the
     // simulation (nodeUnregistered).
     virtual void ueContextReleaseRequest(MacNodeId legId);
-
-    // A stack of a UE starts handing over to the given node (handover preparation): the
-    // base station its downlink will enter the RAN at allocates the session's downlink
-    // TEID now, and gets the session's uplink tunnels, so the source can forward the
-    // downlink to it over X2 until the path switch (TS 23.502 4.9.1.2.2)
-    virtual void prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId);
 };
 
 } //namespace

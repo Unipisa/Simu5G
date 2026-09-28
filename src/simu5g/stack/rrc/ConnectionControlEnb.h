@@ -16,6 +16,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/L3Address.h>
@@ -50,6 +51,18 @@ struct MeasurementReport
 };
 
 /**
+ * The HANDOVER REQUEST of Xn (TS 38.423 8.2.1), as far as the model needs it: the
+ * context of the leg the source hands over, for the target to take on.
+ */
+struct HandoverRequest
+{
+    MacNodeId legId = NODEID_NONE;
+    omnetpp::cModule *ueModule = nullptr;
+    HandoverController *ueRrc = nullptr;       // the leg's control-plane entry point
+    std::vector<SessionResource> sessions;     // the UE's PDU sessions at the source, with the source's downlink F-TEIDs
+};
+
+/**
  * The control-plane entry point of a base station: the one module of the node the
  * control plane of other nodes talks to. It owns the node's TEID space and programs
  * the node's GtpUser and GtpUserX2 as the calls say; and it establishes the bearers
@@ -75,10 +88,20 @@ class ConnectionControlEnb : public ConnectionControlBase
     inet::ModuleRefByPar<GtpUser> gtpUser_;
     inet::ModuleRefByPar<GtpUserX2> gtpUserX2_;
 
-    // The handovers this base station is the source of: the target of each leg's,
-    // from the decision until the target releases the leg (see measurementReport(),
-    // ueContextRelease()). Grows into the UE context in a later round.
-    std::map<MacNodeId, MacNodeId> handoverTargets_;
+    // What the control plane keeps of a UE leg this base station serves, or is the
+    // handover target of: created by connectionSetupRequest() and handoverRequest(), dropped
+    // by ueContextRelease(), connectionLost() and handoverCancel()
+    struct UeContext {
+        omnetpp::cModule *ueModule = nullptr;
+        HandoverController *ueRrc = nullptr;   // the leg's control-plane entry point
+        enum State { CONNECTED, HO_SOURCE_PREPARING, HO_SOURCE_EXECUTING, HO_TARGET_PREPARED } state = CONNECTED;
+        MacNodeId hoPeer = NODEID_NONE;        // the other base station of the leg's handover in progress
+        std::vector<SessionResource> sessions; // target role: the session resources the preparation set up for the leg, reported in the PATH SWITCH REQUEST
+    };
+    std::map<MacNodeId, UeContext> ues_;       // by the leg's node id
+
+    // The PDU sessions with tunnels at this base station (see setUpSessionTunnels())
+    std::vector<SessionResource> sessions_;
 
     // The node's TEID space: the TEID allocated last (see allocateTeid())
     Teid lastTeid_ = TEID_NONE;
@@ -125,6 +148,15 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // The other leg of the UE the leg belongs to, or NODEID_NONE
     virtual MacNodeId otherLegOf(MacNodeId legId);
+
+    // The context of a leg this base station has one of; throws otherwise
+    virtual UeContext& ueContext(MacNodeId legId);
+
+    // This base station's resources of the session, or nullptr
+    virtual SessionResource *findSession(const SessionRef& session);
+
+    // This base station's resources of the PDU sessions of the UE the leg belongs to
+    virtual std::vector<SessionResource> sessionsOf(MacNodeId legId);
 
     // Release this base station's state for a leg that left it: its MAC queues and RLC
     // entities here, its PDCP entities here and at this node's master if this node is a
@@ -252,15 +284,35 @@ class ConnectionControlEnb : public ConnectionControlBase
     // ---- handover ----
 
     // MeasurementReport, from a leg this base station serves: the base station
-    // decides (selectHandoverTarget()) and commands the leg's handover
+    // decides (selectHandoverTarget()) and, as the source, prepares the leg's handover
+    // with the target over Xn (handoverRequest())
     virtual void measurementReport(MacNodeId legId, const MeasurementReport& report);
+
+    // HANDOVER REQUEST (Xn), from the source of a leg's handover: this base station,
+    // the target, takes the leg's context, sets the UE's session tunnels up at the
+    // base station the downlink will enter the RAN at (this node's master under dual
+    // connectivity), which also learns the source's downlink TEIDs, starts holding
+    // the leg's downlink, and acknowledges (handoverRequestAck())
+    virtual void handoverRequest(const HandoverRequest& request, ConnectionControlEnb *source);
+
+    // HANDOVER REQUEST ACKNOWLEDGE (Xn), from the target, with the session resources
+    // it set up: this base station, the source, commands the leg (the
+    // RRCReconfiguration with sync, HandoverController::handoverCommand()), then
+    // forwards the leg's downlink to the target's tunnels over X2-U (TS 38.300
+    // 9.2.3.2.1)
+    virtual void handoverRequestAck(MacNodeId legId, const std::vector<SessionResource>& admitted);
+
+    // HANDOVER CANCEL (Xn), from the source of a leg's handover that lost the leg
+    // meanwhile: this base station, the target, drops the leg's context (its
+    // downlink holder keeps whatever it holds for the leg)
+    virtual void handoverCancel(MacNodeId legId);
 
     // RRCReconfigurationComplete, from a leg that arrived here by handover: the target
     // takes the leg on at its AMC, has the core network switch the session's downlink
-    // path here (PATH SWITCH REQUEST), releases the leg at the source (UE CONTEXT
-    // RELEASE over Xn), and sends down the downlink held for the leg. The source is
-    // named by the UE until the target has a context of the leg (next round).
-    virtual void reconfigurationComplete(MacNodeId legId, MacNodeId sourceBsId);
+    // path here (PATH SWITCH REQUEST, with the tunnels the preparation set up),
+    // releases the leg at the source (UE CONTEXT RELEASE over Xn), and sends down the
+    // downlink held for the leg
+    virtual void reconfigurationComplete(MacNodeId legId);
 
     // UE CONTEXT RELEASE (Xn), from the target of a leg's handover once the path is
     // switched: this base station, the source, stops forwarding and releases its
@@ -279,12 +331,13 @@ class ConnectionControlEnb : public ConnectionControlBase
     // it anchors (SN release, as far as the model needs it)
     virtual void releasePdcpEntities(MacNodeId legId);
 
-    // ---- the node's tunnels, for the core network's control plane ----
+    // ---- the node's tunnels, for the core network's control plane and the other base stations ----
 
     // A PDU session's tunnels at this base station: its downlink tunnel, under a TEID
     // allocated here, which also receives the downlink a handover source forwards
     // over X2-U; and its uplink tunnels into the core network, to send the UE's
-    // uplink on. Returns the downlink tunnel's F-TEID.
+    // uplink on. Set up once per session, whichever side asks first; a later call
+    // finds them in place. Returns the downlink tunnel's F-TEID.
     virtual FTeid sessionTunnelSetup(const SessionRef& session, const UplinkTunnels& uplink);
 
     // The TEID of the session's downlink tunnel at another base station, to forward

@@ -937,13 +937,4 @@ cModule *Binder::getIp2NicByNodeId(MacNodeId nodeId)
     return module->getSubmodule("cellularNic")->getSubmodule("ip2nic");
 }
 
-cModule *Binder::getHandoverPacketHolderByNodeId(MacNodeId nodeId)
-{
-    cModule *module = getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    return module->getSubmodule("cellularNic")->getSubmodule("handoverPacketHolder");
-}
-
 } //namespace

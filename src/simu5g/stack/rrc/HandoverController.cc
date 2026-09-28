@@ -12,7 +12,6 @@
 #include "HandoverController.h"
 
 #include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
-#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 #include "simu5g/stack/phy/PhyUe.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
@@ -46,7 +45,6 @@ void HandoverController::initialize(int stage)
         handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
         otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
-        coreControl_.reference(this, "coreControlModule", true);
 
         isNr_ = par("isNr");
         nodeId_ = MacNodeId(par("macNodeId").intValue());
@@ -394,14 +392,6 @@ void HandoverController::startHandover()
     if (!hasOtherLeg())
         binder_->removeHandoverTriggered(nodeId_);
 
-    // Inform the eNB's HandoverPacketHolder module to forward data to the target eNB,
-    // on the downlink tunnel the handover preparation gives the UE's PDU session there
-    if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        coreControl_->prepareHandover(nodeId_, candidateServingNodeId_);
-        HandoverPacketHolderEnb *enbIp2nic = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(servingNodeId_));
-        enbIp2nic->triggerHandoverSource(nodeId_, candidateServingNodeId_);
-    }
-
     // Calculate handover latency and schedule trigger message
     double handoverLatency;
     if (servingNodeId_ == NODEID_NONE)                                                // attachment only
@@ -474,7 +464,7 @@ void HandoverController::doHandover()
     // station takes the attaching leg on (RRCSetupRequest), or the old one is told the
     // leg is gone
     if (oldServingNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE)
-        baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_, oldServingNodeId);
+        baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_);
     else if (servingNodeId_ != NODEID_NONE)
         baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this);
     else

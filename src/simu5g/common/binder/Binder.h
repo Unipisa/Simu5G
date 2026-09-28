@@ -664,7 +664,6 @@ class Binder : public cSimpleModule
     virtual cModule *getMacByNodeId(MacNodeId nodeId);
     virtual cModule *getRrcByNodeId(MacNodeId nodeId);
     virtual cModule *getIp2NicByNodeId(MacNodeId nodeId);
-    virtual cModule *getHandoverPacketHolderByNodeId(MacNodeId nodeId);
 };
 
 } //namespace

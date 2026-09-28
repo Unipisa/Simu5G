@@ -19,10 +19,11 @@ package simu5g.stack.rrc;
 //
 // Tunnels. It owns the node's GTP-U tunnel endpoint id (TEID) space, and programs the
 // node's tunnel endpoints, ~GtpUser (the N3/S1-U end) and ~GtpUserX2 (the X2-U end),
-// as the ~CoreControl's calls say:
+// as the calls of the ~CoreControl and of the other base stations say:
 //  - sessionTunnelSetup(): a PDU session's tunnels at this base station: the downlink
 //    tunnel, under a TEID allocated here, which also receives the downlink a handover
-//    source forwards over X2-U, and the uplink tunnels into the core network
+//    source forwards over X2-U, and the uplink tunnels into the core network; set up
+//    once per session, whichever side asks first
 //  - setForwardingTeid(): the session's downlink TEID at another base station, to
 //    forward the downlink to it with during a handover
 //  - sessionRelease(): the session's tunnels here are forgotten
@@ -48,14 +49,18 @@ package simu5g.stack.rrc;
 // station releases its state for the leg and tells the core network.
 //
 // Handover. The serving base station decides on a leg's measurementReport() and
-// commands the handover; when the leg arrives at the target
-// (reconfigurationComplete()), the target takes it on, has the ~CoreControl switch
-// the session's downlink path (PATH SWITCH REQUEST; the base station the downlink
-// enters at learns of it with downlinkPathSwitched()), and releases the leg at the
-// source (ueContextRelease(), the UE CONTEXT RELEASE of Xn), which stops forwarding
-// and drops its state for the leg. The preparation -- the target's tunnels, the
-// source's forwarding -- is still the ~CoreControl's, on the handover preparation
-// signal, until the next stage.
+// prepares the handover with the target over Xn: handoverRequest() carries the leg's
+// context to the target, which sets the UE's session tunnels up at the base station
+// the downlink will enter the RAN at and starts holding the leg's downlink;
+// handoverRequestAck() brings the source the target's downlink TEIDs, on which the
+// source commands the leg (the UE's handoverCommand()) and forwards its downlink over
+// X2-U from then on. When the leg arrives (reconfigurationComplete()), the target
+// takes it on, has the ~CoreControl switch the session's downlink path (PATH SWITCH
+// REQUEST, reporting the tunnels the preparation set up; the base station the
+// downlink enters at learns of the switch with downlinkPathSwitched()), and releases
+// the leg at the source (ueContextRelease(), the UE CONTEXT RELEASE of Xn), which
+// stops forwarding and drops its state for the leg. A source that loses the leg
+// meanwhile cancels the handover at the target (handoverCancel()).
 //
 // Nothing outside the node reaches its ~GtpUser, ~GtpUserX2 or ~BearerManagement
 // directly; how the node is composed is its own business. Other nodes find this
