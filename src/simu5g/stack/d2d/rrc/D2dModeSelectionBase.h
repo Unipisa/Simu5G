@@ -18,6 +18,7 @@
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/d2d/mac/ID2dMacEnb.h"
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
+#include "simu5g/stack/rrc/ConnectionControlEnb.h"
 
 namespace simu5g {
 
@@ -55,6 +56,9 @@ class D2dModeSelectionBase : public cSimpleModule
 
     // reference to the binder
     inet::ModuleRefByPar<Binder> binder_;
+
+    // the node's control-plane entry point, which knows the UEs handing over
+    inet::ModuleRefByPar<ConnectionControlEnb> connectionControl_;
 
     // period between two selection instances
     double modeSelectionPeriod_;

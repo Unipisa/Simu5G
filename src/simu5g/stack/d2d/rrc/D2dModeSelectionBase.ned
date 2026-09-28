@@ -26,5 +26,6 @@ simple D2dModeSelectionBase like ID2DModeSelection
         double modeSelectionPeriod @unit(s) = default(1s);
         string binderModule = default("binder");
         string macModule = default("^.^.mac");
+        string connectionControlModule = default("^.connectionControl");  // The node's control-plane entry point, which knows the UEs handing over
 }
 

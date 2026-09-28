@@ -223,6 +223,12 @@ void ConnectionControlEnb::handoverRequestAck(MacNodeId legId, const std::vector
     handoverPacketHolder_->triggerHandoverSource(legId, target);
 }
 
+bool ConnectionControlEnb::isHandingOver(MacNodeId legId) const
+{
+    auto it = ues_.find(legId);
+    return it != ues_.end() && it->second.state != UeContext::CONNECTED;
+}
+
 void ConnectionControlEnb::handoverCancel(MacNodeId legId)
 {
     Enter_Method("handoverCancel");

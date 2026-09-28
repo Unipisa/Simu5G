@@ -142,13 +142,6 @@ class Binder : public cSimpleModule
     // Reverse mapping from multicast destination IDs to IPv4 addresses (optional, for debugging)
     std::map<MacNodeId, inet::Ipv4Address> multicastDestIdToAddr_;
 
-    /*
-     * Handover support
-     */
-    // store the id of the UEs that are performing handover
-    std::set<MacNodeId> ueHandoverTriggered_;
-    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
-
   public:
     // The N4 endpoint of a user plane node (a UPF/PGW or a MEC host's UPF), as it
     // registered (see registerUserPlaneNode())
@@ -617,17 +610,6 @@ class Binder : public cSimpleModule
     virtual MacNodeId getDestIdForMulticastAddress(inet::Ipv4Address multicastAddr);
     // Get multicast address from destination ID
     virtual inet::Ipv4Address getAddressForMulticastDestId(MacNodeId multicastDestId);
-
-    /*
-     *  Handover support
-     */
-    virtual void addUeHandoverTriggered(MacNodeId nodeId);
-    virtual bool hasUeHandoverTriggered(MacNodeId nodeId);
-    virtual void removeUeHandoverTriggered(MacNodeId nodeId);
-
-    virtual void addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId destId);
-    virtual const std::pair<MacNodeId, MacNodeId> *getHandoverTriggered(MacNodeId nodeId);
-    virtual void removeHandoverTriggered(MacNodeId nodeId);
 
     virtual void updateUeInfoCellId(MacNodeId nodeId, MacCellId cellId);
 

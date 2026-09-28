@@ -230,7 +230,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
             candidateServingNodeId_ = lteInfo->getSourceId();
             candidateServingNodeRssi_ = rssi;
             updateHysteresisThreshold(rssi);
-            binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
+            triggeredHandover_ = std::make_pair(servingNodeId_, candidateServingNodeId_);
 
             // schedule self message to evaluate handover parameters after
             // all broadcast messages have arrived
@@ -257,7 +257,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
                                                    // as the minRssi_ has a chance.
 
                     updateHysteresisThreshold(0);
-                    binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
+                    triggeredHandover_ = std::make_pair(servingNodeId_, candidateServingNodeId_);
 
                     if (!handoverStarter_->isScheduled()) {
                         // all broadcast messages are scheduled at the very same time, a small delta
@@ -284,8 +284,7 @@ void HandoverController::triggerHandover()
         MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateServingNodeId_);
         if (masterNode != candidateServingNodeId_) { // The candidate is a secondary node
             if (otherHandoverController_->getServingNodeId() == masterNode) {
-                MacNodeId otherNodeId = otherHandoverController_->getNodeId();
-                const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
+                const std::pair<MacNodeId, MacNodeId> *handoverPair = otherHandoverController_->getTriggeredHandover();
                 if (handoverPair != nullptr) {
                     if (handoverPair->second == candidateServingNodeId_) {
                         // Delay this handover
@@ -303,7 +302,7 @@ void HandoverController::triggerHandover()
                     }
                     else {
                         // Cancel this handover
-                        binder_->removeHandoverTriggered(nodeId_);
+                        triggeredHandover_.reset();
                         EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateServingNodeId_ << " since the master is performing handover" << endl;
                         return;
                     }
@@ -385,9 +384,6 @@ void HandoverController::startHandover()
     else
         EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateServingNodeId_ << "... " << endl;
 
-    // Add UE handover trigger
-    binder_->addUeHandoverTriggered(nodeId_);
-
     // RRC's stack attachment ledger changes the instant the handover begins, ahead of
     // its execution: packets steered from now on must already see the new attachment
     // (see BearerManagement::pushServingNodeIds())
@@ -399,10 +395,10 @@ void HandoverController::startHandover()
     // Inform the UE's HandoverPacketHolder module to start holding downstream packets
     handoverPacketHolder_->triggerHandoverUe(candidateServingNodeId_);
 
-    // Single-stack UE: no other leg reads the handoverTriggered record, so remove it right away.
+    // Single-stack UE: no other leg reads the triggered handover, so forget it right away.
     // (Dual-stack UEs keep it until doHandover(), so the other leg can see the handover in progress.)
     if (!hasOtherLeg())
-        binder_->removeHandoverTriggered(nodeId_);
+        triggeredHandover_.reset();
 
     // Calculate handover latency and schedule trigger message
     double handoverLatency;
@@ -460,13 +456,10 @@ void HandoverController::doHandover()
 
     EV << NOW << " " << getClassName() << "::doHandover - UE " << nodeId_ << " has completed handover to eNB " << servingNodeId_ << "... " << endl;
 
-    // Remove UE handover triggered
-    binder_->removeUeHandoverTriggered(nodeId_);
-
-    // Dual-stack UE: the handoverTriggered record was kept alive for the other leg's
-    // benefit (see triggerHandover()); remove it now that the handover has completed
+    // Dual-stack UE: the triggered handover was kept for the other leg's benefit (see
+    // triggerHandover()); forget it now that the handover has completed
     if (hasOtherLeg())
-        binder_->removeHandoverTriggered(nodeId_);
+        triggeredHandover_.reset();
 
     // Inform the UE's HandoverPacketHolder module to forward held packets
     handoverPacketHolder_->signalHandoverCompleteUe(isNr_);

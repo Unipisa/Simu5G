@@ -315,6 +315,10 @@ class ConnectionControlEnb : public ConnectionControlBase
     // downlink holder keeps whatever it holds for the leg)
     virtual void handoverCancel(MacNodeId legId);
 
+    // Whether a handover of the leg is being prepared or executed with this base
+    // station as its source or target; asked by the node's own D2D modules
+    virtual bool isHandingOver(MacNodeId legId) const;
+
     // RRCReconfigurationComplete, from a leg that arrived here by handover: the target
     // takes the leg on at its AMC, has the core network switch the session's downlink
     // path here (PATH SWITCH REQUEST, with the tunnels the preparation set up),

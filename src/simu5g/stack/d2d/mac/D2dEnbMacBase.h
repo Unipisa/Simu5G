@@ -24,6 +24,7 @@
 #include "simu5g/stack/d2d/mac/D2dEnbMacHelper.h"
 #include "simu5g/stack/d2d/rrc/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/rrc/ConnectionControlEnb.h"
 
 namespace simu5g {
 
@@ -70,6 +71,9 @@ class D2dEnbMacBase : public Base, public ID2dMacEnb
 
     /// HARQ RX buffer factory: adds support for the D2D and D2D_MULTI directions
     LteHarqBufferRx *createRxHarqBuffer(MacNodeId src, const UserControlInfo *userInfo) override;
+
+    // the node's control-plane entry point, which knows the UEs handing over
+    inet::ModuleRefByPar<ConnectionControlEnb> connectionControl_;
 
   public:
     D2dEnbMacBase() : d2dEnbHelper_(this)
@@ -127,6 +131,8 @@ template<class Base>
 void D2dEnbMacBase<Base>::initialize(int stage)
 {
     Base::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+        connectionControl_.reference(this, "connectionControlModule", true);
     // (the AMC pilot/mode-switch parameter setup historically also ran at
     // INITSTAGE_PHYSICAL_ENVIRONMENT -- an identical, idempotent copy of the
     // INITSTAGE_SIMU5G_AMC_SETUP block below; the early copy is gone)
@@ -325,7 +331,7 @@ void D2dEnbMacBase<Base>::fromPhy(cPacket *pktAux)
             // if feedback arrives, a buffer should exist (unless it is a handover scenario
             // where the HARQ buffer was deleted but feedback was in transit)
             // this case must be taken care of
-            if (this->binder_->hasUeHandoverTriggered(src))
+            if (connectionControl_->isHandingOver(src))
                 return;
 
             // create buffer

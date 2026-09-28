@@ -28,6 +28,7 @@ void D2dModeSelectionBase::initialize(int stage)
 
         // get reference to the binder
         binder_.reference(this, "binderModule", true);
+        connectionControl_.reference(this, "connectionControlModule", true);
 
         // get mode selection period
         modeSelectionPeriod_ = par("modeSelectionPeriod").doubleValue();

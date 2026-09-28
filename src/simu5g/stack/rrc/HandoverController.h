@@ -12,6 +12,9 @@
 #ifndef _LTE_HANDOVERCONTROLLER_H_
 #define _LTE_HANDOVERCONTROLLER_H_
 
+#include <optional>
+#include <utility>
+
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteTypes.h"
@@ -91,6 +94,11 @@ class HandoverController : public ConnectionControlBase
     /** Self message to trigger handover procedure evaluation */
     cMessage *handoverStarter_ = nullptr;
 
+    // This leg's handover in the making, as (serving node, candidate) when a beacon
+    // triggered it, until the leg has handed over or the handover was given up; the
+    // other leg of a dual-stack UE coordinates its own handover with it
+    std::optional<std::pair<MacNodeId, MacNodeId>> triggeredHandover_;
+
     /** Self message to start the handover procedure */
     cMessage *handoverTrigger_ = nullptr;
 
@@ -169,6 +177,8 @@ class HandoverController : public ConnectionControlBase
 
     MacNodeId getNodeId() const { return nodeId_; }
     MacNodeId getServingNodeId() const { return servingNodeId_; }
+    // This leg's handover in the making (see triggeredHandover_), or nullptr
+    const std::pair<MacNodeId, MacNodeId> *getTriggeredHandover() const { return triggeredHandover_ ? &*triggeredHandover_ : nullptr; }
 
     /**
      * Called from PHY on reception of a beacon signal

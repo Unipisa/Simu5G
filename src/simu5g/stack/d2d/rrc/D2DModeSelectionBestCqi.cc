@@ -48,7 +48,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
                 continue;
 
             // skip UEs that are performing handover
-            if (binder_->hasUeHandoverTriggered(dstId) || binder_->hasUeHandoverTriggered(srcId))
+            if (connectionControl_->isHandingOver(dstId) || connectionControl_->isHandingOver(srcId))
                 continue;
 
             LteD2DMode oldMode = jt.second;

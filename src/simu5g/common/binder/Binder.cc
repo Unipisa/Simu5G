@@ -245,8 +245,6 @@ void Binder::unregisterNode(MacNodeId id)
 
     nodeGroupMemberships_.erase(id);
     ueNumerologyIndex_.erase(id);
-    ueHandoverTriggered_.erase(id);
-    handoverTriggered_.erase(id);
     // remove 'id' from ulTransmissionMap_ if currently scheduled
     for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
         for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
@@ -358,8 +356,6 @@ void Binder::initialize(int stage)
         // WATCH_MAP(x2ListeningPorts_); // Commented out - contains lists that don't have stream operators
         // WATCH_MAP(x2PeerAddress_); // Commented out - contains L3Address that doesn't have stream operator
         // WATCH_MAP(multicastGroupMap_); // Commented out - contains sets that don't have stream operators
-        WATCH_SET(ueHandoverTriggered_);
-        // WATCH_MAP(handoverTriggered_); // Commented out - contains pairs that don't have stream operators
     }
 }
 
@@ -721,40 +717,6 @@ void Binder::updateUeInfoCellId(MacNodeId id, MacCellId newCellId)
             return;
         }
     }
-}
-
-void Binder::addUeHandoverTriggered(MacNodeId nodeId)
-{
-    ueHandoverTriggered_.insert(nodeId);
-}
-
-bool Binder::hasUeHandoverTriggered(MacNodeId nodeId)
-{
-    return ueHandoverTriggered_.find(nodeId) != ueHandoverTriggered_.end();
-}
-
-void Binder::removeUeHandoverTriggered(MacNodeId nodeId)
-{
-    ueHandoverTriggered_.erase(nodeId);
-}
-
-void Binder::addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId destId)
-{
-    handoverTriggered_[nodeId] = {srcId, destId};
-}
-
-const std::pair<MacNodeId, MacNodeId> *Binder::getHandoverTriggered(MacNodeId nodeId)
-{
-    if (handoverTriggered_.find(nodeId) == handoverTriggered_.end())
-        return nullptr;
-    return &handoverTriggered_[nodeId];
-}
-
-void Binder::removeHandoverTriggered(MacNodeId nodeId)
-{
-    auto it = handoverTriggered_.find(nodeId);
-    if (it != handoverTriggered_.end())
-        handoverTriggered_.erase(it);
 }
 
 

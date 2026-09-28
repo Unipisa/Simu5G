@@ -25,6 +25,7 @@ module LteMacEnbD2D extends LteMacEnb
 {
     parameters:
         @class("LteMacEnbD2D");
+        string connectionControlModule = default("^.rrc.connectionControl");  // The node's control-plane entry point, which knows the UEs handing over
 
         // Use the D2D-capable AMC leaf
         amcType = default("LteAmcD2D");
