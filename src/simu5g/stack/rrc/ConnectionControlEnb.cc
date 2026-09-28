@@ -140,6 +140,21 @@ void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementR
     ctx.state = UeContext::HO_SOURCE_PREPARING;
     ctx.hoPeer = target;
     HandoverRequest request{legId, ctx.ueModule, ctx.ueRrc, sessionsOf(legId)};
+
+    // the leg's bearers: the on-demand definitions materialized within the leg's pair
+    // with this node, and the descriptors of those and of the static definitions (a
+    // torn-down on-demand bearer's descriptor stays in the table, and is not carried)
+    std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(legId, nodeId_);
+    for (const auto& [definitionAndPair, drbId] : onDemandIds_)
+        if (definitionAndPair.second == pairKey)
+            request.onDemandIds.emplace_back(definitionAndPair.first, drbId);
+    for (const DrbDesc& drb : bearerManagement_->getConfiguredDrbs(legId)) {
+        bool isStatic = bearerConfigurator_->findStaticDrbDefinition(ctx.ueModule, drb.getDrbId()) != nullptr;
+        bool isMaterialized = std::any_of(request.onDemandIds.begin(), request.onDemandIds.end(),
+                [&](const auto& entry) { return entry.second == drb.getDrbId(); });
+        if (isStatic || isMaterialized)
+            request.drbs.push_back(drb);
+    }
     baseStationControl(target)->handoverRequest(request, this);
 }
 
@@ -173,6 +188,16 @@ void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, Conne
         }
         ctx.sessions.push_back(here);
     }
+
+    // the leg's bearers as configured at the source: the descriptors installed here,
+    // their ids reserved in the leg's pool, the on-demand materializations recorded
+    for (const DrbDesc& drb : request.drbs) {
+        bearerManagement_->configureDrb(drb);
+        reserveDrbId(legId, nodeId_, drb.getDrbId());
+    }
+    std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(legId, nodeId_);
+    for (const auto& [definition, drbId] : request.onDemandIds)
+        onDemandIds_[{definition, pairKey}] = drbId;
 
     handoverPacketHolder_->triggerHandoverTarget(legId, ctx.hoPeer);
     source->handoverRequestAck(legId, ctx.sessions);

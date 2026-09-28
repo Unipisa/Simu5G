@@ -51,7 +51,8 @@ package simu5g.stack.rrc;
 // Handover. The serving base station decides on a leg's measurementReport() and
 // prepares the handover with the target over Xn: handoverRequest() carries the leg's
 // context to the target, which sets the UE's session tunnels up at the base station
-// the downlink will enter the RAN at and starts holding the leg's downlink;
+// the downlink will enter the RAN at, installs the leg's bearer configuration, and
+// starts holding the leg's downlink;
 // handoverRequestAck() brings the source the target's downlink TEIDs, on which the
 // source commands the leg (the UE's handoverCommand()) and forwards its downlink over
 // X2-U from then on. When the leg arrives (reconfigurationComplete()), the target

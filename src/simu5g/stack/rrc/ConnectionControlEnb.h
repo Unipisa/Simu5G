@@ -60,6 +60,8 @@ struct HandoverRequest
     omnetpp::cModule *ueModule = nullptr;
     HandoverController *ueRrc = nullptr;       // the leg's control-plane entry point
     std::vector<SessionResource> sessions;     // the UE's PDU sessions at the source, with the source's downlink F-TEIDs
+    std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
+    std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
 };
 
 /**
@@ -291,8 +293,9 @@ class ConnectionControlEnb : public ConnectionControlBase
     // HANDOVER REQUEST (Xn), from the source of a leg's handover: this base station,
     // the target, takes the leg's context, sets the UE's session tunnels up at the
     // base station the downlink will enter the RAN at (this node's master under dual
-    // connectivity), which also learns the source's downlink TEIDs, starts holding
-    // the leg's downlink, and acknowledges (handoverRequestAck())
+    // connectivity), which also learns the source's downlink TEIDs, installs the leg's
+    // bearer configuration, starts holding the leg's downlink, and acknowledges
+    // (handoverRequestAck())
     virtual void handoverRequest(const HandoverRequest& request, ConnectionControlEnb *source);
 
     // HANDOVER REQUEST ACKNOWLEDGE (Xn), from the target, with the session resources

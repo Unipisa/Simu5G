@@ -57,6 +57,7 @@ class DrbTable : public cSimpleModule
     // Configuration delivered by the core network (UE side: keyed by NODEID_NONE)
     virtual void addConfiguredDrb(const DrbDesc& drb) { configuredDrbs_[drb.key] = drb; }
     virtual const DrbDesc *findConfiguredDrb(DrbKey key) const;
+    virtual const std::map<DrbKey, DrbDesc>& getConfiguredDrbs() const { return configuredDrbs_; }
 
     // Teardown: mirrors the lifecycle of the bearer's PDCP entity (see
     // BearerManagement::deleteLocalPdcpEntities). Established bearers only; the

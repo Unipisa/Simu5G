@@ -195,6 +195,15 @@ void BearerManagement::configureDrb(const DrbDesc& drb)
         check_and_cast<LteMacEnb *>(macModule.get())->configureDrbQos(drb.key, drb.qos);
 }
 
+std::vector<DrbDesc> BearerManagement::getConfiguredDrbs(MacNodeId peerId)
+{
+    std::vector<DrbDesc> drbs;
+    for (const auto& [key, drb] : drbTableModule->getConfiguredDrbs())
+        if (key.getNodeId() == peerId)
+            drbs.push_back(drb);
+    return drbs;
+}
+
 void BearerManagement::setUplinkQfiRules(QfiRuleSet&& rules)
 {
     Enter_Method_Silent("setUplinkQfiRules");

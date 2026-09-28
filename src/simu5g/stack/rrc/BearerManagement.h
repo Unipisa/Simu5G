@@ -210,6 +210,10 @@ class BearerManagement : public cSimpleModule
     // control plane (see ConnectionControlEnb::installStaticDrb()), through this
     // node's entry point. RRC never fetches this itself.
     virtual void configureDrb(const DrbDesc& drb);
+
+    // The bearer configuration delivered for the given peer (at a base station: a UE
+    // leg), as configureDrb() recorded it
+    virtual std::vector<DrbDesc> getConfiguredDrbs(MacNodeId peerId);
     // Take delivery of this UE's uplink QFI-assignment rules from the core network
     // (see CoreControl::deliverQfiRules()) and push them into the
     // QoS-flow classifier, which never authors rules of its own. UE with SDAP only.
