@@ -38,6 +38,12 @@ package simu5g.stack.rrc;
 // also owns the DRB identities of its UEs (one pool per UE-and-node pair), which a
 // torn-down bearer's returns to.
 //
+// Attach. A UE's leg connects here with connectionSetupRequest() (at initialization, at its
+// configured serving cell); the base station registers the UE with the ~CoreControl
+// (the INITIAL UE MESSAGE of N2), which establishes the UE's PDU session and asks
+// this base station to set up its resources (sessionResourceSetup(): the tunnels,
+// the UE's uplink QoS rules, and the static bearers of the leg that carries them).
+//
 // Nothing outside the node reaches its ~GtpUser, ~GtpUserX2 or ~BearerManagement
 // directly; how the node is composed is its own business. Other nodes find this
 // module through the ~Binder's node directory. The D2D-capable variant,
@@ -49,6 +55,7 @@ simple ConnectionControlEnb like IConnectionControl
         @display("i=block/control");
         string binderModule = default("binder");
         string bearerConfiguratorModule = default("bearerConfigurator");
+        string coreControlModule = default("coreControl");
         string bearerManagementModule = default("^.bearerManagement");
         string gtpUserModule = default("^.^.^.gtpUser");
         string gtpUserX2Module = default("^.^.^.gtpUserX2");

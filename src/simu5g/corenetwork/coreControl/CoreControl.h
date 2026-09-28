@@ -120,25 +120,30 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // address); NODEID_NONE if the UE is attached nowhere
     virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
 
-    // Establish the PDU sessions of the UEs attached at the end of initialization
-    virtual void establishPduSessions();
-
     // Establish the PDU session of the UE with the given node id, anchored at the gateway
-    // of its downlink base station. Does nothing if the UE is attached nowhere yet, or its
-    // base station is not connected to a core network.
+    // of its downlink base station: its uplink tunnels at the anchor and the MEC host
+    // UPFs. Does nothing if the UE is attached nowhere yet, or its base station is not
+    // connected to a core network. The RAN end of the session is set up separately
+    // (initialUeMessage(), switchPath()).
     virtual void establishSession(MacNodeId ueNodeId);
 
     // Follow a change of the UE's attachment. Every base station the UE is attached
     // through (the master of a stack's serving node) takes the UE's uplink into the core
     // network, so it is given the session's uplink tunnels and a downlink TEID on first
-    // use. If the base station the UE's downlink enters the RAN at has changed, the
-    // downlink end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2).
+    // use (setUpRanTunnels()); then updateDownlinkPath().
     virtual void switchPath(CoreSession& session);
 
+    // If the base station the UE's downlink enters the RAN at has changed, the downlink
+    // end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2)
+    virtual void updateDownlinkPath(CoreSession& session);
+
     // Set up the session's tunnels at a base station the UE is attached through, or is
-    // handing over to, unless they are there already. The base stations of the session
-    // also learn each other's downlink TEIDs, to forward the downlink over X2 with.
+    // handing over to, unless they are there already (see registerRanTunnel())
     virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
+
+    // Record the session's downlink tunnel at a base station. The base stations of the
+    // session learn each other's downlink TEIDs, to forward the downlink over X2 with.
+    virtual void registerRanTunnel(CoreSession& session, MacNodeId bsId, const FTeid& dl);
 
     // The session's uplink tunnels, as a base station uses them
     virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
@@ -147,6 +152,14 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     virtual void releaseSession(MacNodeId ueNodeId);
 
   public:
+    // INITIAL UE MESSAGE (N2), and the registration and PDU session establishment that
+    // follow: a leg of a UE has connected at the given base station. The UE's session
+    // is established once, at its first leg's registration; the session's RAN
+    // resources are set up at every base station the UE attaches through, once
+    // (ConnectionControlEnb::sessionResourceSetup()); and the downlink path is
+    // settled.
+    virtual void initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs);
+
     // A stack of a UE starts handing over to the given node (handover preparation): the
     // base station its downlink will enter the RAN at allocates the session's downlink
     // TEID now, and gets the session's uplink tunnels, so the source can forward the

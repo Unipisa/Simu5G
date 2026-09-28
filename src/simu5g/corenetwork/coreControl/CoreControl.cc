@@ -41,8 +41,37 @@ void CoreControl::initialize(int stage)
         deliverQfiRules();
     }
     else if (stage == inet::INITSTAGE_LAST) {
-        establishPduSessions();
+        // The UEs attached at initialization register from their own last stage, which
+        // runs after this one (the network declares its nodes after this module). From
+        // here on, attachments are followed as they happen.
+        pduSessionsEstablished_ = true;
     }
+}
+
+void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs)
+{
+    Enter_Method("initialUeMessage");
+
+    // the session: once per UE, at its first leg's registration
+    auto it = sessionOfNode_.find(legId);
+    if (it == sessionOfNode_.end()) {
+        establishSession(legId);
+        it = sessionOfNode_.find(legId);
+        if (it == sessionOfNode_.end())
+            return;   // the base station is not connected to a core network
+    }
+    CoreSession& session = sessions_.at(it->second);
+
+    // the RAN resources: at every base station the UE attaches through (the master of
+    // the leg's serving node), once
+    MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
+    if (session.dlTunnels.count(bsId) == 0) {
+        ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
+        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, getUplinkTunnels(session),
+                bearerConfigurator_->getUplinkQfiRules(session.ueModule));
+        registerRanTunnel(session, bsId, dl);
+    }
+    updateDownlinkPath(session);
 }
 
 void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
@@ -56,10 +85,12 @@ void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long n
         if (!pduSessionsEstablished_)
             return;
         auto it = sessionOfNode_.find(id);
+        if (it == sessionOfNode_.end() && binder_->nodeExists(id)) {
+            establishSession(id);
+            it = sessionOfNode_.find(id);
+        }
         if (it != sessionOfNode_.end())
             switchPath(sessions_.at(it->second));
-        else if (binder_->nodeExists(id))
-            establishSession(id);
         return;
     }
 
@@ -97,22 +128,11 @@ void CoreControl::takeGtpEndpoints()
 
 void CoreControl::deliverQfiRules()
 {
-    // Downlink: each user plane node gets the rules scoped to it, over N4
+    // Downlink: each user plane node gets the rules scoped to it, over N4. (The uplink
+    // rules reach each UE with its session's resource setup, see initialUeMessage().)
     for (const GtpEndpoint& endpoint : gtpEndpoints_)
         if (endpoint.userPlaneNode != nullptr)
             endpoint.userPlaneNode->setDownlinkClassifierRules(bearerConfigurator_->getDownlinkQfiRules(endpoint.node));
-
-    // Uplink: each SDAP UE's classifier gets the rules scoped to it, through its RRC
-    std::map<cModule *, std::vector<MacNodeId>> ueNodeIds;
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-        if (getNodeTypeById(nodeId) == UE && info.moduleRef != nullptr)
-            ueNodeIds[info.moduleRef].push_back(nodeId);
-    for (const auto& [ueModule, nodeIds] : ueNodeIds) {
-        if (!BearerConfigurator::ueStackHasSdap(ueModule))
-            continue;   // no SDAP, no uplink QoS-flow classification
-        auto *ueControl = check_and_cast<ConnectionControlBase *>(binder_->getRrcByNodeId(nodeIds.front())->getSubmodule("handoverController"));
-        ueControl->setUplinkQfiRules(bearerConfigurator_->getUplinkQfiRules(ueModule));
-    }
 }
 
 void CoreControl::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)
@@ -154,15 +174,6 @@ MacNodeId CoreControl::findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId
             return binder_->getMasterNodeOrSelf(servingNode);
     }
     return NODEID_NONE;
-}
-
-void CoreControl::establishPduSessions()
-{
-    // in node id order, so the TEIDs are allocated in a reproducible order
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-        if (getNodeTypeById(nodeId) == UE && info.moduleRef != nullptr && sessionOfNode_.count(nodeId) == 0)
-            establishSession(nodeId);
-    pduSessionsEstablished_ = true;
 }
 
 void CoreControl::establishSession(MacNodeId ueNodeId)
@@ -215,7 +226,6 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
     for (const auto& [index, tunnel] : established.ulMecHosts)
         EV_INFO << ", to MEC host UPF " << tunnel;
     EV_INFO << endl;
-    switchPath(established);
 }
 
 void CoreControl::switchPath(CoreSession& session)
@@ -227,7 +237,11 @@ void CoreControl::switchPath(CoreSession& session)
         if (servingNode != NODEID_NONE)
             setUpRanTunnels(session, binder_->getMasterNodeOrSelf(servingNode));
     }
+    updateDownlinkPath(session);
+}
 
+void CoreControl::updateDownlinkPath(CoreSession& session)
+{
     MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
     if (dlBaseStation == session.dlBaseStation)
         return;
@@ -272,9 +286,12 @@ void CoreControl::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
         return;
     ConnectionControlEnb *bs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
     FTeid dl = bs->sessionTunnelSetup(session.ref, getUplinkTunnels(session));
+    registerRanTunnel(session, bsId, dl);
+}
 
-    // the base stations of the session learn each other's downlink TEIDs, to forward
-    // the downlink over X2 with
+void CoreControl::registerRanTunnel(CoreSession& session, MacNodeId bsId, const FTeid& dl)
+{
+    ConnectionControlEnb *bs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
     for (const auto& [otherBsId, otherDl] : session.dlTunnels) {
         gtpEndpoints_.at(bsGtpEndpoints_.at(otherBsId)).bs->setForwardingTeid(session.ref, bsId, dl.teid);
         bs->setForwardingTeid(session.ref, otherBsId, otherDl.teid);

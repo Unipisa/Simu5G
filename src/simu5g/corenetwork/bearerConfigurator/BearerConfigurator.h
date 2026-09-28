@@ -29,8 +29,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class ConnectionControlEnb;
-
 /**
  * The network's bearer definitions: the operator's configuration of the data radio
  * bearers, one instance per cellular network. It parses the definition tables into
@@ -79,25 +77,14 @@ class BearerConfigurator : public cSimpleModule
     void handleMessage(cMessage *msg) override { throw cRuntimeError("This module does not process messages"); }
 
     // Parse the data radio bearers described by the staticDrbs and onDemandDrbs
-    // parameters (see NED documentation) into authoredBearers_, and deliver each
-    // static bearer's configuration to the RRCs of the nodes involved, through the
-    // base station serving the UE (see installStaticDrb())
+    // parameters (see NED documentation) into authoredBearers_. Nothing is pushed
+    // from here: the base station serving a UE installs and establishes the UE's
+    // static bearers when the UE attaches (ConnectionControlEnb::sessionResourceSetup()).
     virtual void configureDrbs();
 
-    // Deliver one static bearer's definition to the RRCs involved: the base station
-    // serving the UE's first attached stack installs it at itself, at the other
-    // serving node of a dual-stack UE, and at the UE (see
-    // ConnectionControlEnb::installStaticDrb()). A UE attached on no stack is a
-    // configuration error.
-    virtual void installStaticDrb(cModule *ueModule, const DrbDesc& drb);
-
-    // Establish the bearers the staticDrbs entries describe, in the last
-    // initialization stage, at the base station serving the UE: each retained static
-    // record goes through the base station's establishBearer(), exactly like
-    // packet-triggered establishment, so traffic finds the configured bearers in
-    // place. A dual-stack UE's bearer is established on the stack packet-triggered
-    // establishment would pick; a UE attached on no stack is a configuration error.
-    virtual void establishStaticDrbs();
+    // A static definition's UE must be attached on some stack at the end of
+    // initialization, or its bearer has nowhere to be established: a configuration error
+    virtual void validateStaticDrbs();
 
     // The standardized QoS characteristics rows as built-in drbProfiles entries
     // ("qci-1".."qci-9", "5qi-1".."5qi-9"); built lazily, owned by this module
@@ -113,7 +100,8 @@ class BearerConfigurator : public cSimpleModule
     virtual void computeUseSdapHeader(DrbDesc& drb);
 
     // Parse one bearer-definition table (staticDrbs or onDemandDrbs) into
-    // authoredBearers_, and, for staticDrbs, into drbsOfUe for the init-time pushes.
+    // authoredBearers_, and, for staticDrbs, into drbsOfUe, where the UE's default
+    // bearer is settled.
     virtual void parseDrbDefinitions(const char *paramName, bool onDemand,
             const std::map<cModule *, std::vector<MacNodeId>>& ueNodeIds, const std::string& networkPrefix,
             std::map<cModule *, std::map<DrbId, DrbDesc>>& drbsOfUe);
@@ -127,9 +115,6 @@ class BearerConfigurator : public cSimpleModule
 
     // A module's path relative to the network, which the tables' patterns are matched against
     virtual std::string relativeToNetwork(const cModule *module) const;
-
-    // The control-plane entry point of a base station, through the Binder's node directory
-    virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
 
   public:
     // Whether the UE's stack contains SDAP. Structure, not configuration: the sdap

@@ -19,7 +19,6 @@
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include <algorithm>
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
-#include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
 
 namespace simu5g {
@@ -54,14 +53,12 @@ void BearerConfigurator::initialize(int stage)
         binder_.reference(this, "binderModule", true);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-        // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known,
-        // and before INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION, where the scheduler takes
-        // the address of the QoS map that this fills through RRC
+        // after INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known
         configureDrbs();
         validateQfiRules();
     }
     else if (stage == inet::INITSTAGE_LAST) {
-        establishStaticDrbs();
+        validateStaticDrbs();
     }
 }
 
@@ -229,10 +226,6 @@ void BearerConfigurator::configureDrbs()
             if (!ab.onDemand && ab.ueModule == ueModule)
                 ab.desc.isDefault = drbs.at(ab.desc.getDrbId()).isDefault;
 
-        for (auto& [drbId, drb] : drbs) {
-            computeUseSdapHeader(drb);
-            installStaticDrb(ueModule, drb);
-        }
     }
 
     // The header decision of the retained records, now that every UE's default bearer
@@ -750,71 +743,21 @@ void BearerConfigurator::validateQfiRules()
     }
 }
 
-ConnectionControlEnb *BearerConfigurator::baseStationControl(MacNodeId bsId)
+void BearerConfigurator::validateStaticDrbs()
 {
-    cModule *rrc = binder_->getRrcByNodeId(bsId);
-    auto *bs = rrc != nullptr ? dynamic_cast<ConnectionControlEnb *>(rrc->getSubmodule("connectionControl")) : nullptr;
-    if (bs == nullptr)
-        throw cRuntimeError("BearerConfigurator: base station %d has no rrc.connectionControl (ConnectionControlEnb) module", (int)num(bsId));
-    return bs;
-}
-
-void BearerConfigurator::installStaticDrb(cModule *ueModule, const DrbDesc& drb)
-{
-    // the base station serving the UE's first attached stack (node ids in ascending
-    // order, one per stack) installs the bearer at every node involved
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap()) {
-        if (getNodeTypeById(nodeId) != UE || info.moduleRef != ueModule)
-            continue;
-        MacNodeId servingNodeId = binder_->getServingNode(nodeId);
-        if (servingNodeId != NODEID_NONE) {
-            baseStationControl(servingNodeId)->installStaticDrb(ueModule, drb);
-            return;
-        }
-    }
-    throw cRuntimeError("staticDrbs: cannot configure DRB %d of UE '%s': the UE is not attached to any cell",
-            (int)num(drb.getDrbId()), ueModule->getFullPath().c_str());
-}
-
-void BearerConfigurator::establishStaticDrbs()
-{
-    for (AuthoredBearer& ab : authoredBearers_) {
+    // a static definition's bearer is established when its UE's leg attaches (see
+    // ConnectionControlEnb::sessionResourceSetup()); a UE attached on no stack has
+    // nowhere to establish, which is a configuration error
+    for (const AuthoredBearer& ab : authoredBearers_) {
         if (ab.onDemand)
             continue;
-
-        // the UE's registered node id(s) -- one per stack
-        MacNodeId lteUeId = NODEID_NONE, nrUeId = NODEID_NONE;
+        bool attached = false;
         for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-            if (info.moduleRef == ab.ueModule)
-                (num(nodeId) >= NR_UE_MIN_ID ? nrUeId : lteUeId) = nodeId;
-
-        // select the UE's stack, with the same default that packet-triggered
-        // establishment uses (see Ip2Nic::assignBearer): the technology-neutral LTE id
-        // when the serving nodes form a DC setup (so that the base station's establishBearer()
-        // splits the bearer into legs), the NR id otherwise. A stack that is not
-        // attached is skipped, like in the configuration push (installStaticDrb()); a UE
-        // attached on no stack has nowhere to establish, which is an error.
-        bool lteAttached = lteUeId != NODEID_NONE && binder_->getServingNode(lteUeId) != NODEID_NONE;
-        bool nrAttached = nrUeId != NODEID_NONE && binder_->getServingNode(nrUeId) != NODEID_NONE;
-        if (!lteAttached && !nrAttached)
+            if (info.moduleRef == ab.ueModule && binder_->getServingNode(nodeId) != NODEID_NONE)
+                attached = true;
+        if (!attached)
             throw cRuntimeError("staticDrbs: cannot establish DRB %d of UE '%s': the UE is not attached to any cell",
                     (int)num(ab.desc.getDrbId()), ab.ueModule->getFullPath().c_str());
-        MacNodeId lteNodeB = lteAttached ? binder_->getServingNode(lteUeId) : NODEID_NONE;
-        bool dcSetup = lteNodeB != NODEID_NONE &&
-                (binder_->getSecondaryNode(lteNodeB) != NODEID_NONE || binder_->getMasterNodeOrSelf(lteNodeB) != lteNodeB);
-        MacNodeId ueId = (lteAttached && nrAttached && dcSetup) ? lteUeId :
-                         nrAttached ? nrUeId : lteUeId;
-
-        FlowId flow;
-        flow.sourceId = ueId;
-        flow.destId = binder_->getServingNode(ueId);
-        flow.direction = UL;
-        flow.drbId = ab.desc.getDrbId();
-
-        EV << "BearerConfigurator::establishStaticDrbs - establishing DRB " << flow.drbId << " of UE '"
-           << ab.ueModule->getFullPath() << "' (nodeId=" << ueId << ") towards serving node "
-           << flow.destId << endl;
-        baseStationControl(flow.destId)->establishBearer(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg});
     }
 }
 

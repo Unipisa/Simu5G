@@ -16,11 +16,15 @@ package simu5g.corenetwork.coreControl;
 // ~Binder and ~BearerConfigurator: the AMF and the SMF of a 5G core (in EPS terms,
 // the MME and the control plane of the gateways) in one module.
 //
-// As the SMF, it keeps a PDU session per UE (PDU Session ID 1), established when the
-// UE first has a serving node and released when the UE leaves the simulation, and
-// programs the nodes that end the session's tunnels through their control-plane
-// entry points: the user plane nodes' N4 endpoints (~UserPlaneNodeControl) and the base
-// stations' connection controls (~ConnectionControlEnb). A session has an uplink
+// As the AMF, it takes the UEs' registrations: a UE's leg that connects at a base
+// station is announced here by that base station (initialUeMessage(), the INITIAL UE
+// MESSAGE of N2; at initialization, every leg attached to its configured cell). As
+// the SMF, it keeps a PDU session per UE (PDU Session ID 1), established at the UE's
+// first registration and released when the UE leaves the simulation, and programs
+// the nodes that end the session's tunnels through their control-plane entry points:
+// the user plane nodes' N4 endpoints (~UserPlaneNodeControl) and the base stations'
+// connection controls (~ConnectionControlEnb, whose sessionResourceSetup() also
+// installs the UE's uplink QoS rules and static bearers). A session has an uplink
 // tunnel at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's core
 // network, and a downlink tunnel at each base station the session's downlink has
 // entered the RAN at; the tunnel endpoint ids (TEIDs) are allocated by the receiving

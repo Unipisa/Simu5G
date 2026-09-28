@@ -17,6 +17,7 @@
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include <inet/common/ModuleAccess.h>
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/InitStages.h"
 #include "simu5g/stack/mac/LteMacUe.h"
@@ -104,6 +105,15 @@ void HandoverController::initialize(int stage)
 
         phy_->changeServingNode(servingNodeId_);
         emit(servingCellSignal_, (long)servingNodeId_);
+    }
+    else if (stage == inet::INITSTAGE_LAST) {
+        // The RRC connection: a leg attached at initialization requests it from its
+        // serving base station, which registers the UE with the core network and has
+        // the session's resources and the static bearers set up (see
+        // ConnectionControlEnb::connectionSetupRequest()). The UEs do this in module order,
+        // after the network-level modules' last stage.
+        if (servingNodeId_ != NODEID_NONE)
+            baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this);
     }
 }
 

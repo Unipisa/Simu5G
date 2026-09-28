@@ -44,6 +44,7 @@ void ConnectionControlEnb::initialize(int stage)
 
         binder_.reference(this, "binderModule", true);
         bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
+        coreControl_.reference(this, "coreControlModule", true);
         bearerManagement_.reference(this, "bearerManagementModule", true);
         gtpUser_.reference(this, "gtpUserModule", true);
         gtpUserX2_.reference(this, "gtpUserX2Module", true);
@@ -90,12 +91,83 @@ ConnectionControlEnb *ConnectionControlEnb::baseStationControl(MacNodeId bsId)
 FTeid ConnectionControlEnb::sessionTunnelSetup(const SessionRef& session, const UplinkTunnels& uplink)
 {
     Enter_Method("sessionTunnelSetup");
+    return setUpSessionTunnels(session, uplink);
+}
+
+FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink)
+{
     FTeid dl{getAddress(), allocateTeid()};
     gtpUser_->addTunnel(dl.teid, session);
     gtpUser_->setUplinkTunnels(session, uplink);
     // the same TEID receives the downlink a handover source forwards over X2-U
     gtpUserX2_->addTunnel(dl.teid, session);
     return dl;
+}
+
+// ---- attach ----
+
+void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc)
+{
+    Enter_Method("connectionSetupRequest");
+    coreControl_->initialUeMessage(legId, this);
+}
+
+FTeid ConnectionControlEnb::sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules)
+{
+    Enter_Method("sessionResourceSetup");
+    FTeid dl = setUpSessionTunnels(session, uplink);
+
+    // the UE's uplink QoS rules: a stack with SDAP classifies its uplink QoS flows by them
+    cModule *ueModule = binder_->getNodeModule(legId);
+    ASSERT(ueModule != nullptr);
+    if (BearerConfigurator::ueStackHasSdap(ueModule))
+        controlOf(legId)->setUplinkQfiRules(std::move(ulQfiRules));
+
+    if (carriesStaticDrbs(ueModule, legId))
+        establishStaticDrbs(ueModule, legId);
+    return dl;
+}
+
+bool ConnectionControlEnb::carriesStaticDrbs(cModule *ueModule, MacNodeId legId)
+{
+    // the UE's registered node id(s) -- one per stack
+    MacNodeId lteUeId = NODEID_NONE, nrUeId = NODEID_NONE;
+    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
+        if (info.moduleRef == ueModule)
+            (num(nodeId) >= NR_UE_MIN_ID ? nrUeId : lteUeId) = nodeId;
+
+    bool lteAttached = lteUeId != NODEID_NONE && binder_->getServingNode(lteUeId) != NODEID_NONE;
+    bool nrAttached = nrUeId != NODEID_NONE && binder_->getServingNode(nrUeId) != NODEID_NONE;
+    ASSERT(lteAttached || nrAttached);   // this leg is
+    MacNodeId lteNodeB = lteAttached ? binder_->getServingNode(lteUeId) : NODEID_NONE;
+    bool dcSetup = lteNodeB != NODEID_NONE &&
+            (binder_->getSecondaryNode(lteNodeB) != NODEID_NONE || binder_->getMasterNodeOrSelf(lteNodeB) != lteNodeB);
+    MacNodeId ueId = (lteAttached && nrAttached && dcSetup) ? lteUeId :
+                     nrAttached ? nrUeId : lteUeId;
+    return ueId == legId;
+}
+
+void ConnectionControlEnb::establishStaticDrbs(cModule *ueModule, MacNodeId legId)
+{
+    // the descriptors first, which the establishment consults
+    for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions())
+        if (!ab.onDemand && ab.ueModule == ueModule)
+            pushDrbToRrcs(ueModule, ab.desc);
+
+    for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions()) {
+        if (ab.onDemand || ab.ueModule != ueModule)
+            continue;
+        FlowId flow;
+        flow.sourceId = legId;
+        flow.destId = binder_->getServingNode(legId);
+        flow.direction = UL;
+        flow.drbId = ab.desc.getDrbId();
+
+        EV << "ConnectionControlEnb::establishStaticDrbs - establishing DRB " << flow.drbId << " of UE '"
+           << ueModule->getFullPath() << "' (nodeId=" << legId << ") towards serving node "
+           << flow.destId << endl;
+        establishDataConnection(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg});
+    }
 }
 
 void ConnectionControlEnb::setForwardingTeid(const SessionRef& session, MacNodeId bsId, Teid teid)
@@ -343,7 +415,7 @@ DrbId ConnectionControlEnb::establishFromDefinition(const AuthoredBearer& ab, co
         }
         flow.drbId = it->second;
     }
-    return establishBearer(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg, key});
+    return establishDataConnection(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg, key});
 }
 
 DrbId ConnectionControlEnb::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
@@ -440,10 +512,14 @@ bool ConnectionControlEnb::isDualConnectivityRequired(const FlowId& flow)
     return nodeBInDC && ueIsDualTech;
 }
 
-DrbId ConnectionControlEnb::establishBearer(const FlowId& flowIn, const BearerRequest& reqIn)
+DrbId ConnectionControlEnb::establishBearer(const FlowId& flow, const BearerRequest& req)
 {
     Enter_Method_Silent("establishBearer");
+    return establishDataConnection(flow, req);
+}
 
+DrbId ConnectionControlEnb::establishDataConnection(const FlowId& flowIn, const BearerRequest& reqIn)
+{
     // Assign the bearer's DRB id unless the requester brought one (SDAP and the
     // static definitions name their bearers explicitly). IDs are unique per node
     // pair; for multicast the "pair" is (sender, group), there being no single peer.

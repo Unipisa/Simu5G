@@ -23,6 +23,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/corenetwork/coreControl/CoreControl.h"
 #include "simu5g/corenetwork/gtp/GtpTunnel.h"
 #include "simu5g/corenetwork/gtp/GtpUser.h"
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
@@ -50,7 +51,8 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;   // the bearer definitions, read only (its const API)
-    inet::ModuleRefByPar<BearerManagement> bearerManagement_;             // the node's installer
+    inet::ModuleRefByPar<CoreControl> coreControl_;                 // the core network's control plane, the far end of N2
+    inet::ModuleRefByPar<BearerManagement> bearerManagement_;       // the node's installer
     inet::ModuleRefByPar<GtpUser> gtpUser_;
     inet::ModuleRefByPar<GtpUserX2> gtpUserX2_;
 
@@ -89,6 +91,22 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The control-plane entry point of another node, through the Binder's node directory
     virtual ConnectionControlBase *controlOf(MacNodeId nodeId);
     virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
+
+    // The body of sessionTunnelSetup(), for the calls that come from inside
+    virtual FTeid setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink);
+
+    // Whether the static bearers of the UE are established on this leg: the
+    // technology-neutral LTE leg when the serving nodes form a DC setup (so that the
+    // establishment splits the bearer into legs), else the NR leg when attached, else
+    // the LTE leg -- the stack packet-triggered establishment would pick (see
+    // Ip2Nic::assignBearer)
+    virtual bool carriesStaticDrbs(omnetpp::cModule *ueModule, MacNodeId legId);
+
+    // Install the static bearers of the UE from this leg: each definition's descriptor
+    // delivered to the RRCs involved (pushDrbToRrcs()), then each bearer established
+    // toward the leg's serving node, exactly like packet-triggered establishment, so
+    // traffic finds the configured bearers in place
+    virtual void establishStaticDrbs(omnetpp::cModule *ueModule, MacNodeId legId);
 
     // ---- DRB identities ----
 
@@ -133,6 +151,9 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The definition a flow's bearer was authored from, or nullptr if none covers it
     virtual const DrbDesc *findBearerDefinition(const FlowId& flow);
 
+    // The body of establishBearer(flow, req), for the calls that come from inside
+    virtual DrbId establishDataConnection(const FlowId& flow, const BearerRequest& req);
+
     // Deliver one bearer's definition to the RRCs involved: the UE's (keyed by
     // NODEID_NONE, "my serving node") and, for each attached stack, the serving
     // node's (keyed by that stack's UE id), reserving the configured id per pair.
@@ -160,6 +181,21 @@ class ConnectionControlEnb : public ConnectionControlBase
   public:
     MacNodeId getNodeId() const { return nodeId_; }
     const std::string& getGateway() const { return gateway_; }
+
+    // ---- attach ----
+
+    // RRCSetupRequest, and the registration that follows: a leg of a UE connects at
+    // this base station (at initialization, the leg's configured serving cell). The
+    // base station registers the UE with the core network, which sets up the
+    // session's resources here (sessionResourceSetup()).
+    virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc);
+
+    // PDU SESSION RESOURCE SETUP REQUEST (N2), from the core network, for a leg that
+    // registered here: the session's tunnels at this base station
+    // (sessionTunnelSetup()), the UE's uplink QoS rules (the NAS container), and the
+    // static data radio bearers of the leg that carries them, installed at this node
+    // and at the UE. Returns the downlink tunnel's F-TEID.
+    virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
 
     // ---- the node's tunnels, for the core network's control plane ----
 

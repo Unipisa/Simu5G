@@ -31,7 +31,7 @@ std::set<DrbId>& ConnectionControlEnbD2D::foreignPairPool(const std::pair<MacNod
 
 DrbId ConnectionControlEnbD2D::establishD2dBearer(const FlowId& flow, const FlowBindingKey& key)
 {
-    return establishBearer(flow, BearerRequest{UM, Lcg(3), key});
+    return establishDataConnection(flow, BearerRequest{UM, Lcg(3), key});
 }
 
 void ConnectionControlEnbD2D::createMulticastConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
