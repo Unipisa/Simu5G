@@ -283,6 +283,11 @@ class ConnectionControlEnb : public ConnectionControlBase
     // core network (UE CONTEXT RELEASE REQUEST).
     virtual void connectionLost(MacNodeId legId);
 
+    // The radio link of a leg this base station serves failed, as the UE's RLC
+    // detected it (the RRC re-establishment request, as far as the model needs it):
+    // this base station releases its end of the link
+    virtual void radioLinkFailure(MacNodeId legId);
+
     // ---- handover ----
 
     // MeasurementReport, from a leg this base station serves: the base station
@@ -404,6 +409,9 @@ class ConnectionControlEnb : public ConnectionControlBase
     // node's entry point). Nothing to do at a base station without D2D, where no
     // sidelink multicast bearer exists; see the D2D subclass.
     void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) override;
+    // This base station's RLC detected the failure of its link to a leg: the leg is
+    // told (HandoverController::radioLinkFailure())
+    void radioLinkFailure(MacNodeId localId, MacNodeId peerId) override;
 
     // Deliver a static definition's bearer to the RRCs involved (see pushDrbToRrcs());
     // the base station serving the UE's first attached stack does it for all of them.

@@ -302,19 +302,14 @@ void BearerManagement::handleRadioLinkFailure(MacNodeId nodeId, bool nrStack)
     EV << NOW << " BearerManagement::handleRadioLinkFailure - RLF for node " << nodeId
        << (nrStack ? " (NR)" : " (LTE)") << endl;
     // Release + tear down the link on BOTH ends, so if RRC re-establishment is enabled the
-    // bearer rebuilds fresh, SN-consistent entities on both sides. Reaching the peer via the
-    // binder mirrors handover's cross-node HandoverController::deleteOldBuffers.
+    // bearer rebuilds fresh, SN-consistent entities on both sides: this end here, the
+    // peer's through the node's control-plane entry point, which tells the peer's.
     releaseLink(nodeId);
-    // Address the peer's symmetric teardown with OUR node id on the failing leg: the peer keys
-    // its entities (PDCP/RLC/MAC) for this link by that id (the source/dest id it saw on the
-    // bearer). Using getLteNodeId() unconditionally sent NODEID_NONE from a standalone NR gNB
-    // (whose id lives in nrNodeId), so the peer's keyed PDCP deletion missed pdcp-rx-<gnb>-<drb>
-    // and a later re-establishment collided with the leftover entity.
+    // The peer keys its entities (PDCP/RLC/MAC) for this link by OUR node id on the
+    // failing leg (the source/dest id it saw on the bearer): the nrNodeId of a
+    // standalone NR gNB, whose lteNodeId is NODEID_NONE.
     MacNodeId myId = nrStack ? registration_->getNrNodeId() : registration_->getLteNodeId();
-    if (cModule *peerRrc = binderModule->getRrcByNodeId(nodeId)) {
-        if (auto *peerBm = dynamic_cast<BearerManagement *>(peerRrc->getSubmodule("bearerManagement")))
-            peerBm->releaseLink(myId);
-    }
+    connectionControlModule->radioLinkFailure(myId, nodeId);
 }
 
 void BearerManagement::releaseLink(MacNodeId peerId)

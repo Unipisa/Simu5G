@@ -53,6 +53,12 @@ class ConnectionControlBase : public omnetpp::cSimpleModule
     // The node joined a multicast group (Registration; legacy sidelink multicast)
     virtual void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) = 0;
 
+    // A radio link of this node failed, as its RLC detected it and after the node
+    // released its own end (BearerManagement): the stack with the given id (a UE leg,
+    // or the base station itself) lost its link to the peer, which is told through
+    // its control-plane entry point, so that it releases its end the same way
+    virtual void radioLinkFailure(MacNodeId localId, MacNodeId peerId) = 0;
+
     // ---- bearer installation, from the control plane of another node ----
     // The group a 3GPP RRCReconfiguration carries at once; each forwards to the
     // node's BearerManagement. Kept as several calls in this round.

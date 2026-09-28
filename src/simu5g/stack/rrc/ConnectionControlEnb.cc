@@ -281,6 +281,19 @@ void ConnectionControlEnb::connectionLost(MacNodeId legId)
     coreControl_->ueContextReleaseRequest(legId);
 }
 
+void ConnectionControlEnb::radioLinkFailure(MacNodeId legId)
+{
+    Enter_Method("radioLinkFailure");
+    bearerManagement_->releaseLink(legId);
+}
+
+void ConnectionControlEnb::radioLinkFailure(MacNodeId localId, MacNodeId peerId)
+{
+    Enter_Method("radioLinkFailure");
+    ASSERT(localId == nodeId_);
+    ueControl(peerId)->radioLinkFailure(localId);
+}
+
 void ConnectionControlEnb::downlinkPathSwitched(MacNodeId ueLteId, MacNodeId ueNrId, MacNodeId fromBaseStation)
 {
     Enter_Method("downlinkPathSwitched");

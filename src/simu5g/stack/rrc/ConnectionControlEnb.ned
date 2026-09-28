@@ -63,6 +63,12 @@ package simu5g.stack.rrc;
 // stops forwarding and drops its state for the leg. A source that loses the leg
 // meanwhile cancels the handover at the target (handoverCancel()).
 //
+// Radio link failure. Either end's RLC may detect it; the detecting node releases its
+// end of the link and tells the other through its control-plane entry point
+// (radioLinkFailure() here, from a UE leg; the UE's from this base station), which
+// releases its end the same way -- and starts RRC re-establishment if configured
+// (see ~BearerManagement).
+//
 // Nothing outside the node reaches its ~GtpUser, ~GtpUserX2 or ~BearerManagement
 // directly; how the node is composed is its own business. Other nodes find this
 // module through the ~Binder's node directory. The D2D-capable variant,

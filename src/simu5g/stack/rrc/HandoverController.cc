@@ -348,6 +348,18 @@ void HandoverController::handoverCommand(MacNodeId targetNodeId)
     startHandover();
 }
 
+void HandoverController::radioLinkFailure(MacNodeId bsId)
+{
+    Enter_Method("radioLinkFailure");
+    bearerManagement_->releaseLink(bsId);
+}
+
+void HandoverController::radioLinkFailure(MacNodeId localId, MacNodeId peerId)
+{
+    Enter_Method("radioLinkFailure");
+    baseStationControl(peerId)->radioLinkFailure(localId);
+}
+
 void HandoverController::startHandover()
 {
     onHandoverStarting();

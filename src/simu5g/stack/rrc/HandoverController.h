@@ -185,6 +185,11 @@ class HandoverController : public ConnectionControlBase
     // to the given cell (the base station's answer to the leg's measurementReport)
     virtual void handoverCommand(MacNodeId targetNodeId);
 
+    // The radio link to this leg failed, as the serving base station's RLC detected
+    // it (the RRC release, as far as the model needs it): the UE releases its end of
+    // the link
+    virtual void radioLinkFailure(MacNodeId bsId);
+
     // The UE's control-plane entry point (ConnectionControlBase): the node's data
     // path asks for bearers here, and this leg's serving base station -- which is
     // where they are established -- is asked in turn
@@ -195,6 +200,9 @@ class HandoverController : public ConnectionControlBase
     // to do here (the D2D subclass returns a sidelink bearer's to the sidelink pool)
     void bearerReleased(DrbKey bearer) override;
     void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) override;
+    // The UE's RLC detected the failure of a leg's link to its serving base station:
+    // the base station is told (ConnectionControlEnb::radioLinkFailure())
+    void radioLinkFailure(MacNodeId localId, MacNodeId peerId) override;
     // Bearer installation, from the serving base station: each forwards to the UE's
     // BearerManagement
     void configureDrb(const DrbDesc& drb) override;
