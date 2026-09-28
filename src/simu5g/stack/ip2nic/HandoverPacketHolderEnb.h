@@ -21,8 +21,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class HandoverX2Forwarder;
-
 /**
  *
  */
@@ -37,7 +35,6 @@ class HandoverPacketHolderEnb : public cSimpleModule
     bool amNr_ = false;    // this node's technology, from the Binder; decides which of a UE's ids this node handles
     MacNodeId nodeId_ = NODEID_NONE;
 
-    inet::ModuleRefByPar<HandoverX2Forwarder> hoManager_;
     // store the pair <ue,target_enb> for temporary forwarding of data during handover
     std::map<MacNodeId, MacNodeId> hoForwarding_;
     // store the UEs for temporary holding of data received over X2 during handover

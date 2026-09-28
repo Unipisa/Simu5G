@@ -17,14 +17,11 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
-#include "simu5g/stack/handoverX2Forwarder/X2HandoverControlMsg.h"
 #include "simu5g/stack/handoverX2Forwarder/X2HandoverDataMsg.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
-
-class HandoverPacketHolderEnb;
 
 //
 // HandoverX2Forwarder
@@ -41,8 +38,6 @@ class HandoverX2Forwarder : public cSimpleModule
     cGate *x2ManagerInGate_ = nullptr;
     cGate *x2ManagerOutGate_ = nullptr;
 
-    inet::ModuleRefByPar<HandoverPacketHolderEnb> handoverPacketHolder_;
-
     // flag for seamless/lossless handover
     bool losslessHandover_;
 
@@ -54,18 +49,11 @@ class HandoverX2Forwarder : public cSimpleModule
 
     virtual void handleX2Message(cPacket *pkt);
 
-    // receive the handover command on X2 from the source eNB: the UE is handing over here
-    virtual void receiveHandoverCommand(MacNodeId ueId, MacNodeId enb);
-
     // send an IP datagram to the X2 Manager (called internally via gate)
     virtual void forwardDataToTargetEnb(inet::Packet *datagram, MacNodeId targetEnb);
 
     // receive data from X2 message and send it to the HandoverPacketHolder
     virtual void receiveDataFromSourceEnb(inet::Packet *datagram, MacNodeId sourceEnb);
-
-  public:
-    // send the handover command on X2 to the target eNB: the UE is handing over there
-    virtual void sendHandoverCommand(MacNodeId ueId, MacNodeId enb);
 
 };
 

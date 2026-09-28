@@ -20,7 +20,6 @@ simple HandoverPacketHolderEnb like IHandoverPacketHolder
 {
     parameters:
         string binderModule = default("binder");
-        string handoverX2ForwarderModule = default("");
         @display("i=block/layer");
     gates:
         input upperLayerIn;

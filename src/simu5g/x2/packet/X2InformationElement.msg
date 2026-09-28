@@ -19,7 +19,6 @@ enum X2InformationElementType
     COMP_REPLY_IE = 1;           // CoMP master -> slave
     COMP_PROP_REQUEST_IE = 2;    // CoMP slave -> master (for compManagerProportional, with RB value)
     COMP_PROP_REPLY_IE = 3;      // CoMP master -> slave (for compManagerProportional, with map)
-    X2_HANDOVER_CMD_IE = 4;      // HO command source eNB -> target eNB
 };
 
 //

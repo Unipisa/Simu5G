@@ -28,7 +28,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class HandoverX2Forwarder;
 
 
 /**

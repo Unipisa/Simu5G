@@ -52,7 +52,6 @@ void HandoverPacketHolderEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
-        hoManager_.reference(this, "handoverX2ForwarderModule", false);
         binder_.reference(this, "binderModule", true);
 
         cModule *bs = getContainingNode(this);
@@ -168,12 +167,6 @@ void HandoverPacketHolderEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId ta
             }
         }
     }
-
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverX2ForwarderModule", true);
-
-    if (targetEnb != NODEID_NONE)
-        hoManager_->sendHandoverCommand(ueId, targetEnb);
 }
 
 void HandoverPacketHolderEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)

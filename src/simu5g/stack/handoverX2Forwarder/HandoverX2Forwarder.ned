@@ -13,11 +13,11 @@
 package simu5g.stack.handoverX2Forwarder;
 
 //
-// Manages the exchange of messages during the handover process.
-// It handles the signaling and coordination required to
-// transfer both control and data-plane information from the source eNodeB to the
-// target eNodeB. The module directly interfaces with the ~LteX2Manager to
-// facilitate this inter-eNodeB communication.
+// Forwards the downlink a handover source holds for a UE leg to the target base
+// station over X2-U, and delivers what arrives from a source to this node's
+// ~HandoverPacketHolderEnb: the data forwarding of the handover, between the source's
+// and the target's packet holders, through the ~LteX2Manager. The handover's
+// signaling is the base stations' control plane's (~ConnectionControlEnb).
 //
 simple HandoverX2Forwarder like IHandoverX2Forwarder
 {
@@ -26,7 +26,6 @@ simple HandoverX2Forwarder like IHandoverX2Forwarder
         @class("HandoverX2Forwarder");
 
         bool losslessHandover = default(false);
-        string handoverPacketHolderModule = default("^.handoverPacketHolder");
 
     gates:
         //# Connections to the X2 Manager

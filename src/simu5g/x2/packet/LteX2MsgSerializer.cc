@@ -17,8 +17,6 @@
 #include "simu5g/stack/compManager/X2CompMsg.h"
 #include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
 #include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
-#include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE.h"
-#include "simu5g/stack/handoverX2Forwarder/X2HandoverControlMsg.h"
 #include "simu5g/x2/packet/LteX2Message.h"
 
 namespace simu5g {
@@ -33,7 +31,6 @@ Register_Serializer(LteX2Message, LteX2MsgSerializer);
  * Supported types:
  *
  * X2_COMP_MSG  (class X2CompMsg)
- * X2_HANDOVER_CONTROL_MSG  (class X2HandoverControlMsg)
  */
 
 void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
@@ -41,7 +38,7 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
     auto startPosition = stream.getLength();
     const auto& msg = staticPtrCast<const LteX2Message>(chunk);
     LteX2MessageType type = msg->getType();
-    if (type != X2_COMP_MSG && type != X2_HANDOVER_CONTROL_MSG)
+    if (type != X2_COMP_MSG)
         throw cRuntimeError("LteX2MsgSerializer::serialize of X2 message type is not implemented!");
 
     stream.writeByte(type);
@@ -70,12 +67,6 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
             case COMP_PROP_REPLY_IE: {
                 const X2CompProportionalReplyIE *propReply = check_and_cast<const X2CompProportionalReplyIE *>(ie);
                 serializeStatusMap(stream, propReply->getAllowedBlocksMap());
-                break;
-            }
-            case X2_HANDOVER_CMD_IE: {
-                const X2HandoverCommandIE *handoverCmd = check_and_cast<const X2HandoverCommandIE *>(ie);
-                stream.writeByte(handoverCmd->isStartHandover());
-                stream.writeUint16Be(num(handoverCmd->getUeId()));
                 break;
             }
             default:
@@ -107,9 +98,6 @@ const Ptr<Chunk> LteX2MsgSerializer::deserialize(MemoryInputStream& stream) cons
         case X2_COMP_MSG:
             msg = makeShared<X2CompMsg>();
             break;
-        case X2_HANDOVER_CONTROL_MSG:
-            msg = makeShared<X2HandoverControlMsg>();
-            break;
         default:
             throw cRuntimeError("LteX2MsgSerializer::deserialize of X2 message type is not implemented!");
     }
@@ -138,14 +126,6 @@ const Ptr<Chunk> LteX2MsgSerializer::deserialize(MemoryInputStream& stream) cons
                 std::vector<CompRbStatus> map = deserializeStatusMap(stream);
                 propReply->setAllowedBlocksMap(map);
                 ie = propReply;
-                break;
-            }
-            case X2_HANDOVER_CMD_IE: {
-                auto handoverCmd = new X2HandoverCommandIE();
-                if (stream.readByte() != 0)
-                    handoverCmd->setStartHandover();
-                handoverCmd->setUeId(MacNodeId(stream.readUint16Be()));
-                ie = handoverCmd;
                 break;
             }
             default:

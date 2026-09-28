@@ -18,8 +18,6 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/QfiTag_m.h"
-#include "simu5g/stack/handoverX2Forwarder/X2HandoverCommandIE.h"
-#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
 namespace simu5g {
 
@@ -39,14 +37,11 @@ void HandoverX2Forwarder::initialize(int stage)
         x2ManagerInGate_ = gate("x2ManagerIn");
         x2ManagerOutGate_ = gate("x2ManagerOut");
 
-        // get reference to the HandoverPacketHolder layer
-        handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
-
         losslessHandover_ = par("losslessHandover").boolValue();
 
-        // register to the X2 Manager
-        auto x2Packet = new Packet("X2HandoverControlMsg");
-        auto initMsg = makeShared<X2HandoverControlMsg>();
+        // register with the X2 Manager for the messages this module receives
+        auto x2Packet = new Packet("X2HandoverDataMsg");
+        auto initMsg = makeShared<X2HandoverDataMsg>();
         auto ctrlInfo = x2Packet->addTagIfAbsent<X2ControlInfoTag>();
         ctrlInfo->setInit(true);
         x2Packet->insertAtFront(initMsg);
@@ -104,52 +99,8 @@ void HandoverX2Forwarder::handleX2Message(cPacket *pkt)
 
         receiveDataFromSourceEnb(datagram, sourceId);
     }
-    else { // X2_HANDOVER_CONTROL_MSG
-        X2HandoverCommandIE *hoCommandIe = check_and_cast<X2HandoverCommandIE *>(x2msg->popIe());
-        ASSERT(hoCommandIe->isStartHandover());
-        receiveHandoverCommand(hoCommandIe->getUeId(), x2msg->getSourceId());
-
-        delete hoCommandIe;
-        delete pkt;
-    }
-}
-
-void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb)
-{
-    Enter_Method("sendHandoverCommand");
-
-    EV << NOW << " HandoverX2Forwarder::sendHandoverCommand - Send handover command over X2 to eNB " << enb << " for UE " << ueId << endl;
-
-    auto pkt = new Packet("X2HandoverControlMsg");
-
-    // build control info
-    auto ctrlInfo = pkt->addTagIfAbsent<X2ControlInfoTag>();
-    ctrlInfo->setSourceId(nodeId_);
-    DestinationIdList destList;
-    destList.push_back(enb);
-    ctrlInfo->setDestIdList(destList);
-
-    // build X2 Handover Msg
-    X2HandoverCommandIE *hoCommandIe = new X2HandoverCommandIE();
-    hoCommandIe->setUeId(ueId);
-    hoCommandIe->setStartHandover();
-
-    auto hoMsg = makeShared<X2HandoverControlMsg>();
-    hoMsg->pushIe(hoCommandIe);
-    pkt->insertAtFront(hoMsg);
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
-
-    // send to X2 Manager
-    send(pkt, x2ManagerOutGate_);
-}
-
-void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb)
-{
-    EV << NOW << " HandoverX2Forwarder::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
-
-    // Nothing left to do: the target holds the leg's downlink from the source's
-    // HANDOVER REQUEST on (ConnectionControlEnb::handoverRequest()). The message
-    // itself goes in the next commit.
+    else
+        throw cRuntimeError("HandoverX2Forwarder: unexpected X2 message of type %d from base station %d", (int)x2msg->getType(), (int)num(sourceId));
 }
 
 void HandoverX2Forwarder::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)
