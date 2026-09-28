@@ -114,7 +114,13 @@ class HandoverController : public ConnectionControlBase
     void finish() override;
     void handleMessage(cMessage *msg) override;
 
+    // The handoverStarter timer fired: the DC leg coordination, then a handover is
+    // reported to the serving base station (measurementReport), which commands it
+    // (handoverCommand()); an attachment from nowhere or a detachment starts here
     virtual void triggerHandover();
+    // Start the handover, attachment or detachment: the ledger moves ahead, the uplink
+    // is held, the handoverTrigger timer runs the execution (doHandover())
+    virtual void startHandover();
     virtual void doHandover();
     /**
      * Tear down the bearer state this UE shares with @p servingNodeId, at both ends.
@@ -174,6 +180,10 @@ class HandoverController : public ConnectionControlBase
      * other one to do the handover.
      */
     virtual void forceHandover();
+
+    // RRCReconfiguration with sync, from the serving base station: this leg hands over
+    // to the given cell (the base station's answer to the leg's measurementReport)
+    virtual void handoverCommand(MacNodeId targetNodeId);
 
     // The UE's control-plane entry point (ConnectionControlBase): the node's data
     // path asks for bearers here, and this leg's serving base station -- which is

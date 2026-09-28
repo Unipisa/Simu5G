@@ -334,6 +334,27 @@ void HandoverController::triggerHandover()
         }
     }
 
+    // The handover decision is the serving base station's: report the measurements
+    // and let it command the handover (handoverCommand()), which runs the rest.
+    // Attachment from nowhere and detachment are the UE's own.
+    if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
+        MeasurementReport report{servingNodeId_, servingNodeRssi_, candidateServingNodeId_, candidateServingNodeRssi_};
+        baseStationControl(servingNodeId_)->measurementReport(nodeId_, report);
+        return;
+    }
+    startHandover();
+}
+
+void HandoverController::handoverCommand(MacNodeId targetNodeId)
+{
+    Enter_Method("handoverCommand");
+    ASSERT(targetNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE);
+    candidateServingNodeId_ = targetNodeId;
+    startHandover();
+}
+
+void HandoverController::startHandover()
+{
     onHandoverStarting();
 
     // On a dual-stack UE either leg can legitimately be detached; a single-stack UE is always attached

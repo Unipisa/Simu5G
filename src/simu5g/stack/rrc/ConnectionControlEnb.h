@@ -32,6 +32,21 @@
 
 namespace simu5g {
 
+class HandoverController;
+
+/**
+ * A UE leg's MeasurementReport (TS 38.331 5.5.5): what the leg measured of its
+ * serving cell and of the best other cell, once the leg's A3-like event fired (the
+ * best cell above the serving one by the hysteresis). The base station decides.
+ */
+struct MeasurementReport
+{
+    MacNodeId servingCell = NODEID_NONE;
+    double servingRssi = 0;
+    MacNodeId bestCell = NODEID_NONE;
+    double bestRssi = 0;
+};
+
 /**
  * The control-plane entry point of a base station: the one module of the node the
  * control plane of other nodes talks to. It owns the node's TEID space and programs
@@ -91,6 +106,13 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The control-plane entry point of another node, through the Binder's node directory
     virtual ConnectionControlBase *controlOf(MacNodeId nodeId);
     virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
+    virtual HandoverController *ueControl(MacNodeId legId);
+
+    // The handover decision: the cell the leg is handed over to on its report, or
+    // NODEID_NONE for none. The default policy takes the reported best cell -- the
+    // decision the UE made itself before, whose hysteresis it still applies before
+    // reporting -- so the instant and the target are unchanged.
+    virtual MacNodeId selectHandoverTarget(MacNodeId legId, const MeasurementReport& report);
 
     // The body of sessionTunnelSetup(), for the calls that come from inside
     virtual FTeid setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink);
@@ -196,6 +218,12 @@ class ConnectionControlEnb : public ConnectionControlBase
     // static data radio bearers of the leg that carries them, installed at this node
     // and at the UE. Returns the downlink tunnel's F-TEID.
     virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
+
+    // ---- handover ----
+
+    // MeasurementReport, from a leg this base station serves: the base station
+    // decides (selectHandoverTarget()) and commands the leg's handover
+    virtual void measurementReport(MacNodeId legId, const MeasurementReport& report);
 
     // ---- the node's tunnels, for the core network's control plane ----
 

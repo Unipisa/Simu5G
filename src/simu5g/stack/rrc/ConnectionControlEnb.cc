@@ -17,6 +17,7 @@
 #include <inet/common/stlutils.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
+#include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/rrc/Registration.h"
 
 namespace simu5g {
@@ -68,8 +69,9 @@ const L3Address& ConnectionControlEnb::getAddress()
 
 ConnectionControlBase *ConnectionControlEnb::controlOf(MacNodeId nodeId)
 {
+    // a UE's entry point is per leg: the controller of the leg the id names
     cModule *rrc = binder_->getRrcByNodeId(nodeId);
-    const char *name = getNodeTypeById(nodeId) == NODEB ? "connectionControl" : "handoverController";
+    const char *name = getNodeTypeById(nodeId) == NODEB ? "connectionControl" : isNrUe(nodeId) ? "nrHandoverController" : "handoverController";
     auto *control = rrc != nullptr ? dynamic_cast<ConnectionControlBase *>(rrc->getSubmodule(name)) : nullptr;
     if (control == nullptr)
         throw cRuntimeError("ConnectionControlEnb: node %d has no rrc.%s module", (int)num(nodeId), name);
@@ -84,6 +86,33 @@ ConnectionControlEnb *ConnectionControlEnb::baseStationControl(MacNodeId bsId)
     if (bs == nullptr)
         throw cRuntimeError("ConnectionControlEnb: node %d is no base station", (int)num(bsId));
     return bs;
+}
+
+HandoverController *ConnectionControlEnb::ueControl(MacNodeId legId)
+{
+    auto *ue = dynamic_cast<HandoverController *>(controlOf(legId));
+    if (ue == nullptr)
+        throw cRuntimeError("ConnectionControlEnb: node %d is no UE", (int)num(legId));
+    return ue;
+}
+
+// ---- handover ----
+
+void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementReport& report)
+{
+    Enter_Method("measurementReport");
+    MacNodeId target = selectHandoverTarget(legId, report);
+    if (target == NODEID_NONE) {
+        EV_INFO << "ConnectionControlEnb: no handover for leg " << legId << " on its report (serving " << report.servingCell
+                << " at " << report.servingRssi << ", best " << report.bestCell << " at " << report.bestRssi << ")" << endl;
+        return;
+    }
+    ueControl(legId)->handoverCommand(target);
+}
+
+MacNodeId ConnectionControlEnb::selectHandoverTarget(MacNodeId legId, const MeasurementReport& report)
+{
+    return report.bestCell;
 }
 
 // ---- the node's tunnels ----
