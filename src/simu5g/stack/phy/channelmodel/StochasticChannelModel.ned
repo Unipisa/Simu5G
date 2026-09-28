@@ -105,7 +105,8 @@ simple StochasticChannelModel extends ChannelModelBase
 
         bool enableExtCellLos = default(true);
 
-        // Collection of SINR statistics can be disabled because it might be quite time-consuming
+        // Collection of SINR statistics can be disabled because it might be quite time-consuming.
+        // The statistics are recorded by the UE's receiver (see ~CellularReceiver).
         bool collectSinrStatistics = default(true);
 }
 

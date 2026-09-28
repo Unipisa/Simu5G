@@ -172,7 +172,7 @@ static Reception randomReception(std::mt19937& gen)
     return r;
 }
 
-// The SINR values a channel model emits as rcvdSinrDl.
+// The SINR values the decoding node's receiver records as rcvdSinrDl.
 struct SinrRecorder : public cListener
 {
     std::vector<double> values;
@@ -241,7 +241,7 @@ decoder.receiver = receiver;
 model->setPhy(&decoder);
 
 SinrRecorder recorder;
-model->subscribe("rcvdSinrDl", &recorder);
+receiver->subscribe("rcvdSinrDl", &recorder);
 
 // CQI 7, one band of 4 blocks at 6 dB, a first transmission
 Reception base;
@@ -373,7 +373,7 @@ base.sinr[2] = 6.0;
             recorder.values.size(), count);
 }
 
-model->unsubscribe("rcvdSinrDl", &recorder);
+receiver->unsubscribe("rcvdSinrDl", &recorder);
 c.summary();
 
 %contains: stdout

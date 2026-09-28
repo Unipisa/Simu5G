@@ -34,12 +34,6 @@ using namespace inet;
 using namespace omnetpp;
 Define_Module(StochasticChannelModel);
 
-simsignal_t StochasticChannelModel::rcvdSinrDlSignal_ = registerSignal("rcvdSinrDl");
-simsignal_t StochasticChannelModel::rcvdSinrUlSignal_ = registerSignal("rcvdSinrUl");
-
-simsignal_t StochasticChannelModel::measuredSinrDlSignal_ = registerSignal("measuredSinrDl");
-simsignal_t StochasticChannelModel::measuredSinrUlSignal_ = registerSignal("measuredSinrUl");
-
 StochasticChannelModel::~StochasticChannelModel()
 {
     delete pathLoss_;
@@ -513,19 +507,11 @@ std::vector<double> StochasticChannelModel::getSINR(const RadioLink& link, UserC
     MacNodeId ueId = link.txIsBaseStation ? link.rxId : link.txId;
 
     // emit SINR statistic. Only DL and UL have a measured-SINR signal; other link
-    // types must not be reported as one of them.
+    // types must not be reported as one of them. The UE's receiver records it in
+    // both directions (for UL we are on the BS).
     if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0
         && (link.dir == DL || link.dir == UL))
-    {
-        // we are on the BS, so we need to retrieve the channel model of the sender
-        // XXX I know, there might be a faster way...
-        ChannelModelBase *ueChannelModel = radioMedium_->getRadio(ueId)->getChannelModel(lteInfo->getCarrierFrequency());
-
-        if (link.dir == DL) // we are on the UE
-            ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
-        else
-            ueChannelModel->emit(measuredSinrUlSignal_, sumSnr / usedRBs);
-    }
+        radioMedium_->getRadio(ueId)->getReceiver()->emitMeasuredSinr(link.dir, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
 
     // if sender is an eNodeB
     if (link.dir == DL)
@@ -1077,14 +1063,12 @@ double StochasticChannelModel::cableLossOf(MacNodeId nodeId) const
 void StochasticChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
 {
     if (dir == DL) { // we are on the UE
-        emit(rcvdSinrDlSignal_, sinr);
+        phy_->getReceiver()->emitRcvdSinr(DL, carrierFrequency, sinr);
         return;
     }
 
-    // we are on the BS, so we need to retrieve the channel model of the sender
-    // XXX I know, there might be a faster way...
-    ChannelModelBase *ueChannelModel = radioMedium_->getRadio(ueId)->getChannelModel(carrierFrequency);
-    ueChannelModel->emit(rcvdSinrUlSignal_, sinr);
+    // we are on the BS: the statistic is the sending UE's
+    radioMedium_->getRadio(ueId)->getReceiver()->emitRcvdSinr(UL, carrierFrequency, sinr);
 }
 
 void StochasticChannelModel::computeLosProbability(double d3D, double d2D,

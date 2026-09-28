@@ -205,12 +205,6 @@ class StochasticChannelModel : public ChannelModelBase
     // If false, disable the collection of SINR statistics, which might be quite time-consuming
     bool collectSinrStatistics_;
 
-    // Statistics
-    static simsignal_t rcvdSinrDlSignal_;
-    static simsignal_t rcvdSinrUlSignal_;
-    static simsignal_t measuredSinrDlSignal_;
-    static simsignal_t measuredSinrUlSignal_;
-
   public:
     ~StochasticChannelModel() override;
 
@@ -388,9 +382,10 @@ class StochasticChannelModel : public ChannelModelBase
     RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord, bool cqiDl);
 
     /*
-     * Emit the received-SINR statistic for a decoded frame. Routes D2D/D2D_MULTI
-     * receptions to rcvdSinrD2D instead of letting them fall into the uplink
-     * statistic, which is where the DL/else split used to put them.
+     * Emit the received-SINR statistic for a decoded frame, on the UE's
+     * receiver: this node's for a downlink reception, the sending UE's for any
+     * other. The D2D model overrides it to route D2D/D2D_MULTI receptions to
+     * rcvdSinrD2D instead of letting them fall into the uplink statistic.
      *
      * @param dir direction of the reception
      * @param ueId the UE end of the link (the sender, for an uplink reception)

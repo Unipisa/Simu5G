@@ -16,7 +16,10 @@ index leaking into the physics -- a state map keyed on the carrier's position
 rather than on its frequency, say -- would show here and almost nowhere else.
 
 The whole recorded result set is compared, with the carrier indices relabelled
-in the module names. A name with no counterpart is a failure rather than a
+in the module names. The SINR statistics are the UE receiver's, which records
+each of them per carrier under the carrier's frequency (measuredSinrDl-2000MHz)
+as well as over both; those need no relabelling -- the value recorded under a
+frequency has to be the same whichever slot holds that frequency. A name with no counterpart is a failure rather than a
 silent skip, because a relabelling rule that quietly covers less than it
 should is exactly how this kind of test stops testing anything. The one
 exclusion is stated at the grader: the UE's LTE channel model has a single

@@ -13,9 +13,11 @@ station adds no angular term; a sectorial one subtracts exactly
 computeAngularAttenuation() of the receiver's angles, on every band. A link
 whose transmitter is not on the medium cannot be evaluated.
 
-emitRcvdSinr(): a downlink SINR is emitted by the receiving (UE-side) model
-itself; an uplink SINR is emitted, from the base station's model, on the
-sending UE's own channel model on that carrier, found through the medium.
+emitRcvdSinr(): the statistic is the UE's, and its receiver records it. A
+downlink SINR is emitted on the receiving UE's own receiver; an uplink SINR is
+emitted, from the base station's model, on the sending UE's receiver, found
+through the medium. Neither reaches the base station's receiver. A receiver
+serving two carriers also emits the value on that carrier's own signal.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -55,6 +57,7 @@ import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+import simu5g.stack.phy.radio.CellularReceiver;
 
 network Harness
 {
@@ -64,6 +67,8 @@ network Harness
         carrierAggregation: CarrierAggregation;
         bsChannelModel: Tr38901ChannelModel;
         ueChannelModel: Tr38901ChannelModel;
+        bsReceiver: CellularReceiver;
+        ueReceiver: CellularReceiver;
         test: Test;
 }
 
@@ -90,6 +95,8 @@ Checker c;
 auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *bsReceiver = harnessModule<CellularReceiver>(this, "bsReceiver");
+auto *ueReceiver = harnessModule<CellularReceiver>(this, "ueReceiver");
 
 const MacNodeId enbId = MacNodeId(1), otherEnbId = MacNodeId(2), ueId = MacNodeId(1025);
 const Coord enbPos(0, 0, 25), uePos(120, 45, 1.5);
@@ -97,6 +104,8 @@ StubEndpoint enbEndpoint, ueEndpoint;
 enbEndpoint.coord = enbPos;
 ueEndpoint.coord = uePos;
 ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
+enbEndpoint.receiver = bsReceiver;
+ueEndpoint.receiver = ueReceiver;
 bs->setPhy(&enbEndpoint);
 ue->setPhy(&ueEndpoint);
 StubRadioRegistration enbRadio(medium, enbId, &enbEndpoint);
@@ -165,28 +174,41 @@ c.check("...and a node with no radio on the medium finds none", medium->findRadi
 {
     simsignal_t dl = cComponent::registerSignal("rcvdSinrDl"), ul = cComponent::registerSignal("rcvdSinrUl");
     LastValues seen;
-    for (cComponent *model : {(cComponent *)bs, (cComponent *)ue})
+    for (cComponent *component : {(cComponent *)bs, (cComponent *)ue, (cComponent *)bsReceiver, (cComponent *)ueReceiver})
         for (simsignal_t signal : {dl, ul})
-            model->subscribe(signal, &seen);
+            component->subscribe(signal, &seen);
 
     atEnb.emitRcvdSinr(UL, ueId, ue->getCarrierFrequency(), 12.5);
-    c.check("an uplink SINR is emitted on the sending UE's channel model",
-            seen.has(ue, ul) && seen.get(ue, ul) == 12.5);
-    c.check("...not on the base station's", !seen.has(bs, ul));
+    c.check("an uplink SINR is emitted on the sending UE's receiver",
+            seen.has(ueReceiver, ul) && seen.get(ueReceiver, ul) == 12.5);
+    c.check("...not on the base station's, nor on either channel model",
+            !seen.has(bsReceiver, ul) && !seen.has(bs, ul) && !seen.has(ue, ul));
 
     atUe.emitRcvdSinr(DL, ueId, ue->getCarrierFrequency(), 7.0);
-    c.check("a downlink SINR is emitted by the receiving model itself",
-            seen.has(ue, dl) && seen.get(ue, dl) == 7.0 && !seen.has(bs, dl));
+    c.check("a downlink SINR is emitted on the receiving UE's receiver",
+            seen.has(ueReceiver, dl) && seen.get(ueReceiver, dl) == 7.0
+            && !seen.has(bsReceiver, dl) && !seen.has(ue, dl));
 
-    for (cComponent *model : {(cComponent *)bs, (cComponent *)ue})
+    // The same receiver serving a second carrier: the value also goes to the
+    // carrier's own signal, named by its frequency in MHz.
+    ueReceiver->setCarrierFrequencies({ue->getCarrierFrequency(), GHz(28)});
+    simsignal_t ulOnCarrier = cComponent::registerSignal("rcvdSinrUl-3500MHz");
+    ueReceiver->subscribe(ulOnCarrier, &seen);
+    atEnb.emitRcvdSinr(UL, ueId, ue->getCarrierFrequency(), 9.5);
+    c.check("with two carriers, an uplink SINR is also emitted on its carrier's own signal",
+            seen.has(ueReceiver, ul) && seen.get(ueReceiver, ul) == 9.5
+            && seen.has(ueReceiver, ulOnCarrier) && seen.get(ueReceiver, ulOnCarrier) == 9.5);
+    ueReceiver->unsubscribe(ulOnCarrier, &seen);
+
+    for (cComponent *component : {(cComponent *)bs, (cComponent *)ue, (cComponent *)bsReceiver, (cComponent *)ueReceiver})
         for (simsignal_t signal : {dl, ul})
-            model->unsubscribe(signal, &seen);
+            component->unsubscribe(signal, &seen);
 }
 
 c.summary();
 
 %contains: stdout
-modelchecks=10 modelfailures=0
+modelchecks=11 modelfailures=0
 
 %not-contains: stdout
 FAILED

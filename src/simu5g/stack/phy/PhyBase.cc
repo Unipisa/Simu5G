@@ -245,6 +245,11 @@ void PhyBase::initializeChannelModel()
         if (nodeType_ == UE)
             binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
     }
+
+    std::vector<GHz> carrierFrequencies;
+    for (const auto& [carrierFrequency, channelModel] : channelModel_)
+        carrierFrequencies.push_back(carrierFrequency);
+    getReceiver()->setCarrierFrequencies(carrierFrequencies);
 }
 
 void PhyBase::updateDisplayString()
