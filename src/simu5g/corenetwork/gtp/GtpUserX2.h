@@ -36,7 +36,7 @@ using namespace omnetpp;
  * b) GtpUserX2Msg from UDP-IP layers.
  *
  * Downlink data a handover source forwards travels on the downlink tunnel of the
- * datagram's PDU session at the target: the TEID the target allocated for the session
+ * datagram's session at the target: the TEID the target allocated for the session
  * (the one the core network's downlink arrives with, see ~GtpUser), which the base
  * stations of the session are told about (see ConnectionControlEnb). A PDCP PDU of a dual
  * connectivity bearer travels on the bearer's X2-U tunnel for its direction, whose TEID
@@ -54,11 +54,11 @@ class GtpUserX2 : public cSimpleModule
     // the GTP protocol Port
     unsigned int tunnelPeerPort_;
 
-    // The tunnels ending here: the PDU session of each TEID this base station allocated.
+    // The tunnels ending here: the session of each TEID this base station allocated.
     // A released session's tunnels stay known, like at ~GtpUser.
     std::map<Teid, SessionRef> rxTunnels_;
 
-    // The TEID of each PDU session's downlink tunnel at the other base stations it has
+    // The TEID of each session's downlink tunnel at the other base stations it has
     // one at, by each of the UE's node ids, then by base station
     std::map<MacNodeId, std::map<MacNodeId, Teid>> forwardingTeids_;
 
@@ -85,11 +85,11 @@ class GtpUserX2 : public cSimpleModule
     // receive a GTP-U packet from UDP, detunnel it and send it to the X2 Manager
     void handleFromUdp(inet::Packet *gtpMsg);
 
-    // The TEID to forward a datagram of the given PDU session to the given base station with
+    // The TEID to forward a datagram of the given session to the given base station with
     virtual Teid getForwardingTeid(const SessionTag *session, MacNodeId targetBs);
 
   public:
-    // The tunnels of the PDU sessions, as the base station's control plane
+    // The tunnels of the sessions, as the base station's control plane
     // (ConnectionControlEnb) sets them up here
 
     // A tunnel ending at this base station: G-PDUs arriving with the TEID belong to the session

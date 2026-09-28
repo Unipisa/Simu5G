@@ -86,7 +86,8 @@ SIMU5G_STRONG_TYPEDEF(Teid, uint32_t)
 // "no tunnel": TEIDs are handed out from 1 (see UserPlaneNodeControl::allocateTeid() and ConnectionControlEnb::allocateTeid())
 constexpr Teid TEID_NONE = Teid(0);
 
-/// PDU Session ID (TS 24.007: 1..15, 0 = none assigned)
+/// A UE's session id: the PDU Session ID of a 5G core (TS 24.007: 1..15, 0 = none
+/// assigned), used for the PDN connection of an EPC as well
 SIMU5G_STRONG_TYPEDEF(SessionId, uint8_t)
 
 /// Logical Channel Group id, as reported in Buffer Status Reports

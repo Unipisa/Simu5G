@@ -152,7 +152,7 @@ class BearerConfigurator : public cSimpleModule
 
     // The uplink QFI classification rules of a UE: the ulQfiRules entries scoped to
     // it, likewise. Read by CoreControl, which delivers them to the UE's classifier as
-    // the QoS rules of PDU session establishment.
+    // the QoS rules of session establishment.
     virtual QfiRuleSet getUplinkQfiRules(const cModule *ue) const;
 };
 

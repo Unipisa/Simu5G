@@ -107,7 +107,8 @@ class Teid {
     @fromValue(Teid($.intValue()));
 };
 
-/// PDU Session ID (TS 24.007: 1..15, 0 = none assigned)
+/// A UE's session id: the PDU Session ID of a 5G core (TS 24.007: 1..15, 0 = none
+/// assigned), used for the PDN connection of an EPC as well
 class SessionId {
     @existingClass; // enum class SessionId : uint8_t;
     @descriptor(false);

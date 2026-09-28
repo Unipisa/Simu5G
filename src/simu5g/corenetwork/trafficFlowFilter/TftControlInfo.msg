@@ -26,7 +26,7 @@ enum TftOutcome
     TFT_EXTERNAL_DESTINATION = 1;   // To the core network gateway
     TFT_LOCAL_DELIVERY = 2;         // Back into this base station's radio network
     TFT_MEC_HOST = 3;               // To the UPF of the destination MEC host
-    TFT_PDU_SESSION = 4;            // Into the downlink tunnel of the destination UE's PDU session
+    TFT_PDU_SESSION = 4;            // Into the downlink tunnel of the destination UE's session
 }
 
 class TftControlInfo extends inet::TagBase

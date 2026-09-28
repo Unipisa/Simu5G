@@ -19,8 +19,8 @@ package simu5g.corenetwork.coreControl;
 // As the MME/AMF, it takes the UEs' registrations: a UE's leg that connects at a
 // base station is announced here by that base station (initialUeMessage(), the
 // INITIAL UE MESSAGE of S1AP/NGAP; at initialization, every leg attached to its
-// configured cell). As the gateways' control plane/SMF, it keeps a PDU session per
-// UE (PDU Session ID 1), established at the UE's first registration and released
+// configured cell). As the gateways' control plane/SMF, it keeps a session per
+// UE (session id 1), established at the UE's first registration and released
 // when the UE leaves the simulation, and programs the nodes that end the session's
 // tunnels through their control-plane entry points: the user plane nodes'
 // ~UserPlaneNodeControl and the base stations'

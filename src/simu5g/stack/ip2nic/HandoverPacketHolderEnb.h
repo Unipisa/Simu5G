@@ -55,7 +55,7 @@ class HandoverPacketHolderEnb : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
-    // The UE of the datagram's PDU session, by the id of this node's own cell group
+    // The UE of the datagram's session, by the id of this node's own cell group
     virtual MacNodeId resolveUeNodeId(const SessionTag *session);
     virtual MacNodeId resolveUeNodeId(MacNodeId lteNodeId, MacNodeId nrNodeId);
     void handleMessage(cMessage *msg) override;
@@ -63,7 +63,7 @@ class HandoverPacketHolderEnb : public cSimpleModule
     virtual void fromIpBs(inet::Packet *datagram);
     virtual void toStackBs(inet::Packet *datagram);
 
-    // At the old base station: relay the End Marker of a PDU session's downlink to the
+    // At the old base station: relay the End Marker of a session's downlink to the
     // base station the UE went to
     virtual void relayEndMarker(inet::Packet *endMarker);
     // At the new base station: the End Marker relayed by the old one arrived
@@ -81,7 +81,7 @@ class HandoverPacketHolderEnb : public cSimpleModule
     virtual void signalHandoverCompleteTarget(MacNodeId ueId);
 
     // Called by the node's control plane (ConnectionControlEnb::downlinkPathSwitched())
-    // at the path switch: the downlink of the PDU session of the UE with the given
+    // at the path switch: the downlink of the session of the UE with the given
     // node ids now enters the RAN here, and entered it at fromBaseStation before
     // (NODEID_NONE: nowhere), where the anchor ends it with an End Marker if it is
     // another base station

@@ -58,7 +58,7 @@ void Ip2NicD2D::classifyConnection(inet::Packet *pkt, FlowControlInfo *lteInfo, 
         lteInfo->setSourceId(localNodeId);
 
     // D2D groupcast is IPv4-only: IPv6 multicast (the node's own Neighbor Discovery
-    // traffic, too) goes up the PDU session like any other packet
+    // traffic, too) goes up the session like any other packet
     if (destAddr.getType() == L3Address::IPv4 && destAddr.isMulticast()) {
         d2dBinder_->addD2DMulticastTransmitter(localNodeId);
         lteInfo->setDirection(D2D_MULTI);

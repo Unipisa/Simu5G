@@ -210,7 +210,7 @@ TftOutcome TrafficFlowFilter::findTrafficFlow(const L3Address& srcAddress, const
     }
 
     if (!isBaseStation(ownerType_)) {
-        // MEC host or PGW/UPF: the downlink of the destination UE's PDU session, whose
+        // MEC host or PGW/UPF: the downlink of the destination UE's session, whose
         // tunnel the GTP-U endpoint knows (or knows it has none, see GtpUser)
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is UE " << destId << endl;
         ueNodeId = destId;

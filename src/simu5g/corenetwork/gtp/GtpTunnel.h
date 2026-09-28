@@ -43,8 +43,9 @@ inline std::ostream& operator<<(std::ostream& os, const FTeid& fteid)
 }
 
 /**
- * The PDU session a GTP-U tunnel belongs to, as the ends of the tunnel know it: the
- * session's UE, by its node id on each stack, and the PDU Session ID.
+ * The session a GTP-U tunnel belongs to -- the UE's PDN connection under an EPC, its
+ * PDU session under a 5G core -- as the ends of the tunnel know it: the session's UE,
+ * by its node id on each stack, and the session id.
  */
 struct SessionRef
 {
@@ -55,11 +56,11 @@ struct SessionRef
 
 inline std::ostream& operator<<(std::ostream& os, const SessionRef& session)
 {
-    return os << "PDU session " << session.id << " of UE " << session.lteNodeId << "/" << session.nrNodeId;
+    return os << "session " << session.id << " of UE " << session.lteNodeId << "/" << session.nrNodeId;
 }
 
 /**
- * Tells the modules after a tunnel end which PDU session, and so which UE, a datagram
+ * Tells the modules after a tunnel end which session, and so which UE, a datagram
  * that arrived on the tunnel belongs to (see SessionTag).
  */
 inline void attachSessionTag(inet::Packet *datagram, const SessionRef& session)
@@ -71,7 +72,7 @@ inline void attachSessionTag(inet::Packet *datagram, const SessionRef& session)
 }
 
 /**
- * The uplink tunnels of a PDU session, for a base station to send the UE's traffic
+ * The uplink tunnels of a session, for a base station to send the UE's traffic
  * into the core network through: to the anchor UPF/PGW, and to each MEC host UPF of
  * the anchor's core network, by the address of that UPF.
  */
@@ -83,7 +84,7 @@ struct UplinkTunnels
 };
 
 /**
- * A PDU session's resources at a base station: the session, its uplink tunnels into
+ * A session's resources at a base station: the session, its uplink tunnels into
  * the core network, and the base station's downlink F-TEID, under which the session's
  * downlink -- from the core network, or forwarded by a handover source over X2-U --
  * enters the node (see ConnectionControlEnb::sessionTunnelSetup()).

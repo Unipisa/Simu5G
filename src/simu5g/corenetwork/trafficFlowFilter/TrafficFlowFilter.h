@@ -35,7 +35,7 @@ using namespace omnetpp;
  *
  * This simplified traffic filter queries the Binder to find the destination of the packet.
  * It resides at both the eNodeB and the PGW. At the PGW (and at a UPF or a MEC host's UPF), it finds the destination UE,
- * whose PDU session's downlink tunnel the GTP-U endpoint then sends the packet on. At the eNodeB, the destination endpoint
+ * whose session's downlink tunnel the GTP-U endpoint then sends the packet on. At the eNodeB, the destination endpoint
  * is always the PGW. However, if the fastForwarding flag is enabled and the destination of the packet is within the same
  * cell, the packet is just relayed to the Radio interface.
  */

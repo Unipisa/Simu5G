@@ -19,7 +19,7 @@ namespace simu5g;
 // At a base station: the UE an uplink datagram was received from over the air, by
 // the node id the base station's stack knows it by. Attached where the datagram
 // leaves the radio stack (~Ip2Nic) and consumed where it enters the uplink tunnel of
-// the UE's PDU session (~GtpUser), so the tunnel is chosen by the UE the datagram
+// the UE's session (~GtpUser), so the tunnel is chosen by the UE the datagram
 // came from, whatever its payload.
 //
 // The tag is node-local: removeAllSimu5GTags() leaves it in place.

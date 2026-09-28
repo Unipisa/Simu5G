@@ -32,7 +32,7 @@ class UserPlaneNodeControl;
  * The control plane of the core network, one per cellular network: the MME and the
  * gateways' control plane of an EPC, or the AMF and the SMF of a 5G core, in one
  * module.
- * It keeps the UEs' PDU sessions and programs the nodes that end their tunnels
+ * It keeps the UEs' sessions and programs the nodes that end their tunnels
  * through the nodes' control-plane entry points (UserPlaneNodeControl, and the base
  * stations' ConnectionControlEnb). See CoreControl.ned.
  */
@@ -57,15 +57,16 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     std::vector<GtpEndpoint> gtpEndpoints_;       // the user plane nodes, then the base stations
     std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
 
-    // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
-    // the UE first has a serving node, released when the UE leaves (see
-    // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
-    // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
-    // end of the tunnel (see updateDownlinkPath()). The tunnel ends are told about every change
-    // through their nodes' control-plane entry points.
+    // A UE's session (a PDN connection of an EPC, a PDU session of a 5G core, TS 23.501
+    // 5.6), as the core network keeps it: one per UE, established when the UE first
+    // has a serving node, released when the UE leaves (see establishSession()). The
+    // anchor (the PGW, or the PDU session anchor UPF) is chosen at establishment and
+    // kept for the lifetime of the session (SSC mode 1): a handover only moves the
+    // downlink end of the tunnel (see updateDownlinkPath()). The tunnel ends are told
+    // about every change through their nodes' control-plane entry points.
     struct CoreSession {
         omnetpp::cModule *ueModule = nullptr;
-        SessionRef ref;                          // the UE's node ids and the PDU Session ID
+        SessionRef ref;                          // the UE's node ids and the session id
         int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
         FTeid ulAnchor;                             // uplink F-TEID at the anchor
         std::map<int, FTeid> ulMecHosts;            // uplink F-TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
@@ -74,9 +75,9 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
         FTeid dl;                                   // downlink F-TEID at dlBaseStation
         std::map<MacNodeId, FTeid> dlTunnels;       // the downlink F-TEID at each base station the UE has been attached through, kept until release
     };
-    typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
+    typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the session id
     std::map<CoreSessionKey, CoreSession> sessions_;
-    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's PDU session
+    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's session
 
   protected:
     void initialize(int stage) override;
@@ -84,7 +85,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     void handleMessage(omnetpp::cMessage *msg) override { throw omnetpp::cRuntimeError("This module does not process messages"); }
 
     /**
-     * Binder::nodeUnregisteredSignal_: a departing UE's PDU session is released.
+     * Binder::nodeUnregisteredSignal_: a departing UE's session is released.
      */
     void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
 
@@ -114,7 +115,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // address); NODEID_NONE if the UE is attached nowhere
     virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
 
-    // Establish the PDU session of the UE with the given node id, anchored at the gateway
+    // Establish the session of the UE with the given node id, anchored at the gateway
     // of its downlink base station: its uplink tunnels at the anchor and the MEC host
     // UPFs. Does nothing if the UE is attached nowhere yet, or its base station is not
     // connected to a core network. The RAN end of the session is set up separately
@@ -137,11 +138,11 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // The session's uplink tunnels, as a base station uses them
     virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
 
-    // Release the PDU session of the UE with the given node id, if it has one
+    // Release the session of the UE with the given node id, if it has one
     virtual void releaseSession(MacNodeId ueNodeId);
 
   public:
-    // INITIAL UE MESSAGE (S1AP/NGAP), and the registration and PDU session establishment that
+    // INITIAL UE MESSAGE (S1AP/NGAP), and the registration and session establishment that
     // follow: a leg of a UE has connected at the given base station. The UE's session
     // is established once, at its first leg's registration; the session's RAN
     // resources are set up at every base station the UE attaches through, once

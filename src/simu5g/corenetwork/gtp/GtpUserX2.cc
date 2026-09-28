@@ -74,7 +74,7 @@ void GtpUserX2::handleFromStack(Packet *pkt)
     EV << "GtpUserX2::handleFromStack - Received a LteX2Message with destId[" << destId << "]" << endl;
 
     auto gtpMsg = makeGtpUserHeader(TEID_NONE, QFI_NONE, PDU_SESSION_CONTAINER_NONE, pkt->getDataLength());
-    // forwarded downlink goes on the downlink tunnel of its PDU session at the target,
+    // forwarded downlink goes on the downlink tunnel of its session at the target,
     // a dual connectivity PDU on its bearer's tunnel at the peer for its direction
     if (x2Msg->getType() == X2_HANDOVER_DATA_MSG) {
         gtpMsg->setTeid(getForwardingTeid(pkt->removeTag<SessionTag>().get(), destId));
@@ -108,7 +108,7 @@ void GtpUserX2::handleFromUdp(Packet *pkt)
     auto gtpMsg = pkt->popAtFront<GtpUserMsg>();
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
-    // the tunnel names what the G-PDU carries: forwarded downlink of a PDU session, or a
+    // the tunnel names what the G-PDU carries: forwarded downlink of a session, or a
     // PDCP PDU of a dual connectivity bearer
     Teid teid = gtpMsg->getTeid();
     if (auto it = rxTunnels_.find(teid); it != rxTunnels_.end()) {
@@ -138,7 +138,7 @@ Teid GtpUserX2::getForwardingTeid(const SessionTag *session, MacNodeId targetBs)
         if (jt != it->second.end())
             return jt->second;
     }
-    throw cRuntimeError("GtpUserX2: the PDU session of UE %d has no downlink tunnel at base station %d to forward to",
+    throw cRuntimeError("GtpUserX2: the session of UE %d has no downlink tunnel at base station %d to forward to",
             num(session->getLteNodeId()), num(targetBs));
 }
 

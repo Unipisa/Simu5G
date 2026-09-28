@@ -25,7 +25,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 /**
- * Answers the IPv6 Neighbor Discovery traffic of the UEs' PDU sessions at the
+ * Answers the IPv6 Neighbor Discovery traffic of the UEs' sessions at the
  * session anchor. See the NED file for details.
  */
 class Ipv6NdResponder : public cSimpleModule

@@ -20,7 +20,7 @@ package simu5g.stack.rrc;
 // Tunnels. It owns the node's GTP-U tunnel endpoint id (TEID) space, and programs the
 // node's tunnel endpoints, ~GtpUser (the N3/S1-U end) and ~GtpUserX2 (the X2-U end),
 // as the calls of the ~CoreControl and of the other base stations say:
-//  - sessionTunnelSetup(): a PDU session's tunnels at this base station: the downlink
+//  - sessionTunnelSetup(): a session's tunnels at this base station: the downlink
 //    tunnel, under a TEID allocated here, which also receives the downlink a handover
 //    source forwards over X2-U, and the uplink tunnels into the core network; set up
 //    once per session, whichever side asks first
@@ -42,7 +42,7 @@ package simu5g.stack.rrc;
 // Attach. A UE's leg connects here with connectionSetupRequest() (at initialization, at its
 // configured serving cell; during the run, when a detached leg finds a cell); the
 // base station takes it on at its AMC and registers the UE with the ~CoreControl
-// (the INITIAL UE MESSAGE of S1AP/NGAP), which establishes the UE's PDU session and asks
+// (the INITIAL UE MESSAGE of S1AP/NGAP), which establishes the UE's session and asks
 // this base station to set up its resources (sessionResourceSetup(): the tunnels,
 // the UE's uplink QoS rules, and the static bearers of the leg that carries them). A
 // leg that lost its cell, or whose UE leaves, says so with connectionLost(): the base

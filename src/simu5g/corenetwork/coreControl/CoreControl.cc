@@ -79,7 +79,7 @@ void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, c
     Enter_Method("pathSwitchRequest");
     auto it = sessionOfNode_.find(legId);
     if (it == sessionOfNode_.end())
-        return;   // a UE without a PDU session (its base stations have no core network)
+        return;   // a UE without a session (its base stations have no core network)
     CoreSession& session = sessions_.at(it->second);
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
 
@@ -87,13 +87,13 @@ void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, c
     // module unless the UE was attached through that base station before
     for (const SessionResource& resource : sessions) {
         if (resource.ref.id != session.ref.id)
-            throw cRuntimeError("CoreControl: base station %d switches a PDU session of %s that is not the UE's",
+            throw cRuntimeError("CoreControl: base station %d switches a session of %s that is not the UE's",
                     (int)num(bsId), session.ueModule->getFullPath().c_str());
         auto known = session.dlTunnels.find(bsId);
         if (known == session.dlTunnels.end())
             registerRanTunnel(session, bsId, resource.dl);
         else if (known->second.teid != resource.dl.teid)
-            throw cRuntimeError("CoreControl: base station %d reports a downlink TEID for the PDU session of %s other than the one it ends it under",
+            throw cRuntimeError("CoreControl: base station %d reports a downlink TEID for the session of %s other than the one it ends it under",
                     (int)num(bsId), session.ueModule->getFullPath().c_str());
     }
     setUpRanTunnels(session, bsId);   // a base station the preparation gave no tunnels
@@ -201,7 +201,7 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
     const GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
     if (bsEndpoint.gateway.empty()) {
         EV_INFO << "CoreControl: " << ueModule->getFullPath() << " is attached to base station " << dlBaseStation
-                << ", which is not connected to a core network: no PDU session" << endl;
+                << ", which is not connected to a core network: no session" << endl;
         return;
     }
 
@@ -222,7 +222,7 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
         if (nodeId != NODEID_NONE)
             sessionOfNode_[nodeId] = key;
     CoreSession& established = sessions_[key] = session;
-    EV_INFO << "CoreControl: PDU session " << established.ref.id << " of " << ueModule->getFullPath()
+    EV_INFO << "CoreControl: session " << established.ref.id << " of " << ueModule->getFullPath()
             << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
     for (const auto& [index, tunnel] : established.ulMecHosts)
         EV_INFO << ", to MEC host UPF " << tunnel;
@@ -237,12 +237,12 @@ void CoreControl::updateDownlinkPath(CoreSession& session)
     session.dlBaseStation = dlBaseStation;
     if (dlBaseStation == NODEID_NONE) {
         session.dl = FTeid();
-        EV_INFO << "CoreControl: " << session.ueModule->getFullPath() << " is attached nowhere, the downlink of PDU session "
+        EV_INFO << "CoreControl: " << session.ueModule->getFullPath() << " is attached nowhere, the downlink of session "
                 << session.ref.id << " has no tunnel" << endl;
     }
     else {
         session.dl = session.dlTunnels.at(dlBaseStation);
-        EV_INFO << "CoreControl: the downlink of PDU session " << session.ref.id << " of " << session.ueModule->getFullPath()
+        EV_INFO << "CoreControl: the downlink of session " << session.ref.id << " of " << session.ueModule->getFullPath()
                 << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
     }
 
@@ -304,7 +304,7 @@ void CoreControl::releaseSession(MacNodeId ueNodeId)
         return;
     CoreSessionKey key = it->second;
     const CoreSession& session = sessions_.at(key);
-    EV_INFO << "CoreControl: PDU session " << session.ref.id << " of " << session.ueModule->getFullPath() << " released" << endl;
+    EV_INFO << "CoreControl: session " << session.ref.id << " of " << session.ueModule->getFullPath() << " released" << endl;
 
     // the tunnel ends forget the session's tunnels
     gtpEndpoints_[session.anchor].userPlaneNode->releaseUserPlaneSession(session.ref);

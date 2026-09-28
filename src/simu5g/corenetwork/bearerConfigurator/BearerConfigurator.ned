@@ -36,7 +36,7 @@ package simu5g.corenetwork.bearerConfigurator;
 // relative to the toplevel network, so in such a setup the entries (and the
 // module-path parameters) name their nodes by qualified paths, e.g. "networkA.ue[*]".
 //
-// The PDU sessions the bearers ride on are the business of the network's
+// The sessions the bearers ride on are the business of the network's
 // ~CoreControl, the SMF stand-in: this module holds no session state. Its QFI rule
 // tables (dlQfiRules, ulQfiRules, see below) are read by ~CoreControl, which delivers
 // the rules to their evaluation sites.

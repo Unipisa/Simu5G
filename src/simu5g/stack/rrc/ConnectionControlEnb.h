@@ -59,7 +59,7 @@ struct HandoverRequest
     MacNodeId legId = NODEID_NONE;
     omnetpp::cModule *ueModule = nullptr;
     ConnectionControlUe *ueRrc = nullptr;       // the leg's control-plane entry point
-    std::vector<SessionResource> sessions;     // the UE's PDU sessions at the source, with the source's downlink F-TEIDs
+    std::vector<SessionResource> sessions;     // the UE's sessions at the source, with the source's downlink F-TEIDs
     std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
     std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
     UeCapabilities capabilities;               // what the leg reported of itself at connection setup
@@ -104,7 +104,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     };
     std::map<MacNodeId, UeContext> ues_;       // by the leg's node id
 
-    // The PDU sessions with tunnels at this base station (see setUpSessionTunnels())
+    // The sessions with tunnels at this base station (see setUpSessionTunnels())
     std::vector<SessionResource> sessions_;
 
     // The node's TEID space: the TEID allocated last (see allocateTeid())
@@ -168,7 +168,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // This base station's resources of the session, or nullptr
     virtual SessionResource *findSession(const SessionRef& session);
 
-    // This base station's resources of the PDU sessions of the UE the leg belongs to
+    // This base station's resources of the sessions of the UE the leg belongs to
     virtual std::vector<SessionResource> sessionsOf(MacNodeId legId);
 
     // Release this base station's state for a leg that left it: its MAC queues and RLC
@@ -345,7 +345,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     virtual void ueContextRelease(MacNodeId legId);
 
     // PATH SWITCH REQUEST ACKNOWLEDGE, as far as the model needs it: the downlink of
-    // the PDU session of the UE with the given node ids now enters the RAN here, and
+    // the session of the UE with the given node ids now enters the RAN here, and
     // entered it at fromBaseStation before (NODEID_NONE: nowhere), where the anchor
     // ends it with an End Marker if it is another base station. Told to the base
     // station the downlink enters at, which may be the master of the one that
@@ -358,7 +358,7 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // ---- the node's tunnels, for the core network's control plane and the other base stations ----
 
-    // A PDU session's tunnels at this base station: its downlink tunnel, under a TEID
+    // A session's tunnels at this base station: its downlink tunnel, under a TEID
     // allocated here, which also receives the downlink a handover source forwards
     // over X2-U; and its uplink tunnels into the core network, to send the UE's
     // uplink on. Set up once per session, whichever side asks first; a later call

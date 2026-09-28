@@ -37,7 +37,7 @@ module PgwStandard extends ApplicationLayerNodeBase
         @figure[submodules];
 
         string nodeType = "PGW";
-        bool hasNdResponder = default(false);  // Answer the IPv6 Neighbor Discovery of the UEs' PDU sessions (needed when UEs run IPv6), see ~Ipv6NdResponder
+        bool hasNdResponder = default(false);  // Answer the IPv6 Neighbor Discovery of the UEs' sessions (needed when UEs run IPv6), see ~Ipv6NdResponder
 
         forwarding = default(true);
         multicastForwarding = default(false);

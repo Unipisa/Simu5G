@@ -173,7 +173,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
      *    4b) the MEC host is inside another core network
      *        --> tunnel the packet towards the CN gateway
      * 5) TFT_PDU_SESSION: destination is a UE (only at a UPF/PGW or a MEC host's UPF)
-     *    5a) its PDU session is served here
+     *    5a) its session is served here
      *        --> tunnel the packet on the session's downlink tunnel
      *    5b) the UE is attached nowhere
      *        --> delete the packet
@@ -190,7 +190,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with tft[" << tft << "] qfi[" << qfi << "]" << endl;
 
-    // the downlink of a UE's PDU session goes on the session's tunnel, which the path
+    // the downlink of a UE's session goes on the session's tunnel, which the path
     // switch keeps pointing at the base station the downlink enters the RAN at
     const FTeid *dlTunnel = nullptr;
     if (tft == TFT_PDU_SESSION) {
@@ -240,8 +240,8 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
-            // a base station sends into the uplink tunnel of the UE's PDU session, whose
-            // anchor is the gateway; a MEC host's UPF relays traffic of no PDU session
+            // a base station sends into the uplink tunnel of the UE's session, whose
+            // anchor is the gateway; a MEC host's UPF relays traffic of no session
             if (isBaseStation(ownerType_)) {
                 const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe);
                 ASSERT(tunnels.anchor.address == gwAddress_);
@@ -256,19 +256,19 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // retrieve the address of the UPF included within the MEC host
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
             tunnelPeerAddress = binder_->getUpfFromMecHost(destAddr);
-            // a base station sends into the UE's PDU session's uplink tunnel to the MEC
-            // host; a UPF relays traffic of no PDU session
+            // a base station sends into the UE's session's uplink tunnel to the MEC
+            // host; a UPF relays traffic of no session
             if (isBaseStation(ownerType_)) {
                 const UplinkTunnels& tunnels = getUplinkTunnels(sourceUe);
                 auto it = tunnels.mecHosts.find(tunnelPeerAddress);
                 if (it == tunnels.mecHosts.end())
-                    throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel to the MEC host UPF %s",
+                    throw cRuntimeError("GtpUser: the session of UE %d has no uplink tunnel to the MEC host UPF %s",
                             num(sourceUe), tunnelPeerAddress.str().c_str());
                 teid = it->second;
                 container = UL_PDU_SESSION_INFORMATION;
             }
         }
-        else { // on the downlink tunnel of the destination UE's PDU session
+        else { // on the downlink tunnel of the destination UE's session
             ASSERT(tft == TFT_PDU_SESSION && dlTunnel != nullptr);
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << *dlTunnel << endl;
             tunnelPeerAddress = dlTunnel->address;
@@ -335,15 +335,15 @@ void GtpUser::handleFromUdp(Packet *pkt)
     delete pkt;
 
     if (isBaseStation(ownerType_)) {
-        // the tunnel names the PDU session, and so the UE, the datagram is for
+        // the tunnel names the session, and so the UE, the datagram is for
         const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
         EV << "GtpUser::handleFromUdp - Datagram of " << session << ", local delivery to the cellular NIC" << endl;
         attachSessionTag(originalPacket, session);
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == UPF_MEC) {
-        // a tunnel from a base station names the PDU session the datagram belongs to; a
-        // relay from the UPF carries traffic of no PDU session
+        // a tunnel from a base station names the session the datagram belongs to; a
+        // relay from the UPF carries traffic of no session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
             const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
             EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
@@ -354,15 +354,15 @@ void GtpUser::handleFromUdp(Packet *pkt)
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == PGW || ownerType_ == UPF) {
-        // a tunnel from a base station names the PDU session the datagram belongs to; a
-        // relay from a MEC host's UPF carries traffic of no PDU session
+        // a tunnel from a base station names the session the datagram belongs to; a
+        // relay from a MEC host's UPF carries traffic of no session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
             const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
             EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
         }
 
         // where the datagram goes next is the destination's matter: the data network, or
-        // the PDU session of another UE
+        // the session of another UE
         L3Address destAddr = peekIpHeader(originalPacket)->getDestinationAddress();
 
         // The IP link of a UE's IPv6 session ends here: link-local-scope traffic (Neighbor
@@ -376,7 +376,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
         MacNodeId destId = binder_->getMacNodeId(destAddr);
         if (destId != NODEID_NONE) { // final destination is a UE
-            // a UE whose PDU session is served here: into the downlink tunnel of that
+            // a UE whose session is served here: into the downlink tunnel of that
             // session, preserving the QFI of the incoming GTP-U
             if (const FTeid *tunnel = findDownlinkTunnel(destId)) {
                 tunnelDownlink(originalPacket, *tunnel, gtpUserMsg->getQfi());
@@ -408,7 +408,7 @@ void GtpUser::handleFromNdResponder(Packet *datagram)
     const FTeid *tunnel = findDownlinkTunnel(destId);
     if (tunnel == nullptr) {
         if (binder_->getServingNodeOrSelf(destId) != NODEID_NONE)
-            throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, a UE whose PDU session is not served here", destAddr.str().c_str());
+            throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, a UE whose session is not served here", destAddr.str().c_str());
         EV_WARN << "GtpUser::handleFromNdResponder - UE " << destId << " is attached to no base station, reply to " << destAddr << " discarded" << endl;
         delete datagram;
         return;
@@ -437,7 +437,7 @@ const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId)
 {
     auto it = ulTunnels_.find(ueNodeId);
     if (it == ulTunnels_.end())
-        throw cRuntimeError("GtpUser: the PDU session of UE %d has no uplink tunnel from here", num(ueNodeId));
+        throw cRuntimeError("GtpUser: the session of UE %d has no uplink tunnel from here", num(ueNodeId));
     return it->second.tunnels;
 }
 
@@ -478,7 +478,7 @@ const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
 {
     auto it = ulTunnels_.find(ueNodeId);
     if (it == ulTunnels_.end())
-        throw cRuntimeError("GtpUser: UE %d has no PDU session entering the core network here", num(ueNodeId));
+        throw cRuntimeError("GtpUser: UE %d has no session entering the core network here", num(ueNodeId));
     return it->second.session;
 }
 

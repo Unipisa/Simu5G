@@ -70,7 +70,7 @@ class Ip2Nic : public cSimpleModule
     // only), or neither -- a packet whose UE is attached with neither is dropped.
     // UE only: this UE itself, as RRC pushed its attachment
     virtual void getOwnStackAvailability(bool& hasLte, bool& hasNr);
-    // Base station only: the UE of the given PDU session, which a downlink packet travels to
+    // Base station only: the UE of the given session, which a downlink packet travels to
     virtual void getUeStackAvailability(const SessionTag *session, bool& hasLte, bool& hasNr);
 
     // UE only: the id this UE's outgoing flows carry as their source -- the anchor
@@ -154,7 +154,7 @@ class Ip2Nic : public cSimpleModule
     virtual Direction bindingDirection(FlowControlInfo *lteInfo) { return isNr_ ? (Direction)lteInfo->getDirection() : Direction(0xFFFF); }
     // UE only: the node an uplink packet from the given source stack goes to
     virtual MacNodeId getNextHopNodeId(const inet::L3Address& destAddr, MacNodeId sourceId);
-    // Base station only: the node a downlink packet for the UE of the given PDU session
+    // Base station only: the node a downlink packet for the UE of the given session
     // goes to -- the UE itself when this node serves it directly, else the node the
     // packet is relayed through (the UE's serving node, or this node's master)
     virtual MacNodeId getDownlinkNextHopNodeId(const SessionTag *session);

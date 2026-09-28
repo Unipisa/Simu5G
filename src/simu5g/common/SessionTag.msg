@@ -16,7 +16,7 @@ import simu5g.common.LteCommon;
 namespace simu5g;
 
 //
-// The PDU session a downlink datagram belongs to at a base station, and so the UE it
+// The session a downlink datagram belongs to at a base station, and so the UE it
 // is for. It is attached where the datagram enters the base station: from the GTP-U
 // tunnel it arrived on, from the core network (~GtpUser) or from a handover source
 // (~GtpUserX2), or, on the shortcut between two UEs of the same base station

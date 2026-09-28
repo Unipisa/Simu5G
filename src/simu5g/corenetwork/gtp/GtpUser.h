@@ -63,12 +63,12 @@ class GtpUser : public cSimpleModule
 
     opp_component_ptr<cModule> networkNode_;
 
-    // The tunnels ending here: the PDU session of each TEID allocated at this endpoint.
+    // The tunnels ending here: the session of each TEID allocated at this endpoint.
     // A released session's tunnels stay known, so that a G-PDU still in flight can be
     // attributed; TEIDs are not reused.
     std::map<Teid, SessionRef> rxTunnels_;
 
-    // At a base station: the uplink tunnels of the PDU sessions of the UEs it serves or
+    // At a base station: the uplink tunnels of the sessions of the UEs it serves or
     // has served, with the session, by each of the UE's node ids
     struct UplinkSession {
         SessionRef session;
@@ -76,7 +76,7 @@ class GtpUser : public cSimpleModule
     };
     std::map<MacNodeId, UplinkSession> ulTunnels_;
 
-    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of each PDU session it serves,
+    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of each session it serves,
     // by each of the UE's node ids; none while the UE is attached nowhere
     std::map<MacNodeId, FTeid> dlTunnels_;
 
@@ -98,30 +98,30 @@ class GtpUser : public cSimpleModule
     void handleFromNdResponder(inet::Packet *datagram);
 
     // encapsulate a datagram into GTP-U, and send it through the given downlink tunnel of
-    // a PDU session
+    // a session
     void tunnelDownlink(inet::Packet *datagram, const FTeid& tunnel, Qfi qfi);
 
     // At a base station: an End Marker arrived on the tunnel with the given TEID
     void handleEndMarker(Teid teid);
 
-    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of the PDU session of the UE
+    // At a UPF/PGW or a MEC host's UPF: the downlink tunnel of the session of the UE
     // with the given node id; nullptr if its session is not served here, or the UE is
     // attached nowhere
     const FTeid *findDownlinkTunnel(MacNodeId ueNodeId);
 
-    // At a base station: the uplink tunnels of the PDU session of the UE with the given node id
+    // At a base station: the uplink tunnels of the session of the UE with the given node id
     const UplinkTunnels& getUplinkTunnels(MacNodeId ueNodeId);
 
-    // At a base station: the PDU session of a UE whose uplink enters the core network
+    // At a base station: the session of a UE whose uplink enters the core network
     // here, by one of the UE's node ids; throws if it has none
     const SessionRef& getServedSession(MacNodeId ueNodeId);
 
-    // The PDU session of a tunnel ending here; throws for an unknown TEID
+    // The session of a tunnel ending here; throws for an unknown TEID
     const SessionRef& findTunnel(Teid teid);
 
 
   public:
-    // The tunnels of the PDU sessions, as the bearer configurator (the SMF stand-in)
+    // The tunnels of the sessions, as the bearer configurator (the SMF stand-in)
     // sets them up and moves them.
 
     // A tunnel ending at this endpoint: G-PDUs arriving with the TEID belong to the session

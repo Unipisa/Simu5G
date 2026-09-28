@@ -198,7 +198,7 @@ void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
     }
 
     // the base station's entry for downlink traffic forwarded by the handover source:
-    // the forwarding tunnel named the PDU session, and so the UE, the datagram is for
+    // the forwarding tunnel named the session, and so the UE, the datagram is for
     // (see GtpUserX2)
     attachIpHeaderFields(datagram);
     MacNodeId destId = resolveUeNodeId(datagram->getTag<SessionTag>().get());

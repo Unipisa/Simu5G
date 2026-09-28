@@ -89,7 +89,7 @@ void Ip2Nic::handleMessage(cMessage *msg)
         EV << "Ip2Nic: message from stack: sending up" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         pkt->removeTagIfPresent<SocketInd>();
-        // at a base station, the UE the datagram came from, whose PDU session's uplink
+        // at a base station, the UE the datagram came from, whose session's uplink
         // tunnel carries it on (see GtpUser)
         MacNodeId sourceUe = (nodeType_ == NODEB) ? pkt->getTag<FlowControlInfo>()->getSourceId() : NODEID_NONE;
         removeAllSimu5GTags(pkt);
@@ -215,7 +215,7 @@ void Ip2Nic::prepareForIp(Packet *datagram, const Protocol *protocol) {
 
 void Ip2Nic::toIpUe(Packet *pkt)
 {
-    // the IP version from the datagram itself, as on a real IPv4v6 PDU session
+    // the IP version from the datagram itself, as on a real IPv4v6 session
     prepareForIp(pkt, &ipProtocolOf(pkt));
     EV << "Ip2Nic::toIpUe - message from stack: send to IP layer" << endl;
     send(pkt, ipGateOut_);
@@ -239,7 +239,7 @@ void Ip2Nic::toStackBs(Packet *pkt)
     const L3Address& destAddr = ipFields->getDestAddress();
     short int tos = ipFields->getTos();
 
-    // the UE the packet travels to: the one of its PDU session
+    // the UE the packet travels to: the one of its session
     auto session = pkt->getTag<SessionTag>();
 
     // Drop DL packets destined to a UE whose context was released after RLF

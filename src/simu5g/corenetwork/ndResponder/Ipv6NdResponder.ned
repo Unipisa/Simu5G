@@ -12,7 +12,7 @@
 package simu5g.corenetwork.ndResponder;
 
 //
-// Answers the IPv6 Neighbor Discovery traffic of the UEs' PDU sessions at the
+// Answers the IPv6 Neighbor Discovery traffic of the UEs' sessions at the
 // session anchor (~Upf, ~PgwStandard), which is the router on the IP link of an
 // IPv6 session: the base station is transparent to it. In 5GS the SMF generates
 // the Router Advertisements and the UPF relays them into the session's tunnel,
