@@ -106,14 +106,15 @@ void HandoverX2Forwarder::handleX2Message(cPacket *pkt)
     }
     else { // X2_HANDOVER_CONTROL_MSG
         X2HandoverCommandIE *hoCommandIe = check_and_cast<X2HandoverCommandIE *>(x2msg->popIe());
-        receiveHandoverCommand(hoCommandIe->getUeId(), x2msg->getSourceId(), hoCommandIe->isStartHandover());
+        ASSERT(hoCommandIe->isStartHandover());
+        receiveHandoverCommand(hoCommandIe->getUeId(), x2msg->getSourceId());
 
         delete hoCommandIe;
         delete pkt;
     }
 }
 
-void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
+void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb)
 {
     Enter_Method("sendHandoverCommand");
 
@@ -131,8 +132,7 @@ void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, boo
     // build X2 Handover Msg
     X2HandoverCommandIE *hoCommandIe = new X2HandoverCommandIE();
     hoCommandIe->setUeId(ueId);
-    if (startHo)
-        hoCommandIe->setStartHandover();
+    hoCommandIe->setStartHandover();
 
     auto hoMsg = makeShared<X2HandoverControlMsg>();
     hoMsg->pushIe(hoCommandIe);
@@ -143,15 +143,11 @@ void HandoverX2Forwarder::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, boo
     send(pkt, x2ManagerOutGate_);
 }
 
-void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
+void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb)
 {
     EV << NOW << " HandoverX2Forwarder::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    // send command to HandoverPacketHolder. The stop command has nothing left to do:
-    // the target releases the source through the control plane
-    // (ConnectionControlEnb::ueContextRelease()) the instant the handover completes.
-    if (startHo)
-        handoverPacketHolder_->triggerHandoverTarget(ueId, enb);
+    handoverPacketHolder_->triggerHandoverTarget(ueId, enb);
 }
 
 void HandoverX2Forwarder::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)

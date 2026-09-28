@@ -54,8 +54,8 @@ class HandoverX2Forwarder : public cSimpleModule
 
     virtual void handleX2Message(cPacket *pkt);
 
-    // receive handover command on X2 from the source eNB
-    virtual void receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
+    // receive the handover command on X2 from the source eNB: the UE is handing over here
+    virtual void receiveHandoverCommand(MacNodeId ueId, MacNodeId enb);
 
     // send an IP datagram to the X2 Manager (called internally via gate)
     virtual void forwardDataToTargetEnb(inet::Packet *datagram, MacNodeId targetEnb);
@@ -64,8 +64,8 @@ class HandoverX2Forwarder : public cSimpleModule
     virtual void receiveDataFromSourceEnb(inet::Packet *datagram, MacNodeId sourceEnb);
 
   public:
-    // send handover command on X2 to the eNB
-    virtual void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
+    // send the handover command on X2 to the target eNB: the UE is handing over there
+    virtual void sendHandoverCommand(MacNodeId ueId, MacNodeId enb);
 
 };
 

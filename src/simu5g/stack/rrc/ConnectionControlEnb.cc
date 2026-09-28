@@ -124,7 +124,7 @@ void ConnectionControlEnb::reconfigurationComplete(MacNodeId legId, MacNodeId so
     attachAtAmc(legId);
     coreControl_->pathSwitchRequest(legId, this);
     baseStationControl(sourceBsId)->ueContextRelease(legId);
-    handoverPacketHolder_->signalHandoverCompleteTarget(legId, sourceBsId);
+    handoverPacketHolder_->signalHandoverCompleteTarget(legId);
 }
 
 void ConnectionControlEnb::ueContextRelease(MacNodeId legId)

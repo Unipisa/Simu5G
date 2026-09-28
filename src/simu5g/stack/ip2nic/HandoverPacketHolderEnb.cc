@@ -173,7 +173,7 @@ void HandoverPacketHolderEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId ta
         hoManager_.reference(this, "handoverX2ForwarderModule", true);
 
     if (targetEnb != NODEID_NONE)
-        hoManager_->sendHandoverCommand(ueId, targetEnb, true);
+        hoManager_->sendHandoverCommand(ueId, targetEnb);
 }
 
 void HandoverPacketHolderEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
@@ -278,14 +278,9 @@ void HandoverPacketHolderEnb::signalHandoverCompleteSource(MacNodeId ueId, MacNo
     hoForwarding_.erase(ueId);
 }
 
-void HandoverPacketHolderEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
+void HandoverPacketHolderEnb::signalHandoverCompleteTarget(MacNodeId ueId)
 {
     Enter_Method("signalHandoverCompleteTarget");
-
-    // signal the event to the source eNB
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverX2ForwarderModule", true);
-    hoManager_->sendHandoverCommand(ueId, sourceEnb, false);
 
     // send down buffered packets in the following order:
     // 1) packets received from X2

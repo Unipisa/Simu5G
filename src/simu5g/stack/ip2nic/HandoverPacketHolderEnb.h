@@ -81,7 +81,7 @@ class HandoverPacketHolderEnb : public cSimpleModule
     virtual void sendTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId targetEnb);
     virtual void receiveTunneledPacketOnHandover(inet::Packet *datagram);
     virtual void signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb);
-    virtual void signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb);
+    virtual void signalHandoverCompleteTarget(MacNodeId ueId);
 
     // Called by the node's control plane (ConnectionControlEnb::downlinkPathSwitched())
     // at the path switch: the downlink of the PDU session of the UE with the given
