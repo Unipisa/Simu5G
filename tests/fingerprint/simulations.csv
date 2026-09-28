@@ -42,6 +42,7 @@
 /simulations/lte/test_handover/,         -f omnetpp.ini -c FileTransfer-DL_UL -r 0,             15s,         8a11-febf/tplx;b165-3457/tilx;9ed7-4907/~tNl;10d3-ca44/sz, PASS,
 /simulations/lte/test_handover/,         -f omnetpp.ini -c Handover-General -r 0,               15s,         d600-8c06/tplx;01b2-1c39/tilx;62e7-d570/~tNl;1a8b-0c90/sz, PASS,
 /simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL -r 0,                        15s,         7854-08f4/tplx;6d58-e2ed/tilx;ace3-cdb7/~tNl;6cb6-1a33/sz, PASS,
+/simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL-StaticDrb -r 0,              15s,         9fa4-fd46/tplx;31e5-d150/tilx;f15f-11e6/~tNl;7f1b-4aba/sz, PASS,
 /simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-DL_UL -r 0,                     15s,         0b41-0e68/tplx;d426-4de6/tilx;a4f0-64d9/~tNl;2d55-f17c/sz, PASS,
 /simulations/lte/test_handover/,         -f omnetpp.ini -c VoIP-UL -r 0,                        15s,         f792-b986/tplx;a32d-c6ef/tilx;39e0-a5db/~tNl;53b7-e25e/sz, PASS,
 /simulations/lte/tutorial/,              -f omnetpp.ini -c MultiCell-DL -r 0,                    5s,         2bf6-5fc9/tplx;0ad1-8d7d/tilx;3309-7638/~tNl;c18e-5b51/sz, PASS,
