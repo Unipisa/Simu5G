@@ -30,5 +30,17 @@ simple ChannelModelBase like IChannelModel
 
         // Component carrier for this channel model
         string componentCarrierModule = default("carrierAggregation.componentCarrier[0]");
+
+        // Statistics, recorded on the UE's channel model in both directions. A
+        // model that computes no SINR (~IdealChannelModel) leaves them empty.
+        @signal[rcvdSinrDl];
+        @statistic[rcvdSinrDl](title="SINR measured at packet reception, DL"; unit="dB"; source="rcvdSinrDl"; record=mean,vector);
+        @signal[rcvdSinrUl];
+        @statistic[rcvdSinrUl](title="SINR measured at packet reception, UL"; unit="dB"; source="rcvdSinrUl"; record=mean,vector);
+
+        @signal[measuredSinrDl];
+        @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
+        @signal[measuredSinrUl];
+        @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
 }
 
