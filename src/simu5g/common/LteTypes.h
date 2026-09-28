@@ -83,7 +83,7 @@ constexpr Qfi QFI_NONE = Qfi(255);
 
 /// GTP-U Tunnel Endpoint Identifier (TS 29.281), chosen by the receiving end of the tunnel
 SIMU5G_STRONG_TYPEDEF(Teid, uint32_t)
-// "no tunnel": TEIDs are handed out from 1 (see BearerConfigurator::allocateTeid())
+// "no tunnel": TEIDs are handed out from 1 (see UserPlaneNodeControl::allocateTeid() and BearerConfigurator::allocateTeid())
 constexpr Teid TEID_NONE = Teid(0);
 
 /// PDU Session ID (TS 24.007: 1..15, 0 = none assigned)

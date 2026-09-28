@@ -29,8 +29,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class BearerConfigurator;
-
 /**
  * The objective of the Traffic Flow Filter is to map IP 4-Tuples to TFT identifiers. This commonly means identifying a bearer and
  * associating it with an ID that will be recognized by the first GTP-U entity.
@@ -72,16 +70,13 @@ class TrafficFlowFilter : public cSimpleModule
     inet::L3Address meAppsExtAddress_;
     int meAppsExtAddressMask_;
 
-    // The QFI-assignment rules of this tunnel-entry filter, delivered by the bearer
-    // configurator (see its dlQfiRules parameter): the first rule whose filter
+    // The QFI-assignment rules of this tunnel-entry filter, installed by the node's
+    // N4 endpoint (see UserPlaneNodeControl::setDownlinkClassifierRules(), and the dlQfiRules parameter
+    // of the bearer configurator they are authored in): the first rule whose filter
     // matches the packet supplies its QFI -- a fixed value, or the packet's DSCP
     // field read as the QFI. Stays empty at a base-station filter, which classifies
     // by the built-in residual instead (see handleMessage()).
     QfiRuleSet qfiRules_;
-
-    // where the rules come from; resolved -- and this filter registered there --
-    // at core-network tunnel entries only, see initialize()
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
 
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }

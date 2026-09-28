@@ -31,7 +31,7 @@ using namespace omnetpp;
 
 class GtpUser;
 class GtpUserX2;
-class TrafficFlowFilter;
+class UserPlaneNodeControl;
 
 /**
  * The network's central bearer configurator: a network-wide simulation service
@@ -98,20 +98,19 @@ class BearerConfigurator : public cSimpleModule, public cListener
     };
     std::map<std::pair<MacNodeId, MacNodeId>, MulticastFlow> multicastFlows_;
 
-    // The traffic flow filters at the core network's tunnel entries, registered for
-    // QFI-rule delivery (see deliverQfiRules(); base stations do not register --
-    // no rules are installed there)
-    std::vector<TrafficFlowFilter *> trafficFlowFilters_;
-
-    // A GTP-U tunnel endpoint of a base station, a UPF/PGW or a MEC host's UPF, as it
-    // registered with the Binder (see takeGtpEndpoints()). As the receiving end of
-    // tunnels it owns a TEID space, from which this module allocates on its behalf.
+    // A tunnel endpoint of the network, as it registered with the Binder (see
+    // takeGtpEndpoints()): the GTP-U endpoint of a base station, whose TEID space this
+    // module allocates from on its behalf, or the N4 endpoint of a user plane node (a
+    // UPF/PGW or a MEC host's UPF), which allocates from its own and is programmed
+    // through the calls of UserPlaneNodeControl
     struct GtpEndpoint {
-        GtpUser *module = nullptr;
+        cModule *node = nullptr;        // the network node
+        GtpUser *module = nullptr;      // base stations only
+        UserPlaneNodeControl *userPlaneNode = nullptr;      // user plane nodes only
         CoreNodeType type = ENB;
         MacNodeId bsId = NODEID_NONE;   // base stations only
         std::string gateway;            // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
-        Teid lastTeid = TEID_NONE;      // the TEID allocated last (see allocateTeid())
+        Teid lastTeid = TEID_NONE;      // base stations only: the TEID allocated last (see allocateTeid())
     };
     std::vector<GtpEndpoint> gtpEndpoints_;       // in registration order
     std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
@@ -132,7 +131,7 @@ class BearerConfigurator : public cSimpleModule, public cListener
         SessionRef ref;                          // the UE's node ids and the PDU Session ID
         int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
         FTeid ulAnchor;                             // uplink F-TEID at the anchor
-        std::map<int, Teid> ulMecHosts;             // uplink TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
+        std::map<int, FTeid> ulMecHosts;            // uplink F-TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
         MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
         MacNodeId lastDlBaseStation = NODEID_NONE;  // where the downlink last entered the RAN, kept while the UE is attached nowhere
         FTeid dl;                                   // downlink F-TEID at dlBaseStation
@@ -209,12 +208,12 @@ class BearerConfigurator : public cSimpleModule, public cListener
             std::map<cModule *, std::map<DrbId, DrbDesc>>& drbsOfUe);
 
     // Compile and deliver the QFI classification rule tables to their evaluation
-    // sites: dlQfiRules to the registered tunnel-entry traffic flow filters (scoped
-    // by "node"), ulQfiRules to the SDAP UEs' classifiers through each UE's RRC
-    // (scoped by "ue"). The delivery stands in for the signaling the model does not
-    // have -- the SMF installing PDR/QER rules into a UPF over N4, and the
-    // NAS-signalled QoS rules a UE receives at PDU session establishment -- and the
-    // sites never author or read back rules of their own.
+    // sites: dlQfiRules to the user plane nodes' traffic flow filters, through the
+    // nodes' N4 endpoints (scoped by "node"), ulQfiRules to the SDAP UEs' classifiers
+    // through each UE's RRC (scoped by "ue"). The delivery stands in for the signaling
+    // the model does not have -- the SMF installing PDR/QER rules into a UPF over N4,
+    // and the NAS-signalled QoS rules a UE receives at PDU session establishment --
+    // and the sites never author or read back rules of their own.
     virtual void deliverQfiRules();
 
     /**
@@ -228,14 +227,16 @@ class BearerConfigurator : public cSimpleModule, public cListener
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
 
-    // Take the GTP-U and X2-U tunnel endpoints the network's nodes registered with the
-    // Binder at INITSTAGE_LOCAL, in registration order, which is the order their TEID
-    // spaces are listed in. Before the first tunnel is set up.
+    // Take the tunnel endpoints the network's nodes registered with the Binder at
+    // INITSTAGE_LOCAL: the user plane nodes' N4 endpoints, then the base stations'
+    // GTP-U and X2-U endpoints, each in registration order. Before the first tunnel
+    // is set up.
     virtual void takeGtpEndpoints();
 
-    // Hand out the next TEID of the endpoint's TEID space. TEIDs are allocated in
-    // increasing order and never reused within a run, so a G-PDU still in flight on a
-    // released tunnel cannot be taken for a later session's.
+    // Hand out the next TEID of a base station's TEID space (a user plane node
+    // allocates its own, see UserPlaneNodeControl). TEIDs are allocated in increasing order and
+    // never reused within a run, so a G-PDU still in flight on a released tunnel
+    // cannot be taken for a later session's.
     virtual Teid allocateTeid(GtpEndpoint& endpoint);
 
     // The transport address of a tunnel endpoint: that of its network node
@@ -292,11 +293,6 @@ class BearerConfigurator : public cSimpleModule, public cListener
     virtual void createOutgoingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
 
   public:
-    // A traffic flow filter at a core-network tunnel entry announces itself for
-    // QFI-rule delivery; called from TrafficFlowFilter::initialize() at
-    // INITSTAGE_LOCAL, before deliverQfiRules() runs.
-    virtual void registerTrafficFlowFilter(TrafficFlowFilter *tff);
-
     // A stack of a UE starts handing over to the given node (handover preparation): the
     // base station its downlink will enter the RAN at allocates the session's downlink
     // TEID now, and gets the session's uplink tunnels, so the source can forward the

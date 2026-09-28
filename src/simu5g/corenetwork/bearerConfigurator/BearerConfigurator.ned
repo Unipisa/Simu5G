@@ -35,18 +35,21 @@ package simu5g.corenetwork.bearerConfigurator;
 //
 // As the SMF, this module keeps a PDU session per UE (PDU Session ID 1), established
 // when the UE first has a serving node and released when the UE leaves the
-// simulation. The GTP-U tunnel endpoints of the network (~GtpUser, and the base
-// stations' X2-U endpoints, ~GtpUserX2) register with the ~Binder, which this module
-// takes them from, and the tunnel endpoint ids (TEIDs) of the sessions' tunnels are
-// allocated on behalf of their receiving ends, in increasing order and never reused
-// within a run: an uplink TEID at the anchor UPF (or PGW) and at each MEC host UPF of
-// the anchor's core network, and a downlink TEID at each base station the session's
-// downlink has entered the RAN at. The anchor is the core network gateway of the base station the
-// UE's downlink enters the RAN at when the session is established, and it stays for
-// the lifetime of the session (SSC mode 1): a handover only moves the downlink end of
-// the tunnel (the path switch, TS 23.502 4.9.1.2.2), at the instant the ~Binder
-// records the new serving node. N4 signalling, intermediate UPFs (I-UPF) and SSC
-// modes 2 and 3 are not modeled.
+// simulation. The user plane nodes' N4 endpoints (~UserPlaneNodeControl) and the base
+// stations' tunnel endpoints (~GtpUser, and their X2-U endpoints, ~GtpUserX2)
+// register with the ~Binder, which this module takes them from. A session has an
+// uplink tunnel at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's
+// core network, and a downlink tunnel at each base station the session's downlink
+// has entered the RAN at; the tunnel endpoint ids (TEIDs) are allocated by the
+// receiving node, in increasing order and never reused within a run -- a user plane
+// node allocates its own when its session is established over N4, a base station's
+// are allocated here on its behalf. The anchor is the core network gateway of the
+// base station the UE's downlink enters the RAN at when the session is established,
+// and it stays for the lifetime of the session (SSC mode 1): a handover only moves
+// the downlink end of the tunnel (the path switch, TS 23.502 4.9.1.2.2), at the
+// instant the ~Binder records the new serving node. N4 signalling is modeled as the
+// calls of ~UserPlaneNodeControl; intermediate UPFs (I-UPF) and SSC modes 2 and 3 are not
+// modeled.
 //
 // Modeling abstractions and current limitations:
 //  - Bearer establishment is a direct call into the RRC of each node involved; no
@@ -280,8 +283,8 @@ package simu5g.corenetwork.bearerConfigurator;
 // already-assigned QFIs onto DRBs (mappedQfis); these two tables are where the QFIs
 // themselves are assigned, once per direction at its ingress. The rules are
 // delivered from here to their evaluation sites -- dlQfiRules to the
-// ~TrafficFlowFilter at each core-network tunnel entry (modeling the PDR/QER rules
-// the SMF installs into a UPF over N4 at session setup), ulQfiRules to each UE's
+// ~TrafficFlowFilter of each user plane node, through the node's ~UserPlaneNodeControl
+// (modeling the PDR/QER rules the SMF installs into a UPF over N4), ulQfiRules to each UE's
 // ~QosFlowClassifier (modeling the QoS rules NAS signaling installs into a UE at
 // PDU session establishment, TS 23.501 5.7.1.4) -- and the sites never author rules
 // of their own: the ini author writes the operator's classification policy here,

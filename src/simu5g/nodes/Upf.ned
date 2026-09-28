@@ -18,6 +18,7 @@ import inet.transportlayer.udp.Udp;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.ndResponder.Ipv6NdResponder;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
+import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
 
 //
 // Implements the 5G Core User Plane Function (UPF).
@@ -57,6 +58,12 @@ module Upf extends ApplicationLayerNodeBase
         gtp_user: GtpUser {
             parameters:
                 @display("p=1000,75");
+                gateway = parent.gateway;
+        }
+        userPlaneNodeControl: UserPlaneNodeControl {
+            parameters:
+                @display("p=1200,175");
+                nodeType = parent.nodeType;
                 gateway = parent.gateway;
         }
         ndResponder: Ipv6NdResponder if hasNdResponder {

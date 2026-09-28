@@ -15,7 +15,6 @@
 
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 
 namespace simu5g {
 
@@ -29,16 +28,6 @@ void TrafficFlowFilter::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         // reading and setting owner type
         ownerType_ = selectOwnerType(par("ownerType"));
-
-        // A filter at a core-network tunnel entry registers with the bearer
-        // configurator, which delivers its QFI-assignment rules (see the dlQfiRules
-        // parameter). A base station is no rule-enforcement point -- no SMF installs
-        // classification rules there -- so its filter does not register and
-        // classifies by the built-in residual only (see handleMessage()).
-        if (!isBaseStation(ownerType_)) {
-            bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
-            bearerConfigurator_->registerTrafficFlowFilter(this);
-        }
         return;
     }
 

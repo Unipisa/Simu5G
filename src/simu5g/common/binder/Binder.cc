@@ -18,6 +18,7 @@
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
@@ -149,11 +150,22 @@ void Binder::registerGtpEndpoint(GtpUser *module, CoreNodeType type, MacNodeId b
     Enter_Method_Silent("registerGtpEndpoint");
     if (getSimulation()->getContextType() != CTX_INITIALIZE)
         throw cRuntimeError("Binder: GTP-U endpoints register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
-    if (isBaseStation(type))
-        for (const auto& registration : gtpEndpoints_)
-            if (registration.bsId == bsId && isBaseStation(registration.type))
-                throw cRuntimeError("Binder: base station %d has a second GTP-U endpoint, %s", num(bsId), check_and_cast<cModule *>(module)->getFullPath().c_str());
+    if (!isBaseStation(type))
+        throw cRuntimeError("Binder: %s is no base station's GTP-U endpoint; a user plane node registers its N4 endpoint (UserPlaneNodeControl) instead", check_and_cast<cModule *>(module)->getFullPath().c_str());
+    for (const auto& registration : gtpEndpoints_)
+        if (registration.bsId == bsId)
+            throw cRuntimeError("Binder: base station %d has a second GTP-U endpoint, %s", num(bsId), check_and_cast<cModule *>(module)->getFullPath().c_str());
     gtpEndpoints_.push_back(GtpEndpointRegistration{module, type, bsId, gateway});
+}
+
+void Binder::registerUserPlaneNode(UserPlaneNodeControl *module, CoreNodeType type, const std::string& gateway)
+{
+    Enter_Method_Silent("registerUserPlaneNode");
+    if (getSimulation()->getContextType() != CTX_INITIALIZE)
+        throw cRuntimeError("Binder: N4 endpoints register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
+    if (isBaseStation(type))
+        throw cRuntimeError("Binder: %s is in a base station, which has no N4 endpoint", check_and_cast<cModule *>(module)->getFullPath().c_str());
+    userPlaneNodes_.push_back(UserPlaneNodeRegistration{module, type, gateway});
 }
 
 void Binder::registerX2GtpEndpoint(MacNodeId bsId, GtpUserX2 *module)

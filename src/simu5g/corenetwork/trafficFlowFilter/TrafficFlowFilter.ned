@@ -23,11 +23,12 @@ package simu5g.corenetwork.trafficFlowFilter;
 //
 // The module also assigns each packet entering the tunnel its QoS Flow Identifier
 // (QFI). At a core-network tunnel entry (~Upf, ~PgwStandard, a MEC host's UPF) the
-// QFI-assignment rules are delivered by the ~BearerConfigurator (see its dlQfiRules
-// parameter): they model the packet detection and QoS enforcement rules (PDR/QER)
-// that the SMF installs into a UPF over N4 signaling at session setup -- a real UPF
-// holds no classification policy of its own, and neither does this module. A packet
-// matching no rule gets QFI 0 (the default flow).
+// QFI-assignment rules are installed by the node's N4 endpoint, ~UserPlaneNodeControl, on
+// behalf of the SMF, which the ~BearerConfigurator stands in for (the rules are
+// authored in its dlQfiRules parameter): they model the packet detection and QoS
+// enforcement rules (PDR/QER) that the SMF installs into a UPF over N4 signaling --
+// a real UPF holds no classification policy of its own, and neither does this
+// module. A packet matching no rule gets QFI 0 (the default flow).
 //
 // A base station is no rule-enforcement point: no SMF installs classification rules
 // there, and none can be authored for it. An uplink packet that SDAP already
@@ -41,7 +42,6 @@ simple TrafficFlowFilter
         @display("i=block/filter");
 
         string binderModule = default("binder");
-        string bearerConfiguratorModule = default("bearerConfigurator");  // Where a core-network instance registers for QFI-rule delivery
         string ownerType @enum(ENODEB,GNODEB,PGW,UPF,UPF_MEC); // Must be one of ENODEB, GNODEB, PGW, UPF, UPF_MEC
         bool fastForwarding = default(true);
     gates:

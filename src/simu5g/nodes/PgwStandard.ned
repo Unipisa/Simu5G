@@ -18,6 +18,7 @@ import inet.transportlayer.udp.Udp;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.ndResponder.Ipv6NdResponder;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
+import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
 
 //
 // Implements a simplified EPC PDN Gateway (P-GW) of a 4G LTE network.
@@ -57,6 +58,11 @@ module PgwStandard extends ApplicationLayerNodeBase
         gtp_user: GtpUser {
             parameters:
                 @display("p=1000,75");
+        }
+        userPlaneNodeControl: UserPlaneNodeControl {
+            parameters:
+                @display("p=1200,175");
+                nodeType = parent.nodeType;
         }
         ndResponder: Ipv6NdResponder if hasNdResponder {
             parameters:
