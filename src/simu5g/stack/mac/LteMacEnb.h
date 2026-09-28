@@ -311,10 +311,10 @@ class LteMacEnb : public LteMacBase
     // not author its own configuration; this is the only write path into the map.
     virtual void configureDrbQos(DrbKey key, const DrbQosProfile& qos);
 
-    // Get DRB QoS map (DrbKey -> QoS profile), pushed by RRC
-    const std::map<DrbKey, DrbQosProfile> *getDrbQosMap() {
-        return drbQosMap_.empty() ? nullptr : &drbQosMap_;
-    }
+    // The DRB QoS map (DrbKey -> QoS profile), as RRC pushes it. The address stays
+    // valid for the module's lifetime, so a reader that takes it once (the scheduler,
+    // at its creation) sees the bearers configured later too.
+    const std::map<DrbKey, DrbQosProfile> *getDrbQosMap() { return &drbQosMap_; }
 
     /*
      * @author Alessandro Noferi

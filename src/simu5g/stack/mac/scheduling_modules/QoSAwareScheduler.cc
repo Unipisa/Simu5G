@@ -109,7 +109,7 @@ DrbQosProfile QoSAwareScheduler::aggregateQosProfiles(const std::vector<const Dr
 
 void QoSAwareScheduler::prepareSchedule()
 {
-    if (!drbQosMap_)
+    if (drbQosMap_ == nullptr || drbQosMap_->empty())
         throw cRuntimeError("QoSAwareScheduler requires DRB QoS profiles but none were configured. "
                             "Author them via the qos fields (gbr/delayBudget/per/priority) of the "
                             "bearerConfigurator.staticDrbs entries.");
