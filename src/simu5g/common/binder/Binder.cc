@@ -146,9 +146,9 @@ void Binder::registerUserPlaneNode(UserPlaneNodeControl *module, CoreNodeType ty
 {
     Enter_Method_Silent("registerUserPlaneNode");
     if (getSimulation()->getContextType() != CTX_INITIALIZE)
-        throw cRuntimeError("Binder: N4 endpoints register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
+        throw cRuntimeError("Binder: user plane nodes register during initialization only, not %s", check_and_cast<cModule *>(module)->getFullPath().c_str());
     if (isBaseStation(type))
-        throw cRuntimeError("Binder: %s is in a base station, which has no N4 endpoint", check_and_cast<cModule *>(module)->getFullPath().c_str());
+        throw cRuntimeError("Binder: %s is in a base station, which is no user plane node", check_and_cast<cModule *>(module)->getFullPath().c_str());
     userPlaneNodes_.push_back(UserPlaneNodeRegistration{module, type, gateway});
 }
 

@@ -712,7 +712,7 @@ void BearerConfigurator::validateQfiRules()
     };
 
     // A scoped entry that matches no site is a typo: a "node" pattern names a user
-    // plane node (an N4 endpoint of the Binder), a "ue" pattern a registered UE with SDAP
+    // plane node (registered with the Binder), a "ue" pattern a registered UE with SDAP
     const cValueArray *dlTable = check_and_cast<const cValueArray *>(par("dlQfiRules").objectValue());
     validateTable(dlTable, "dlQfiRules", "node");
     std::vector<bool> dlMatched(dlTable->size(), false);

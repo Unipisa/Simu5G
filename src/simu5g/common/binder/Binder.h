@@ -143,7 +143,7 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, inet::Ipv4Address> multicastDestIdToAddr_;
 
   public:
-    // The N4 endpoint of a user plane node (a UPF/PGW or a MEC host's UPF), as it
+    // The control-plane entry point of a user plane node (a UPF/PGW or a MEC host's UPF), as it
     // registered (see registerUserPlaneNode())
     struct UserPlaneNodeRegistration {
         UserPlaneNodeControl *module = nullptr;
@@ -255,9 +255,9 @@ class Binder : public cSimpleModule
     virtual void unregisterNode(MacNodeId id);
 
     /**
-     * The user plane nodes' N4 endpoints (UserPlaneNodeControl) register here during
-     * initialization, at INITSTAGE_LOCAL. The BearerConfigurator, standing in for the
-     * SMF, takes the user plane nodes it programs from here. (The base stations'
+     * The user plane nodes' control-plane entry points (UserPlaneNodeControl) register
+     * here during initialization, at INITSTAGE_LOCAL. The CoreControl takes the user
+     * plane nodes it programs from here. (The base stations'
      * control-plane entry points, ConnectionControlEnb, are found through the node
      * directory.) gateway is that of a MEC host's UPF, and empty otherwise.
      */

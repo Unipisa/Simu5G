@@ -13,16 +13,17 @@ package simu5g.corenetwork.coreControl;
 
 //
 // The control plane of the core network, one per cellular network alongside its
-// ~Binder and ~BearerConfigurator: the AMF and the SMF of a 5G core (in EPS terms,
-// the MME and the control plane of the gateways) in one module.
+// ~Binder and ~BearerConfigurator: the MME and the control plane of the gateways of
+// an EPC, or the AMF and the SMF of a 5G core, in one module.
 //
-// As the AMF, it takes the UEs' registrations: a UE's leg that connects at a base
-// station is announced here by that base station (initialUeMessage(), the INITIAL UE
-// MESSAGE of N2; at initialization, every leg attached to its configured cell). As
-// the SMF, it keeps a PDU session per UE (PDU Session ID 1), established at the UE's
-// first registration and released when the UE leaves the simulation, and programs
-// the nodes that end the session's tunnels through their control-plane entry points:
-// the user plane nodes' N4 endpoints (~UserPlaneNodeControl) and the base stations'
+// As the MME/AMF, it takes the UEs' registrations: a UE's leg that connects at a
+// base station is announced here by that base station (initialUeMessage(), the
+// INITIAL UE MESSAGE of S1AP/NGAP; at initialization, every leg attached to its
+// configured cell). As the gateways' control plane/SMF, it keeps a PDU session per
+// UE (PDU Session ID 1), established at the UE's first registration and released
+// when the UE leaves the simulation, and programs the nodes that end the session's
+// tunnels through their control-plane entry points: the user plane nodes'
+// ~UserPlaneNodeControl and the base stations'
 // connection controls (~ConnectionControlEnb, whose sessionResourceSetup() also
 // installs the UE's uplink QoS rules and static bearers). A session has an uplink
 // tunnel at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's core
@@ -38,15 +39,16 @@ package simu5g.corenetwork.coreControl;
 //
 // The module also delivers the QFI classification rules authored in the
 // ~BearerConfigurator (its dlQfiRules and ulQfiRules parameters) to their evaluation
-// sites: the downlink rules to each user plane node over N4, the uplink rules to each
+// sites: the downlink rules to each user plane node, the uplink rules to each
 // SDAP UE's classifier (the QoS rules NAS signaling installs into a UE at PDU session
 // establishment, TS 23.501 5.7.1.4).
 //
 // Like the ~Binder, the module is reached through module paths supplied in
 // parameters (coreControlModule), so several cellular networks -- each with its own
-// Binder, BearerConfigurator and CoreControl -- can coexist in one simulation. N4
-// signaling is modeled as calls; intermediate UPFs (I-UPF) and SSC modes 2 and 3 are
-// not modeled.
+// Binder, BearerConfigurator and CoreControl -- can coexist in one simulation. The
+// signaling toward the user plane nodes (GTP-C/PFCP) and the base stations (S1AP/NGAP)
+// is modeled as calls; a separate S-GW, intermediate UPFs (I-UPF) and SSC modes 2 and
+// 3 are not modeled.
 //
 simple CoreControl
 {

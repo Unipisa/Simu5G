@@ -108,7 +108,7 @@ class BearerConfigurator : public cSimpleModule
 
     // Validate the two QFI rule tables at initialization: every entry's field vocabulary
     // and grammar, and that every scoped entry matches a site -- a "node" pattern a
-    // user plane node (an N4 endpoint registered with the Binder), a "ue" pattern a
+    // user plane node (registered with the Binder), a "ue" pattern a
     // registered UE with SDAP -- since a pattern that matches nothing is a typo the
     // per-site compilation (getDownlinkQfiRules() etc.) would never surface.
     virtual void validateQfiRules();

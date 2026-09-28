@@ -442,7 +442,7 @@ void ConnectionControlUe::doHandover()
 
     // The network side: the target completes the handover (RRCReconfigurationComplete:
     // it takes the leg on, switches the path, releases the source), or the new base
-    // station takes the attaching leg on (RRCSetupRequest), or the old one is told the
+    // station takes the attaching leg on (RRC connection setup), or the old one is told the
     // leg is gone
     if (oldServingNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE)
         baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_);

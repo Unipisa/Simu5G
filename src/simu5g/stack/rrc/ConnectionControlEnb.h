@@ -84,7 +84,7 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;   // the bearer definitions, read only (its const API)
-    inet::ModuleRefByPar<CoreControl> coreControl_;                 // the core network's control plane, the far end of N2
+    inet::ModuleRefByPar<CoreControl> coreControl_;                 // the core network's control plane, the far end of S1/N2
     inet::ModuleRefByPar<BearerManagement> bearerManagement_;       // the node's installer
     inet::ModuleRefByPar<LteMacEnb> mac_;                           // the node's MAC, for the AMC's user attachment and the per-UE queues
     inet::ModuleRefByPar<HandoverPacketHolderEnb> handoverPacketHolder_;   // the node's downlink holder/forwarder
@@ -275,17 +275,19 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // ---- attach ----
 
-    // RRCSetupRequest, and the registration that follows: a leg of a UE connects at
-    // this base station (at initialization, the leg's configured serving cell),
-    // reporting its capabilities. The base station registers the UE with the core
-    // network, which sets up the session's resources here (sessionResourceSetup()).
+    // RRCConnectionRequest (LTE) / RRCSetupRequest (NR), and the registration that
+    // follows: a leg of a UE connects at this base station (at initialization, the
+    // leg's configured serving cell), reporting its capabilities. The base station
+    // registers the UE with the core network, which sets up the session's resources
+    // here (sessionResourceSetup()).
     virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities);
 
-    // PDU SESSION RESOURCE SETUP REQUEST (N2), from the core network, for a leg that
-    // registered here: the session's tunnels at this base station
-    // (sessionTunnelSetup()), the UE's uplink QoS rules (the NAS container), and the
-    // static data radio bearers of the leg that carries them, installed at this node
-    // and at the UE. Returns the downlink tunnel's F-TEID.
+    // E-RAB SETUP / INITIAL CONTEXT SETUP REQUEST (S1AP), PDU SESSION RESOURCE SETUP
+    // REQUEST (NGAP), from the core network, for a leg that registered here: the
+    // session's tunnels at this base station (sessionTunnelSetup()), the UE's uplink
+    // QoS rules (the NAS container), and the static data radio bearers of the leg that
+    // carries them, installed at this node and at the UE. Returns the downlink tunnel's
+    // F-TEID.
     virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
 
     // RRCRelease's counterpart the UE side sends, a simulation shortcut for the

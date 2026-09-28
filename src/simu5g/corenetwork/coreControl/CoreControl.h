@@ -29,10 +29,11 @@ class ConnectionControlEnb;
 class UserPlaneNodeControl;
 
 /**
- * The control plane of the core network, one per cellular network: the AMF and the
- * SMF of a 5G core (the MME and the gateways' control plane of an EPC) in one module.
+ * The control plane of the core network, one per cellular network: the MME and the
+ * gateways' control plane of an EPC, or the AMF and the SMF of a 5G core, in one
+ * module.
  * It keeps the UEs' PDU sessions and programs the nodes that end their tunnels
- * through the nodes' control-plane entry points (UserPlaneNodeControl over N4, and the base
+ * through the nodes' control-plane entry points (UserPlaneNodeControl, and the base
  * stations' ConnectionControlEnb). See CoreControl.ned.
  */
 class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
@@ -42,7 +43,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
 
     // A node of the network that ends tunnels (see takeGtpEndpoints()), through its
-    // control-plane entry point: the N4 endpoint of a user plane node (a UPF/PGW or a
+    // control-plane entry point: the UserPlaneNodeControl of a user plane node (a UPF/PGW or a
     // MEC host's UPF), or the connection control of a base station. Each allocates
     // its node's TEIDs itself, and is programmed through its calls.
     struct GtpEndpoint {
@@ -87,15 +88,15 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
      */
     void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
 
-    // Take the nodes that end tunnels from the Binder: the user plane nodes' N4
-    // endpoints, registered there at INITSTAGE_LOCAL, in registration order, then the
+    // Take the nodes that end tunnels from the Binder: the user plane nodes' control-
+    // plane entry points, registered there at INITSTAGE_LOCAL, in registration order, then the
     // base stations' connection controls, through the node directory, in node id
     // order. Before the first tunnel is set up.
     virtual void takeGtpEndpoints();
 
     // Deliver the QFI classification rules the BearerConfigurator holds to their
-    // evaluation sites: the downlink rules to each user plane node over N4 (PFCP
-    // Association Setup), the uplink rules to each SDAP UE's classifier through the
+    // evaluation sites: the downlink rules to each user plane node, the uplink rules
+    // to each SDAP UE's classifier through the
     // UE's RRC (the QoS rules NAS signaling installs into a UE at PDU session
     // establishment, TS 23.501 5.7.1.4). The sites never author rules of their own.
     virtual void deliverQfiRules();
@@ -140,7 +141,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     virtual void releaseSession(MacNodeId ueNodeId);
 
   public:
-    // INITIAL UE MESSAGE (N2), and the registration and PDU session establishment that
+    // INITIAL UE MESSAGE (S1AP/NGAP), and the registration and PDU session establishment that
     // follow: a leg of a UE has connected at the given base station. The UE's session
     // is established once, at its first leg's registration; the session's RAN
     // resources are set up at every base station the UE attaches through, once
@@ -148,7 +149,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // settled.
     virtual void initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs);
 
-    // PATH SWITCH REQUEST (N2), from the base station a leg arrived at by handover: the
+    // PATH SWITCH REQUEST (S1AP/NGAP), from the base station a leg arrived at by handover: the
     // UE's session now enters the RAN at that base station (the master of it, under
     // dual connectivity), with the downlink F-TEIDs the handover preparation set up
     // there (the session resources "to be switched in downlink"); a base station the
@@ -157,7 +158,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // enters at changed.
     virtual void pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, const std::vector<SessionResource>& sessions);
 
-    // UE CONTEXT RELEASE REQUEST (N2), from the base station a leg left without a
+    // UE CONTEXT RELEASE REQUEST (S1AP/NGAP), from the base station a leg left without a
     // handover: the leg is attached nowhere; the downlink path follows the UE's
     // remaining attachment, if any. The UE's session stays until the UE leaves the
     // simulation (nodeUnregistered).

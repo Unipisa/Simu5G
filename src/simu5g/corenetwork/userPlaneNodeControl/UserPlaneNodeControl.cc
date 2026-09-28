@@ -26,7 +26,7 @@ Define_Module(UserPlaneNodeControl);
 using namespace omnetpp;
 using namespace inet;
 
-// the nodeType parameter: the user plane node types only (a base station has no N4 endpoint)
+// the nodeType parameter: the user plane node types only (a base station is no user plane node)
 static CoreNodeType parseNodeType(const char *type)
 {
     if (strcmp(type, "UPF") == 0)

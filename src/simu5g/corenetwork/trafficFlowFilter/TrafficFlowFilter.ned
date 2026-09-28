@@ -23,8 +23,8 @@ package simu5g.corenetwork.trafficFlowFilter;
 //
 // The module also assigns each packet entering the tunnel its QoS Flow Identifier
 // (QFI). At a core-network tunnel entry (~Upf, ~PgwStandard, a MEC host's UPF) the
-// QFI-assignment rules are installed by the node's N4 endpoint, ~UserPlaneNodeControl, on
-// behalf of the SMF, which the ~BearerConfigurator stands in for (the rules are
+// QFI-assignment rules are installed by the node's control-plane entry point,
+// ~UserPlaneNodeControl, on behalf of the ~CoreControl, the SMF stand-in (the rules are
 // authored in its dlQfiRules parameter): they model the packet detection and QoS
 // enforcement rules (PDR/QER) that the SMF installs into a UPF over N4 signaling --
 // a real UPF holds no classification policy of its own, and neither does this

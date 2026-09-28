@@ -71,7 +71,7 @@ class TrafficFlowFilter : public cSimpleModule
     int meAppsExtAddressMask_;
 
     // The QFI-assignment rules of this tunnel-entry filter, installed by the node's
-    // N4 endpoint (see UserPlaneNodeControl::setDownlinkClassifierRules(), and the dlQfiRules parameter
+    // control-plane entry point (see UserPlaneNodeControl::setDownlinkClassifierRules(), and the dlQfiRules parameter
     // of the bearer configurator they are authored in): the first rule whose filter
     // matches the packet supplies its QFI -- a fixed value, or the packet's DSCP
     // field read as the QFI. Stays empty at a base-station filter, which classifies

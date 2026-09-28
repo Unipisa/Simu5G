@@ -139,7 +139,7 @@ void CoreControl::takeGtpEndpoints()
 
 void CoreControl::deliverQfiRules()
 {
-    // Downlink: each user plane node gets the rules scoped to it, over N4. (The uplink
+    // Downlink: each user plane node gets the rules scoped to it. (The uplink
     // rules reach each UE with its session's resource setup, see initialUeMessage().)
     for (const GtpEndpoint& endpoint : gtpEndpoints_)
         if (endpoint.userPlaneNode != nullptr)
@@ -161,7 +161,7 @@ int CoreControl::findGatewayEndpoint(const std::string& gateway, const GtpEndpoi
         if ((endpoint.type == UPF || endpoint.type == PGW) && node != nullptr && endpoint.node == node)
             return i;
     }
-    throw cRuntimeError("CoreControl: the gateway '%s' of %s is no UPF or PGW with an N4 endpoint",
+    throw cRuntimeError("CoreControl: the gateway '%s' of %s is no user plane node (UPF or PGW)",
             gateway.c_str(), from.node->getFullPath().c_str());
 }
 

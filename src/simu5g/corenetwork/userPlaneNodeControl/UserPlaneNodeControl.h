@@ -28,10 +28,10 @@ class GtpUser;
 class TrafficFlowFilter;
 
 /**
- * The N4 endpoint of a user plane node (a UPF, a PGW, or a MEC host's UPF): the one
- * module of the node the control plane talks to. It owns the node's TEID space, and
- * programs the node's GtpUser and TrafficFlowFilter as the SMF's calls say. See
- * UserPlaneNodeControl.ned.
+ * The control-plane entry point of a user plane node (a UPF, a PGW, or a MEC host's
+ * UPF): the one module of the node the core network's control plane talks to. It
+ * owns the node's TEID space, and programs the node's GtpUser and TrafficFlowFilter
+ * as the CoreControl's calls say. See UserPlaneNodeControl.ned.
  */
 class UserPlaneNodeControl : public omnetpp::cSimpleModule
 {
@@ -67,21 +67,22 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     CoreNodeType getNodeType() const { return nodeType_; }
     const std::string& getGateway() const { return gateway_; }
 
-    // PFCP Association Setup, as far as the model needs it: the node's downlink QFI
-    // classification rules, installed into the traffic flow filter
+    // The node's downlink QFI classification rules, installed into the traffic flow
+    // filter (5GC: the PDRs/QERs PFCP would carry)
     virtual void setDownlinkClassifierRules(QfiRuleSet&& rules);
 
-    // PFCP Session Establishment: the session's uplink tunnel at this node, under a
-    // TEID allocated here; returns the tunnel's F-TEID, for the base stations to send
-    // the session's uplink on
+    // PFCP Session Establishment / GTP-C Create Session: the session's uplink tunnel
+    // at this node, under a TEID allocated here; returns the tunnel's F-TEID, for the
+    // base stations to send the session's uplink on
     virtual FTeid establishUserPlaneSession(const SessionRef& session);
 
-    // PFCP Session Modification: the session's downlink now goes into tunnel dl (unset:
-    // nowhere, the UE is attached nowhere). If oldDl is set, the downlink on that path
-    // is ended with an End Marker first (TS 23.502 4.9.1.2.2).
+    // PFCP Session Modification / GTP-C Modify Bearer: the session's downlink now goes
+    // into tunnel dl (unset: nowhere, the UE is attached nowhere). If oldDl is set, the
+    // downlink on that path is ended with an End Marker first (TS 23.502 4.9.1.2.2).
     virtual void updateDownlinkTunnel(const SessionRef& session, const FTeid& dl, const FTeid& oldDl);
 
-    // PFCP Session Deletion: the session's tunnels at this node are forgotten
+    // PFCP Session Deletion / GTP-C Delete Session: the session's tunnels at this node
+    // are forgotten
     virtual void releaseUserPlaneSession(const SessionRef& session);
 };
 

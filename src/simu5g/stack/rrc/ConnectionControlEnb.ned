@@ -42,7 +42,7 @@ package simu5g.stack.rrc;
 // Attach. A UE's leg connects here with connectionSetupRequest() (at initialization, at its
 // configured serving cell; during the run, when a detached leg finds a cell); the
 // base station takes it on at its AMC and registers the UE with the ~CoreControl
-// (the INITIAL UE MESSAGE of N2), which establishes the UE's PDU session and asks
+// (the INITIAL UE MESSAGE of S1AP/NGAP), which establishes the UE's PDU session and asks
 // this base station to set up its resources (sessionResourceSetup(): the tunnels,
 // the UE's uplink QoS rules, and the static bearers of the leg that carries them). A
 // leg that lost its cell, or whose UE leaves, says so with connectionLost(): the base
