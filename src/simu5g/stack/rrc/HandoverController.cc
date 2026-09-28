@@ -124,15 +124,12 @@ void HandoverController::finish()
 
         // do this only if this PHY layer is connected to a serving base station
         if (servingNodeId_ != NODEID_NONE) {
-            // clear buffers
-            deleteOldBuffers(servingNodeId_, /*localNodeIsBeingDeleted=*/true);
-
-            // amc calls
-            LteAmc *amc = getAmcModule(servingNodeId_);
-            if (amc != nullptr) {
-                amc->detachUser(nodeId_, UL);
-                amc->detachUser(nodeId_, DL);
-            }
+            // The UE's own entities are left alone: they are submodules of the NIC
+            // that is about to be destroyed anyway, and deleting them here would
+            // mutate the submodule list that OMNeT++'s callFinish() is enumerating.
+            // The base station releases its own state for the leg.
+            deleteOwnBuffers(servingNodeId_, /*localNodeIsBeingDeleted=*/true);
+            baseStationControl(servingNodeId_)->connectionLost(nodeId_);
 
             onNodeLeaving();
 
@@ -425,22 +422,10 @@ void HandoverController::doHandover()
 
     onHandoverExecuting();
 
-    // Delete old buffers and detach/attach from AMC
-    if (servingNodeId_ != NODEID_NONE) {
-        // Delete Old Buffers
-        deleteOldBuffers(servingNodeId_);
-
-        // AMC calls
-        LteAmc *oldAmc = getAmcModule(servingNodeId_);
-        oldAmc->detachUser(nodeId_, UL);
-        oldAmc->detachUser(nodeId_, DL);
-    }
-
-    if (candidateServingNodeId_ != NODEID_NONE) {
-        LteAmc *newAmc = getAmcModule(candidateServingNodeId_);
-        newAmc->attachUser(nodeId_, UL);
-        newAmc->attachUser(nodeId_, DL);
-    }
+    // The UE's own state toward the old serving node goes; the base station releases
+    // its own when told below (ueContextRelease, connectionLost)
+    if (servingNodeId_ != NODEID_NONE)
+        deleteOwnBuffers(servingNodeId_);
 
     // Binder calls
     if (servingNodeId_ != NODEID_NONE)
@@ -484,11 +469,16 @@ void HandoverController::doHandover()
     // Inform the UE's HandoverPacketHolder module to forward held packets
     handoverPacketHolder_->signalHandoverCompleteUe(isNr_);
 
-    // Inform the eNB's HandoverPacketHolder module to forward data to the target eNB
-    if (oldServingNodeId != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        HandoverPacketHolderEnb *enbIp2nic = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(servingNodeId_));
-        enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldServingNodeId);
-    }
+    // The network side: the target completes the handover (RRCReconfigurationComplete:
+    // it takes the leg on, switches the path, releases the source), or the new base
+    // station takes the attaching leg on (RRCSetupRequest), or the old one is told the
+    // leg is gone
+    if (oldServingNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE)
+        baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_, oldServingNodeId);
+    else if (servingNodeId_ != NODEID_NONE)
+        baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this);
+    else
+        baseStationControl(oldServingNodeId)->connectionLost(nodeId_);
 }
 
 void HandoverController::forceHandover()
@@ -501,22 +491,10 @@ void HandoverController::forceHandover()
     scheduleAt(NOW, handoverStarter_);
 }
 
-void HandoverController::deleteOldBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted)
+void HandoverController::deleteOwnBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted)
 {
-    // Delete MAC Buffers
-
-    // delete macBuffer[nodeId_] at old serving node
-    LteMacEnb *servingNodeMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(servingNodeId));
-    servingNodeMac->deleteQueues(nodeId_);
-
     // delete queues for serving node at this UE
     mac_->deleteQueues(servingNodeId);
-
-    // Delete RLC entities
-
-    // delete RLC entities for nodeId_ at old serving node
-    BearerManagement *servingBm = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(servingNodeId)->getSubmodule("bearerManagement"));
-    servingBm->deleteLocalRlcQueues(nodeId_, isNr_);
 
     // delete RLC entities for serving node at this UE. Keyed by the serving node, matching
     // both the comment and the deleteLocalPdcpEntities(servingNodeId) call below; passing
@@ -524,19 +502,6 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId, bool localNod
     // and deleted every entity.
     if (!localNodeIsBeingDeleted)
         bearerManagement_->deleteLocalRlcQueues(servingNodeId, isNr_);
-
-    // Delete PDCP Entities
-    // delete pdcpEntities[nodeId_] at old serving node
-    // In case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
-    MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(servingNodeId);
-    BearerManagement *masterBm = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(pdcpNodeId)->getSubmodule("bearerManagement"));
-    masterBm->deleteLocalPdcpEntities(nodeId_);
-
-    // If the old serving node is a DC secondary, also delete the per-UE bypass PDCP entities
-    // residing on the secondary itself (keyed by this UE's id there) -- the master-side call
-    // above does not reach them
-    if (pdcpNodeId != servingNodeId)
-        servingBm->deleteLocalPdcpEntities(nodeId_);
 
     // delete PDCP entities for serving node at this UE
     if (!localNodeIsBeingDeleted)
@@ -548,10 +513,11 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId, bool localNod
     // them up; if it is detached now, remove them together with the master-side state --
     // otherwise they are orphaned here, and a later re-establishment collides with them when
     // the UE returns to this master (duplicate MAC CID assert / duplicate module errors).
+    // The base station does the same for its side (see ConnectionControlEnb::releaseLeg()).
     if (otherHandoverController_ != nullptr && otherHandoverController_->getServingNodeId() == NODEID_NONE) {
         MacNodeId secondaryNodeId = binder_->getSecondaryNode(servingNodeId);
         if (secondaryNodeId != NODEID_NONE)
-            otherHandoverController_->deleteOldBuffers(secondaryNodeId, localNodeIsBeingDeleted);
+            otherHandoverController_->deleteOwnBuffers(secondaryNodeId, localNodeIsBeingDeleted);
     }
 }
 

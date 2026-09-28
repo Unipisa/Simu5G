@@ -16,7 +16,6 @@
 #include "simu5g/common/InitStages.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
-#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 #include "simu5g/stack/rrc/ConnectionControlBase.h"
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
 
@@ -33,18 +32,11 @@ void CoreControl::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
         binder_->subscribe(Binder::nodeUnregisteredSignal_, this);
-        binder_->subscribe(Binder::servingNodeChangedSignal_, this);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known
         takeGtpEndpoints();
         deliverQfiRules();
-    }
-    else if (stage == inet::INITSTAGE_LAST) {
-        // The UEs attached at initialization register from their own last stage, which
-        // runs after this one (the network declares its nodes after this module). From
-        // here on, attachments are followed as they happen.
-        pduSessionsEstablished_ = true;
     }
 }
 
@@ -78,24 +70,28 @@ void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long n
 {
     Enter_Method_Silent("receiveSignal");
     MacNodeId id = MacNodeId(nodeId);
-
-    if (signalID == Binder::servingNodeChangedSignal_) {
-        // during initialization, attachments are still being settled; the sessions of
-        // the UEs attached by the end of it are established in the last stage
-        if (!pduSessionsEstablished_)
-            return;
-        auto it = sessionOfNode_.find(id);
-        if (it == sessionOfNode_.end() && binder_->nodeExists(id)) {
-            establishSession(id);
-            it = sessionOfNode_.find(id);
-        }
-        if (it != sessionOfNode_.end())
-            switchPath(sessions_.at(it->second));
-        return;
-    }
-
     ASSERT(signalID == Binder::nodeUnregisteredSignal_);
     releaseSession(id);
+}
+
+void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs)
+{
+    Enter_Method("pathSwitchRequest");
+    auto it = sessionOfNode_.find(legId);
+    if (it == sessionOfNode_.end())
+        return;   // a UE without a PDU session (its base stations have no core network)
+    CoreSession& session = sessions_.at(it->second);
+    setUpRanTunnels(session, binder_->getMasterNodeOrSelf(bs->getNodeId()));   // set up by the handover preparation already
+    updateDownlinkPath(session);
+}
+
+void CoreControl::ueContextReleaseRequest(MacNodeId legId)
+{
+    Enter_Method("ueContextReleaseRequest");
+    auto it = sessionOfNode_.find(legId);
+    if (it == sessionOfNode_.end())
+        return;
+    updateDownlinkPath(sessions_.at(it->second));
 }
 
 void CoreControl::takeGtpEndpoints()
@@ -228,18 +224,6 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
     EV_INFO << endl;
 }
 
-void CoreControl::switchPath(CoreSession& session)
-{
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId}) {
-        if (nodeId == NODEID_NONE)
-            continue;
-        MacNodeId servingNode = binder_->getServingNode(nodeId);
-        if (servingNode != NODEID_NONE)
-            setUpRanTunnels(session, binder_->getMasterNodeOrSelf(servingNode));
-    }
-    updateDownlinkPath(session);
-}
-
 void CoreControl::updateDownlinkPath(CoreSession& session)
 {
     MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
@@ -275,8 +259,7 @@ void CoreControl::updateDownlinkPath(CoreSession& session)
     if (dlBaseStation == NODEID_NONE)
         return;
 
-    auto holder = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(dlBaseStation));
-    holder->switchDownlinkPath(session.ref.lteNodeId, session.ref.nrNodeId, oldDlBaseStation);
+    gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation)).bs->downlinkPathSwitched(session.ref.lteNodeId, session.ref.nrNodeId, oldDlBaseStation);
     session.lastDlBaseStation = dlBaseStation;
 }
 

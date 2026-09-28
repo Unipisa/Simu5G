@@ -83,10 +83,11 @@ class HandoverPacketHolderEnb : public cSimpleModule
     virtual void signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb);
     virtual void signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb);
 
-    // Called by the bearer configurator (the SMF stand-in) at the path switch: the
-    // downlink of the PDU session of the UE with the given node ids now enters the RAN
-    // here, and entered it at fromBaseStation before (NODEID_NONE: nowhere), where the
-    // anchor ends it with an End Marker if it is another base station
+    // Called by the node's control plane (ConnectionControlEnb::downlinkPathSwitched())
+    // at the path switch: the downlink of the PDU session of the UE with the given
+    // node ids now enters the RAN here, and entered it at fromBaseStation before
+    // (NODEID_NONE: nowhere), where the anchor ends it with an End Marker if it is
+    // another base station
     virtual void switchDownlinkPath(MacNodeId ueLteId, MacNodeId ueNrId, MacNodeId fromBaseStation);
 };
 

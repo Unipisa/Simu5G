@@ -123,16 +123,18 @@ class HandoverController : public ConnectionControlBase
     virtual void startHandover();
     virtual void doHandover();
     /**
-     * Tear down the bearer state this UE shares with @p servingNodeId, at both ends.
+     * Tear down this UE's own side of the bearer state it shares with @p servingNodeId:
+     * its MAC queues and RLC/PDCP entities toward that node (the node releases its own
+     * side when told, see ConnectionControlEnb::ueContextRelease()/connectionLost()).
      *
      * @param localNodeIsBeingDeleted  true when the whole UE module tree is being deleted
      *        mid-simulation (see finish()). The local RLC/PDCP entity modules are then left
      *        alone: they are submodules of the NIC that is about to be destroyed anyway, and
      *        deleting them here would mutate the submodule list that OMNeT++'s callFinish()
      *        is enumerating, which aborts the run with "SubmoduleIterator: Submodule
-     *        insertion/deletion detected". The peer-side and global state still has to go.
+     *        insertion/deletion detected".
      */
-    virtual void deleteOldBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted = false);
+    virtual void deleteOwnBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted = false);
     virtual void updateHysteresisThreshold(double rssi);
     virtual LteAmc *getAmcModule(MacNodeId nodeId);
 

@@ -27,6 +27,8 @@
 #include "simu5g/corenetwork/gtp/GtpTunnel.h"
 #include "simu5g/corenetwork/gtp/GtpUser.h"
 #include "simu5g/corenetwork/gtp/GtpUserX2.h"
+#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rrc/ConnectionControlBase.h"
 
@@ -68,8 +70,15 @@ class ConnectionControlEnb : public ConnectionControlBase
     inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;   // the bearer definitions, read only (its const API)
     inet::ModuleRefByPar<CoreControl> coreControl_;                 // the core network's control plane, the far end of N2
     inet::ModuleRefByPar<BearerManagement> bearerManagement_;       // the node's installer
+    inet::ModuleRefByPar<LteMacEnb> mac_;                           // the node's MAC, for the AMC's user attachment and the per-UE queues
+    inet::ModuleRefByPar<HandoverPacketHolderEnb> handoverPacketHolder_;   // the node's downlink holder/forwarder
     inet::ModuleRefByPar<GtpUser> gtpUser_;
     inet::ModuleRefByPar<GtpUserX2> gtpUserX2_;
+
+    // The handovers this base station is the source of: the target of each leg's,
+    // from the decision until the target releases the leg (see measurementReport(),
+    // ueContextRelease()). Grows into the UE context in a later round.
+    std::map<MacNodeId, MacNodeId> handoverTargets_;
 
     // The node's TEID space: the TEID allocated last (see allocateTeid())
     Teid lastTeid_ = TEID_NONE;
@@ -113,6 +122,21 @@ class ConnectionControlEnb : public ConnectionControlBase
     // decision the UE made itself before, whose hysteresis it still applies before
     // reporting -- so the instant and the target are unchanged.
     virtual MacNodeId selectHandoverTarget(MacNodeId legId, const MeasurementReport& report);
+
+    // The other leg of the UE the leg belongs to, or NODEID_NONE
+    virtual MacNodeId otherLegOf(MacNodeId legId);
+
+    // Release this base station's state for a leg that left it: its MAC queues and RLC
+    // entities here, its PDCP entities here and at this node's master if this node is a
+    // secondary; and, if the UE's other leg is attached nowhere, whatever this node's
+    // secondary holds for that leg, which the master's bearer establishment provisions
+    // there regardless of the leg's attachment and nothing else would release (see
+    // HandoverController::deleteOwnBuffers()). The AMC detach is the caller's.
+    virtual void releaseLeg(MacNodeId legId);
+
+    // The UE's uplink and downlink at this node's AMC
+    virtual void attachAtAmc(MacNodeId legId);
+    virtual void detachAtAmc(MacNodeId legId);
 
     // The body of sessionTunnelSetup(), for the calls that come from inside
     virtual FTeid setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink);
@@ -219,11 +243,41 @@ class ConnectionControlEnb : public ConnectionControlBase
     // and at the UE. Returns the downlink tunnel's F-TEID.
     virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
 
+    // RRCRelease's counterpart the UE side sends, a simulation shortcut for the
+    // network's own radio link monitoring: the leg lost the cell, detached, or is
+    // being deleted. This base station releases its state for the leg and tells the
+    // core network (UE CONTEXT RELEASE REQUEST).
+    virtual void connectionLost(MacNodeId legId);
+
     // ---- handover ----
 
     // MeasurementReport, from a leg this base station serves: the base station
     // decides (selectHandoverTarget()) and commands the leg's handover
     virtual void measurementReport(MacNodeId legId, const MeasurementReport& report);
+
+    // RRCReconfigurationComplete, from a leg that arrived here by handover: the target
+    // takes the leg on at its AMC, has the core network switch the session's downlink
+    // path here (PATH SWITCH REQUEST), releases the leg at the source (UE CONTEXT
+    // RELEASE over Xn), and sends down the downlink held for the leg. The source is
+    // named by the UE until the target has a context of the leg (next round).
+    virtual void reconfigurationComplete(MacNodeId legId, MacNodeId sourceBsId);
+
+    // UE CONTEXT RELEASE (Xn), from the target of a leg's handover once the path is
+    // switched: this base station, the source, stops forwarding and releases its
+    // state for the leg
+    virtual void ueContextRelease(MacNodeId legId);
+
+    // PATH SWITCH REQUEST ACKNOWLEDGE, as far as the model needs it: the downlink of
+    // the PDU session of the UE with the given node ids now enters the RAN here, and
+    // entered it at fromBaseStation before (NODEID_NONE: nowhere), where the anchor
+    // ends it with an End Marker if it is another base station. Told to the base
+    // station the downlink enters at, which may be the master of the one that
+    // requested the switch.
+    virtual void downlinkPathSwitched(MacNodeId ueLteId, MacNodeId ueNrId, MacNodeId fromBaseStation);
+
+    // A secondary's leg left it: the master releases the leg's PDCP entities, which
+    // it anchors (SN release, as far as the model needs it)
+    virtual void releasePdcpEntities(MacNodeId legId);
 
     // ---- the node's tunnels, for the core network's control plane ----
 

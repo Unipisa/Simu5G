@@ -147,11 +147,11 @@ void HandoverX2Forwarder::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, 
 {
     EV << NOW << " HandoverX2Forwarder::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    // send command to HandoverPacketHolder
+    // send command to HandoverPacketHolder. The stop command has nothing left to do:
+    // the target releases the source through the control plane
+    // (ConnectionControlEnb::ueContextRelease()) the instant the handover completes.
     if (startHo)
         handoverPacketHolder_->triggerHandoverTarget(ueId, enb);
-    else
-        handoverPacketHolder_->signalHandoverCompleteSource(ueId, enb);
 }
 
 void HandoverX2Forwarder::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)

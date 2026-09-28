@@ -60,7 +60,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // the UE first has a serving node, released when the UE leaves (see
     // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
     // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
-    // end of the tunnel (see switchPath()). The tunnel ends are told about every change
+    // end of the tunnel (see updateDownlinkPath()). The tunnel ends are told about every change
     // through their nodes' control-plane entry points.
     struct CoreSession {
         omnetpp::cModule *ueModule = nullptr;
@@ -77,10 +77,6 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     std::map<CoreSessionKey, CoreSession> sessions_;
     std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's PDU session
 
-    // False until the last initialization stage, where the PDU sessions of the UEs
-    // attached by then are established; from then on, as UEs attach
-    bool pduSessionsEstablished_ = false;
-
   protected:
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -88,9 +84,6 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
 
     /**
      * Binder::nodeUnregisteredSignal_: a departing UE's PDU session is released.
-     *
-     * Binder::servingNodeChangedSignal_: a UE's serving node has changed. Its PDU session
-     * is established if it has none yet, or else its downlink path is switched.
      */
     void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
 
@@ -124,17 +117,12 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // of its downlink base station: its uplink tunnels at the anchor and the MEC host
     // UPFs. Does nothing if the UE is attached nowhere yet, or its base station is not
     // connected to a core network. The RAN end of the session is set up separately
-    // (initialUeMessage(), switchPath()).
+    // (initialUeMessage(), pathSwitchRequest()).
     virtual void establishSession(MacNodeId ueNodeId);
 
-    // Follow a change of the UE's attachment. Every base station the UE is attached
-    // through (the master of a stack's serving node) takes the UE's uplink into the core
-    // network, so it is given the session's uplink tunnels and a downlink TEID on first
-    // use (setUpRanTunnels()); then updateDownlinkPath().
-    virtual void switchPath(CoreSession& session);
-
     // If the base station the UE's downlink enters the RAN at has changed, the downlink
-    // end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2)
+    // end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2), and that
+    // base station is told (ConnectionControlEnb::downlinkPathSwitched())
     virtual void updateDownlinkPath(CoreSession& session);
 
     // Set up the session's tunnels at a base station the UE is attached through, or is
@@ -159,6 +147,18 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // (ConnectionControlEnb::sessionResourceSetup()); and the downlink path is
     // settled.
     virtual void initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs);
+
+    // PATH SWITCH REQUEST (N2), from the base station a leg arrived at by handover: the
+    // UE's session now enters the RAN at that base station (the master of it, under
+    // dual connectivity), whose tunnels the handover preparation set up; the downlink
+    // path is switched if the base station the downlink enters at changed
+    virtual void pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs);
+
+    // UE CONTEXT RELEASE REQUEST (N2), from the base station a leg left without a
+    // handover: the leg is attached nowhere; the downlink path follows the UE's
+    // remaining attachment, if any. The UE's session stays until the UE leaves the
+    // simulation (nodeUnregistered).
+    virtual void ueContextReleaseRequest(MacNodeId legId);
 
     // A stack of a UE starts handing over to the given node (handover preparation): the
     // base station its downlink will enter the RAN at allocates the session's downlink

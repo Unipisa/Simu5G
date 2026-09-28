@@ -39,10 +39,23 @@ package simu5g.stack.rrc;
 // torn-down bearer's returns to.
 //
 // Attach. A UE's leg connects here with connectionSetupRequest() (at initialization, at its
-// configured serving cell); the base station registers the UE with the ~CoreControl
+// configured serving cell; during the run, when a detached leg finds a cell); the
+// base station takes it on at its AMC and registers the UE with the ~CoreControl
 // (the INITIAL UE MESSAGE of N2), which establishes the UE's PDU session and asks
 // this base station to set up its resources (sessionResourceSetup(): the tunnels,
-// the UE's uplink QoS rules, and the static bearers of the leg that carries them).
+// the UE's uplink QoS rules, and the static bearers of the leg that carries them). A
+// leg that lost its cell, or whose UE leaves, says so with connectionLost(): the base
+// station releases its state for the leg and tells the core network.
+//
+// Handover. The serving base station decides on a leg's measurementReport() and
+// commands the handover; when the leg arrives at the target
+// (reconfigurationComplete()), the target takes it on, has the ~CoreControl switch
+// the session's downlink path (PATH SWITCH REQUEST; the base station the downlink
+// enters at learns of it with downlinkPathSwitched()), and releases the leg at the
+// source (ueContextRelease(), the UE CONTEXT RELEASE of Xn), which stops forwarding
+// and drops its state for the leg. The preparation -- the target's tunnels, the
+// source's forwarding -- is still the ~CoreControl's, on the handover preparation
+// signal, until the next stage.
 //
 // Nothing outside the node reaches its ~GtpUser, ~GtpUserX2 or ~BearerManagement
 // directly; how the node is composed is its own business. Other nodes find this
@@ -57,6 +70,8 @@ simple ConnectionControlEnb like IConnectionControl
         string bearerConfiguratorModule = default("bearerConfigurator");
         string coreControlModule = default("coreControl");
         string bearerManagementModule = default("^.bearerManagement");
+        string macModule = default("^.^.mac");
+        string handoverPacketHolderModule = default("^.^.handoverPacketHolder");
         string gtpUserModule = default("^.^.^.gtpUser");
         string gtpUserX2Module = default("^.^.^.gtpUserX2");
         int macNodeId;  // The base station's node id; the NIC sets it from the node's

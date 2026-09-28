@@ -47,6 +47,8 @@ void ConnectionControlEnb::initialize(int stage)
         bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
         coreControl_.reference(this, "coreControlModule", true);
         bearerManagement_.reference(this, "bearerManagementModule", true);
+        mac_.reference(this, "macModule", true);
+        handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
         gtpUser_.reference(this, "gtpUserModule", true);
         gtpUserX2_.reference(this, "gtpUserX2Module", true);
     }
@@ -107,12 +109,96 @@ void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementR
                 << " at " << report.servingRssi << ", best " << report.bestCell << " at " << report.bestRssi << ")" << endl;
         return;
     }
+    handoverTargets_[legId] = target;
     ueControl(legId)->handoverCommand(target);
 }
 
 MacNodeId ConnectionControlEnb::selectHandoverTarget(MacNodeId legId, const MeasurementReport& report)
 {
     return report.bestCell;
+}
+
+void ConnectionControlEnb::reconfigurationComplete(MacNodeId legId, MacNodeId sourceBsId)
+{
+    Enter_Method("reconfigurationComplete");
+    attachAtAmc(legId);
+    coreControl_->pathSwitchRequest(legId, this);
+    baseStationControl(sourceBsId)->ueContextRelease(legId);
+    handoverPacketHolder_->signalHandoverCompleteTarget(legId, sourceBsId);
+}
+
+void ConnectionControlEnb::ueContextRelease(MacNodeId legId)
+{
+    Enter_Method("ueContextRelease");
+    auto it = handoverTargets_.find(legId);
+    if (it == handoverTargets_.end())
+        throw cRuntimeError("ConnectionControlEnb: base station %d is no handover source of leg %d", (int)num(nodeId_), (int)num(legId));
+    MacNodeId target = it->second;
+    handoverTargets_.erase(it);
+    releaseLeg(legId);
+    detachAtAmc(legId);
+    handoverPacketHolder_->signalHandoverCompleteSource(legId, target);
+}
+
+void ConnectionControlEnb::connectionLost(MacNodeId legId)
+{
+    Enter_Method("connectionLost");
+    releaseLeg(legId);
+    detachAtAmc(legId);
+    coreControl_->ueContextReleaseRequest(legId);
+}
+
+void ConnectionControlEnb::downlinkPathSwitched(MacNodeId ueLteId, MacNodeId ueNrId, MacNodeId fromBaseStation)
+{
+    Enter_Method("downlinkPathSwitched");
+    handoverPacketHolder_->switchDownlinkPath(ueLteId, ueNrId, fromBaseStation);
+}
+
+void ConnectionControlEnb::releasePdcpEntities(MacNodeId legId)
+{
+    Enter_Method("releasePdcpEntities");
+    bearerManagement_->deleteLocalPdcpEntities(legId);
+}
+
+MacNodeId ConnectionControlEnb::otherLegOf(MacNodeId legId)
+{
+    auto *reg = check_and_cast<Registration *>(binder_->getRrcByNodeId(legId)->getSubmodule("registration"));
+    return legId == reg->getLteNodeId() ? reg->getNrNodeId() : reg->getLteNodeId();
+}
+
+void ConnectionControlEnb::releaseLeg(MacNodeId legId)
+{
+    mac_->deleteQueues(legId);
+    bearerManagement_->deleteLocalRlcQueues(legId, isNrUe(legId));
+
+    // The leg's PDCP entities live at the node anchoring its bearers: at this node's
+    // master when this node is a secondary (the bypass entities keyed by the leg stay
+    // here as well), else here
+    MacNodeId masterId = binder_->getMasterNodeOrSelf(nodeId_);
+    if (masterId != nodeId_)
+        baseStationControl(masterId)->releasePdcpEntities(legId);
+    bearerManagement_->deleteLocalPdcpEntities(legId);
+
+    MacNodeId otherLegId = otherLegOf(legId);
+    if (otherLegId != NODEID_NONE && binder_->getServingNode(otherLegId) == NODEID_NONE) {
+        MacNodeId secondaryId = binder_->getSecondaryNode(nodeId_);
+        if (secondaryId != NODEID_NONE)
+            baseStationControl(secondaryId)->releaseLeg(otherLegId);
+    }
+}
+
+void ConnectionControlEnb::attachAtAmc(MacNodeId legId)
+{
+    LteAmc *amc = mac_->getAmc();
+    amc->attachUser(legId, UL);
+    amc->attachUser(legId, DL);
+}
+
+void ConnectionControlEnb::detachAtAmc(MacNodeId legId)
+{
+    LteAmc *amc = mac_->getAmc();
+    amc->detachUser(legId, UL);
+    amc->detachUser(legId, DL);
 }
 
 // ---- the node's tunnels ----
@@ -138,6 +224,9 @@ FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const
 void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc)
 {
     Enter_Method("connectionSetupRequest");
+    // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
+    if (getSimulation()->getContextType() != CTX_INITIALIZE)
+        attachAtAmc(legId);
     coreControl_->initialUeMessage(legId, this);
 }
 
