@@ -13,7 +13,7 @@
 #define _REGISTRATION_H_
 
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 
@@ -36,7 +36,7 @@ class Registration : public cSimpleModule, public cListener
     opp_component_ptr<inet::NetworkInterface> networkIf;
 
     inet::ModuleRefByPar<Binder> binder;
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator;
+    inet::ModuleRefByPar<ConnectionControlBase> connectionControl;   // the node's control-plane entry point, told about multicast group joins
 
     // UE only: the cellular interface's addresses the Binder maps to this UE
     std::set<inet::L3Address> registeredAddresses;

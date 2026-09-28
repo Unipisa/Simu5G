@@ -34,7 +34,7 @@ class PdcpTxEntityBase;
 class PdcpRxEntityBase;
 class Registration;
 class Binder;
-class BearerConfigurator;
+class ConnectionControlBase;
 class NrSdap;
 class QosFlowClassifier;
 class QfiRuleSet;
@@ -69,7 +69,7 @@ class BearerManagement : public cSimpleModule
     inet::ModuleRefByPar<LteMacBase> macModule;
     inet::ModuleRefByPar<LteMacBase> nrMacModule;
     inet::ModuleRefByPar<Binder> binderModule;   // DC master/secondary topology lookups; peer BearerManagement on RLF
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfiguratorModule;         // the DRB identity pool a torn-down bearer's id goes back to
+    inet::ModuleRefByPar<ConnectionControlBase> connectionControlModule;      // the node's control-plane entry point, which a torn-down bearer's DRB identity goes back through
     inet::ModuleRefByPar<DrbTable> drbTableModule;   // the bearer configuration this module authors
     inet::ModuleRefByPar<NrSdap> sdapModule;     // configuration push target; null when the NIC has no SDAP
     inet::ModuleRefByPar<QosFlowClassifier> qosFlowClassifierModule;   // uplink QFI rule push target; null unless a UE stack with SDAP
@@ -82,8 +82,8 @@ class BearerManagement : public cSimpleModule
     virtual void notifyBearerEstablished(DrbKey key);
     virtual void notifyBearerReleased(DrbKey key);
 
-    // Give a torn-down bearer's DRB identity back to the bearer configurator,
-    // which pools identities per node pair (see BearerConfigurator::releaseDrbId).
+    // Give a torn-down bearer's DRB identity back to the pool it came from, through
+    // the node's control-plane entry point (see ConnectionControlBase::bearerReleased()).
     virtual void releaseDrbIdOf(DrbKey bearer);
 
     // Entity registries (CP owns the lifecycle of all entities)
@@ -206,11 +206,12 @@ class BearerManagement : public cSimpleModule
 
   public:
     ~BearerManagement() override;
-    // Take delivery of one bearer's configuration from the core network's session
-    // management (see BearerConfigurator::configureDrbs()). RRC never fetches this itself.
+    // Take delivery of one bearer's configuration from the serving base station's
+    // control plane (see ConnectionControlEnb::installStaticDrb()), through this
+    // node's entry point. RRC never fetches this itself.
     virtual void configureDrb(const DrbDesc& drb);
-    // Take delivery of this UE's uplink QFI-assignment rules from the bearer
-    // configurator (see BearerConfigurator::deliverQfiRules()) and push them into the
+    // Take delivery of this UE's uplink QFI-assignment rules from the core network
+    // (see CoreControl::deliverQfiRules()) and push them into the
     // QoS-flow classifier, which never authors rules of its own. UE with SDAP only.
     virtual void setUplinkQfiRules(QfiRuleSet&& rules);
     // Record that one of this UE's stacks is changing its serving node -- called by the

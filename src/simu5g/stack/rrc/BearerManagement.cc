@@ -11,7 +11,7 @@
 
 #include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
@@ -82,7 +82,7 @@ void BearerManagement::initialize(int stage)
         nicModule_ = inet::getContainingNicModule(this);
 
         binderModule.reference(this, "binderModule", true);
-        bearerConfiguratorModule.reference(this, "bearerConfiguratorModule", true);
+        connectionControlModule.reference(this, "connectionControlModule", true);
         drbTableModule.reference(this, "drbTableModule", true);
         rlcMuxModule.reference(this, "rlcMuxModule", true);
         nrRlcMuxModule.reference(this, "nrRlcMuxModule", false);
@@ -161,8 +161,8 @@ bool BearerManagement::servesNonAnchorLegOnly(MacNodeId ueId)
     return false;
 }
 
-// Take delivery of one bearer's configuration from the core network's session management
-// (see BearerConfigurator::configureDrbs()). RRC records it, to establish the bearer
+// Take delivery of one bearer's configuration from the serving base station's control
+// plane (see ConnectionControlEnb::installStaticDrb()). RRC records it, to establish the bearer
 // from later, and
 // pushes on what the local layers consume: SDAP's QFI-to-DRB view and the eNB MAC's
 // per-bearer QoS profile are working copies those modules never author themselves.
@@ -257,38 +257,7 @@ void BearerManagement::handleMessage(cMessage *msg)
 
 void BearerManagement::releaseDrbIdOf(DrbKey bearer)
 {
-    // A static definition owns its id for the whole run: releasing it would let
-    // assignDrbId() hand the id to an unrelated bearer while the definition still
-    // names it. An on-demand definition's id is pair-scoped like any other bearer's:
-    // it returns to the pool with its bearer, and the definition materializes afresh
-    // on the next match -- which after a handover is a new node pair. (Definitions
-    // describe infrastructure bearers, keyed by NODEID_NONE on the UE side and by the
-    // UE id on the eNB side; a D2D bearer's peer is a UE, so it cannot match.)
-    bool infraBearer = (registration_->getNodeType() == UE)
-            ? getNodeTypeById(bearer.getNodeId()) == NODEB   // peer is my serving node
-            : true;                                          // eNB-side bearers are keyed by their UE
-    MacNodeId ueNodeId = (registration_->getNodeType() == UE)
-            ? (registration_->getLteNodeId() != NODEID_NONE ? registration_->getLteNodeId() : registration_->getNrNodeId())
-            : bearer.getNodeId();
-    cModule *ueModule = infraBearer ? binderModule->getNodeModule(ueNodeId) : nullptr;
-    if (ueModule != nullptr && bearerConfiguratorModule->ownsStaticDrbId(ueModule, bearer.getDrbId()))
-        return;
-
-    // The identity belongs to the pool of the (this node, peer) pair. A dual-stack node
-    // may have established the bearer under either of its own ids, so offer it back to
-    // both pools -- releasing an id that is not in use there is a no-op.
-    MacNodeId lteId = registration_->getLteNodeId();
-    MacNodeId nrId = registration_->getNrNodeId();
-    if (lteId != NODEID_NONE) {
-        bearerConfiguratorModule->releaseDrbId(lteId, bearer.getNodeId(), bearer.getDrbId());
-        if (ueModule != nullptr)
-            bearerConfiguratorModule->forgetOnDemandDrbId(ueModule, lteId, bearer.getNodeId(), bearer.getDrbId());
-    }
-    if (nrId != NODEID_NONE) {
-        bearerConfiguratorModule->releaseDrbId(nrId, bearer.getNodeId(), bearer.getDrbId());
-        if (ueModule != nullptr)
-            bearerConfiguratorModule->forgetOnDemandDrbId(ueModule, nrId, bearer.getNodeId(), bearer.getDrbId());
-    }
+    connectionControlModule->bearerReleased(bearer);
 }
 
 void BearerManagement::notifyBearerEstablished(DrbKey key)

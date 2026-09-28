@@ -15,6 +15,7 @@
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 #include "simu5g/stack/phy/PhyUe.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/InitStages.h"
@@ -510,7 +511,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId, bool localNod
     if (!localNodeIsBeingDeleted)
         bearerManagement_->deleteLocalPdcpEntities(servingNodeId);
 
-    // Flow establishment (BearerConfigurator::establishDataConnection) provisions NR-leg
+    // Flow establishment (ConnectionControlEnb::establishBearer) provisions NR-leg
     // entities for this UE at the serving node's DC secondary regardless of whether the UE's
     // NR leg is attached to it. If the NR leg is attached, its own (forced) detachment cleans
     // them up; if it is detached now, remove them together with the master-side state --
@@ -531,6 +532,83 @@ LteAmc *HandoverController::getAmcModule(MacNodeId nodeId)
 void HandoverController::updateHysteresisThreshold(double rssi)
 {
     hysteresisThreshold_ = (hysteresisFactor_ == 0) ? 0 : rssi / hysteresisFactor_;
+}
+
+ConnectionControlEnb *HandoverController::baseStationControl(MacNodeId bsId)
+{
+    cModule *rrc = bsId != NODEID_NONE ? binder_->getRrcByNodeId(bsId) : nullptr;
+    auto *bs = rrc != nullptr ? dynamic_cast<ConnectionControlEnb *>(rrc->getSubmodule("connectionControl")) : nullptr;
+    if (bs == nullptr)
+        throw cRuntimeError("HandoverController: UE %d has no base station to ask (base station %d has no rrc.connectionControl)",
+                (int)num(nodeId_), (int)num(bsId));
+    return bs;
+}
+
+ConnectionControlEnb *HandoverController::baseStationFor(const FlowId& flow)
+{
+    MacNodeId bsId = getNodeTypeById(flow.destId) == NODEB ? flow.destId : binder_->getServingNode(flow.sourceId);
+    return baseStationControl(bsId);
+}
+
+DrbId HandoverController::establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
+{
+    Enter_Method_Silent("establishBearer");
+    return baseStationFor(flow)->establishBearer(flow, key, pkt);
+}
+
+DrbId HandoverController::establishBearer(const FlowId& flow, const BearerRequest& req)
+{
+    Enter_Method_Silent("establishBearer");
+    return baseStationFor(flow)->establishBearer(flow, req);
+}
+
+DrbId HandoverController::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
+{
+    Enter_Method_Silent("resolveDrbForQfi");
+    return baseStationControl(binder_->getServingNode(ueNodeId))->resolveDrbForQfi(ueNodeId, qfi);
+}
+
+void HandoverController::bearerReleased(DrbKey bearer)
+{
+    Enter_Method_Silent("bearerReleased");
+}
+
+void HandoverController::multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId)
+{
+    Enter_Method_Silent("multicastGroupJoined");
+    // A stack attached nowhere has no base station to tell, and receives nothing
+    // until it attaches; the group's senders known by then are provisioned at its
+    // serving base station when they start (see ConnectionControlEnbD2D).
+    MacNodeId servingNodeId = binder_->getServingNode(nodeId);
+    if (servingNodeId == NODEID_NONE) {
+        EV_INFO << "HandoverController: stack " << nodeId << " joined multicast group " << groupId << " while attached nowhere" << endl;
+        return;
+    }
+    baseStationControl(servingNodeId)->multicastGroupJoined(nodeId, groupId);
+}
+
+void HandoverController::configureDrb(const DrbDesc& drb)
+{
+    Enter_Method("configureDrb");
+    bearerManagement_->configureDrb(drb);
+}
+
+void HandoverController::createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
+{
+    Enter_Method("createIncomingConnection");
+    bearerManagement_->createIncomingConnection(flow, req, withPdcp);
+}
+
+void HandoverController::createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
+{
+    Enter_Method("createOutgoingConnection");
+    bearerManagement_->createOutgoingConnection(flow, req, withPdcp);
+}
+
+void HandoverController::setUplinkQfiRules(QfiRuleSet&& rules)
+{
+    Enter_Method("setUplinkQfiRules");
+    bearerManagement_->setUplinkQfiRules(std::move(rules));
 }
 
 } //namespace

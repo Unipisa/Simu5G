@@ -16,6 +16,7 @@
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteTypes.h"
 #include "simu5g/corenetwork/coreControl/CoreControl.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 
 namespace simu5g {
 
@@ -28,10 +29,11 @@ class LteAmc;
 class LteAirFrame;
 class UserControlInfo;
 class BearerManagement;
+class ConnectionControlEnb;
 class HandoverPacketHolderUe;
 class LteDlFeedbackGenerator;
 
-class HandoverController : public cSimpleModule
+class HandoverController : public ConnectionControlBase
 {
   protected:
     PhyUe *phy_;
@@ -128,6 +130,13 @@ class HandoverController : public cSimpleModule
     virtual void updateHysteresisThreshold(double rssi);
     virtual LteAmc *getAmcModule(MacNodeId nodeId);
 
+    // The control-plane entry point of a base station, through the Binder's node
+    // directory; throws if there is none (the UE is attached nowhere)
+    virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
+    // The base station that establishes a flow's bearers: the one the flow names as
+    // its infrastructure end, else (a sidelink flow) the serving node of the source
+    virtual ConnectionControlEnb *baseStationFor(const FlowId& flow);
+
     /// True if this UE is a dual-stack one, i.e. it has a second stack ("leg") whose
     /// handover controller this one must coordinate with in DC scenarios.
     bool hasOtherLeg() const { return otherHandoverController_ != nullptr; }
@@ -165,6 +174,23 @@ class HandoverController : public cSimpleModule
      * other one to do the handover.
      */
     virtual void forceHandover();
+
+    // The UE's control-plane entry point (ConnectionControlBase): the node's data
+    // path asks for bearers here, and this leg's serving base station -- which is
+    // where they are established -- is asked in turn
+    DrbId establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt) override;
+    DrbId establishBearer(const FlowId& flow, const BearerRequest& req) override;
+    DrbId resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi) override;
+    // An infrastructure bearer's identity is its base station's to release; nothing
+    // to do here (the D2D subclass returns a sidelink bearer's to the sidelink pool)
+    void bearerReleased(DrbKey bearer) override;
+    void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) override;
+    // Bearer installation, from the serving base station: each forwards to the UE's
+    // BearerManagement
+    void configureDrb(const DrbDesc& drb) override;
+    void createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;
+    void createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;
+    void setUplinkQfiRules(QfiRuleSet&& rules) override;
 };
 
 } //namespace

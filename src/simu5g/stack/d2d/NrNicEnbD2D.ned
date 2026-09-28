@@ -39,4 +39,5 @@ module NrNicEnbD2D extends NrNicEnb
         channelModel[*].pathLossType = default("Tr38901");
         rrc.typename = default("RrcD2D");
         rrc.hasD2DModeSelection = true;
+        rrc.connectionControl.typename = default("ConnectionControlEnbD2D");
 }

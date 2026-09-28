@@ -16,7 +16,7 @@
 #include <set>
 #include "simu5g/stack/sdap/common/SdapDrbTable.h"
 #include "simu5g/stack/sdap/common/ReflectiveQosTable.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 #include <inet/common/ModuleRefByPar.h>
 
 using namespace omnetpp;
@@ -46,7 +46,7 @@ class NrSdap : public cSimpleModule
   protected:
     SdapDrbTable drbTable_;
     inet::ModuleRefByPar<ReflectiveQosTable> reflectiveQosTable;
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
+    inet::ModuleRefByPar<ConnectionControlBase> connectionControl_;   // the node's control-plane entry point, the bearer-selection authority
 
     // The bearers that currently exist on this node, as told by RRC (see
     // bearerEstablished()). A packet mapped to a bearer that is not here needs one

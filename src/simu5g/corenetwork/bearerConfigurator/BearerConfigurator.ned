@@ -12,17 +12,20 @@
 package simu5g.corenetwork.bearerConfigurator;
 
 //
-// Central configurator of the network's data radio bearers.
+// The network's bearer definitions: the operator's configuration of the data radio
+// bearers, authored in one place.
 //
-// This module does not model a single 3GPP network function. It combines, in one
-// network-wide service, decisions that a real system distributes between the core
+// This module does not model a single 3GPP network function. It holds, in one
+// network-wide table set, decisions that a real system distributes between the core
 // network and the RAN: in 5GS, the SMF controls PDU sessions and QoS flows, while the
 // NG-RAN decides how QoS flows map onto DRBs and derives the radio configuration
 // (TS 23.501 5.7.1, TS 38.300 12); in EPS, the corresponding roles are spread across
-// the MME and the eNB. Here every bearer is authored in one place instead, and the
-// signalling that would carry the configuration (N1/N2/S1/RRC procedures) is not
-// modeled: within the model, the RAN never authors a bearer of its own -- every
-// bearer comes from this module's tables.
+// the MME and the eNB. Here every bearer is authored in these tables instead, and
+// established by the base station serving the UE (~ConnectionControlEnb), which reads
+// the definitions from here and never writes them; the signalling that would carry
+// the configuration (N1/N2/S1/RRC procedures) is modeled as calls between the nodes'
+// control-plane entry points. Within the model, the RAN never authors a bearer of its
+// own -- every bearer comes from this module's tables.
 //
 // One cellular network holds one instance of this module, alongside its ~Binder. Like
 // the Binder, it is always reached through module paths supplied in parameters
@@ -39,8 +42,9 @@ package simu5g.corenetwork.bearerConfigurator;
 // the rules to their evaluation sites.
 //
 // Modeling abstractions and current limitations:
-//  - Bearer establishment is a direct call into the RRC of each node involved; no
-//    signalling procedure carries it.
+//  - Bearer establishment is a call from the serving base station's control plane
+//    into the RRC of each node involved, through the node's control-plane entry
+//    point; no signalling procedure carries it.
 //  - Packet-triggered establishment (onDemandDrbs) is a simulation policy. In 5GS, a
 //    first UL packet with an unmapped QFI would ride the already-established default
 //    DRB, and the gNB could reconfigure the mapping afterwards (TS 38.300 Annex A);

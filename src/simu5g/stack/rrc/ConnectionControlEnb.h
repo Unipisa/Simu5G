@@ -12,26 +12,34 @@
 #ifndef _CONNECTIONCONTROLENB_H_
 #define _CONNECTIONCONTROLENB_H_
 
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/L3Address.h>
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/corenetwork/gtp/GtpTunnel.h"
+#include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/gtp/GtpUserX2.h"
+#include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 
 namespace simu5g {
 
-class GtpUser;
-class GtpUserX2;
-
 /**
  * The control-plane entry point of a base station: the one module of the node the
- * control plane of other nodes talks to. It owns the node's TEID space, and programs
- * the node's GtpUser and GtpUserX2 as the calls say. See ConnectionControlEnb.ned.
+ * control plane of other nodes talks to. It owns the node's TEID space and programs
+ * the node's GtpUser and GtpUserX2 as the calls say; and it establishes the bearers
+ * of the UEs it serves, from the definitions the BearerConfigurator holds, installing
+ * them at itself, at the UE, and at a dual connectivity secondary, through their
+ * control-plane entry points. See ConnectionControlEnb.ned.
  */
-class ConnectionControlEnb : public omnetpp::cSimpleModule
+class ConnectionControlEnb : public ConnectionControlBase
 {
   protected:
     MacNodeId nodeId_ = NODEID_NONE;
@@ -41,6 +49,8 @@ class ConnectionControlEnb : public omnetpp::cSimpleModule
     std::string gateway_;
 
     inet::ModuleRefByPar<Binder> binder_;
+    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;   // the bearer definitions, read only (its const API)
+    inet::ModuleRefByPar<BearerManagement> bearerManagement_;             // the node's installer
     inet::ModuleRefByPar<GtpUser> gtpUser_;
     inet::ModuleRefByPar<GtpUserX2> gtpUserX2_;
 
@@ -50,6 +60,18 @@ class ConnectionControlEnb : public omnetpp::cSimpleModule
     // The transport address of the node's tunnel endpoints, resolved on first use: the
     // node's addresses are assigned after INITSTAGE_LOCAL (see getAddress())
     inet::L3Address address_;
+
+    // The DRB ids in use within each node pair this base station is a party to (see
+    // assignDrbId()); a pair between two UEs, or a UE and a multicast group, is the
+    // D2D subclass's (see foreignPairPool())
+    std::map<std::pair<MacNodeId, MacNodeId>, std::set<DrbId>> drbIdsInUse_;
+
+    // The on-demand definitions materialized within each node pair, and the id each
+    // got: like every DRB id, an on-demand bearer's identity is pair-scoped, assigned
+    // at the definition's first match within the pair and returned to the pair's pool
+    // with the bearer (see forgetOnDemandDrbId()), so a UE that moves to another
+    // serving node materializes the definition afresh there
+    std::map<std::pair<const BearerConfigurator::AuthoredBearer *, std::pair<MacNodeId, MacNodeId>>, DrbId> onDemandIds_;
 
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -64,9 +86,82 @@ class ConnectionControlEnb : public omnetpp::cSimpleModule
     // The transport address of the node's tunnel endpoints: that of the network node
     virtual const inet::L3Address& getAddress();
 
+    // The control-plane entry point of another node, through the Binder's node directory
+    virtual ConnectionControlBase *controlOf(MacNodeId nodeId);
+    virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
+
+    // ---- DRB identities ----
+
+    // Allocate the lowest free DRB ID within the (unordered) node pair {a, b}, so the
+    // two endpoints of a link can never mint colliding IDs for the same peer.
+    // For multicast flows, pass the multicast group ID as the second node.
+    virtual DrbId assignDrbId(MacNodeId a, MacNodeId b);
+
+    // Return a DRB ID to its pair's pool when the bearer is torn down. DRB identities are
+    // a finite per-UE resource (TS 38.331: DRB-Identity is 1..32) and are reused once
+    // released -- without this, a UE handing over repeatedly would exhaust the space.
+    // Releasing an ID that is not in use is a no-op.
+    virtual void releaseDrbId(MacNodeId a, MacNodeId b, DrbId drbId);
+
+    // The pool of a node pair this base station is no party to: a pair between two
+    // UEs, or a UE and a multicast group (legacy sidelink). None here; the D2D
+    // subclass keeps them network-wide in the D2dBinder.
+    virtual std::set<DrbId>& foreignPairPool(const std::pair<MacNodeId, MacNodeId>& pair);
+
+    // Forget an on-demand definition's materialization in the given node pair when its
+    // bearer is torn down: the id has returned to the pair's pool (releaseDrbId()), and
+    // the next matching flow assigns afresh. Forgetting an id that is not recorded is a
+    // no-op.
+    virtual void forgetOnDemandDrbId(omnetpp::cModule *ueModule, MacNodeId a, MacNodeId b, DrbId drbId);
+
+    // ---- bearer establishment ----
+
+    // Establish the flow on the bearer a definition describes: a static entry's flow
+    // joins the configured bearer under its pinned id; an on-demand entry is assigned
+    // its pair-scoped id, and delivered to the RRCs, when it first matches within the
+    // node pair.
+    virtual DrbId establishFromDefinition(const BearerConfigurator::AuthoredBearer& ab, const FlowId& flow, const FlowBindingKey& key);
+
+    // The DRB id a definition resolves to at the given UE, for the QFI path (see
+    // resolveDrbForQfi()): a static definition's bearer already exists, so its pinned
+    // id is returned as-is; an on-demand definition's bearer is materialized on first
+    // use within the node pair -- the id assigned and the descriptor delivered to the
+    // RRCs -- and that id returned. DRBID_NONE if the UE is not attached, so an
+    // on-demand bearer has nowhere to be established.
+    virtual DrbId drbOfDefinition(const BearerConfigurator::AuthoredBearer& ab, MacNodeId ueNodeId);
+
+    // The definition a flow's bearer was authored from, or nullptr if none covers it
+    virtual const DrbDesc *findBearerDefinition(const FlowId& flow);
+
+    // Deliver one bearer's definition to the RRCs involved: the UE's (keyed by
+    // NODEID_NONE, "my serving node") and, for each attached stack, the serving
+    // node's (keyed by that stack's UE id), reserving the configured id per pair.
+    virtual void pushDrbToRrcs(omnetpp::cModule *ueModule, const DrbDesc& drb);
+
+    // A D2D or multicast flow's bearer: outside the definition system (definitions
+    // describe infrastructure bearers), with a fixed transitional configuration.
+    // None at a base station without D2D; the D2D subclass establishes it.
+    virtual DrbId establishD2dBearer(const FlowId& flow, const FlowBindingKey& key);
+
+    virtual bool isDualConnectivityRequired(const FlowId& flow);
+    virtual void createConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp);
+    // A multicast bearer's connections: TX at the sender, RX at the group members. None
+    // at a base station without D2D; the D2D subclass creates them.
+    virtual void createMulticastConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp);
+    virtual void createIncomingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
+    virtual void createOutgoingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
+
+    // Set up the X2-U tunnels of a dual connectivity bearer, one per direction, each at
+    // its receiving end: the secondary for the downlink the master relays, the master
+    // for the uplink the secondary relays back (see GtpUserX2, DcMux)
+    virtual void setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondaryId, MacNodeId ueLteId, MacNodeId ueNrId,
+            MacNodeId ueMcgId, MacNodeId ueScgId, DrbId drbId);
+
   public:
     MacNodeId getNodeId() const { return nodeId_; }
     const std::string& getGateway() const { return gateway_; }
+
+    // ---- the node's tunnels, for the core network's control plane ----
 
     // A PDU session's tunnels at this base station: its downlink tunnel, under a TEID
     // allocated here, which also receives the downlink a handover source forwards
@@ -89,6 +184,74 @@ class ConnectionControlEnb : public omnetpp::cSimpleModule
     // The TEID of a dual connectivity bearer's X2-U tunnel at the peer node, for the
     // direction this node sends; the UE is named by both of its node ids
     virtual void setDcTunnelTeid(MacNodeId ueLteId, MacNodeId ueNrId, DrbId drbId, Direction direction, Teid teid);
+
+    // ---- bearers ----
+
+    // Establish a bearer for a flow the requester identifies but does not describe:
+    // the requester supplies the flow, its classifier key and the triggering packet,
+    // and the bearer's properties come from the "epc" definition whose packet filter
+    // matches (staticDrbs first, then onDemandDrbs, in table order; the default entry
+    // catches what no filter matched). A flow no definition covers throws: the
+    // onDemandDrbs default value carries catch-all definitions, so only a
+    // configuration that replaced them with a non-covering set can get here. D2D and
+    // multicast bearers are outside the definition system (see establishD2dBearer()).
+    // Returns the established bearer's DRB id.
+    DrbId establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt) override;
+
+    // Establish a duplex data radio bearer for the flow: entities for BOTH directions
+    // are created at both endpoints at once (DRBs are bidirectional per TS 38.331;
+    // RLC-AM in particular needs the reverse path for its STATUS PDUs). Multicast
+    // flows remain unidirectional (TX at the sender, RX at the group members).
+    //
+    // The bearer's DRB id is the flow's own when it has one, and a freshly assigned
+    // one (see assignDrbId()) when flow.drbId is DRBID_NONE, i.e. when the requester
+    // is establishing a bearer for a flow it has not seen before. Either way the id
+    // of the established bearer is returned.
+    DrbId establishBearer(const FlowId& flow, const BearerRequest& req) override;
+
+    // Resolve the DRB an unmapped QFI should use at the given UE, when SDAP's QFI-to-DRB
+    // table missed. The "5gc" definition that maps this QFI specifically wins; failing
+    // that, the UE's default bearer catches it (it carries the QFIs no other bearer
+    // maps). One walk in table order, static definitions before on-demand ones, so an
+    // authored default outranks the onDemandDrbs catch-all -- the precedence
+    // establishBearer() gives packet filters. Returns the DRB id (materializing an
+    // on-demand definition's bearer on first use, so it also reaches SDAP's table via
+    // the RRC push), or DRBID_NONE when nothing covers the QFI or the UE is not
+    // attached. Repeated calls return the same bearer. This is SDAP's sole
+    // bearer-selection authority: SDAP holds no default-DRB fallback of its own.
+    DrbId resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi) override;
+
+    // A bearer of this node was torn down: its DRB id returns to the pair's pool,
+    // unless a static definition owns it for the whole run, and an on-demand
+    // definition's materialization is forgotten
+    void bearerReleased(DrbKey bearer) override;
+
+    // A node has joined a multicast group (its RRC registration tells us through the
+    // node's entry point). Nothing to do at a base station without D2D, where no
+    // sidelink multicast bearer exists; see the D2D subclass.
+    void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) override;
+
+    // Deliver a static definition's bearer to the RRCs involved (see pushDrbToRrcs());
+    // the base station serving the UE's first attached stack does it for all of them.
+    // Called by the BearerConfigurator at initialization.
+    virtual void installStaticDrb(omnetpp::cModule *ueModule, const DrbDesc& drb);
+
+    // Mark an externally chosen DRB ID as in use within the pair {a, b}, so
+    // assignDrbId() cannot hand out the same one later (SDAP and the static definitions
+    // name their bearers themselves). The pair's serving base station does it for a
+    // peer that installs a bearer at a UE the peer does not serve.
+    virtual void reserveDrbId(MacNodeId a, MacNodeId b, DrbId drbId);
+
+    // ---- bearer installation at this node, from a peer's control plane ----
+    // The base station's half of a dual connectivity bearer's secondary cell group
+    // (the SN Addition / Modification of TS 36.423 8.7.1, TS 38.423 8.3.1, as the
+    // master runs it), and the RX leg of a multicast bearer at a member's serving
+    // node; each forwards to the node's BearerManagement
+
+    void configureDrb(const DrbDesc& drb) override;
+    void createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;
+    void createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;
+    void setUplinkQfiRules(QfiRuleSet&& rules) override;
 };
 
 } //namespace

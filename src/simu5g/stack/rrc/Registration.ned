@@ -25,5 +25,5 @@ simple Registration like IRegistration
         string interfaceName = default("cellular");
         string routingTableModule;
         string binderModule = default("binder");
-        string bearerConfiguratorModule = default("bearerConfigurator");   // To tell the core network about a multicast group join
+        string connectionControlModule = default("^.connectionControl");   // The node's control-plane entry point (a UE's handover controller, see ~Rrc), told about a multicast group join
 }

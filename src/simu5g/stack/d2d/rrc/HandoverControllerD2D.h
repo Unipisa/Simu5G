@@ -43,6 +43,12 @@ class HandoverControllerD2D : public HandoverController
     void onHandoverCompleted() override;
     /// Detach the D2D AMC direction on the serving cell when the UE leaves the simulation.
     void onNodeLeaving() override;
+
+  public:
+    /// A sidelink bearer's identity (the peer is a UE or a multicast group) returns to
+    /// the network-wide sidelink pool of the pair, kept in the D2dBinder; an
+    /// infrastructure bearer's is its base station's to release.
+    void bearerReleased(DrbKey bearer) override;
 };
 
 } //namespace

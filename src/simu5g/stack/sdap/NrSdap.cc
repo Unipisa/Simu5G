@@ -29,7 +29,7 @@ Define_Module(NrSdap);
 
 void NrSdap::initialize()
 {
-    bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
+    connectionControl_.reference(this, "connectionControlModule", true);
 
     // Get pointer to reflective QoS table
     reflectiveQosTable.reference(this, "reflectiveQosTableModule", false);
@@ -197,20 +197,20 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         // The mapping names a bearer that is not established -- torn down at a handover
         // or a D2D mode switch. An on-demand definition's id is pair-scoped and was
         // released with the bearer, so the mapped id may belong to the past: treat the
-        // QFI as unmapped and re-resolve below -- the configurator materializes the
+        // QFI as unmapped and re-resolve below -- the control plane materializes the
         // definition for the current node pair and pushes the fresh descriptor back
         // into this table.
         drb = nullptr;
     }
     if (!drb) {
-        // The QFI is not in this node's table: ask the bearer configurator which DRB it
+        // The QFI is not in this node's table: ask the control plane which DRB it
         // resolves to -- the definition that maps it, or the UE's default bearer, an
         // on-demand one being materialized (and pushed back into this table) on first
-        // use. The configurator is the sole bearer-selection authority; SDAP holds no
+        // use. The control plane is the sole bearer-selection authority; SDAP holds no
         // default-DRB fallback of its own. It works in UE-id space: on the gNB that is
         // nodeId (the destination), on the UE itself the flow's source.
         MacNodeId ueId = isUe ? pkt->getTag<FlowControlInfo>()->getSourceId() : nodeId;
-        DrbId drbId = bearerConfigurator_->resolveDrbForQfi(ueId, qfi);
+        DrbId drbId = connectionControl_->resolveDrbForQfi(ueId, qfi);
         if (drbId != DRBID_NONE)
             drb = drbTable_.getDrb(DrbKey(nodeId, drbId));
     }
@@ -262,11 +262,11 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         if (!establishBearersOnDemand_)
             throw cRuntimeError("SDAP TX: no established bearer for DRB %d (peer nodeId=%d), and on-demand bearer establishment is disabled -- missing or mismatched staticDrbs entry?",
                     (int)num(drb->getDrbId()), (int)num(lteInfo->getDestId()));
-        // SDAP decides neither the LCG nor the RLC mode: the bearer configurator resolves both from
+        // SDAP decides neither the LCG nor the RLC mode: the control plane resolves both from
         // the bearer's definition entry at establishment (see
-        // BearerConfigurator::establishDataConnection()), so the request carries no configuration
+        // ConnectionControlEnb::establishBearer()), so the request carries no configuration
         // at all.
-        bearerConfigurator_->establishDataConnection(lteInfo->toFlowId(), BearerRequest{UNKNOWN_RLC_MODE});
+        connectionControl_->establishBearer(lteInfo->toFlowId(), BearerRequest{UNKNOWN_RLC_MODE});
     }
 
     EV_INFO << "SDAP TX: Forwarding to DRB " << drb->getDrbId() << "\n";

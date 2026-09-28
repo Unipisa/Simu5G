@@ -17,7 +17,7 @@
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
-#include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/ConnectionControlBase.h"
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
 
 namespace simu5g {
@@ -110,8 +110,8 @@ void CoreControl::deliverQfiRules()
     for (const auto& [ueModule, nodeIds] : ueNodeIds) {
         if (!BearerConfigurator::ueStackHasSdap(ueModule))
             continue;   // no SDAP, no uplink QoS-flow classification
-        auto *ueRrc = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(nodeIds.front())->getSubmodule("bearerManagement"));
-        ueRrc->setUplinkQfiRules(bearerConfigurator_->getUplinkQfiRules(ueModule));
+        auto *ueControl = check_and_cast<ConnectionControlBase *>(binder_->getRrcByNodeId(nodeIds.front())->getSubmodule("handoverController"));
+        ueControl->setUplinkQfiRules(bearerConfigurator_->getUplinkQfiRules(ueModule));
     }
 }
 

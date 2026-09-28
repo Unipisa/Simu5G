@@ -39,4 +39,5 @@ module LteNicEnbD2D extends LteNicEnb
         channelModelType = default("D2dChannelModel");
         rrc.typename = default("RrcD2D");
         rrc.hasD2DModeSelection = true;
+        rrc.connectionControl.typename = default("ConnectionControlEnbD2D");
 }

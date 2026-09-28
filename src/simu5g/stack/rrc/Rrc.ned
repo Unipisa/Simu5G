@@ -40,6 +40,11 @@ module Rrc like IRrc
         *.interfaceTableModule = default(absPath(this.interfaceTableModule));
         *.routingTableModule = default(absPath(this.routingTableModule));
 
+        // the node's control-plane entry point, for the submodules that report to it: a
+        // base station's connectionControl, a UE's handoverController (its LTE leg's)
+        bearerManagement.connectionControlModule = default(hasConnectionControl ? "^.connectionControl" : "^.handoverController");
+        registration.connectionControlModule = default(hasConnectionControl ? "^.connectionControl" : "^.handoverController");
+
     submodules:
         registration: <default("Registration")> like IRegistration {
             @display("p=100,80");

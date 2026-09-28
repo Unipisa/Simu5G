@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/d2d/rrc/HandoverControllerD2D.h"
 
+#include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/stack/d2d/phy/PhyUeD2D.h"
 #include "simu5g/stack/d2d/rrc/D2dModeSelectionBase.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
@@ -123,6 +124,26 @@ void HandoverControllerD2D::onHandoverCompleted()
     // Handover completed: ask the new serving cell's mode selection module whether
     // D2D connections of this UE can switch (back) to Direct Mode.
     requestModeSwitchAtServingCell(servingNodeId_, true);
+}
+
+void HandoverControllerD2D::bearerReleased(DrbKey bearer)
+{
+    Enter_Method_Silent("bearerReleased");
+    if (getNodeTypeById(bearer.getNodeId()) == NODEB)
+        return;   // an infrastructure bearer: its base station releases the id
+
+    // A dual-stack UE may have established the bearer under either of its own ids, so
+    // offer it back to both pools -- releasing an id that is not in use there is a no-op
+    D2dBinder *d2dBinder = D2dBinder::getInstance(this);
+    MacNodeId otherId = hasOtherLeg() ? otherHandoverController_->getNodeId() : NODEID_NONE;
+    for (MacNodeId ownId : {nodeId_, otherId}) {
+        if (ownId == NODEID_NONE)
+            continue;
+        auto pair = std::minmax(ownId, bearer.getNodeId());
+        if (d2dBinder->sidelinkDrbIdPool({pair.first, pair.second}).erase(bearer.getDrbId()) != 0)
+            EV << "HandoverControllerD2D::bearerReleased - DRB " << bearer.getDrbId() << " of the sidelink node pair ("
+               << pair.first << ", " << pair.second << ") is free again" << endl;
+    }
 }
 
 } //namespace

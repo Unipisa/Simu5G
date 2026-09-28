@@ -19,10 +19,8 @@
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include <algorithm>
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
-#include "simu5g/stack/rrc/BearerManagement.h"
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
-#include "simu5g/stack/rrc/Registration.h"
 
 namespace simu5g {
 
@@ -30,6 +28,8 @@ using namespace omnetpp;
 using namespace inet;
 
 Define_Module(BearerConfigurator);
+
+typedef BearerConfigurator::AuthoredBearer AuthoredBearer;
 
 // The complete field vocabulary of a bearer-definition entry (staticDrbs/onDemandDrbs);
 // anything else in an entry or profile is rejected as a typo
@@ -52,7 +52,6 @@ void BearerConfigurator::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
-        binder_->subscribe(Binder::nodeUnregisteredSignal_, this);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known,
@@ -63,87 +62,6 @@ void BearerConfigurator::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_LAST) {
         establishStaticDrbs();
-    }
-}
-
-bool BearerConfigurator::isDualConnectivityRequired(const FlowId& flow)
-{
-    MacNodeId sourceId = flow.sourceId;
-    MacNodeId destId = flow.destId;
-
-    // Part 1: Check if NodeB is in DC setup
-    MacNodeId nodeB = (getNodeTypeById(sourceId) == UE) ? binder_->getServingNode(sourceId) : sourceId;
-    ASSERT(nodeB != NODEID_NONE);
-
-    MacNodeId secondaryNode = binder_->getSecondaryNode(nodeB);
-    MacNodeId masterNode = binder_->getMasterNodeOrSelf(nodeB);
-    bool nodeBInDC = (secondaryNode != NODEID_NONE) || (masterNode != nodeB);
-
-    // Part 2: Check if UE is dual technology capable
-    MacNodeId ue = getNodeTypeById(sourceId) == UE ? sourceId :
-                   getNodeTypeById(destId) == UE ? destId :
-                   NODEID_NONE;
-
-    bool ueIsDualTech = false;  //TODO true? if a nodeB in DC setup sends multicast, can it use dual connectivity?
-    if (ue != NODEID_NONE) {
-        Registration *reg = check_and_cast<Registration*>(binder_->getRrcByNodeId(ue)->getSubmodule("registration"));
-        ueIsDualTech = reg->isDualTechnology();
-    }
-
-    return nodeBInDC && ueIsDualTech;
-}
-
-DrbId BearerConfigurator::assignDrbId(MacNodeId a, MacNodeId b)
-{
-    auto pair = std::minmax(a, b);
-    auto& inUse = drbIdsInUse_[{pair.first, pair.second}];
-
-    // Lowest free ID: identities released with their bearer are handed out again, which
-    // is what keeps the space bounded for a UE that establishes and releases bearers
-    // repeatedly (at every handover, say).
-    unsigned short id = 1;
-    while (inUse.count(DrbId(id)))
-        id++;
-    if (id > MAX_DRB_ID)
-        throw cRuntimeError("BearerConfigurator::assignDrbId - out of DRB identities for the node pair (%hu, %hu): "
-                "all %d are in use", num(pair.first), num(pair.second), MAX_DRB_ID);
-
-    inUse.insert(DrbId(id));
-    return DrbId(id);
-}
-
-void BearerConfigurator::reserveDrbId(MacNodeId a, MacNodeId b, DrbId drbId)
-{
-    auto pair = std::minmax(a, b);
-    drbIdsInUse_[{pair.first, pair.second}].insert(drbId);
-}
-
-void BearerConfigurator::releaseDrbId(MacNodeId a, MacNodeId b, DrbId drbId)
-{
-    auto pair = std::minmax(a, b);
-    auto it = drbIdsInUse_.find({pair.first, pair.second});
-    if (it != drbIdsInUse_.end() && it->second.erase(drbId) != 0)
-        EV << "BearerConfigurator::releaseDrbId - DRB " << drbId << " of the node pair (" << pair.first
-           << ", " << pair.second << ") is free again" << endl;
-}
-
-bool BearerConfigurator::ownsStaticDrbId(cModule *ueModule, DrbId drbId)
-{
-    for (const AuthoredBearer& ab : authoredBearers_)
-        if (!ab.onDemand && ab.ueModule == ueModule && ab.desc.getDrbId() == drbId)
-            return true;
-    return false;
-}
-
-void BearerConfigurator::forgetOnDemandDrbId(cModule *ueModule, MacNodeId a, MacNodeId b, DrbId drbId)
-{
-    std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(a, b);
-    for (AuthoredBearer& ab : authoredBearers_) {
-        if (!ab.onDemand || ab.ueModule != ueModule)
-            continue;
-        auto it = ab.pairIds.find(pairKey);
-        if (it != ab.pairIds.end() && it->second == drbId)
-            ab.pairIds.erase(it);
     }
 }
 
@@ -313,7 +231,7 @@ void BearerConfigurator::configureDrbs()
 
         for (auto& [drbId, drb] : drbs) {
             computeUseSdapHeader(drb);
-            pushDrbToRrcs(ueModule, drb);
+            installStaticDrb(ueModule, drb);
         }
     }
 
@@ -841,38 +759,21 @@ ConnectionControlEnb *BearerConfigurator::baseStationControl(MacNodeId bsId)
     return bs;
 }
 
-void BearerConfigurator::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
+void BearerConfigurator::installStaticDrb(cModule *ueModule, const DrbDesc& drb)
 {
-    // node ids of the UE module, one per stack (see configureDrbs())
-    std::vector<MacNodeId> nodeIds;
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-        if (getNodeTypeById(nodeId) == UE && info.moduleRef == ueModule)
-            nodeIds.push_back(nodeId);
-    ASSERT(!nodeIds.empty());
-
-    DrbId drbId = drb.getDrbId();
-
-    // The UE keys its bearers by "my serving node" (NODEID_NONE), its serving
-    // node by the UE. A dual-stack UE has one bearer per stack id, and the
-    // serving node of each stack is told about the one that is its own.
-    auto *ueRrc = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(nodeIds.front())->getSubmodule("bearerManagement"));
-    DrbDesc ueDrb = drb;
-    ueDrb.key = DrbKey(NODEID_NONE, drbId);
-    ueRrc->configureDrb(ueDrb);
-
-    for (MacNodeId ueId : nodeIds) {
-        MacNodeId servingNodeId = binder_->getServingNode(ueId);
-        if (servingNodeId == NODEID_NONE)
-            continue;   // this stack is not attached to a cell
-        DrbDesc enbDrb = drb;
-        enbDrb.key = DrbKey(ueId, drbId);
-        auto *enbRrc = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(servingNodeId)->getSubmodule("bearerManagement"));
-        enbRrc->configureDrb(enbDrb);
-
-        // The configuration names the bearer, so its id is taken out of the pool
-        // that assignDrbId() hands out to bearers that are not configured here
-        reserveDrbId(ueId, servingNodeId, drbId);
+    // the base station serving the UE's first attached stack (node ids in ascending
+    // order, one per stack) installs the bearer at every node involved
+    for (const auto& [nodeId, info] : binder_->getNodeInfoMap()) {
+        if (getNodeTypeById(nodeId) != UE || info.moduleRef != ueModule)
+            continue;
+        MacNodeId servingNodeId = binder_->getServingNode(nodeId);
+        if (servingNodeId != NODEID_NONE) {
+            baseStationControl(servingNodeId)->installStaticDrb(ueModule, drb);
+            return;
+        }
     }
+    throw cRuntimeError("staticDrbs: cannot configure DRB %d of UE '%s': the UE is not attached to any cell",
+            (int)num(drb.getDrbId()), ueModule->getFullPath().c_str());
 }
 
 void BearerConfigurator::establishStaticDrbs()
@@ -889,9 +790,9 @@ void BearerConfigurator::establishStaticDrbs()
 
         // select the UE's stack, with the same default that packet-triggered
         // establishment uses (see Ip2Nic::assignBearer): the technology-neutral LTE id
-        // when the serving nodes form a DC setup (so that establishDataConnection()
+        // when the serving nodes form a DC setup (so that the base station's establishBearer()
         // splits the bearer into legs), the NR id otherwise. A stack that is not
-        // attached is skipped, like in the configuration push (pushDrbToRrcs()); a UE
+        // attached is skipped, like in the configuration push (installStaticDrb()); a UE
         // attached on no stack has nowhere to establish, which is an error.
         bool lteAttached = lteUeId != NODEID_NONE && binder_->getServingNode(lteUeId) != NODEID_NONE;
         bool nrAttached = nrUeId != NODEID_NONE && binder_->getServingNode(nrUeId) != NODEID_NONE;
@@ -913,414 +814,53 @@ void BearerConfigurator::establishStaticDrbs()
         EV << "BearerConfigurator::establishStaticDrbs - establishing DRB " << flow.drbId << " of UE '"
            << ab.ueModule->getFullPath() << "' (nodeId=" << ueId << ") towards serving node "
            << flow.destId << endl;
-        establishDataConnection(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg});
+        baseStationControl(flow.destId)->establishBearer(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg});
     }
 }
 
-DrbId BearerConfigurator::establishOnDemandBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
+const AuthoredBearer *BearerConfigurator::findDrbDefinition(const cModule *ueModule, const inet::Packet *pkt) const
 {
-    Enter_Method_Silent("establishOnDemandBearer");
-
-    // D2D and multicast bearers are outside the definition system (definitions
-    // describe infrastructure bearers), and are established with a fixed transitional
-    // configuration -- RLC UM on LCG 3, the non-GBR default bearer's group -- until
-    // they get definitions of their own.
-    if (flow.d2dGroupId != NODEID_NONE || flow.d2dTxPeerId != NODEID_NONE || flow.d2dRxPeerId != NODEID_NONE)
-        return establishDataConnection(flow, BearerRequest{UM, Lcg(3), key});
-
-    // The requester brings identity only; the bearer's properties come from the
-    // definition the flow matches. First matching definition wins, in table order
-    // (staticDrbs records are retained ahead of onDemandDrbs ones); the default eps
-    // entry catches the flows no filter matched.
-    MacNodeId ueId = getNodeTypeById(flow.sourceId) == UE ? flow.sourceId : flow.destId;
-    cModule *ueModule = binder_->getNodeModule(ueId);
-    if (ueModule != nullptr) {
-        AuthoredBearer *defaultDef = nullptr;
-        for (auto& ab : authoredBearers_) {
-            if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_EPC)
-                continue;
-            for (auto& filter : ab.filters)
-                if (filter->matches(pkt))
-                    return establishFromDefinition(ab, flow, key);
-            if (ab.desc.isDefault && defaultDef == nullptr)
-                defaultDef = &ab;
-        }
-        if (defaultDef != nullptr)
-            return establishFromDefinition(*defaultDef, flow, key);
-    }
-
-    // Every on-demand bearer's properties come from a definition entry, never from
-    // the packet; the onDemandDrbs default value carries catch-all definitions, so
-    // only a configuration that replaced them with a non-covering set can get here.
-    throw cRuntimeError("no bearer definition covers packet '%s' of UE '%s' (nodeId=%d) -- an on-demand "
-            "bearer requires a covering staticDrbs/onDemandDrbs entry",
-            pkt->getName(), ueModule ? ueModule->getFullPath().c_str() : "?", (int)num(ueId));
-}
-
-DrbId BearerConfigurator::establishFromDefinition(AuthoredBearer& ab, const FlowId& flowIn, const FlowBindingKey& key)
-{
-    FlowId flow = flowIn;
-
-    if (!ab.onDemand) {
-        // A static definition's id is pinned, and its descriptor was delivered to the
-        // RRCs at initialization: the flow simply joins the configured bearer.
-        flow.drbId = ab.desc.getDrbId();
-    }
-    else {
-        // An on-demand DRB id is pair-scoped, so the definition materializes once per
-        // node pair: the first match within a pair assigns the pair's lowest free id
-        // and delivers the definition to the RRCs involved, and later flows matching
-        // the definition join that bearer. After a handover the new pair assigns
-        // afresh, and a torn-down bearer's id returns to its pool (see
-        // forgetOnDemandDrbId()) -- exactly the identity lifecycle of a bearer nobody
-        // authored.
-        std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(flow.sourceId, flow.destId);
-        auto it = ab.pairIds.find(pairKey);
-        if (it == ab.pairIds.end()) {
-            DrbId drbId = assignDrbId(flow.sourceId, flow.destId);
-            it = ab.pairIds.insert({pairKey, drbId}).first;
-            DrbDesc desc = ab.desc;
-            desc.key = DrbKey(NODEID_NONE, drbId);
-            desc.lcid = LogicalCid(num(drbId));
-            EV << "BearerConfigurator::establishFromDefinition - on-demand definition materialized as DRB " << drbId
-               << " for UE " << ab.ueModule->getFullPath() << endl;
-            pushDrbToRrcs(ab.ueModule, desc);
-        }
-        flow.drbId = it->second;
-    }
-    return establishDataConnection(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg, key});
-}
-
-DrbId BearerConfigurator::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
-{
-    Enter_Method_Silent("resolveDrbForQfi");
-
-    cModule *ueModule = binder_->getNodeModule(ueNodeId);
-    if (ueModule == nullptr)
-        return DRBID_NONE;
-
-    // One walk, the shape establishOnDemandBearer() uses for packet filters: the
-    // definition that maps this QFI specifically wins immediately, in table order;
-    // failing that, the first default definition catches it. authoredBearers_ keeps
-    // static records ahead of on-demand ones, so an authored default outranks the
-    // onDemandDrbs catch-all.
-    AuthoredBearer *defaultDef = nullptr;
-    for (AuthoredBearer& ab : authoredBearers_) {
-        if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_5GC)
+    // First matching definition wins, in table order (staticDrbs records are retained
+    // ahead of onDemandDrbs ones); the default eps entry catches the flows no filter
+    // matched.
+    const AuthoredBearer *defaultDef = nullptr;
+    for (const AuthoredBearer& ab : authoredBearers_) {
+        if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_EPC)
             continue;
-        if (contains(ab.desc.mappedQfis, qfi))
-            return drbOfDefinition(ab, ueNodeId);
+        for (auto& filter : ab.filters)
+            if (filter->matches(pkt))
+                return &ab;
         if (ab.desc.isDefault && defaultDef == nullptr)
             defaultDef = &ab;
     }
-    if (defaultDef != nullptr)
-        return drbOfDefinition(*defaultDef, ueNodeId);
-    return DRBID_NONE;
+    return defaultDef;
 }
 
-DrbId BearerConfigurator::drbOfDefinition(AuthoredBearer& ab, MacNodeId ueNodeId)
+const AuthoredBearer *BearerConfigurator::findDrbDefinitionForQfi(const cModule *ueModule, Qfi qfi) const
 {
-    // A static definition's bearer was established up front under its pinned id
-    if (!ab.onDemand)
-        return ab.desc.getDrbId();
-
-    // An on-demand definition materializes once per node pair, like
-    // establishFromDefinition(): the id is assigned and the descriptor delivered to the
-    // RRCs involved (so it also reaches SDAP's QFI-to-DRB table), and later lookups join
-    // the bearer already made.
-    MacNodeId servingNodeId = binder_->getServingNode(ueNodeId);
-    if (servingNodeId == NODEID_NONE)
-        return DRBID_NONE;   // not attached, nowhere to create the bearer
-    std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(ueNodeId, servingNodeId);
-    auto it = ab.pairIds.find(pairKey);
-    if (it == ab.pairIds.end()) {
-        DrbId drbId = assignDrbId(ueNodeId, servingNodeId);
-        it = ab.pairIds.insert({pairKey, drbId}).first;
-        DrbDesc desc = ab.desc;
-        desc.key = DrbKey(NODEID_NONE, drbId);
-        desc.lcid = LogicalCid(num(drbId));
-        EV << "BearerConfigurator::drbOfDefinition - on-demand DRB " << drbId
-           << " materialized at UE " << ab.ueModule->getFullPath() << endl;
-        pushDrbToRrcs(ab.ueModule, desc);
-    }
-    return it->second;
-}
-
-DrbId BearerConfigurator::establishDataConnection(const FlowId& flowIn, const BearerRequest& reqIn)
-{
-    Enter_Method_Silent("establishDataConnection");
-
-    // Assign the bearer's DRB id unless the requester brought one (SDAP and the
-    // static definitions name their bearers explicitly). IDs are unique per node
-    // pair; for multicast the "pair" is (sender, group), there being no single peer.
-    FlowId flow = flowIn;
-    MacNodeId peerId = (flow.d2dGroupId != NODEID_NONE) ? flow.d2dGroupId : flow.destId;
-    if (flow.drbId == DRBID_NONE) {
-        flow.drbId = assignDrbId(flow.sourceId, peerId);
-        EV << "BearerConfigurator::establishDataConnection - new DRB ID assigned: " << flow.drbId << endl;
-    }
-    else
-        reserveDrbId(flow.sourceId, peerId, flow.drbId);   // named by the requester; keep assignDrbId off it
-
-    // A request that states no RLC mode (SDAP's, for one) takes it, and the LCG, from
-    // the bearer's definition entry. Definition entries always state their RLC mode,
-    // so the request RRC receives is always concrete.
-    BearerRequest req = reqIn;
-    if (req.rlcMode == UNKNOWN_RLC_MODE) {
-        const DrbDesc *def = findBearerDefinition(flow);
-        if (def == nullptr)
-            throw cRuntimeError("bearer establishment for DRB %d carries no RLC mode, and no definition "
-                    "entry names that DRB -- a request that states no configuration is only valid for "
-                    "definition-covered bearers", (int)num(flow.drbId));
-        req.rlcMode = def->rlcMode;
-        req.lcg = def->lcg;
-    }
-
-    bool dualConnected = isDualConnectivityRequired(flow);
-    if (!dualConnected) {
-        // Without a secondary cell group there is nothing to carry an SCG leg
-        if (const DrbDesc *def = findBearerDefinition(flow))
-            if (std::any_of(def->legs.begin(), def->legs.end(),
-                    [](const RlcBearerDesc& leg) { return leg.cellGroup == SCG; }))
-                throw cRuntimeError("BearerConfigurator: the definition of DRB %d states an SCG leg, "
-                        "but the flow's UE is not served in dual connectivity -- there is no secondary "
-                        "cell group to carry it", (int)num(flow.drbId));
-        createConnection(flow, req, true);
-    }
-    else {
-        MacNodeId sourceId = flow.sourceId;
-        MacNodeId destId = flow.destId;
-        bool isGroupcast = flow.d2dGroupId != NODEID_NONE;
-
-        // Get UE registration if any endpoint is UE
-        Registration *ueReg = (getNodeTypeById(sourceId) == UE) ? check_and_cast<Registration*>(binder_->getRrcByNodeId(sourceId)->getSubmodule("registration")) :
-                     (!isGroupcast && getNodeTypeById(destId) == UE) ? check_and_cast<Registration*>(binder_->getRrcByNodeId(destId)->getSubmodule("registration")) :
-                     nullptr;
-
-        // Which of the UE's two ids belongs to which cell group. A UE's stacks pair with
-        // their serving nodes by technology, so the master node's technology decides:
-        // under EN-DC the master is an eNB and the master cell group is the UE's LTE
-        // stack; under NE-DC the master is a gNB and it is the NR stack.
-        //
-        // The master's technology is asked of the node itself, not of the UE's current
-        // attachment. Attachment moves during a handover, and a stack whose serving node
-        // is mid-change matches neither cell group for as long as that lasts.
-        MacNodeId masterNodeB = binder_->getMasterNodeOrSelf(getNodeTypeById(sourceId) == UE ? destId : sourceId);
-        bool masterIsNr = binder_->isNrNodeB(masterNodeB);
-        MacNodeId ueMcgId = ueReg ? (masterIsNr ? ueReg->getNrNodeId() : ueReg->getLteNodeId()) : NODEID_NONE;
-        MacNodeId ueScgId = ueReg ? (masterIsNr ? ueReg->getLteNodeId() : ueReg->getNrNodeId()) : NODEID_NONE;
-
-        // A bearer whose definition states its legs is established on those and no others:
-        // an MCG bearer never reaches the secondary node, and an SCG bearer's traffic is
-        // carried by no cell group of the master's own -- though the master still
-        // terminates its PDCP, since the core network delivers the UE's traffic there.
-        // A definition that leaves the legs to RRC gets both legs, as before.
-        bool hasMcgLeg = true, hasScgLeg = true;
-        if (const DrbDesc *def = findBearerDefinition(flow)) {
-            if (!def->legs.empty()) {
-                hasMcgLeg = std::any_of(def->legs.begin(), def->legs.end(),
-                        [](const RlcBearerDesc& leg) { return leg.cellGroup == MCG; });
-                hasScgLeg = std::any_of(def->legs.begin(), def->legs.end(),
-                        [](const RlcBearerDesc& leg) { return leg.cellGroup == SCG; });
-            }
-        }
-
-        // Master cell group connection
-        FlowId lteFlow = flow;
-        lteFlow.sourceId = getNodeTypeById(sourceId) == UE ?
-                            ueMcgId :
-                            binder_->getMasterNodeOrSelf(sourceId);
-        if (!isGroupcast) {  // Only set destId for unicast
-            lteFlow.destId = getNodeTypeById(destId) == UE ?
-                              ueMcgId :
-                              binder_->getMasterNodeOrSelf(destId);
-        }
-        if (hasMcgLeg)
-            createConnection(lteFlow, req, true);
-        else {
-            // An SCG bearer: only the master's own ends are established -- its RRC wires
-            // the PDCP legs to the X2 path instead of local RLC (see
-            // BearerManagement::createOutgoingConnection()) -- and the UE's MCG stack is
-            // not involved at all. The flow keeps the anchor (MCG) ids: they are what the
-            // master's PDCP is keyed and addressed by, and the leg splitter maps them to
-            // the SCG per PDU, exactly as on a split bearer's secondary leg.
-            ASSERT(!isGroupcast);   // definitions never cover D2D/multicast flows
-            FlowId revFlow = lteFlow.reversed();
-            BearerRequest revReq = req;
-            if (revReq.flowBindingKey.has_value())
-                revReq.flowBindingKey = revReq.flowBindingKey->reversed();
-            if (lteFlow.sourceId == masterNodeB) {
-                createOutgoingConnectionOnNode(masterNodeB, lteFlow, req, true);
-                createIncomingConnectionOnNode(masterNodeB, revFlow, revReq, true);
-            }
-            else {
-                createIncomingConnectionOnNode(masterNodeB, lteFlow, req, true);
-                createOutgoingConnectionOnNode(masterNodeB, revFlow, revReq, true);
-            }
-        }
-
-        // Secondary cell group connection
-        FlowId nrFlow = flow;
-        nrFlow.sourceId = getNodeTypeById(sourceId) == UE ?
-                           ueScgId :
-                           binder_->getSecondaryNode(binder_->getMasterNodeOrSelf(sourceId));
-        if (!isGroupcast) {  // Only set destId for unicast
-            nrFlow.destId = getNodeTypeById(destId) == UE ?
-                             ueScgId :
-                             binder_->getSecondaryNode(binder_->getMasterNodeOrSelf(destId));
-        }
-        if (hasScgLeg) {
-            createConnection(nrFlow, req, false);
-            if (!isGroupcast && ueReg != nullptr) {
-                MacNodeId secondaryNodeB = getNodeTypeById(nrFlow.sourceId) == UE ? nrFlow.destId : nrFlow.sourceId;
-                setUpX2DcTunnels(masterNodeB, secondaryNodeB, ueReg->getLteNodeId(), ueReg->getNrNodeId(), ueMcgId, ueScgId, flow.drbId);
-            }
-        }
-    }
-    return flow.drbId;
-}
-
-void BearerConfigurator::setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondaryId, MacNodeId ueLteId, MacNodeId ueNrId,
-        MacNodeId ueMcgId, MacNodeId ueScgId, DrbId drbId)
-{
-    // The receiving end of each direction allocates its tunnel's TEID: the secondary for
-    // the downlink the master relays to it, the master for the uplink the secondary
-    // relays back. Each end keys the bearer by the UE's id on the stack it serves.
-    ConnectionControlEnb *master = baseStationControl(masterId);
-    ConnectionControlEnb *secondary = baseStationControl(secondaryId);
-    Teid dlTeid = secondary->addDcTunnel(ueScgId, drbId, DL);
-    master->setDcTunnelTeid(ueLteId, ueNrId, drbId, DL, dlTeid);
-    Teid ulTeid = master->addDcTunnel(ueMcgId, drbId, UL);
-    secondary->setDcTunnelTeid(ueLteId, ueNrId, drbId, UL, ulTeid);
-}
-
-// The definition a flow's bearer was authored from, if any: the entry whose UE and DRB id
-// the flow names. Definitions describe infrastructure bearers only, so a D2D or multicast
-// flow never has one.
-const DrbDesc *BearerConfigurator::findBearerDefinition(const FlowId& flow)
-{
-    if (flow.d2dGroupId != NODEID_NONE || flow.d2dTxPeerId != NODEID_NONE || flow.d2dRxPeerId != NODEID_NONE)
-        return nullptr;
-    MacNodeId ueId = (getNodeTypeById(flow.sourceId) == UE) ? flow.sourceId : flow.destId;
-    if (getNodeTypeById(ueId) != UE)
-        return nullptr;
-    cModule *ueModule = binder_->getNodeModule(ueId);
-    std::pair<MacNodeId, MacNodeId> pairKey = std::minmax(flow.sourceId, flow.destId);
+    // One walk, the shape findDrbDefinition() uses for packet filters: the definition
+    // that maps this QFI specifically wins immediately, in table order; failing that,
+    // the first default definition catches it. authoredBearers_ keeps static records
+    // ahead of on-demand ones, so an authored default outranks the onDemandDrbs
+    // catch-all.
+    const AuthoredBearer *defaultDef = nullptr;
     for (const AuthoredBearer& ab : authoredBearers_) {
-        if (ab.ueModule != ueModule)
+        if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_5GC)
             continue;
-        if (!ab.onDemand && ab.desc.getDrbId() == flow.drbId)
-            return &ab.desc;
-        if (ab.onDemand) {
-            // an on-demand definition's id is per node pair (see establishFromDefinition())
-            auto it = ab.pairIds.find(pairKey);
-            if (it != ab.pairIds.end() && it->second == flow.drbId)
-                return &ab.desc;
-        }
+        if (contains(ab.desc.mappedQfis, qfi))
+            return &ab;
+        if (ab.desc.isDefault && defaultDef == nullptr)
+            defaultDef = &ab;
     }
+    return defaultDef;
+}
+
+const AuthoredBearer *BearerConfigurator::findStaticDrbDefinition(const cModule *ueModule, DrbId drbId) const
+{
+    for (const AuthoredBearer& ab : authoredBearers_)
+        if (!ab.onDemand && ab.ueModule == ueModule && ab.desc.getDrbId() == drbId)
+            return &ab;
     return nullptr;
-}
-
-void BearerConfigurator::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
-{
-    Enter_Method_Silent("receiveSignal");
-    MacNodeId id = MacNodeId(nodeId);
-    ASSERT(signalID == Binder::nodeUnregisteredSignal_);
-
-    // the pools are keyed by node pair, so the departed id sits in every pair it took part in
-    for (auto it = drbIdsInUse_.begin(); it != drbIdsInUse_.end(); ) {
-        if (it->first.first == id || it->first.second == id)
-            it = drbIdsInUse_.erase(it);
-        else
-            ++it;
-    }
-
-    // The remembered multicast flows are keyed by group but owned by their sender: drop the
-    // ones this node established, or multicastGroupJoined() would keep handing later joiners
-    // an RX leg keyed to a sender that no longer transmits -- and, since the RX descriptor's
-    // MacCid carries that sender's id, the PDUs of whichever node took over the group would
-    // then arrive on a connection the joiner has no descriptor for. A replacement sender's
-    // createConnection() stores a fresh flow, so the group keeps working.
-    for (auto it = multicastFlows_.begin(); it != multicastFlows_.end(); ) {
-        if (it->first.second == id)
-            it = multicastFlows_.erase(it);
-        else
-            ++it;
-    }
-}
-
-void BearerConfigurator::createConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
-{
-    MacNodeId sourceId = flow.sourceId;
-    MacNodeId destId = flow.destId;
-    MacNodeId groupId = flow.d2dGroupId;
-
-    EV << "BearerConfigurator::establishDataConnection - establishing connection from sourceId=" << sourceId
-       << " to destId=" << destId << " groupId=" << groupId << endl;
-
-    bool sourceIsEnb = getNodeTypeById(sourceId) == NODEB;
-    bool destIsEnb = getNodeTypeById(destId) == NODEB;
-    ASSERT(!sourceIsEnb || !destIsEnb);  // they cannot be both NodeBs
-
-    bool sourceWithPdcp = getNodeTypeById(sourceId)==UE || withPdcp;
-    createOutgoingConnectionOnNode(sourceId, flow, req, sourceWithPdcp);
-
-    if (groupId == NODEID_NONE) {
-        bool destWithPdcp = getNodeTypeById(destId)==UE || withPdcp;
-        createIncomingConnectionOnNode(destId, flow, req, destWithPdcp);
-
-        // A DRB is bidirectional (TS 38.331): create the reverse leg of the bearer
-        // at both endpoints as well, so reverse traffic -- user data or RLC-AM
-        // STATUS PDUs -- finds its entities in place instead of establishing a
-        // separate unidirectional bearer.
-        // The reverse leg is the same bearer with the same configuration, seen from the
-        // other end -- including the flow key, which the peer binds as IT sees the flow
-        // (addresses swapped, direction reversed).
-        FlowId revFlow = flow.reversed();
-        BearerRequest revReq = req;
-        if (revReq.flowBindingKey.has_value())
-            revReq.flowBindingKey = revReq.flowBindingKey->reversed();
-        createOutgoingConnectionOnNode(destId, revFlow, revReq, destWithPdcp);
-        createIncomingConnectionOnNode(sourceId, revFlow, revReq, sourceWithPdcp);
-    }
-    else {
-        // Remember the flow so that nodes joining this group later still get an RX leg; the
-        // loop below can only reach the members that already exist. See multicastGroupJoined().
-        auto flowKey = std::make_pair(groupId, sourceId);
-        if (multicastFlows_.find(flowKey) == multicastFlows_.end())
-            multicastFlows_[flowKey] = { flow, req, withPdcp };
-
-        // Multicast bearers stay unidirectional: TX at the sender, RX at the members
-        for (auto& [nodeId,_] : binder_->getNodeInfoMap())  //TODO use lte ones if LTE in DC setup, and NR ones if NR in DC setup
-            if (nodeId != sourceId && binder_->isInMulticastGroup(nodeId, groupId))
-                createIncomingConnectionOnNode(nodeId, flow, req, getNodeTypeById(nodeId)==UE || withPdcp);
-    }
-}
-
-
-void BearerConfigurator::multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId)
-{
-    Enter_Method("multicastGroupJoined(%hu, %hu)", (unsigned short)nodeId, (unsigned short)groupId);
-
-    for (auto& [key, mf] : multicastFlows_) {
-        auto& [flowGroupId, senderId] = key;
-        if (flowGroupId != groupId || senderId == nodeId)
-            continue;
-        createIncomingConnectionOnNode(nodeId, mf.flow, mf.req,
-                getNodeTypeById(nodeId) == UE || mf.withPdcp);
-    }
-}
-
-void BearerConfigurator::createIncomingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp)
-{
-    BearerManagement *bm = check_and_cast<BearerManagement*>(binder_->getRrcByNodeId(nodeId)->getSubmodule("bearerManagement"));
-    bm->createIncomingConnection(flow, req, withPdcp);
-}
-
-void BearerConfigurator::createOutgoingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp)
-{
-    BearerManagement *bm = check_and_cast<BearerManagement*>(binder_->getRrcByNodeId(nodeId)->getSubmodule("bearerManagement"));
-    bm->createOutgoingConnection(flow, req, withPdcp);
 }
 
 } //namespace

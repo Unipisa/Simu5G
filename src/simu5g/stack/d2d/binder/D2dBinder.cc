@@ -57,6 +57,40 @@ void D2dBinder::receiveSignal(cComponent *source, simsignal_t signalID, long nod
         peerMap.erase(id);
 
     multicastTransmitterSet_.erase(id);
+
+    // the pools are keyed by node pair, so the departed id sits in every pair it took part in
+    for (auto it = sidelinkDrbIds_.begin(); it != sidelinkDrbIds_.end(); ) {
+        if (it->first.first == id || it->first.second == id)
+            it = sidelinkDrbIds_.erase(it);
+        else
+            ++it;
+    }
+
+    // The remembered multicast flows are keyed by group but owned by their sender: drop the
+    // ones this node established, or multicastGroupJoined() would keep handing later joiners
+    // an RX leg keyed to a sender that no longer transmits -- and, since the RX descriptor's
+    // MacCid carries that sender's id, the PDUs of whichever node took over the group would
+    // then arrive on a connection the joiner has no descriptor for. A replacement sender's
+    // createMulticastConnection() stores a fresh flow, so the group keeps working.
+    for (auto it = multicastFlows_.begin(); it != multicastFlows_.end(); ) {
+        if (it->first.second == id)
+            it = multicastFlows_.erase(it);
+        else
+            ++it;
+    }
+}
+
+std::set<DrbId>& D2dBinder::sidelinkDrbIdPool(const std::pair<MacNodeId, MacNodeId>& pair)
+{
+    ASSERT(pair.first <= pair.second);
+    return sidelinkDrbIds_[pair];
+}
+
+void D2dBinder::rememberMulticastFlow(MacNodeId groupId, MacNodeId senderId, const FlowId& flow, const BearerRequest& req, bool withPdcp)
+{
+    auto flowKey = std::make_pair(groupId, senderId);
+    if (multicastFlows_.find(flowKey) == multicastFlows_.end())
+        multicastFlows_[flowKey] = { flow, req, withPdcp };
 }
 
 LteD2DMode D2dBinder::computeD2DCapability(MacNodeId src, MacNodeId dst)

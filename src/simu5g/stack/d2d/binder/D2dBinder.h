@@ -57,6 +57,36 @@ class D2dBinder : public cSimpleModule, public cListener
     // set of D2D one-to-many (multicast) transmitters
     std::set<MacNodeId> multicastTransmitterSet_;
 
+    // The DRB ids in use within each sidelink node pair -- a UE and a peer UE, or a UE
+    // and a multicast group -- pooled network-wide, since a sidelink bearer's ends are
+    // UEs whose serving base stations may differ and change (a base station pools the
+    // pairs it is itself a party to, see ConnectionControlEnb::assignDrbId())
+    std::map<std::pair<MacNodeId, MacNodeId>, std::set<DrbId>> sidelinkDrbIds_;
+
+  public:
+    /*
+     * The flow that established each multicast bearer, kept so that a node joining the group
+     * later can still be given its RX leg (see ConnectionControlEnbD2D::multicastGroupJoined()).
+     * The sender's base station provisions the members that exist when the sender starts,
+     * which is all of them only if the node population is static; with nodes created
+     * during the simulation the joiner would otherwise receive PDUs for a connection its
+     * stack knows nothing about.
+     *
+     * Keyed by (multicast group id, sender id): the RX side of a bearer is keyed by its
+     * sender (see FlowId::rxDrbKey, and MacCid(senderId, lcid) in
+     * BearerManagement::createIncomingConnection), so a group served by several senders --
+     * at once, or one after another as vehicles come and go -- needs one remembered flow per
+     * sender. Each entry is dropped when its sender leaves, see receiveSignal().
+     */
+    struct MulticastFlow {
+        FlowId flow;
+        BearerRequest req;
+        bool withPdcp = false;
+    };
+
+  private:
+    std::map<std::pair<MacNodeId, MacNodeId>, MulticastFlow> multicastFlows_;
+
     // D2D-capable UE PHYs by node id, registered at init (see registerD2dPhy)
     std::map<MacNodeId, opp_component_ptr<PhyBase>> d2dPhys_;
 
@@ -130,6 +160,13 @@ class D2dBinder : public cSimpleModule, public cListener
     virtual void addD2DMulticastTransmitter(MacNodeId nodeId);
     // get the set of D2D one-to-many (multicast) transmitters
     virtual std::set<MacNodeId>& getD2DMulticastTransmitters();
+
+    // The DRB id pool of a sidelink node pair (see sidelinkDrbIds_); the pair is ordered
+    virtual std::set<DrbId>& sidelinkDrbIdPool(const std::pair<MacNodeId, MacNodeId>& pair);
+    // Remember the flow that established a multicast bearer, unless the sender's flow
+    // for the group is remembered already (see multicastFlows_)
+    virtual void rememberMulticastFlow(MacNodeId groupId, MacNodeId senderId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
+    virtual const std::map<std::pair<MacNodeId, MacNodeId>, MulticastFlow>& getMulticastFlows() const { return multicastFlows_; }
 };
 
 } //namespace
