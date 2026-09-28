@@ -111,7 +111,7 @@ void HandoverController::initialize(int stage)
         // ConnectionControlEnb::connectionSetupRequest()). The UEs do this in module order,
         // after the network-level modules' last stage.
         if (servingNodeId_ != NODEID_NONE)
-            baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this);
+            baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities());
     }
 }
 
@@ -128,8 +128,6 @@ void HandoverController::finish()
             // The base station releases its own state for the leg.
             deleteOwnBuffers(servingNodeId_, /*localNodeIsBeingDeleted=*/true);
             baseStationControl(servingNodeId_)->connectionLost(nodeId_);
-
-            onNodeLeaving();
 
             // binder call
             binder_->unregisterServingNode(servingNodeId_, nodeId_);
@@ -150,24 +148,6 @@ void HandoverController::handleMessage(cMessage *msg)
     }
     else
         throw cRuntimeError("HandoverController::handleMessage: unknown self-message '%s'", msg->getName());
-}
-
-// Handover lifecycle hooks: no-ops in the core controller. The D2D behavior lives
-// in HandoverControllerD2D, which the D2D-capable UE NICs select.
-void HandoverController::onHandoverCompleted()
-{
-}
-
-void HandoverController::onHandoverStarting()
-{
-}
-
-void HandoverController::onHandoverExecuting()
-{
-}
-
-void HandoverController::onNodeLeaving()
-{
 }
 
 void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo)
@@ -361,8 +341,6 @@ void HandoverController::radioLinkFailure(MacNodeId localId, MacNodeId peerId)
 
 void HandoverController::startHandover()
 {
-    onHandoverStarting();
-
     // On a dual-stack UE either leg can legitimately be detached; a single-stack UE is always attached
     if (hasOtherLeg())
         ASSERT(servingNodeId_ == NODEID_NONE || servingNodeId_ != candidateServingNodeId_);  // "we can be unattached, but never hand over to ourselves"
@@ -418,8 +396,6 @@ void HandoverController::doHandover()
     // if currentServingNodeId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
     // if candidateServingNodeId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
 
-    onHandoverExecuting();
-
     // The UE's own state toward the old serving node goes; the base station releases
     // its own when told below (ueContextRelease, connectionLost)
     if (servingNodeId_ != NODEID_NONE)
@@ -471,7 +447,7 @@ void HandoverController::doHandover()
     if (oldServingNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE)
         baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_);
     else if (servingNodeId_ != NODEID_NONE)
-        baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this);
+        baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities());
     else
         baseStationControl(oldServingNodeId)->connectionLost(nodeId_);
 }
@@ -514,11 +490,6 @@ void HandoverController::deleteOwnBuffers(MacNodeId servingNodeId, bool localNod
         if (secondaryNodeId != NODEID_NONE)
             otherHandoverController_->deleteOwnBuffers(secondaryNodeId, localNodeIsBeingDeleted);
     }
-}
-
-LteAmc *HandoverController::getAmcModule(MacNodeId nodeId)
-{
-    return check_and_cast<LteMacEnb *>(binder_->getMacFromMacNodeId(nodeId))->getAmc();
 }
 
 void HandoverController::updateHysteresisThreshold(double rssi)

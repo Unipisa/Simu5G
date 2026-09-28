@@ -12,12 +12,79 @@
 #include "simu5g/stack/d2d/rrc/ConnectionControlEnbD2D.h"
 
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
+#include "simu5g/stack/d2d/mac/ID2dAmc.h"
+#include "simu5g/stack/d2d/rrc/D2dModeSelectionBase.h"
 
 namespace simu5g {
 
 Define_Module(ConnectionControlEnbD2D);
 
 using namespace omnetpp;
+
+ConnectionControlEnbD2D::~ConnectionControlEnbD2D()
+{
+    for (auto& [msg, legId] : modeSwitchTimers_)
+        cancelAndDelete(msg);
+}
+
+void ConnectionControlEnbD2D::initialize(int stage)
+{
+    ConnectionControlEnb::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+        d2dModeSelection_.reference(this, "d2dModeSelectionModule", false);
+}
+
+void ConnectionControlEnbD2D::handleMessage(cMessage *msg)
+{
+    auto it = modeSwitchTimers_.find(msg);
+    if (it == modeSwitchTimers_.end())
+        throw cRuntimeError("ConnectionControlEnbD2D: unknown message '%s'", msg->getName());
+    MacNodeId legId = it->second;
+    modeSwitchTimers_.erase(it);
+    delete msg;
+    // the handover has completed: can the leg's D2D flows switch (back) to direct mode?
+    requestModeSwitch(legId, true);
+}
+
+void ConnectionControlEnbD2D::requestModeSwitch(MacNodeId legId, bool handoverCompleted)
+{
+    if (d2dModeSelection_ != nullptr)
+        d2dModeSelection_->doModeSwitchAtHandover(legId, handoverCompleted);
+    else
+        EV_WARN << "ConnectionControlEnbD2D: base station " << nodeId_ << " has no D2D mode selection - no D2D mode switch" << endl;
+}
+
+void ConnectionControlEnbD2D::beforeHandoverCommand(MacNodeId legId, const UeContext& ctx)
+{
+    if (ctx.capabilities.d2d)
+        requestModeSwitch(legId, false);
+}
+
+void ConnectionControlEnbD2D::legArrived(MacNodeId legId, const UeContext& ctx)
+{
+    if (!ctx.capabilities.d2d)
+        return;
+    LteAmc *amc = mac_->getAmc();
+    if (dynamic_cast<ID2dAmc *>(amc) != nullptr)
+        amc->attachUser(legId, D2D);
+    else
+        EV_WARN << "ConnectionControlEnbD2D: the AMC of base station " << nodeId_ << " is not D2D-capable - skipping D2D AMC attach" << endl;
+    cMessage *msg = new cMessage("doModeSwitchAtHandover");
+    msg->setSchedulingPriority(10);   // at the end of the instant
+    modeSwitchTimers_[msg] = legId;
+    scheduleAt(simTime(), msg);
+}
+
+void ConnectionControlEnbD2D::legLeft(MacNodeId legId, const UeContext& ctx)
+{
+    if (!ctx.capabilities.d2d)
+        return;
+    LteAmc *amc = mac_->getAmc();
+    if (dynamic_cast<ID2dAmc *>(amc) != nullptr)
+        amc->detachUser(legId, D2D);
+    else
+        EV_WARN << "ConnectionControlEnbD2D: the AMC of base station " << nodeId_ << " is not D2D-capable - skipping D2D AMC detach" << endl;
+}
 
 D2dBinder *ConnectionControlEnbD2D::d2dBinder()
 {

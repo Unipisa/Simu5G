@@ -22,10 +22,20 @@ import simu5g.stack.rrc.ConnectionControlEnb;
 // the group's known senders. The sidelink node pairs' DRB identities and the
 // established multicast flows are kept network-wide in the ~D2dBinder, since a
 // sidelink bearer's ends are UEs whose serving base stations may differ and change.
+//
+// It also handles the D2D side of the handovers of the D2D-capable UE legs it
+// serves (a leg reports the capability when it connects, and a handover carries it
+// with the context): before commanding a leg's handover, the leg's D2D flows are
+// switched back to infrastructure mode through the node's ~D2dModeSelectionBase;
+// a leg's D2D direction is attached at the node's AMC when it arrives, by handover
+// or by attaching during the run, and a D2D mode re-selection follows at the end
+// of that instant; and it is detached when the leg leaves.
+//
 // Selected via 'rrc.connectionControl.typename' by the D2D-capable base station NICs.
 //
 simple ConnectionControlEnbD2D extends ConnectionControlEnb
 {
     parameters:
         @class(ConnectionControlEnbD2D);
+        string d2dModeSelectionModule = default("^.d2dModeSelection");  // The node's D2D mode selection; none if the module does not exist
 }

@@ -140,6 +140,7 @@ void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementR
     ctx.state = UeContext::HO_SOURCE_PREPARING;
     ctx.hoPeer = target;
     HandoverRequest request{legId, ctx.ueModule, ctx.ueRrc, sessionsOf(legId)};
+    request.capabilities = ctx.capabilities;
 
     // the leg's bearers: the on-demand definitions materialized within the leg's pair
     // with this node, and the descriptors of those and of the static definitions (a
@@ -167,6 +168,7 @@ void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, Conne
     if (!inserted && ctx.state == UeContext::CONNECTED)
         throw cRuntimeError("ConnectionControlEnb: base station %d is asked to take leg %d over, which it serves already", (int)num(nodeId_), (int)num(legId));
     ctx = UeContext{request.ueModule, request.ueRrc};
+    ctx.capabilities = request.capabilities;
     ctx.state = UeContext::HO_TARGET_PREPARED;
     ctx.hoPeer = source->getNodeId();
 
@@ -219,6 +221,7 @@ void ConnectionControlEnb::handoverRequestAck(MacNodeId legId, const std::vector
         gtpUserX2_->setForwardingTeid(atTarget.ref, ranTargetId, atTarget.dl.teid);
 
     // the leg is commanded first, then its downlink is forwarded (TS 38.300 9.2.3.2.1)
+    beforeHandoverCommand(legId, ctx);
     ctx.ueRrc->handoverCommand(target);
     handoverPacketHolder_->triggerHandoverSource(legId, target);
 }
@@ -253,6 +256,7 @@ void ConnectionControlEnb::reconfigurationComplete(MacNodeId legId)
     ctx.state = UeContext::CONNECTED;
     ctx.hoPeer = NODEID_NONE;
     attachAtAmc(legId);
+    legArrived(legId, ctx);
     coreControl_->pathSwitchRequest(legId, this, ctx.sessions);
     ctx.sessions.clear();
     baseStationControl(source)->ueContextRelease(legId);
@@ -266,9 +270,11 @@ void ConnectionControlEnb::ueContextRelease(MacNodeId legId)
     if (it == ues_.end() || it->second.state != UeContext::HO_SOURCE_EXECUTING)
         throw cRuntimeError("ConnectionControlEnb: base station %d is no handover source of leg %d", (int)num(nodeId_), (int)num(legId));
     MacNodeId target = it->second.hoPeer;
+    UeContext ctx = std::move(it->second);
     ues_.erase(it);
     releaseLeg(legId);
     detachAtAmc(legId);
+    legLeft(legId, ctx);
     handoverPacketHolder_->signalHandoverCompleteSource(legId, target);
 }
 
@@ -281,9 +287,11 @@ void ConnectionControlEnb::connectionLost(MacNodeId legId)
     // a leg lost while its handover is being prepared or executed: the target is told
     if (it->second.state == UeContext::HO_SOURCE_PREPARING || it->second.state == UeContext::HO_SOURCE_EXECUTING)
         baseStationControl(it->second.hoPeer)->handoverCancel(legId);
+    UeContext ctx = std::move(it->second);
     ues_.erase(it);
     releaseLeg(legId);
     detachAtAmc(legId);
+    legLeft(legId, ctx);
     coreControl_->ueContextReleaseRequest(legId);
 }
 
@@ -378,16 +386,19 @@ FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const
 
 // ---- attach ----
 
-void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc)
+void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities)
 {
     Enter_Method("connectionSetupRequest");
     auto [it, inserted] = ues_.try_emplace(legId);
     if (!inserted && it->second.state == UeContext::CONNECTED)
         throw cRuntimeError("ConnectionControlEnb: leg %d requests a connection at base station %d, which serves it already", (int)num(legId), (int)num(nodeId_));
     it->second = UeContext{ueModule, check_and_cast<HandoverController *>(ueRrc)};
+    it->second.capabilities = capabilities;
     // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
-    if (getSimulation()->getContextType() != CTX_INITIALIZE)
+    if (getSimulation()->getContextType() != CTX_INITIALIZE) {
         attachAtAmc(legId);
+        legArrived(legId, it->second);
+    }
     coreControl_->initialUeMessage(legId, this);
 }
 

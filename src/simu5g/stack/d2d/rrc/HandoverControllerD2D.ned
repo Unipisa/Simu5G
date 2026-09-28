@@ -14,12 +14,12 @@ package simu5g.stack.d2d.rrc;
 import simu5g.stack.rrc.HandoverController;
 
 //
-// D2D-capable variant of the ~HandoverController. It fills in the handover
-// lifecycle hooks with D2D behavior: switching active D2D flows back to
-// infrastructure mode before a handover, detaching/attaching the D2D AMC
-// direction while executing it, and re-selecting the D2D mode once the
-// handover has completed. Selected via 'handoverController.typename' /
-// 'nrHandoverController.typename' by the D2D-capable UE NICs.
+// D2D-capable variant of the ~HandoverController: the leg reports itself D2D-capable
+// when it connects to a base station (if its PHY is), which is where the D2D side
+// of its handovers is handled (~ConnectionControlEnbD2D), and a torn-down sidelink
+// bearer's DRB identity returns to the network-wide sidelink pool (~D2dBinder).
+// Selected via 'handoverController.typename' / 'nrHandoverController.typename' by
+// the D2D-capable UE NICs.
 //
 simple HandoverControllerD2D extends HandoverController
 {

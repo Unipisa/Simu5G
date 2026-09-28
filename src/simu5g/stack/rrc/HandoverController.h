@@ -142,7 +142,6 @@ class HandoverController : public ConnectionControlBase
      */
     virtual void deleteOwnBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted = false);
     virtual void updateHysteresisThreshold(double rssi);
-    virtual LteAmc *getAmcModule(MacNodeId nodeId);
 
     // The control-plane entry point of a base station, through the Binder's node
     // directory; throws if there is none (the UE is attached nowhere)
@@ -155,19 +154,8 @@ class HandoverController : public ConnectionControlBase
     /// handover controller this one must coordinate with in DC scenarios.
     bool hasOtherLeg() const { return otherHandoverController_ != nullptr; }
 
-    /// Handover lifecycle notification hooks. The base implementations are empty;
-    /// HandoverControllerD2D overrides them with the D2D-specific behavior.
-    /// Called by triggerHandover() once the handover decision is made, before the handover latency starts.
-    virtual void onHandoverStarting();
-    /// Called by doHandover() before buffers are deleted and the user is re-attached to the new cell's AMC.
-    virtual void onHandoverExecuting();
-    /// Called when the (delayed) handover-completion notification fires.
-    virtual void onHandoverCompleted();
-    /// Called by finish() when the UE's module tree is being deleted mid-simulation, after
-    /// the serving cell's AMC has been detached from the UL and DL directions. It is the
-    /// departure counterpart of onHandoverExecuting(): whatever that hook detaches on leaving
-    /// the old cell has to be detached here too, since the UE is leaving for good.
-    virtual void onNodeLeaving();
+    // What this leg reports of itself when it connects to a base station
+    virtual UeCapabilities getCapabilities() const { return UeCapabilities(); }
 
   public:
     ~HandoverController() override;

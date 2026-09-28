@@ -62,6 +62,7 @@ struct HandoverRequest
     std::vector<SessionResource> sessions;     // the UE's PDU sessions at the source, with the source's downlink F-TEIDs
     std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
     std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
+    UeCapabilities capabilities;               // what the leg reported of itself at connection setup
 };
 
 /**
@@ -99,6 +100,7 @@ class ConnectionControlEnb : public ConnectionControlBase
         enum State { CONNECTED, HO_SOURCE_PREPARING, HO_SOURCE_EXECUTING, HO_TARGET_PREPARED } state = CONNECTED;
         MacNodeId hoPeer = NODEID_NONE;        // the other base station of the leg's handover in progress
         std::vector<SessionResource> sessions; // target role: the session resources the preparation set up for the leg, reported in the PATH SWITCH REQUEST
+        UeCapabilities capabilities;           // what the leg reported of itself at connection setup
     };
     std::map<MacNodeId, UeContext> ues_;       // by the leg's node id
 
@@ -153,6 +155,15 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // The context of a leg this base station has one of; throws otherwise
     virtual UeContext& ueContext(MacNodeId legId);
+
+    // What else a leg's arrival, handover and departure involve at this base station,
+    // besides the leg's bearers and tunnels; nothing here (see the D2D subclass):
+    // the source, just before it commands the leg's handover
+    virtual void beforeHandoverCommand(MacNodeId legId, const UeContext& ctx) {}
+    // a leg that arrived here by handover, or attached during the run
+    virtual void legArrived(MacNodeId legId, const UeContext& ctx) {}
+    // a leg this base station released (handed over, lost, or leaving the simulation)
+    virtual void legLeft(MacNodeId legId, const UeContext& ctx) {}
 
     // This base station's resources of the session, or nullptr
     virtual SessionResource *findSession(const SessionRef& session);
@@ -265,10 +276,10 @@ class ConnectionControlEnb : public ConnectionControlBase
     // ---- attach ----
 
     // RRCSetupRequest, and the registration that follows: a leg of a UE connects at
-    // this base station (at initialization, the leg's configured serving cell). The
-    // base station registers the UE with the core network, which sets up the
-    // session's resources here (sessionResourceSetup()).
-    virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc);
+    // this base station (at initialization, the leg's configured serving cell),
+    // reporting its capabilities. The base station registers the UE with the core
+    // network, which sets up the session's resources here (sessionResourceSetup()).
+    virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities);
 
     // PDU SESSION RESOURCE SETUP REQUEST (N2), from the core network, for a leg that
     // registered here: the session's tunnels at this base station

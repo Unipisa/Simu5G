@@ -21,6 +21,16 @@
 namespace simu5g {
 
 /**
+ * What a UE leg reports of itself when it connects to a base station (the UE
+ * capability transfer of TS 38.331 5.6.1, as far as the model needs it); a handover
+ * carries it to the target with the leg's context
+ */
+struct UeCapabilities
+{
+    bool d2d = false;   // the leg can take part in D2D (sidelink) communication
+};
+
+/**
  * What a node's control-plane entry point answers, at a base station
  * (ConnectionControlEnb) and at a UE (HandoverController, one per leg) alike: the
  * calls the node's own data path and RRC make on it, and the bearer installation
