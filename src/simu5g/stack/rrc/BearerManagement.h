@@ -121,7 +121,7 @@ class BearerManagement : public cSimpleModule
     /*
      * The serving node of each of this UE's stacks, as RRC knows
      * it: updated the instant a handover, attachment or detachment BEGINS (see
-     * HandoverController::triggerHandover()), which is ahead of the Binder -- that
+     * ConnectionControlUe::triggerHandover()), which is ahead of the Binder -- that
      * learns only when the handover executes. Within that window this is the answer
      * that matches what the stack is actually doing; the Binder's stale one would make
      * the UE abandon a stack that is attached, or about to be. Seeded from the Binder
@@ -219,7 +219,7 @@ class BearerManagement : public cSimpleModule
     // QoS-flow classifier, which never authors rules of its own. UE with SDAP only.
     virtual void setUplinkQfiRules(QfiRuleSet&& rules);
     // Record that one of this UE's stacks is changing its serving node -- called by the
-    // handover controller the instant a handover, attachment or detachment begins,
+    // UE's connection control the instant a handover, attachment or detachment begins,
     // ahead of its execution. NODEID_NONE = the stack is detaching. Each updates the
     // ledger and pushes it to every consumer (see servingNodeId_). UE only.
     virtual void setServingNodeId(MacNodeId servingNodeId);

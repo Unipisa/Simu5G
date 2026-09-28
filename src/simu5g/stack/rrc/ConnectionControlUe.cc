@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "HandoverController.h"
+#include "ConnectionControlUe.h"
 
 #include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/stack/phy/PhyUe.h"
@@ -26,17 +26,17 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-Define_Module(HandoverController);
+Define_Module(ConnectionControlUe);
 
-simsignal_t HandoverController::servingCellSignal_ = registerSignal("servingCell");
+simsignal_t ConnectionControlUe::servingCellSignal_ = registerSignal("servingCell");
 
-HandoverController::~HandoverController()
+ConnectionControlUe::~ConnectionControlUe()
 {
     cancelAndDelete(handoverStarter_);
     cancelAndDelete(handoverTrigger_);
 }
 
-void HandoverController::initialize(int stage)
+void ConnectionControlUe::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
@@ -44,7 +44,7 @@ void HandoverController::initialize(int stage)
         bearerManagement_ = inet::getModuleFromPar<BearerManagement>(par("bearerManagementModule"), this);
         handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
-        otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
+        otherConnectionControl_.reference(this, "otherConnectionControlModule", false);
 
         isNr_ = par("isNr");
         nodeId_ = MacNodeId(par("macNodeId").intValue());
@@ -99,7 +99,7 @@ void HandoverController::initialize(int stage)
             }
         }
 
-        EV << "HandoverController::initialize - Attaching to serving node " << servingNodeId_ << endl;
+        EV << "ConnectionControlUe::initialize - Attaching to serving node " << servingNodeId_ << endl;
 
         phy_->changeServingNode(servingNodeId_);
         emit(servingCellSignal_, (long)servingNodeId_);
@@ -115,7 +115,7 @@ void HandoverController::initialize(int stage)
     }
 }
 
-void HandoverController::finish()
+void ConnectionControlUe::finish()
 {
     if (getSimulation()->getSimulationStage() != CTX_FINISH) {
         // do this only during the deletion of the module during the simulation
@@ -135,7 +135,7 @@ void HandoverController::finish()
     }
 }
 
-void HandoverController::handleMessage(cMessage *msg)
+void ConnectionControlUe::handleMessage(cMessage *msg)
 {
     ASSERT(msg->isSelfMessage());
 
@@ -147,10 +147,10 @@ void HandoverController::handleMessage(cMessage *msg)
         handoverTrigger_ = nullptr;
     }
     else
-        throw cRuntimeError("HandoverController::handleMessage: unknown self-message '%s'", msg->getName());
+        throw cRuntimeError("ConnectionControlUe::handleMessage: unknown self-message '%s'", msg->getName());
 }
 
-void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo)
+void ConnectionControlUe::beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     Enter_Method("beaconReceived");
     take(frame);
@@ -175,7 +175,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
         if (masterNodeId != sourceId) {
             // The node has a DC Master node, check if the other PHY of this UE is attached to that Master.
             // If not, the UE cannot attach to this Secondary node and the packet must be deleted.
-            if (otherHandoverController_->getServingNodeId() != masterNodeId) {
+            if (otherConnectionControl_->getServingNodeId() != masterNodeId) {
                 EV << "Received beacon packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
                 delete lteInfo;
                 delete frame;
@@ -253,7 +253,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
     delete frame;
 }
 
-void HandoverController::triggerHandover()
+void ConnectionControlUe::triggerHandover()
 {
     // NR legs exist only on dual-stack UEs
     if (!hasOtherLeg())
@@ -263,8 +263,8 @@ void HandoverController::triggerHandover()
     if (hasOtherLeg()) {
         MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateServingNodeId_);
         if (masterNode != candidateServingNodeId_) { // The candidate is a secondary node
-            if (otherHandoverController_->getServingNodeId() == masterNode) {
-                const std::pair<MacNodeId, MacNodeId> *handoverPair = otherHandoverController_->getTriggeredHandover();
+            if (otherConnectionControl_->getServingNodeId() == masterNode) {
+                const std::pair<MacNodeId, MacNodeId> *handoverPair = otherConnectionControl_->getTriggeredHandover();
                 if (handoverPair != nullptr) {
                     if (handoverPair->second == candidateServingNodeId_) {
                         // Delay this handover
@@ -274,7 +274,7 @@ void HandoverController::triggerHandover()
                         else                                                   // The other "stack" is attaching to an eNodeB
                             delta += handoverAttachmentTime_;
 
-                        EV << NOW << " HandoverController::triggerHandover - Wait for the handover completion for the other stack. Delay this handover." << endl;
+                        EV << NOW << " ConnectionControlUe::triggerHandover - Wait for the handover completion for the other stack. Delay this handover." << endl;
 
                         // Need to wait for the other stack to complete handover
                         scheduleAt(simTime() + delta, handoverStarter_);
@@ -283,25 +283,25 @@ void HandoverController::triggerHandover()
                     else {
                         // Cancel this handover
                         triggeredHandover_.reset();
-                        EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateServingNodeId_ << " since the master is performing handover" << endl;
+                        EV << NOW << " ConnectionControlUe::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateServingNodeId_ << " since the master is performing handover" << endl;
                         return;
                     }
                 }
             }
         }
 
-        if (otherHandoverController_->getServingNodeId() != NODEID_NONE) {
+        if (otherConnectionControl_->getServingNodeId() != NODEID_NONE) {
             // Check if there are secondary nodes connected
-            MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherHandoverController_->getServingNodeId());
+            MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherConnectionControl_->getServingNodeId());
             if (otherMasterId == servingNodeId_) {
-                EV << NOW << " HandoverController::triggerHandover - Forcing detachment from " << otherHandoverController_->getServingNodeId() << " which was a secondary node to " << servingNodeId_ << ". Delay this handover." << endl;
+                EV << NOW << " ConnectionControlUe::triggerHandover - Forcing detachment from " << otherConnectionControl_->getServingNodeId() << " which was a secondary node to " << servingNodeId_ << ". Delay this handover." << endl;
 
                 // Need to wait for the other stack to complete detachment
                 scheduleAt(simTime() + handoverDetachmentTime_ + handoverDelta_, handoverStarter_);
 
                 // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving:
                 // Trigger detachment
-                otherHandoverController_->forceHandover();
+                otherConnectionControl_->forceHandover();
 
                 return;
             }
@@ -319,7 +319,7 @@ void HandoverController::triggerHandover()
     startHandover();
 }
 
-void HandoverController::handoverCommand(MacNodeId targetNodeId)
+void ConnectionControlUe::handoverCommand(MacNodeId targetNodeId)
 {
     Enter_Method("handoverCommand");
     ASSERT(targetNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE);
@@ -327,19 +327,19 @@ void HandoverController::handoverCommand(MacNodeId targetNodeId)
     startHandover();
 }
 
-void HandoverController::radioLinkFailure(MacNodeId bsId)
+void ConnectionControlUe::radioLinkFailure(MacNodeId bsId)
 {
     Enter_Method("radioLinkFailure");
     bearerManagement_->releaseLink(bsId);
 }
 
-void HandoverController::radioLinkFailure(MacNodeId localId, MacNodeId peerId)
+void ConnectionControlUe::radioLinkFailure(MacNodeId localId, MacNodeId peerId)
 {
     Enter_Method("radioLinkFailure");
     baseStationControl(peerId)->radioLinkFailure(localId);
 }
 
-void HandoverController::startHandover()
+void ConnectionControlUe::startHandover()
 {
     // On a dual-stack UE either leg can legitimately be detached; a single-stack UE is always attached
     if (hasOtherLeg())
@@ -356,11 +356,11 @@ void HandoverController::startHandover()
 
     // Status messages
     if (candidateServingNodeRssi_ == 0)
-        EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << servingNodeId_ << ". Now detaching... " << endl;
+        EV << NOW << " ConnectionControlUe::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << servingNodeId_ << ". Now detaching... " << endl;
     else if (servingNodeId_ == NODEID_NONE)
-        EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateServingNodeId_ << "... " << endl;
+        EV << NOW << " ConnectionControlUe::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateServingNodeId_ << "... " << endl;
     else
-        EV << NOW << " HandoverController::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateServingNodeId_ << "... " << endl;
+        EV << NOW << " ConnectionControlUe::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateServingNodeId_ << "... " << endl;
 
     // RRC's stack attachment ledger changes the instant the handover begins, ahead of
     // its execution: packets steered from now on must already see the new attachment
@@ -391,7 +391,7 @@ void HandoverController::startHandover()
     scheduleAt(simTime() + handoverLatency, handoverTrigger_);
 }
 
-void HandoverController::doHandover()
+void ConnectionControlUe::doHandover()
 {
     // if currentServingNodeId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
     // if candidateServingNodeId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
@@ -452,7 +452,7 @@ void HandoverController::doHandover()
         baseStationControl(oldServingNodeId)->connectionLost(nodeId_);
 }
 
-void HandoverController::forceHandover()
+void ConnectionControlUe::forceHandover()
 {
     candidateServingNodeId_ = NODEID_NONE;
     candidateServingNodeRssi_ = 0.0;
@@ -462,7 +462,7 @@ void HandoverController::forceHandover()
     scheduleAt(NOW, handoverStarter_);
 }
 
-void HandoverController::deleteOwnBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted)
+void ConnectionControlUe::deleteOwnBuffers(MacNodeId servingNodeId, bool localNodeIsBeingDeleted)
 {
     // delete queues for serving node at this UE
     mac_->deleteQueues(servingNodeId);
@@ -485,58 +485,58 @@ void HandoverController::deleteOwnBuffers(MacNodeId servingNodeId, bool localNod
     // otherwise they are orphaned here, and a later re-establishment collides with them when
     // the UE returns to this master (duplicate MAC CID assert / duplicate module errors).
     // The base station does the same for its side (see ConnectionControlEnb::releaseLeg()).
-    if (otherHandoverController_ != nullptr && otherHandoverController_->getServingNodeId() == NODEID_NONE) {
+    if (otherConnectionControl_ != nullptr && otherConnectionControl_->getServingNodeId() == NODEID_NONE) {
         MacNodeId secondaryNodeId = binder_->getSecondaryNode(servingNodeId);
         if (secondaryNodeId != NODEID_NONE)
-            otherHandoverController_->deleteOwnBuffers(secondaryNodeId, localNodeIsBeingDeleted);
+            otherConnectionControl_->deleteOwnBuffers(secondaryNodeId, localNodeIsBeingDeleted);
     }
 }
 
-void HandoverController::updateHysteresisThreshold(double rssi)
+void ConnectionControlUe::updateHysteresisThreshold(double rssi)
 {
     hysteresisThreshold_ = (hysteresisFactor_ == 0) ? 0 : rssi / hysteresisFactor_;
 }
 
-ConnectionControlEnb *HandoverController::baseStationControl(MacNodeId bsId)
+ConnectionControlEnb *ConnectionControlUe::baseStationControl(MacNodeId bsId)
 {
     cModule *rrc = bsId != NODEID_NONE ? binder_->getRrcByNodeId(bsId) : nullptr;
     auto *bs = rrc != nullptr ? dynamic_cast<ConnectionControlEnb *>(rrc->getSubmodule("connectionControl")) : nullptr;
     if (bs == nullptr)
-        throw cRuntimeError("HandoverController: UE %d has no base station to ask (base station %d has no rrc.connectionControl)",
+        throw cRuntimeError("ConnectionControlUe: UE %d has no base station to ask (base station %d has no rrc.connectionControl)",
                 (int)num(nodeId_), (int)num(bsId));
     return bs;
 }
 
-ConnectionControlEnb *HandoverController::baseStationFor(const FlowId& flow)
+ConnectionControlEnb *ConnectionControlUe::baseStationFor(const FlowId& flow)
 {
     MacNodeId bsId = getNodeTypeById(flow.destId) == NODEB ? flow.destId : binder_->getServingNode(flow.sourceId);
     return baseStationControl(bsId);
 }
 
-DrbId HandoverController::establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
+DrbId ConnectionControlUe::establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
 {
     Enter_Method_Silent("establishBearer");
     return baseStationFor(flow)->establishBearer(flow, key, pkt);
 }
 
-DrbId HandoverController::establishBearer(const FlowId& flow, const BearerRequest& req)
+DrbId ConnectionControlUe::establishBearer(const FlowId& flow, const BearerRequest& req)
 {
     Enter_Method_Silent("establishBearer");
     return baseStationFor(flow)->establishBearer(flow, req);
 }
 
-DrbId HandoverController::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
+DrbId ConnectionControlUe::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
 {
     Enter_Method_Silent("resolveDrbForQfi");
     return baseStationControl(binder_->getServingNode(ueNodeId))->resolveDrbForQfi(ueNodeId, qfi);
 }
 
-void HandoverController::bearerReleased(DrbKey bearer)
+void ConnectionControlUe::bearerReleased(DrbKey bearer)
 {
     Enter_Method_Silent("bearerReleased");
 }
 
-void HandoverController::multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId)
+void ConnectionControlUe::multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId)
 {
     Enter_Method_Silent("multicastGroupJoined");
     // A stack attached nowhere has no base station to tell, and receives nothing
@@ -544,31 +544,31 @@ void HandoverController::multicastGroupJoined(MacNodeId nodeId, MacNodeId groupI
     // serving base station when they start (see ConnectionControlEnbD2D).
     MacNodeId servingNodeId = binder_->getServingNode(nodeId);
     if (servingNodeId == NODEID_NONE) {
-        EV_INFO << "HandoverController: stack " << nodeId << " joined multicast group " << groupId << " while attached nowhere" << endl;
+        EV_INFO << "ConnectionControlUe: stack " << nodeId << " joined multicast group " << groupId << " while attached nowhere" << endl;
         return;
     }
     baseStationControl(servingNodeId)->multicastGroupJoined(nodeId, groupId);
 }
 
-void HandoverController::configureDrb(const DrbDesc& drb)
+void ConnectionControlUe::configureDrb(const DrbDesc& drb)
 {
     Enter_Method("configureDrb");
     bearerManagement_->configureDrb(drb);
 }
 
-void HandoverController::createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
+void ConnectionControlUe::createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
 {
     Enter_Method("createIncomingConnection");
     bearerManagement_->createIncomingConnection(flow, req, withPdcp);
 }
 
-void HandoverController::createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
+void ConnectionControlUe::createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp)
 {
     Enter_Method("createOutgoingConnection");
     bearerManagement_->createOutgoingConnection(flow, req, withPdcp);
 }
 
-void HandoverController::setUplinkQfiRules(QfiRuleSet&& rules)
+void ConnectionControlUe::setUplinkQfiRules(QfiRuleSet&& rules)
 {
     Enter_Method("setUplinkQfiRules");
     bearerManagement_->setUplinkQfiRules(std::move(rules));

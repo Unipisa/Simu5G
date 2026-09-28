@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/d2d/rrc/HandoverControllerD2D.h"
+#include "simu5g/stack/d2d/rrc/ConnectionControlUeD2D.h"
 
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/stack/d2d/phy/PhyUeD2D.h"
@@ -21,16 +21,16 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-Define_Module(HandoverControllerD2D);
+Define_Module(ConnectionControlUeD2D);
 
-UeCapabilities HandoverControllerD2D::getCapabilities() const
+UeCapabilities ConnectionControlUeD2D::getCapabilities() const
 {
     UeCapabilities capabilities;
     capabilities.d2d = dynamic_cast<PhyUeD2D *>(phy_) != nullptr;
     return capabilities;
 }
 
-void HandoverControllerD2D::bearerReleased(DrbKey bearer)
+void ConnectionControlUeD2D::bearerReleased(DrbKey bearer)
 {
     Enter_Method_Silent("bearerReleased");
     if (getNodeTypeById(bearer.getNodeId()) == NODEB)
@@ -39,13 +39,13 @@ void HandoverControllerD2D::bearerReleased(DrbKey bearer)
     // A dual-stack UE may have established the bearer under either of its own ids, so
     // offer it back to both pools -- releasing an id that is not in use there is a no-op
     D2dBinder *d2dBinder = D2dBinder::getInstance(this);
-    MacNodeId otherId = hasOtherLeg() ? otherHandoverController_->getNodeId() : NODEID_NONE;
+    MacNodeId otherId = hasOtherLeg() ? otherConnectionControl_->getNodeId() : NODEID_NONE;
     for (MacNodeId ownId : {nodeId_, otherId}) {
         if (ownId == NODEID_NONE)
             continue;
         auto pair = std::minmax(ownId, bearer.getNodeId());
         if (d2dBinder->sidelinkDrbIdPool({pair.first, pair.second}).erase(bearer.getDrbId()) != 0)
-            EV << "HandoverControllerD2D::bearerReleased - DRB " << bearer.getDrbId() << " of the sidelink node pair ("
+            EV << "ConnectionControlUeD2D::bearerReleased - DRB " << bearer.getDrbId() << " of the sidelink node pair ("
                << pair.first << ", " << pair.second << ") is free again" << endl;
     }
 }

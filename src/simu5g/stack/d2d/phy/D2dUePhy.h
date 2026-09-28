@@ -15,7 +15,7 @@
 
 #include "simu5g/stack/phy/PhyUe.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
-#include "simu5g/stack/rrc/HandoverController.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
 #include "simu5g/stack/d2d/phy/D2dUePhyHelper.h"
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"

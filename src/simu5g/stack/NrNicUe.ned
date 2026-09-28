@@ -51,23 +51,23 @@ module NrNicUe extends LteNicUe
         ip2nic.isNr = default(true);
         rrc.bearerManagement.pdcpEntityModuleType = default("simu5g.stack.pdcp.NrPdcpEntity");
 
-        rrc.hasNrHandoverController = true;
-        rrc.nrHandoverController.isNr = true;
+        rrc.hasNrConnectionControl = true;
+        rrc.nrConnectionControl.isNr = true;
         nrMac.isNr = true;
         nrPhy.isNr = true;
         nrDlFbGen.isNr = true;
         // The NR leg's modules take their MacNodeId from the node's NR id
-        rrc.nrHandoverController.macNodeId = parent.nrMacNodeId;
+        rrc.nrConnectionControl.macNodeId = parent.nrMacNodeId;
         nrMac.macNodeId = parent.nrMacNodeId;
         nrPhy.macNodeId = parent.nrMacNodeId;
         nrDlFbGen.macNodeId = parent.nrMacNodeId;
-        rrc.nrHandoverController.otherHandoverControllerModule = "^.handoverController";
+        rrc.nrConnectionControl.otherConnectionControlModule = "^.connectionControl";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
-        nrPhy.handoverControllerModule = "^.rrc.nrHandoverController";
-        rrc.nrHandoverController.macModule = "^.^.nrMac";
-        rrc.nrHandoverController.feedbackGeneratorModule = "^.^.nrDlFbGen";
-        rrc.handoverController.otherHandoverControllerModule = "^.nrHandoverController";
+        nrPhy.connectionControlModule = "^.rrc.nrConnectionControl";
+        rrc.nrConnectionControl.macModule = "^.^.nrMac";
+        rrc.nrConnectionControl.feedbackGeneratorModule = "^.^.nrDlFbGen";
+        rrc.connectionControl.otherConnectionControlModule = "^.nrConnectionControl";
 
     submodules:
         // uplink QoS-flow classification (the TrafficFlowFilter's uplink counterpart),

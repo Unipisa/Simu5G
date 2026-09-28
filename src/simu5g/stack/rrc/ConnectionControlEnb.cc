@@ -17,7 +17,7 @@
 #include <inet/common/stlutils.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "simu5g/stack/rrc/HandoverController.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
 #include "simu5g/stack/rrc/Registration.h"
 
 namespace simu5g {
@@ -73,7 +73,7 @@ ConnectionControlBase *ConnectionControlEnb::controlOf(MacNodeId nodeId)
 {
     // a UE's entry point is per leg: the controller of the leg the id names
     cModule *rrc = binder_->getRrcByNodeId(nodeId);
-    const char *name = getNodeTypeById(nodeId) == NODEB ? "connectionControl" : isNrUe(nodeId) ? "nrHandoverController" : "handoverController";
+    const char *name = getNodeTypeById(nodeId) == UE && isNrUe(nodeId) ? "nrConnectionControl" : "connectionControl";
     auto *control = rrc != nullptr ? dynamic_cast<ConnectionControlBase *>(rrc->getSubmodule(name)) : nullptr;
     if (control == nullptr)
         throw cRuntimeError("ConnectionControlEnb: node %d has no rrc.%s module", (int)num(nodeId), name);
@@ -90,9 +90,9 @@ ConnectionControlEnb *ConnectionControlEnb::baseStationControl(MacNodeId bsId)
     return bs;
 }
 
-HandoverController *ConnectionControlEnb::ueControl(MacNodeId legId)
+ConnectionControlUe *ConnectionControlEnb::ueControl(MacNodeId legId)
 {
-    auto *ue = dynamic_cast<HandoverController *>(controlOf(legId));
+    auto *ue = dynamic_cast<ConnectionControlUe *>(controlOf(legId));
     if (ue == nullptr)
         throw cRuntimeError("ConnectionControlEnb: node %d is no UE", (int)num(legId));
     return ue;
@@ -392,7 +392,7 @@ void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId l
     auto [it, inserted] = ues_.try_emplace(legId);
     if (!inserted && it->second.state == UeContext::CONNECTED)
         throw cRuntimeError("ConnectionControlEnb: leg %d requests a connection at base station %d, which serves it already", (int)num(legId), (int)num(nodeId_));
-    it->second = UeContext{ueModule, check_and_cast<HandoverController *>(ueRrc)};
+    it->second = UeContext{ueModule, check_and_cast<ConnectionControlUe *>(ueRrc)};
     it->second.capabilities = capabilities;
     // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
     if (getSimulation()->getContextType() != CTX_INITIALIZE) {

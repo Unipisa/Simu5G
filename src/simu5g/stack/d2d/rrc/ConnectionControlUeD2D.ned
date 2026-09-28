@@ -11,18 +11,18 @@
 
 package simu5g.stack.d2d.rrc;
 
-import simu5g.stack.rrc.HandoverController;
+import simu5g.stack.rrc.ConnectionControlUe;
 
 //
-// D2D-capable variant of the ~HandoverController: the leg reports itself D2D-capable
+// D2D-capable variant of the ~ConnectionControlUe: the leg reports itself D2D-capable
 // when it connects to a base station (if its PHY is), which is where the D2D side
 // of its handovers is handled (~ConnectionControlEnbD2D), and a torn-down sidelink
 // bearer's DRB identity returns to the network-wide sidelink pool (~D2dBinder).
-// Selected via 'handoverController.typename' / 'nrHandoverController.typename' by
+// Selected via 'connectionControl.typename' / 'nrConnectionControl.typename' by
 // the D2D-capable UE NICs.
 //
-simple HandoverControllerD2D extends HandoverController
+simple ConnectionControlUeD2D extends ConnectionControlUe
 {
     parameters:
-        @class(HandoverControllerD2D);
+        @class(ConnectionControlUeD2D);
 }

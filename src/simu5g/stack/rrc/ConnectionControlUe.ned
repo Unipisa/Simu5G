@@ -16,11 +16,11 @@ package simu5g.stack.rrc;
 // Receives RSSI measurements from the PHY layer based on broadcast frames,
 // and triggers handover when a better serving cell is detected.
 //
-simple HandoverController like IHandoverController
+simple ConnectionControlUe like IConnectionControl
 {
     parameters:
         @display("i=block/control");
-        @class(HandoverController);
+        @class(ConnectionControlUe);
 
         bool dynamicCellAssociation = default(false);
 
@@ -51,7 +51,7 @@ simple HandoverController like IHandoverController
         string bearerManagementModule = default("^.bearerManagement");
         string handoverPacketHolderModule = default("^.^.handoverPacketHolder");
         string feedbackGeneratorModule = default("^.^.dlFbGen"); // TODO or "^.^.nrDlFbGen"
-        string otherHandoverControllerModule = default("");
+        string otherConnectionControlModule = default("");
 
         bool hasCollector = default(false); // True when node has a collector module (ueCollector/nrUeCollector) for this PHY module
 

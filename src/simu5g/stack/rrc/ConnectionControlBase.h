@@ -32,7 +32,7 @@ struct UeCapabilities
 
 /**
  * What a node's control-plane entry point answers, at a base station
- * (ConnectionControlEnb) and at a UE (HandoverController, one per leg) alike: the
+ * (ConnectionControlEnb) and at a UE (ConnectionControlUe, one per leg) alike: the
  * calls the node's own data path and RRC make on it, and the bearer installation
  * calls the control plane of another node makes on it. Not a 3GPP reference point:
  * the in-node contract of the entry point. A UE answers the requests by asking its

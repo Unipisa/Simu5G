@@ -49,7 +49,7 @@ module NrNicUeD2D extends NrNicUe
         nrChannelModel[*].pathLossType = default("Tr38901");
 
         rrc.typename = default("RrcD2D");
-        rrc.handoverController.typename = default("HandoverControllerD2D");
-        rrc.nrHandoverController.typename = default("HandoverControllerD2D");
+        rrc.connectionControl.typename = default("ConnectionControlUeD2D");
+        rrc.nrConnectionControl.typename = default("ConnectionControlUeD2D");
         bool d2dInitialMode = default(false);
 }

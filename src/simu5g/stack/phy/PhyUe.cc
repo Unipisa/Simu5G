@@ -14,7 +14,7 @@
 #include "simu5g/stack/phy/PhyUe.h"
 
 #include "../ip2nic/HandoverPacketHolderUe.h"
-#include "simu5g/stack/rrc/HandoverController.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -47,8 +47,8 @@ void PhyUe::initialize(int stage)
 
         txPower_ = ueTxPower_;
 
-        handoverController_.reference(this, "handoverControllerModule", true);
-        handoverController_->setPhy(this);
+        connectionControl_.reference(this, "connectionControlModule", true);
+        connectionControl_->setPhy(this);
 
         // get local id
         nodeId_ = MacNodeId(par("macNodeId").intValue());
@@ -196,7 +196,7 @@ void PhyUe::handleAirFrame(cMessage *msg)
             return;
         }
 
-        handoverController_->beaconReceived(frame, lteInfo);
+        connectionControl_->beaconReceived(frame, lteInfo);
         return;
     }
 

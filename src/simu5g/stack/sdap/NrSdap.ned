@@ -61,7 +61,7 @@ simple NrSdap like INrSdap
 {
     parameters:
         string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
-        string connectionControlModule = default(nodeRole == "UE" ? "^.rrc.handoverController" : "^.rrc.connectionControl");   // The node's control-plane entry point, the bearer-selection authority on a lookup miss
+        string connectionControlModule = default("^.rrc.connectionControl");   // The node's control-plane entry point, the bearer-selection authority on a lookup miss
         bool establishBearersOnDemand = default(true);  // When false, a packet that finds no established bearer raises an error instead of establishing one (static bearers are established up front; see the staticDrbs parameter of ~BearerConfigurator)
         string reflectiveQosTableModule = default("");  // UE only: path to ReflectiveQosTable module (empty = disabled)
         bool useReflectiveQos = default(false); // UE only

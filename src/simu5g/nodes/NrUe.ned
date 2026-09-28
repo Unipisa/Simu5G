@@ -30,7 +30,7 @@ module NrUe extends LteUe
         int nrMacNodeId = default(2049+simu5g_seq("NrUe_macNodeId"));
 
         cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.nrUeCollector" : "";
-        cellularNic.rrc.nrHandoverController.hasCollector = hasRniSupport;
+        cellularNic.rrc.nrConnectionControl.hasCollector = hasRniSupport;
     gates:
         input nrRadioIn @directIn;     // Connection to master
 

@@ -38,7 +38,7 @@ module LteNicUeD2D extends LteNicUe
         channelModelType = default("D2dChannelModel");
 
         rrc.typename = default("RrcD2D");
-        rrc.handoverController.typename = default("HandoverControllerD2D");
+        rrc.connectionControl.typename = default("ConnectionControlUeD2D");
         bool d2dInitialMode = default(false);
 }
 

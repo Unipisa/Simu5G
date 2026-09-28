@@ -14,8 +14,8 @@ package simu5g.stack.rrc;
 //
 // Interface for the connection control of the ~IRrc layer: the node's control-plane
 // entry point, the one module of the node that the control plane of other nodes
-// talks to. At a base station (~ConnectionControlEnb) it owns the node's GTP-U
-// tunnel endpoint ids and programs the node's tunnel endpoints.
+// talks to: ~ConnectionControlEnb at a base station, ~ConnectionControlUe at a UE
+// (one per leg).
 //
 moduleinterface IConnectionControl
 {

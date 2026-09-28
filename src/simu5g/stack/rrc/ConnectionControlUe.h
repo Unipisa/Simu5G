@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_HANDOVERCONTROLLER_H_
-#define _LTE_HANDOVERCONTROLLER_H_
+#ifndef _CONNECTIONCONTROLUE_H_
+#define _CONNECTIONCONTROLUE_H_
 
 #include <optional>
 #include <utility>
@@ -35,7 +35,7 @@ class ConnectionControlEnb;
 class HandoverPacketHolderUe;
 class LteDlFeedbackGenerator;
 
-class HandoverController : public ConnectionControlBase
+class ConnectionControlUe : public ConnectionControlBase
 {
   protected:
     PhyUe *phy_;
@@ -112,7 +112,7 @@ class HandoverController : public ConnectionControlBase
     BearerManagement *bearerManagement_ = nullptr;
     inet::ModuleRefByPar<HandoverPacketHolderUe> handoverPacketHolder_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
-    inet::ModuleRefByPar<HandoverController> otherHandoverController_;
+    inet::ModuleRefByPar<ConnectionControlUe> otherConnectionControl_;
 
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -151,14 +151,14 @@ class HandoverController : public ConnectionControlBase
     virtual ConnectionControlEnb *baseStationFor(const FlowId& flow);
 
     /// True if this UE is a dual-stack one, i.e. it has a second stack ("leg") whose
-    /// handover controller this one must coordinate with in DC scenarios.
-    bool hasOtherLeg() const { return otherHandoverController_ != nullptr; }
+    /// connection control this one must coordinate with in DC scenarios.
+    bool hasOtherLeg() const { return otherConnectionControl_ != nullptr; }
 
     // What this leg reports of itself when it connects to a base station
     virtual UeCapabilities getCapabilities() const { return UeCapabilities(); }
 
   public:
-    ~HandoverController() override;
+    ~ConnectionControlUe() override;
 
     void setPhy(PhyUe *phy) {phy_ = phy;}
     PhyUe *getPhy() const {return phy_;}
@@ -174,7 +174,7 @@ class HandoverController : public ConnectionControlBase
     virtual void beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     /**
-     * Used in a DC setup. Called by a HandoverController to force the
+     * Used in a DC setup. Called by a ConnectionControlUe to force the
      * other one to do the handover.
      */
     virtual void forceHandover();
@@ -211,4 +211,4 @@ class HandoverController : public ConnectionControlBase
 
 } //namespace
 
-#endif /* _LTE_HANDOVERCONTROLLER_H_ */
+#endif /* _CONNECTIONCONTROLUE_H_ */

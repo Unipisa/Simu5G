@@ -14,7 +14,7 @@ package simu5g.stack.rrc;
 //
 // The control-plane entry point of a base station: the one module of the node that
 // the control plane of other nodes -- the ~CoreControl, the other base stations, and
-// the UEs' handover controllers -- talks to, and that the node's own data path turns
+// the UEs' ~ConnectionControlUe -- talks to, and that the node's own data path turns
 // to when it needs a bearer.
 //
 // Tunnels. It owns the node's GTP-U tunnel endpoint id (TEID) space, and programs the

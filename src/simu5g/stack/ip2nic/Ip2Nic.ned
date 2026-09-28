@@ -27,7 +27,7 @@ simple Ip2Nic like INetworkLayer2CellularNic
     parameters:
         string nodeType;
         string binderModule = default("binder");
-        string connectionControlModule = default(nodeType == "UE" ? "^.rrc.handoverController" : "^.rrc.connectionControl");   // The node's control-plane entry point, asked for a bearer on a lookup miss
+        string connectionControlModule = default("^.rrc.connectionControl");   // The node's control-plane entry point, asked for a bearer on a lookup miss
         bool isNr = default(false);   // True for the NR leg (set by NrNicUe/NrNicEnb, or in the ini for a DC master eNB)
         bool hasSdap = default(false);  // When true, SDAP handles DRB/RLC assignment; Ip2Nic skips traffic classification
         bool establishBearersOnDemand = default(true);  // When false, a packet that finds no established bearer raises an error instead of establishing one (static bearers are established up front; see the staticDrbs parameter of ~BearerConfigurator)

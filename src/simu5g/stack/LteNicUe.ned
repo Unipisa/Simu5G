@@ -32,9 +32,10 @@ module LteNicUe extends LteNicBase
         handoverPacketHolder.typename = default("HandoverPacketHolderUe");
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
-        rrc.hasHandoverController = true;
-        rrc.handoverController.isNr = false;
-        rrc.handoverController.macNodeId = parent.macNodeId;
+        rrc.hasConnectionControl = true;
+        rrc.connectionControl.typename = default("ConnectionControlUe");
+        rrc.connectionControl.isNr = false;
+        rrc.connectionControl.macNodeId = parent.macNodeId;
         dlFbGen.macNodeId = parent.macNodeId;
 
     submodules:

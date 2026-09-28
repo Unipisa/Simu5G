@@ -9,21 +9,21 @@
 // and cannot be removed from it.
 //
 
-#ifndef _SIMU5G_HANDOVERCONTROLLERD2D_H_
-#define _SIMU5G_HANDOVERCONTROLLERD2D_H_
+#ifndef _SIMU5G_CONNECTIONCONTROLUED2D_H_
+#define _SIMU5G_CONNECTIONCONTROLUED2D_H_
 
-#include "simu5g/stack/rrc/HandoverController.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 //
-// D2D-capable variant of the HandoverController: reports the leg's D2D capability,
+// D2D-capable variant of the ConnectionControlUe: reports the leg's D2D capability,
 // and returns a torn-down sidelink bearer's identity to the sidelink pool. See
-// HandoverControllerD2D.ned.
+// ConnectionControlUeD2D.ned.
 //
-class HandoverControllerD2D : public HandoverController
+class ConnectionControlUeD2D : public ConnectionControlUe
 {
   public:
     /// The leg is D2D-capable if its PHY is

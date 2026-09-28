@@ -35,7 +35,7 @@
 
 namespace simu5g {
 
-class HandoverController;
+class ConnectionControlUe;
 
 /**
  * A UE leg's MeasurementReport (TS 38.331 5.5.5): what the leg measured of its
@@ -58,7 +58,7 @@ struct HandoverRequest
 {
     MacNodeId legId = NODEID_NONE;
     omnetpp::cModule *ueModule = nullptr;
-    HandoverController *ueRrc = nullptr;       // the leg's control-plane entry point
+    ConnectionControlUe *ueRrc = nullptr;       // the leg's control-plane entry point
     std::vector<SessionResource> sessions;     // the UE's PDU sessions at the source, with the source's downlink F-TEIDs
     std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
     std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
@@ -96,7 +96,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // by ueContextRelease(), connectionLost() and handoverCancel()
     struct UeContext {
         omnetpp::cModule *ueModule = nullptr;
-        HandoverController *ueRrc = nullptr;   // the leg's control-plane entry point
+        ConnectionControlUe *ueRrc = nullptr;   // the leg's control-plane entry point
         enum State { CONNECTED, HO_SOURCE_PREPARING, HO_SOURCE_EXECUTING, HO_TARGET_PREPARED } state = CONNECTED;
         MacNodeId hoPeer = NODEID_NONE;        // the other base station of the leg's handover in progress
         std::vector<SessionResource> sessions; // target role: the session resources the preparation set up for the leg, reported in the PATH SWITCH REQUEST
@@ -142,7 +142,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The control-plane entry point of another node, through the Binder's node directory
     virtual ConnectionControlBase *controlOf(MacNodeId nodeId);
     virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
-    virtual HandoverController *ueControl(MacNodeId legId);
+    virtual ConnectionControlUe *ueControl(MacNodeId legId);
 
     // The handover decision: the cell the leg is handed over to on its report, or
     // NODEID_NONE for none. The default policy takes the reported best cell -- the
@@ -176,7 +176,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // secondary; and, if the UE's other leg is attached nowhere, whatever this node's
     // secondary holds for that leg, which the master's bearer establishment provisions
     // there regardless of the leg's attachment and nothing else would release (see
-    // HandoverController::deleteOwnBuffers()). The AMC detach is the caller's.
+    // ConnectionControlUe::deleteOwnBuffers()). The AMC detach is the caller's.
     virtual void releaseLeg(MacNodeId legId);
 
     // The UE's uplink and downlink at this node's AMC
@@ -316,7 +316,7 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // HANDOVER REQUEST ACKNOWLEDGE (Xn), from the target, with the session resources
     // it set up: this base station, the source, commands the leg (the
-    // RRCReconfiguration with sync, HandoverController::handoverCommand()), then
+    // RRCReconfiguration with sync, ConnectionControlUe::handoverCommand()), then
     // forwards the leg's downlink to the target's tunnels over X2-U (TS 38.300
     // 9.2.3.2.1)
     virtual void handoverRequestAck(MacNodeId legId, const std::vector<SessionResource>& admitted);
@@ -425,7 +425,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // sidelink multicast bearer exists; see the D2D subclass.
     void multicastGroupJoined(MacNodeId nodeId, MacNodeId groupId) override;
     // This base station's RLC detected the failure of its link to a leg: the leg is
-    // told (HandoverController::radioLinkFailure())
+    // told (ConnectionControlUe::radioLinkFailure())
     void radioLinkFailure(MacNodeId localId, MacNodeId peerId) override;
 
     // Deliver a static definition's bearer to the RRCs involved (see pushDrbToRrcs());

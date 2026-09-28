@@ -17,7 +17,7 @@
 
 #include "simu5g/stack/phy/PhyBase.h"
 #include "simu5g/stack/mac/LteMacUe.h"
-#include "simu5g/stack/rrc/HandoverController.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
 
 namespace simu5g {
 
@@ -35,7 +35,7 @@ class PhyUe : public PhyBase
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;
 
-    inet::ModuleRefByPar<HandoverController> handoverController_;
+    inet::ModuleRefByPar<ConnectionControlUe> connectionControl_;
 
     simtime_t lastFeedback_ = 0;
 

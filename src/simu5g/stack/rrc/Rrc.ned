@@ -19,8 +19,10 @@ package simu5g.stack.rrc;
 //   - drbTable: the configuration of the node's data radio bearers
 //   - bearerManagement: sets up and tears down data radio bearers
 //   - connectionControl: the node's control-plane entry point, which the control
-//     plane of other nodes talks to (base stations only for now)
-//   - handoverController: manages handover decisions and procedures (UE only)
+//     plane of other nodes and the node's own data path talk to: ~ConnectionControlEnb
+//     at a base station, ~ConnectionControlUe at a UE (the LTE leg's; its handover
+//     decisions are the serving base station's, its execution the UE's)
+//   - nrConnectionControl: the NR leg's ~ConnectionControlUe at a dual-stack UE
 //
 // The D2D-specific submodules (d2dModeController, d2dModeSelection) are added by
 // the ~RrcD2D subtype.
@@ -34,16 +36,10 @@ module Rrc like IRrc
         string routingTableModule;
 
         bool hasConnectionControl = default(false);
-        bool hasHandoverController = default(false);
-        bool hasNrHandoverController = default(false);
+        bool hasNrConnectionControl = default(false);
 
         *.interfaceTableModule = default(absPath(this.interfaceTableModule));
         *.routingTableModule = default(absPath(this.routingTableModule));
-
-        // the node's control-plane entry point, for the submodules that report to it: a
-        // base station's connectionControl, a UE's handoverController (its LTE leg's)
-        bearerManagement.connectionControlModule = default(hasConnectionControl ? "^.connectionControl" : "^.handoverController");
-        registration.connectionControlModule = default(hasConnectionControl ? "^.connectionControl" : "^.handoverController");
 
     submodules:
         registration: <default("Registration")> like IRegistration {
@@ -58,10 +54,7 @@ module Rrc like IRrc
         connectionControl: <default("ConnectionControlEnb")> like IConnectionControl if hasConnectionControl {
             @display("p=550,80");
         }
-        handoverController: <default("HandoverController")> like IHandoverController if hasHandoverController {
-            @display("p=550,80");
-        }
-        nrHandoverController: <default("HandoverController")> like IHandoverController if hasNrHandoverController {
+        nrConnectionControl: <default("ConnectionControlUe")> like IConnectionControl if hasNrConnectionControl {
             @display("p=700,80");
         }
 }
