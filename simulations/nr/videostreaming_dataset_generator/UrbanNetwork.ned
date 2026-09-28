@@ -18,6 +18,7 @@ import inet.node.ethernet.Eth10G;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.corenetwork.bearerConfigurator.BearerConfigurator;
+import simu5g.corenetwork.coreControl.CoreControl;
 import simu5g.mobility.trafficLightMobility.TrafficLight;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
@@ -51,6 +52,9 @@ network UrbanNetwork
         }
         binder: Binder {
             @display("p=114,182;is=s");
+        }
+        coreControl: CoreControl {
+            @display("p=114,382;is=s");
         }
         bearerConfigurator: BearerConfigurator {
             @display("p=114,232;is=s");

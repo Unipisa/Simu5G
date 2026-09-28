@@ -20,6 +20,7 @@ import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.corenetwork.bearerConfigurator.BearerConfigurator;
+import simu5g.corenetwork.coreControl.CoreControl;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
@@ -64,6 +65,9 @@ network SingleCell_withSecondaryEnb
         }
         binder: Binder {
             @display("p=88,174;is=s");
+        }
+        coreControl: CoreControl {
+            @display("p=88,374;is=s");
         }
         bearerConfigurator: BearerConfigurator {
             @display("p=88,224;is=s");

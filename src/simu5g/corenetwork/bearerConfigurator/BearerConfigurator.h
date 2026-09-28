@@ -22,7 +22,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/corenetwork/gtp/GtpTunnel.h"
+#include "simu5g/common/QfiRuleSet.h"
 #include "simu5g/stack/rrc/DrbDesc.h"
 
 namespace simu5g {
@@ -30,7 +30,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 class ConnectionControlEnb;
-class UserPlaneNodeControl;
 
 /**
  * The network's central bearer configurator: a network-wide simulation service
@@ -97,47 +96,6 @@ class BearerConfigurator : public cSimpleModule, public cListener
     };
     std::map<std::pair<MacNodeId, MacNodeId>, MulticastFlow> multicastFlows_;
 
-    // A node of the network that ends tunnels (see takeGtpEndpoints()), through its
-    // control-plane entry point: the N4 endpoint of a user plane node (a UPF/PGW or a
-    // MEC host's UPF), or the connection control of a base station. Each allocates
-    // its node's TEIDs itself, and is programmed through its calls.
-    struct GtpEndpoint {
-        cModule *node = nullptr;              // the network node
-        UserPlaneNodeControl *userPlaneNode = nullptr;  // user plane nodes only
-        ConnectionControlEnb *bs = nullptr;   // base stations only
-        CoreNodeType type = ENB;
-        MacNodeId bsId = NODEID_NONE;         // base stations only
-        std::string gateway;                  // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
-    };
-    std::vector<GtpEndpoint> gtpEndpoints_;       // the user plane nodes, then the base stations
-    std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
-
-    // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
-    // the UE first has a serving node, released when the UE leaves (see
-    // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
-    // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
-    // end of the tunnel (see switchPath()). The tunnel ends are told about every change
-    // (GtpUser::addTunnel() etc.).
-    struct CoreSession {
-        cModule *ueModule = nullptr;
-        SessionRef ref;                          // the UE's node ids and the PDU Session ID
-        int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
-        FTeid ulAnchor;                             // uplink F-TEID at the anchor
-        std::map<int, FTeid> ulMecHosts;            // uplink F-TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
-        MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
-        MacNodeId lastDlBaseStation = NODEID_NONE;  // where the downlink last entered the RAN, kept while the UE is attached nowhere
-        FTeid dl;                                   // downlink F-TEID at dlBaseStation
-        std::map<MacNodeId, FTeid> dlTunnels;       // the downlink F-TEID at each base station the UE has been attached through, kept until release
-    };
-    typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
-    std::map<CoreSessionKey, CoreSession> sessions_;
-    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's PDU session
-
-    // False until the last initialization stage, where the PDU sessions of the UEs
-    // attached by then are established; from then on, as UEs attach
-    bool pduSessionsEstablished_ = false;
-
-
   protected:
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -199,70 +157,25 @@ class BearerConfigurator : public cSimpleModule, public cListener
             const std::map<cModule *, std::vector<MacNodeId>>& ueNodeIds, const std::string& networkPrefix,
             std::map<cModule *, std::map<DrbId, DrbDesc>>& drbsOfUe);
 
-    // Compile and deliver the QFI classification rule tables to their evaluation
-    // sites: dlQfiRules to the user plane nodes' traffic flow filters, through the
-    // nodes' N4 endpoints (scoped by "node"), ulQfiRules to the SDAP UEs' classifiers
-    // through each UE's RRC (scoped by "ue"). The delivery stands in for the signaling
-    // the model does not have -- the SMF installing PDR/QER rules into a UPF over N4,
-    // and the NAS-signalled QoS rules a UE receives at PDU session establishment --
-    // and the sites never author or read back rules of their own.
-    virtual void deliverQfiRules();
+    // Validate the two QFI rule tables at initialization: every entry's field vocabulary
+    // and grammar, and that every scoped entry matches a site -- a "node" pattern a
+    // user plane node (an N4 endpoint registered with the Binder), a "ue" pattern a
+    // registered UE with SDAP -- since a pattern that matches nothing is a typo the
+    // per-site compilation (getDownlinkQfiRules() etc.) would never surface.
+    virtual void validateQfiRules();
+
+    // A module's path relative to the network, which the tables' patterns are matched against
+    virtual std::string relativeToNetwork(const cModule *module) const;
+
+    // The control-plane entry point of a base station, through the Binder's node directory
+    virtual ConnectionControlEnb *baseStationControl(MacNodeId bsId);
 
     /**
      * Binder::nodeUnregisteredSignal_: forget the DRB identity pools of a node that has
      * left the simulation. drbIdsInUse_ is keyed by node pair, so a departed id survives
-     * inside every pair it took part in and would keep those identities reserved. A
-     * departing UE's PDU session is released.
-     *
-     * Binder::servingNodeChangedSignal_: a UE's serving node has changed. Its PDU session
-     * is established if it has none yet, or else its downlink path is switched.
+     * inside every pair it took part in and would keep those identities reserved.
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
-
-    // Take the nodes that end tunnels from the Binder: the user plane nodes' N4
-    // endpoints, registered there at INITSTAGE_LOCAL, in registration order, then the
-    // base stations' connection controls, through the node directory, in node id
-    // order. Before the first tunnel is set up.
-    virtual void takeGtpEndpoints();
-
-    // The node a gateway parameter names, or nullptr
-    virtual cModule *findGatewayNode(const std::string& gateway);
-
-    // The UPF/PGW endpoint the gateway parameter of the given endpoint names; throws if
-    // there is none
-    virtual int findGatewayEndpoint(const std::string& gateway, const GtpEndpoint& from);
-
-    // The base station a downlink packet for the UE enters the RAN at: the master of the
-    // serving node of the stack the core network addresses the UE by, the LTE one while
-    // it is attached and else the NR one (as Binder::getMacNodeId() resolves a UE
-    // address); NODEID_NONE if the UE is attached nowhere
-    virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
-
-    // Establish the PDU sessions of the UEs attached at the end of initialization
-    virtual void establishPduSessions();
-
-    // Establish the PDU session of the UE with the given node id, anchored at the gateway
-    // of its downlink base station. Does nothing if the UE is attached nowhere yet, or its
-    // base station is not connected to a core network.
-    virtual void establishSession(MacNodeId ueNodeId);
-
-    // Follow a change of the UE's attachment. Every base station the UE is attached
-    // through (the master of a stack's serving node) takes the UE's uplink into the core
-    // network, so it is given the session's uplink tunnels and a downlink TEID on first
-    // use. If the base station the UE's downlink enters the RAN at has changed, the
-    // downlink end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2).
-    virtual void switchPath(CoreSession& session);
-
-    // Set up the session's tunnels at a base station the UE is attached through, or is
-    // handing over to, unless they are there already. The base stations of the session
-    // also learn each other's downlink TEIDs, to forward the downlink over X2 with.
-    virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
-
-    // The session's uplink tunnels, as a base station uses them
-    virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
-
-    // Release the PDU session of the UE with the given node id, if it has one
-    virtual void releaseSession(MacNodeId ueNodeId);
 
     // Set up the X2-U tunnels of a dual connectivity bearer, one per direction, each at
     // its receiving end: the secondary for the downlink the master relays, the master
@@ -276,11 +189,21 @@ class BearerConfigurator : public cSimpleModule, public cListener
     virtual void createOutgoingConnectionOnNode(MacNodeId nodeId, const FlowId& flow, const BearerRequest& req, bool withPdcp);
 
   public:
-    // A stack of a UE starts handing over to the given node (handover preparation): the
-    // base station its downlink will enter the RAN at allocates the session's downlink
-    // TEID now, and gets the session's uplink tunnels, so the source can forward the
-    // downlink to it over X2 until the path switch (TS 23.502 4.9.1.2.2)
-    virtual void prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId);
+    // Whether the UE's stack contains SDAP. Structure, not configuration: the sdap
+    // submodule exists iff the NIC's hasSdap is set, the same resolvability test
+    // BearerManagement::configureDrb() applies on its own side.
+    static bool ueStackHasSdap(const cModule *ueModule);
+
+    // The downlink QFI classification rules of a user plane node: the dlQfiRules
+    // entries whose "node" pattern matches the node's path relative to the network (an
+    // entry without one matches every node), in table order. Read by CoreControl, which
+    // installs them into the node over N4; this module delivers nothing itself.
+    virtual QfiRuleSet getDownlinkQfiRules(const cModule *node) const;
+
+    // The uplink QFI classification rules of a UE: the ulQfiRules entries scoped to
+    // it, likewise. Read by CoreControl, which delivers them to the UE's classifier as
+    // the QoS rules of PDU session establishment.
+    virtual QfiRuleSet getUplinkQfiRules(const cModule *ue) const;
 
     // A node has joined a multicast group (RRC registration tells us). If a sender has
     // already established that group's bearer, the node missed the RX-leg provisioning

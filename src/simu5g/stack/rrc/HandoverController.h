@@ -15,7 +15,7 @@
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteTypes.h"
-#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/corenetwork/coreControl/CoreControl.h"
 
 namespace simu5g {
 
@@ -104,7 +104,7 @@ class HandoverController : public cSimpleModule
     inet::ModuleRefByPar<HandoverPacketHolderUe> handoverPacketHolder_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
     inet::ModuleRefByPar<HandoverController> otherHandoverController_;
-    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
+    inet::ModuleRefByPar<CoreControl> coreControl_;
 
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }

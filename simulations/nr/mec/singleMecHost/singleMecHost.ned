@@ -18,6 +18,7 @@ import inet.node.ethernet.Eth10G;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.corenetwork.bearerConfigurator.BearerConfigurator;
+import simu5g.corenetwork.coreControl.CoreControl;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
@@ -59,6 +60,9 @@ network SingleMecHost
         }
         binder: Binder {
             @display("p=690,174;is=s");
+        }
+        coreControl: CoreControl {
+            @display("p=690,374;is=s");
         }
         bearerConfigurator: BearerConfigurator {
             @display("p=690,224;is=s");

@@ -23,7 +23,6 @@
 #include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
 #include "simu5g/stack/rrc/Registration.h"
-#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
 namespace simu5g {
 
@@ -54,19 +53,15 @@ void BearerConfigurator::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         binder_->subscribe(Binder::nodeUnregisteredSignal_, this);
-        binder_->subscribe(Binder::servingNodeChangedSignal_, this);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // After INITSTAGE_SIMU5G_NODE_RELATIONSHIPS, so the UEs' serving nodes are known,
         // and before INITSTAGE_SIMU5G_MAC_SCHEDULER_CREATION, where the scheduler takes
-        // the address of the QoS map that this fills through RRC. The tunnel endpoints
-        // come first: configuring the dual connectivity bearers sets up X2-U tunnels.
-        takeGtpEndpoints();
+        // the address of the QoS map that this fills through RRC
         configureDrbs();
-        deliverQfiRules();
+        validateQfiRules();
     }
     else if (stage == inet::INITSTAGE_LAST) {
-        establishPduSessions();
         establishStaticDrbs();
     }
 }
@@ -332,9 +327,9 @@ void BearerConfigurator::configureDrbs()
 // Whether the UE's stack contains SDAP. Structure, not configuration: the sdap
 // submodule exists iff the NIC's hasSdap is set, the same resolvability test
 // BearerManagement::configureDrb() applies on its own side.
-static bool ueStackHasSdap(cModule *ueModule)
+bool BearerConfigurator::ueStackHasSdap(const cModule *ueModule)
 {
-    cModule *nic = ueModule->getSubmodule("cellularNic");
+    const cModule *nic = ueModule->getSubmodule("cellularNic");
     return nic != nullptr && nic->getSubmodule("sdap") != nullptr;
 }
 
@@ -743,246 +738,55 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
     }
 }
 
-void BearerConfigurator::takeGtpEndpoints()
+std::string BearerConfigurator::relativeToNetwork(const cModule *module) const
 {
-    for (const auto& registration : binder_->getUserPlaneNodes()) {
-        GtpEndpoint endpoint;
-        endpoint.node = getContainingNode(registration.module);
-        endpoint.userPlaneNode = registration.module;
-        endpoint.type = registration.type;
-        endpoint.gateway = registration.gateway;
-        gtpEndpoints_.push_back(endpoint);
-    }
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap()) {
-        if (getNodeTypeById(nodeId) != NODEB || info.moduleRef == nullptr)
-            continue;
-        auto *bs = dynamic_cast<ConnectionControlEnb *>(binder_->getRrcByNodeId(nodeId)->getSubmodule("connectionControl"));
-        if (bs == nullptr)
-            throw cRuntimeError("BearerConfigurator: base station %s has no rrc.connectionControl (ConnectionControlEnb) module",
-                    info.moduleRef->getFullPath().c_str());
-        GtpEndpoint endpoint;
-        endpoint.node = info.moduleRef;
-        endpoint.bs = bs;
-        endpoint.type = binder_->isNrNodeB(nodeId) ? GNB : ENB;
-        endpoint.bsId = nodeId;
-        endpoint.gateway = bs->getGateway();
-        bsGtpEndpoints_[nodeId] = gtpEndpoints_.size();
-        gtpEndpoints_.push_back(endpoint);
-    }
-}
-
-void BearerConfigurator::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)
-{
-    Enter_Method_Silent("prepareHandover");
-    auto it = sessionOfNode_.find(ueNodeId);
-    if (it == sessionOfNode_.end())
-        return;   // a UE without a PDU session has no downlink to forward
-    CoreSession& session = sessions_.at(it->second);
-    setUpRanTunnels(session, binder_->getMasterNodeOrSelf(targetNodeId));
-}
-
-cModule *BearerConfigurator::findGatewayNode(const std::string& gateway)
-{
-    // a gateway parameter names its node relative to the network
-    std::string path = std::string(getSystemModule()->getFullPath()) + "." + gateway;
-    return getSimulation()->findModuleByPath(path.c_str());
-}
-
-int BearerConfigurator::findGatewayEndpoint(const std::string& gateway, const GtpEndpoint& from)
-{
-    cModule *node = findGatewayNode(gateway);
-    for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
-        const GtpEndpoint& endpoint = gtpEndpoints_[i];
-        if ((endpoint.type == UPF || endpoint.type == PGW) && node != nullptr && endpoint.node == node)
-            return i;
-    }
-    throw cRuntimeError("BearerConfigurator: the gateway '%s' of %s is no UPF or PGW with an N4 endpoint",
-            gateway.c_str(), from.node->getFullPath().c_str());
-}
-
-MacNodeId BearerConfigurator::findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId)
-{
-    for (MacNodeId nodeId : {lteNodeId, nrNodeId}) {
-        if (nodeId == NODEID_NONE)
-            continue;
-        MacNodeId servingNode = binder_->getServingNode(nodeId);
-        if (servingNode != NODEID_NONE)
-            return binder_->getMasterNodeOrSelf(servingNode);
-    }
-    return NODEID_NONE;
-}
-
-void BearerConfigurator::establishPduSessions()
-{
-    // in node id order, so the TEIDs are allocated in a reproducible order
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-        if (getNodeTypeById(nodeId) == UE && info.moduleRef != nullptr && sessionOfNode_.count(nodeId) == 0)
-            establishSession(nodeId);
-    pduSessionsEstablished_ = true;
-}
-
-void BearerConfigurator::establishSession(MacNodeId ueNodeId)
-{
-    cModule *ueModule = binder_->getNodeModule(ueNodeId);
-    ASSERT(ueModule != nullptr);
-
-    CoreSession session;
-    session.ueModule = ueModule;
-    session.ref.id = SessionId(1);
-    for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
-        if (info.moduleRef == ueModule)
-            (isNrUe(nodeId) ? session.ref.nrNodeId : session.ref.lteNodeId) = nodeId;
-
-    // The LTE id, which every UE has, is the UE's identity: once it is unregistered,
-    // the UE is leaving the simulation, and its remaining stack's detachment must not
-    // establish a new session
-    if (session.ref.lteNodeId == NODEID_NONE)
-        return;
-
-    MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
-    if (dlBaseStation == NODEID_NONE)
-        return;   // established when the UE attaches
-    const GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
-    if (bsEndpoint.gateway.empty()) {
-        EV_INFO << "BearerConfigurator: " << ueModule->getFullPath() << " is attached to base station " << dlBaseStation
-                << ", which is not connected to a core network: no PDU session" << endl;
-        return;
-    }
-
-    // The anchor is the core network gateway of the base station the UE's downlink
-    // enters the RAN at, and the session gets an uplink tunnel to each MEC host UPF of
-    // that core network too, i.e. those whose gateway is the anchor
-    session.anchor = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
-    const GtpEndpoint& anchor = gtpEndpoints_[session.anchor];
-    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref);
-    for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
-        const GtpEndpoint& endpoint = gtpEndpoints_[i];
-        if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchor.node)
-            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref);
-    }
-
-    CoreSessionKey key(ueModule->getId(), session.ref.id);
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
-        if (nodeId != NODEID_NONE)
-            sessionOfNode_[nodeId] = key;
-    CoreSession& established = sessions_[key] = session;
-    EV_INFO << "BearerConfigurator: PDU session " << established.ref.id << " of " << ueModule->getFullPath()
-            << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
-    for (const auto& [index, tunnel] : established.ulMecHosts)
-        EV_INFO << ", to MEC host UPF " << tunnel;
-    EV_INFO << endl;
-    switchPath(established);
-}
-
-void BearerConfigurator::switchPath(CoreSession& session)
-{
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId}) {
-        if (nodeId == NODEID_NONE)
-            continue;
-        MacNodeId servingNode = binder_->getServingNode(nodeId);
-        if (servingNode != NODEID_NONE)
-            setUpRanTunnels(session, binder_->getMasterNodeOrSelf(servingNode));
-    }
-
-    MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
-    if (dlBaseStation == session.dlBaseStation)
-        return;
-    session.dlBaseStation = dlBaseStation;
-    if (dlBaseStation == NODEID_NONE) {
-        session.dl = FTeid();
-        EV_INFO << "BearerConfigurator: " << session.ueModule->getFullPath() << " is attached nowhere, the downlink of PDU session "
-                << session.ref.id << " has no tunnel" << endl;
-    }
-    else {
-        session.dl = session.dlTunnels.at(dlBaseStation);
-        EV_INFO << "BearerConfigurator: the downlink of PDU session " << session.ref.id << " of " << session.ueModule->getFullPath()
-                << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
-    }
-
-    // The anchor ends the downlink on the old path with an End Marker, which the old base
-    // station relays to the new one after the downlink it forwards, and the new one holds
-    // back the downlink of the new path until then (TS 23.502 4.9.1.2.2). A handover
-    // passes through "attached nowhere", so the old path is the one last used. The MEC
-    // host UPFs send none, and their downlink is not ordered against the forwarded one
-    // (in 3GPP, a MEC branch sits behind the anchor's single N3 tunnel).
-    MacNodeId oldDlBaseStation = session.lastDlBaseStation;
-    FTeid oldDl;
-    if (dlBaseStation != NODEID_NONE && oldDlBaseStation != NODEID_NONE && oldDlBaseStation != dlBaseStation)
-        oldDl = session.dlTunnels.at(oldDlBaseStation);
-
-    // the UPFs that send the session's downlink: the anchor, and the MEC host UPFs
-    gtpEndpoints_[session.anchor].userPlaneNode->updateDownlinkTunnel(session.ref, session.dl, oldDl);
-    for (const auto& [index, tunnel] : session.ulMecHosts)
-        gtpEndpoints_[index].userPlaneNode->updateDownlinkTunnel(session.ref, session.dl, FTeid());
-    if (dlBaseStation == NODEID_NONE)
-        return;
-
-    auto holder = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(dlBaseStation));
-    holder->switchDownlinkPath(session.ref.lteNodeId, session.ref.nrNodeId, oldDlBaseStation);
-    session.lastDlBaseStation = dlBaseStation;
-}
-
-void BearerConfigurator::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
-{
-    if (session.dlTunnels.count(bsId) != 0)
-        return;
-    ConnectionControlEnb *bs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-    FTeid dl = bs->sessionTunnelSetup(session.ref, getUplinkTunnels(session));
-
-    // the base stations of the session learn each other's downlink TEIDs, to forward
-    // the downlink over X2 with
-    for (const auto& [otherBsId, otherDl] : session.dlTunnels) {
-        gtpEndpoints_.at(bsGtpEndpoints_.at(otherBsId)).bs->setForwardingTeid(session.ref, bsId, dl.teid);
-        bs->setForwardingTeid(session.ref, otherBsId, otherDl.teid);
-    }
-    session.dlTunnels[bsId] = dl;
-}
-
-UplinkTunnels BearerConfigurator::getUplinkTunnels(const CoreSession& session)
-{
-    UplinkTunnels tunnels;
-    tunnels.anchor = session.ulAnchor;
-    tunnels.toUpf = gtpEndpoints_[session.anchor].type == UPF;
-    for (const auto& [index, tunnel] : session.ulMecHosts)
-        tunnels.mecHosts[tunnel.address] = tunnel.teid;
-    return tunnels;
-}
-
-void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
-{
-    auto it = sessionOfNode_.find(ueNodeId);
-    if (it == sessionOfNode_.end())
-        return;
-    CoreSessionKey key = it->second;
-    const CoreSession& session = sessions_.at(key);
-    EV_INFO << "BearerConfigurator: PDU session " << session.ref.id << " of " << session.ueModule->getFullPath() << " released" << endl;
-
-    // the tunnel ends forget the session's tunnels
-    gtpEndpoints_[session.anchor].userPlaneNode->releaseUserPlaneSession(session.ref);
-    for (const auto& [index, tunnel] : session.ulMecHosts)
-        gtpEndpoints_[index].userPlaneNode->releaseUserPlaneSession(session.ref);
-    for (const auto& [bsId, dl] : session.dlTunnels)
-        gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs->sessionRelease(session.ref);
-
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
-        sessionOfNode_.erase(nodeId);
-    sessions_.erase(key);
-}
-
-void BearerConfigurator::deliverQfiRules()
-{
-    // delivery-site module paths in the rule tables are relative to the network,
-    // like the bearer tables' "ue" patterns
+    // the tables' module-path patterns are relative to the network
     std::string networkPrefix = std::string(getSystemModule()->getFullPath()) + ".";
-    auto relativePath = [&](cModule *module) {
-        std::string path = module->getFullPath();
-        if (path.compare(0, networkPrefix.size(), networkPrefix) == 0)
-            path.erase(0, networkPrefix.size());
-        return path;
-    };
+    std::string path = module->getFullPath();
+    if (path.compare(0, networkPrefix.size(), networkPrefix) == 0)
+        path.erase(0, networkPrefix.size());
+    return path;
+}
 
+// Compile the subset of a rule table scoped to one evaluation site: the entries whose
+// scope pattern matches the site (an entry without one matches every site), in table
+// order, so evaluation stays first-match-wins among the site's rules. matched, if
+// given, records the entries the site matched.
+static QfiRuleSet compileQfiRulesFor(const cValueArray *table, const char *paramName, const char *scopeField,
+        const std::string& sitePath, std::vector<bool> *matched)
+{
+    QfiRuleSet rules;
+    for (int i = 0; i < (int)table->size(); i++) {
+        const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
+        if (entry->containsKey(scopeField)) {
+            inet::PatternMatcher matcher(entry->get(scopeField).stringValue(), true, true, true);
+            if (!matcher.matches(sitePath.c_str()))
+                continue;
+        }
+        if (matched != nullptr)
+            (*matched)[i] = true;
+        std::string what = std::string(paramName) + " entry " + std::to_string(i);
+        rules.parseRule(entry, what.c_str());
+    }
+    return rules;
+}
+
+QfiRuleSet BearerConfigurator::getDownlinkQfiRules(const cModule *node) const
+{
+    const cValueArray *table = check_and_cast<const cValueArray *>(par("dlQfiRules").objectValue());
+    return compileQfiRulesFor(table, "dlQfiRules", "node", relativeToNetwork(node), nullptr);
+}
+
+QfiRuleSet BearerConfigurator::getUplinkQfiRules(const cModule *ue) const
+{
+    const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
+    return compileQfiRulesFor(table, "ulQfiRules", "ue", relativeToNetwork(ue), nullptr);
+}
+
+void BearerConfigurator::validateQfiRules()
+{
     // Validate a whole table up front -- also the entries no site matches, whose
-    // errors the per-site compilation below would never surface. A rule carries the
+    // errors the per-site compilation would never surface. A rule carries the
     // shared grammar (see QfiRuleSet) plus the table's delivery-scoping column.
     auto validateTable = [](const cValueArray *table, const char *paramName, const char *scopeField) {
         QfiRuleSet scratch;
@@ -996,33 +800,13 @@ void BearerConfigurator::deliverQfiRules()
         }
     };
 
-    // Compile the table subset scoped to one delivery site: the entries whose scope
-    // pattern matches the site (an entry without one matches every site), in table
-    // order, so evaluation stays first-match-wins among the site's rules.
-    auto compileFor = [](const cValueArray *table, const char *paramName, const char *scopeField,
-                         const std::string& sitePath, std::vector<bool>& matched) {
-        QfiRuleSet rules;
-        for (int i = 0; i < (int)table->size(); i++) {
-            const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
-            if (entry->containsKey(scopeField)) {
-                inet::PatternMatcher matcher(entry->get(scopeField).stringValue(), true, true, true);
-                if (!matcher.matches(sitePath.c_str()))
-                    continue;
-            }
-            matched[i] = true;
-            std::string what = std::string(paramName) + " entry " + std::to_string(i);
-            rules.parseRule(entry, what.c_str());
-        }
-        return rules;
-    };
-
-    // Downlink: each user plane node gets the rules scoped to it, through its N4 endpoint
+    // A scoped entry that matches no site is a typo: a "node" pattern names a user
+    // plane node (an N4 endpoint of the Binder), a "ue" pattern a registered UE with SDAP
     const cValueArray *dlTable = check_and_cast<const cValueArray *>(par("dlQfiRules").objectValue());
     validateTable(dlTable, "dlQfiRules", "node");
     std::vector<bool> dlMatched(dlTable->size(), false);
-    for (const GtpEndpoint& endpoint : gtpEndpoints_)
-        if (endpoint.userPlaneNode != nullptr)
-            endpoint.userPlaneNode->setDownlinkClassifierRules(compileFor(dlTable, "dlQfiRules", "node", relativePath(endpoint.node), dlMatched));
+    for (const auto& registration : binder_->getUserPlaneNodes())
+        compileQfiRulesFor(dlTable, "dlQfiRules", "node", relativeToNetwork(getContainingNode(registration.module)), &dlMatched);
     for (int i = 0; i < (int)dlTable->size(); i++) {
         const cValueMap *entry = check_and_cast<const cValueMap *>(dlTable->get(i).objectValue());
         if (!dlMatched[i] && entry->containsKey("node"))
@@ -1030,26 +814,31 @@ void BearerConfigurator::deliverQfiRules()
                     "(a UPF, a PGW or a MEC host's UPF)", i, entry->get("node").stringValue());
     }
 
-    // Uplink: each SDAP UE's classifier gets the rules scoped to it, through its RRC
     const cValueArray *ulTable = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
     validateTable(ulTable, "ulQfiRules", "ue");
     std::vector<bool> ulMatched(ulTable->size(), false);
-    std::map<cModule *, std::vector<MacNodeId>> ueNodeIds;
+    std::set<cModule *> ueModules;
     for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
         if (getNodeTypeById(nodeId) == UE && info.moduleRef != nullptr)
-            ueNodeIds[info.moduleRef].push_back(nodeId);
-    for (const auto& [ueModule, nodeIds] : ueNodeIds) {
-        if (!ueStackHasSdap(ueModule))
-            continue;   // no SDAP, no uplink QoS-flow classification
-        auto *ueRrc = check_and_cast<BearerManagement *>(binder_->getRrcByNodeId(nodeIds.front())->getSubmodule("bearerManagement"));
-        ueRrc->setUplinkQfiRules(compileFor(ulTable, "ulQfiRules", "ue", relativePath(ueModule), ulMatched));
-    }
+            ueModules.insert(info.moduleRef);
+    for (cModule *ueModule : ueModules)
+        if (ueStackHasSdap(ueModule))
+            compileQfiRulesFor(ulTable, "ulQfiRules", "ue", relativeToNetwork(ueModule), &ulMatched);
     for (int i = 0; i < (int)ulTable->size(); i++) {
         const cValueMap *entry = check_and_cast<const cValueMap *>(ulTable->get(i).objectValue());
         if (!ulMatched[i] && entry->containsKey("ue"))
             throw cRuntimeError("ulQfiRules entry %d: its \"ue\" pattern '%s' matches no registered UE "
                     "with SDAP", i, entry->get("ue").stringValue());
     }
+}
+
+ConnectionControlEnb *BearerConfigurator::baseStationControl(MacNodeId bsId)
+{
+    cModule *rrc = binder_->getRrcByNodeId(bsId);
+    auto *bs = rrc != nullptr ? dynamic_cast<ConnectionControlEnb *>(rrc->getSubmodule("connectionControl")) : nullptr;
+    if (bs == nullptr)
+        throw cRuntimeError("BearerConfigurator: base station %d has no rrc.connectionControl (ConnectionControlEnb) module", (int)num(bsId));
+    return bs;
 }
 
 void BearerConfigurator::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
@@ -1397,8 +1186,8 @@ void BearerConfigurator::setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondar
     // The receiving end of each direction allocates its tunnel's TEID: the secondary for
     // the downlink the master relays to it, the master for the uplink the secondary
     // relays back. Each end keys the bearer by the UE's id on the stack it serves.
-    ConnectionControlEnb *master = gtpEndpoints_.at(bsGtpEndpoints_.at(masterId)).bs;
-    ConnectionControlEnb *secondary = gtpEndpoints_.at(bsGtpEndpoints_.at(secondaryId)).bs;
+    ConnectionControlEnb *master = baseStationControl(masterId);
+    ConnectionControlEnb *secondary = baseStationControl(secondaryId);
     Teid dlTeid = secondary->addDcTunnel(ueScgId, drbId, DL);
     master->setDcTunnelTeid(ueLteId, ueNrId, drbId, DL, dlTeid);
     Teid ulTeid = master->addDcTunnel(ueMcgId, drbId, UL);
@@ -1436,22 +1225,7 @@ void BearerConfigurator::receiveSignal(cComponent *source, simsignal_t signalID,
 {
     Enter_Method_Silent("receiveSignal");
     MacNodeId id = MacNodeId(nodeId);
-
-    if (signalID == Binder::servingNodeChangedSignal_) {
-        // during initialization, attachments are still being settled; the sessions of
-        // the UEs attached by the end of it are established in the last stage
-        if (!pduSessionsEstablished_)
-            return;
-        auto it = sessionOfNode_.find(id);
-        if (it != sessionOfNode_.end())
-            switchPath(sessions_.at(it->second));
-        else if (binder_->nodeExists(id))
-            establishSession(id);
-        return;
-    }
-
     ASSERT(signalID == Binder::nodeUnregisteredSignal_);
-    releaseSession(id);
 
     // the pools are keyed by node pair, so the departed id sits in every pair it took part in
     for (auto it = drbIdsInUse_.begin(); it != drbIdsInUse_.end(); ) {

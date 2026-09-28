@@ -44,7 +44,7 @@ void HandoverController::initialize(int stage)
         handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
         otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
-        bearerConfigurator_.reference(this, "bearerConfiguratorModule", true);
+        coreControl_.reference(this, "coreControlModule", true);
 
         isNr_ = par("isNr");
         nodeId_ = MacNodeId(par("macNodeId").intValue());
@@ -368,7 +368,7 @@ void HandoverController::triggerHandover()
     // Inform the eNB's HandoverPacketHolder module to forward data to the target eNB,
     // on the downlink tunnel the handover preparation gives the UE's PDU session there
     if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        bearerConfigurator_->prepareHandover(nodeId_, candidateServingNodeId_);
+        coreControl_->prepareHandover(nodeId_, candidateServingNodeId_);
         HandoverPacketHolderEnb *enbIp2nic = check_and_cast<HandoverPacketHolderEnb *>(binder_->getHandoverPacketHolderByNodeId(servingNodeId_));
         enbIp2nic->triggerHandoverSource(nodeId_, candidateServingNodeId_);
     }

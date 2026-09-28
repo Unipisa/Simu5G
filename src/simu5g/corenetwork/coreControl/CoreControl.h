@@ -1,0 +1,159 @@
+//
+//                  Simu5G
+//
+// Authors: Andras Varga (OpenSim Ltd)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
+#ifndef _CORECONTROL_H_
+#define _CORECONTROL_H_
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include <inet/common/ModuleRefByPar.h>
+
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpTunnel.h"
+
+namespace simu5g {
+
+class BearerConfigurator;
+class ConnectionControlEnb;
+class UserPlaneNodeControl;
+
+/**
+ * The control plane of the core network, one per cellular network: the AMF and the
+ * SMF of a 5G core (the MME and the gateways' control plane of an EPC) in one module.
+ * It keeps the UEs' PDU sessions and programs the nodes that end their tunnels
+ * through the nodes' control-plane entry points (UserPlaneNodeControl over N4, and the base
+ * stations' ConnectionControlEnb). See CoreControl.ned.
+ */
+class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
+{
+  protected:
+    inet::ModuleRefByPar<Binder> binder_;
+    inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
+
+    // A node of the network that ends tunnels (see takeGtpEndpoints()), through its
+    // control-plane entry point: the N4 endpoint of a user plane node (a UPF/PGW or a
+    // MEC host's UPF), or the connection control of a base station. Each allocates
+    // its node's TEIDs itself, and is programmed through its calls.
+    struct GtpEndpoint {
+        omnetpp::cModule *node = nullptr;     // the network node
+        UserPlaneNodeControl *userPlaneNode = nullptr;  // user plane nodes only
+        ConnectionControlEnb *bs = nullptr;   // base stations only
+        CoreNodeType type = ENB;
+        MacNodeId bsId = NODEID_NONE;         // base stations only
+        std::string gateway;                  // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
+    };
+    std::vector<GtpEndpoint> gtpEndpoints_;       // the user plane nodes, then the base stations
+    std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
+
+    // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
+    // the UE first has a serving node, released when the UE leaves (see
+    // establishSession()). The anchor UPF (PSA) is chosen at establishment and kept
+    // for the lifetime of the session (SSC mode 1): a handover only moves the downlink
+    // end of the tunnel (see switchPath()). The tunnel ends are told about every change
+    // through their nodes' control-plane entry points.
+    struct CoreSession {
+        omnetpp::cModule *ueModule = nullptr;
+        SessionRef ref;                          // the UE's node ids and the PDU Session ID
+        int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
+        FTeid ulAnchor;                             // uplink F-TEID at the anchor
+        std::map<int, FTeid> ulMecHosts;            // uplink F-TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
+        MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
+        MacNodeId lastDlBaseStation = NODEID_NONE;  // where the downlink last entered the RAN, kept while the UE is attached nowhere
+        FTeid dl;                                   // downlink F-TEID at dlBaseStation
+        std::map<MacNodeId, FTeid> dlTunnels;       // the downlink F-TEID at each base station the UE has been attached through, kept until release
+    };
+    typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
+    std::map<CoreSessionKey, CoreSession> sessions_;
+    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's PDU session
+
+    // False until the last initialization stage, where the PDU sessions of the UEs
+    // attached by then are established; from then on, as UEs attach
+    bool pduSessionsEstablished_ = false;
+
+  protected:
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessage(omnetpp::cMessage *msg) override { throw omnetpp::cRuntimeError("This module does not process messages"); }
+
+    /**
+     * Binder::nodeUnregisteredSignal_: a departing UE's PDU session is released.
+     *
+     * Binder::servingNodeChangedSignal_: a UE's serving node has changed. Its PDU session
+     * is established if it has none yet, or else its downlink path is switched.
+     */
+    void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
+
+    // Take the nodes that end tunnels from the Binder: the user plane nodes' N4
+    // endpoints, registered there at INITSTAGE_LOCAL, in registration order, then the
+    // base stations' connection controls, through the node directory, in node id
+    // order. Before the first tunnel is set up.
+    virtual void takeGtpEndpoints();
+
+    // Deliver the QFI classification rules the BearerConfigurator holds to their
+    // evaluation sites: the downlink rules to each user plane node over N4 (PFCP
+    // Association Setup), the uplink rules to each SDAP UE's classifier through the
+    // UE's RRC (the QoS rules NAS signaling installs into a UE at PDU session
+    // establishment, TS 23.501 5.7.1.4). The sites never author rules of their own.
+    virtual void deliverQfiRules();
+
+    // The node a gateway parameter names, or nullptr
+    virtual omnetpp::cModule *findGatewayNode(const std::string& gateway);
+
+    // The UPF/PGW endpoint the gateway parameter of the given endpoint names; throws if
+    // there is none
+    virtual int findGatewayEndpoint(const std::string& gateway, const GtpEndpoint& from);
+
+    // The base station a downlink packet for the UE enters the RAN at: the master of the
+    // serving node of the stack the core network addresses the UE by, the LTE one while
+    // it is attached and else the NR one (as Binder::getMacNodeId() resolves a UE
+    // address); NODEID_NONE if the UE is attached nowhere
+    virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
+
+    // Establish the PDU sessions of the UEs attached at the end of initialization
+    virtual void establishPduSessions();
+
+    // Establish the PDU session of the UE with the given node id, anchored at the gateway
+    // of its downlink base station. Does nothing if the UE is attached nowhere yet, or its
+    // base station is not connected to a core network.
+    virtual void establishSession(MacNodeId ueNodeId);
+
+    // Follow a change of the UE's attachment. Every base station the UE is attached
+    // through (the master of a stack's serving node) takes the UE's uplink into the core
+    // network, so it is given the session's uplink tunnels and a downlink TEID on first
+    // use. If the base station the UE's downlink enters the RAN at has changed, the
+    // downlink end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2).
+    virtual void switchPath(CoreSession& session);
+
+    // Set up the session's tunnels at a base station the UE is attached through, or is
+    // handing over to, unless they are there already. The base stations of the session
+    // also learn each other's downlink TEIDs, to forward the downlink over X2 with.
+    virtual void setUpRanTunnels(CoreSession& session, MacNodeId bsId);
+
+    // The session's uplink tunnels, as a base station uses them
+    virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
+
+    // Release the PDU session of the UE with the given node id, if it has one
+    virtual void releaseSession(MacNodeId ueNodeId);
+
+  public:
+    // A stack of a UE starts handing over to the given node (handover preparation): the
+    // base station its downlink will enter the RAN at allocates the session's downlink
+    // TEID now, and gets the session's uplink tunnels, so the source can forward the
+    // downlink to it over X2 until the path switch (TS 23.502 4.9.1.2.2)
+    virtual void prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId);
+};
+
+} //namespace
+
+#endif

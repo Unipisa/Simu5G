@@ -33,23 +33,10 @@ package simu5g.corenetwork.bearerConfigurator;
 // relative to the toplevel network, so in such a setup the entries (and the
 // module-path parameters) name their nodes by qualified paths, e.g. "networkA.ue[*]".
 //
-// As the SMF, this module keeps a PDU session per UE (PDU Session ID 1), established
-// when the UE first has a serving node and released when the UE leaves the
-// simulation. The sessions' tunnels are set up through the control-plane entry
-// points of the nodes that end them: the user plane nodes' N4 endpoints
-// (~UserPlaneNodeControl), which register with the ~Binder, and the base stations' connection
-// controls (~ConnectionControlEnb), found through the ~Binder's node directory. A
-// session has an uplink tunnel at the anchor UPF (or PGW) and at each MEC host UPF
-// of the anchor's core network, and a downlink tunnel at each base station the
-// session's downlink has entered the RAN at; the tunnel endpoint ids (TEIDs) are
-// allocated by the receiving node itself, in increasing order and never reused
-// within a run. The anchor is the core network gateway of the
-// base station the UE's downlink enters the RAN at when the session is established,
-// and it stays for the lifetime of the session (SSC mode 1): a handover only moves
-// the downlink end of the tunnel (the path switch, TS 23.502 4.9.1.2.2), at the
-// instant the ~Binder records the new serving node. N4 signalling is modeled as the
-// calls of ~UserPlaneNodeControl; intermediate UPFs (I-UPF) and SSC modes 2 and 3 are not
-// modeled.
+// The PDU sessions the bearers ride on are the business of the network's
+// ~CoreControl, the SMF stand-in: this module holds no session state. Its QFI rule
+// tables (dlQfiRules, ulQfiRules, see below) are read by ~CoreControl, which delivers
+// the rules to their evaluation sites.
 //
 // Modeling abstractions and current limitations:
 //  - Bearer establishment is a direct call into the RRC of each node involved; no
@@ -281,14 +268,15 @@ package simu5g.corenetwork.bearerConfigurator;
 // The dlQfiRules and ulQfiRules parameters author the network's QFI classification:
 // which QoS flow (QFI) each packet belongs to. The bearer definitions above map
 // already-assigned QFIs onto DRBs (mappedQfis); these two tables are where the QFIs
-// themselves are assigned, once per direction at its ingress. The rules are
-// delivered from here to their evaluation sites -- dlQfiRules to the
-// ~TrafficFlowFilter of each user plane node, through the node's ~UserPlaneNodeControl
-// (modeling the PDR/QER rules the SMF installs into a UPF over N4), ulQfiRules to each UE's
-// ~QosFlowClassifier (modeling the QoS rules NAS signaling installs into a UE at
-// PDU session establishment, TS 23.501 5.7.1.4) -- and the sites never author rules
-// of their own: the ini author writes the operator's classification policy here,
-// and this module plays the signaling the model does not have.
+// themselves are assigned, once per direction at its ingress. ~CoreControl reads
+// the tables from here and delivers the rules to their evaluation sites --
+// dlQfiRules to the ~TrafficFlowFilter of each user plane node, through the node's
+// ~UserPlaneNodeControl (modeling the PDR/QER rules the SMF installs into a UPF over N4),
+// ulQfiRules to each UE's ~QosFlowClassifier (modeling the QoS rules NAS signaling
+// installs into a UE at PDU session establishment, TS 23.501 5.7.1.4) -- and the
+// sites never author rules of their own: the ini author writes the operator's
+// classification policy here, and the delivery plays the signaling the model does
+// not have.
 //
 // Rule fields (both tables; evaluated in order at each site, first match wins):
 //  - filter (string, optional): an inet::PacketFilter -- a message-name pattern
