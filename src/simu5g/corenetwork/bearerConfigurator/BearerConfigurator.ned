@@ -35,15 +35,15 @@ package simu5g.corenetwork.bearerConfigurator;
 //
 // As the SMF, this module keeps a PDU session per UE (PDU Session ID 1), established
 // when the UE first has a serving node and released when the UE leaves the
-// simulation. The user plane nodes' N4 endpoints (~UserPlaneNodeControl) and the base
-// stations' tunnel endpoints (~GtpUser, and their X2-U endpoints, ~GtpUserX2)
-// register with the ~Binder, which this module takes them from. A session has an
-// uplink tunnel at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's
-// core network, and a downlink tunnel at each base station the session's downlink
-// has entered the RAN at; the tunnel endpoint ids (TEIDs) are allocated by the
-// receiving node, in increasing order and never reused within a run -- a user plane
-// node allocates its own when its session is established over N4, a base station's
-// are allocated here on its behalf. The anchor is the core network gateway of the
+// simulation. The sessions' tunnels are set up through the control-plane entry
+// points of the nodes that end them: the user plane nodes' N4 endpoints
+// (~UserPlaneNodeControl), which register with the ~Binder, and the base stations' connection
+// controls (~ConnectionControlEnb), found through the ~Binder's node directory. A
+// session has an uplink tunnel at the anchor UPF (or PGW) and at each MEC host UPF
+// of the anchor's core network, and a downlink tunnel at each base station the
+// session's downlink has entered the RAN at; the tunnel endpoint ids (TEIDs) are
+// allocated by the receiving node itself, in increasing order and never reused
+// within a run. The anchor is the core network gateway of the
 // base station the UE's downlink enters the RAN at when the session is established,
 // and it stays for the lifetime of the session (SSC mode 1): a handover only moves
 // the downlink end of the tunnel (the path switch, TS 23.502 4.9.1.2.2), at the

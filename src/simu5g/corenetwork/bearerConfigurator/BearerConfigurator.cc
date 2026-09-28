@@ -18,10 +18,9 @@
 #include "simu5g/common/QfiRuleSet.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
 #include <algorithm>
-#include "simu5g/corenetwork/gtp/GtpUser.h"
-#include "simu5g/corenetwork/gtp/GtpUserX2.h"
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
 #include "simu5g/stack/rrc/BearerManagement.h"
+#include "simu5g/stack/rrc/ConnectionControlEnb.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
 #include "simu5g/stack/rrc/Registration.h"
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
@@ -754,18 +753,22 @@ void BearerConfigurator::takeGtpEndpoints()
         endpoint.gateway = registration.gateway;
         gtpEndpoints_.push_back(endpoint);
     }
-    for (const auto& registration : binder_->getGtpEndpoints()) {
-        ASSERT(isBaseStation(registration.type));
+    for (const auto& [nodeId, info] : binder_->getNodeInfoMap()) {
+        if (getNodeTypeById(nodeId) != NODEB || info.moduleRef == nullptr)
+            continue;
+        auto *bs = dynamic_cast<ConnectionControlEnb *>(binder_->getRrcByNodeId(nodeId)->getSubmodule("connectionControl"));
+        if (bs == nullptr)
+            throw cRuntimeError("BearerConfigurator: base station %s has no rrc.connectionControl (ConnectionControlEnb) module",
+                    info.moduleRef->getFullPath().c_str());
         GtpEndpoint endpoint;
-        endpoint.node = getContainingNode(registration.module);
-        endpoint.module = registration.module;
-        endpoint.type = registration.type;
-        endpoint.bsId = registration.bsId;
-        endpoint.gateway = registration.gateway;
-        bsGtpEndpoints_[endpoint.bsId] = gtpEndpoints_.size();
+        endpoint.node = info.moduleRef;
+        endpoint.bs = bs;
+        endpoint.type = binder_->isNrNodeB(nodeId) ? GNB : ENB;
+        endpoint.bsId = nodeId;
+        endpoint.gateway = bs->getGateway();
+        bsGtpEndpoints_[nodeId] = gtpEndpoints_.size();
         gtpEndpoints_.push_back(endpoint);
     }
-    bsX2GtpEndpoints_ = binder_->getX2GtpEndpoints();
 }
 
 void BearerConfigurator::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNodeId)
@@ -776,20 +779,6 @@ void BearerConfigurator::prepareHandover(MacNodeId ueNodeId, MacNodeId targetNod
         return;   // a UE without a PDU session has no downlink to forward
     CoreSession& session = sessions_.at(it->second);
     setUpRanTunnels(session, binder_->getMasterNodeOrSelf(targetNodeId));
-}
-
-Teid BearerConfigurator::allocateTeid(GtpEndpoint& endpoint)
-{
-    ASSERT(endpoint.module != nullptr);
-    if (endpoint.lastTeid == Teid(UINT32_MAX))
-        throw cRuntimeError("BearerConfigurator::allocateTeid - the TEID space of %s is exhausted", endpoint.node->getFullPath().c_str());
-    endpoint.lastTeid = Teid(num(endpoint.lastTeid) + 1);
-    return endpoint.lastTeid;
-}
-
-L3Address BearerConfigurator::getGtpEndpointAddress(const GtpEndpoint& endpoint)
-{
-    return L3AddressResolver().resolve(endpoint.node->getFullPath().c_str());
 }
 
 cModule *BearerConfigurator::findGatewayNode(const std::string& gateway)
@@ -905,7 +894,7 @@ void BearerConfigurator::switchPath(CoreSession& session)
                 << session.ref.id << " has no tunnel" << endl;
     }
     else {
-        session.dl = FTeid{getGtpEndpointAddress(gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation))), session.dlTeids.at(dlBaseStation)};
+        session.dl = session.dlTunnels.at(dlBaseStation);
         EV_INFO << "BearerConfigurator: the downlink of PDU session " << session.ref.id << " of " << session.ueModule->getFullPath()
                 << " enters the RAN at base station " << dlBaseStation << ", downlink F-TEID " << session.dl << endl;
     }
@@ -919,7 +908,7 @@ void BearerConfigurator::switchPath(CoreSession& session)
     MacNodeId oldDlBaseStation = session.lastDlBaseStation;
     FTeid oldDl;
     if (dlBaseStation != NODEID_NONE && oldDlBaseStation != NODEID_NONE && oldDlBaseStation != dlBaseStation)
-        oldDl = FTeid{getGtpEndpointAddress(gtpEndpoints_.at(bsGtpEndpoints_.at(oldDlBaseStation))), session.dlTeids.at(oldDlBaseStation)};
+        oldDl = session.dlTunnels.at(oldDlBaseStation);
 
     // the UPFs that send the session's downlink: the anchor, and the MEC host UPFs
     gtpEndpoints_[session.anchor].userPlaneNode->updateDownlinkTunnel(session.ref, session.dl, oldDl);
@@ -935,22 +924,18 @@ void BearerConfigurator::switchPath(CoreSession& session)
 
 void BearerConfigurator::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
 {
-    if (session.dlTeids.count(bsId) != 0)
+    if (session.dlTunnels.count(bsId) != 0)
         return;
-    GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId));
-    Teid teid = allocateTeid(bsEndpoint);
-    bsEndpoint.module->addTunnel(teid, session.ref);
-    bsEndpoint.module->setUplinkTunnels(session.ref, getUplinkTunnels(session));
+    ConnectionControlEnb *bs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
+    FTeid dl = bs->sessionTunnelSetup(session.ref, getUplinkTunnels(session));
 
-    // the same TEID receives the downlink a handover source forwards over X2, and the
-    // base stations of the session learn each other's, to forward with
-    GtpUserX2 *bsX2 = bsX2GtpEndpoints_.at(bsId);
-    bsX2->addTunnel(teid, session.ref);
-    for (const auto& [otherBsId, otherTeid] : session.dlTeids) {
-        bsX2GtpEndpoints_.at(otherBsId)->setForwardingTeid(session.ref, bsId, teid);
-        bsX2->setForwardingTeid(session.ref, otherBsId, otherTeid);
+    // the base stations of the session learn each other's downlink TEIDs, to forward
+    // the downlink over X2 with
+    for (const auto& [otherBsId, otherDl] : session.dlTunnels) {
+        gtpEndpoints_.at(bsGtpEndpoints_.at(otherBsId)).bs->setForwardingTeid(session.ref, bsId, dl.teid);
+        bs->setForwardingTeid(session.ref, otherBsId, otherDl.teid);
     }
-    session.dlTeids[bsId] = teid;
+    session.dlTunnels[bsId] = dl;
 }
 
 UplinkTunnels BearerConfigurator::getUplinkTunnels(const CoreSession& session)
@@ -976,10 +961,8 @@ void BearerConfigurator::releaseSession(MacNodeId ueNodeId)
     gtpEndpoints_[session.anchor].userPlaneNode->releaseUserPlaneSession(session.ref);
     for (const auto& [index, tunnel] : session.ulMecHosts)
         gtpEndpoints_[index].userPlaneNode->releaseUserPlaneSession(session.ref);
-    for (const auto& [bsId, teid] : session.dlTeids) {
-        gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).module->removeSession(session.ref);
-        bsX2GtpEndpoints_.at(bsId)->removeSession(session.ref);
-    }
+    for (const auto& [bsId, dl] : session.dlTunnels)
+        gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs->sessionRelease(session.ref);
 
     for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
         sessionOfNode_.erase(nodeId);
@@ -1414,14 +1397,12 @@ void BearerConfigurator::setUpX2DcTunnels(MacNodeId masterId, MacNodeId secondar
     // The receiving end of each direction allocates its tunnel's TEID: the secondary for
     // the downlink the master relays to it, the master for the uplink the secondary
     // relays back. Each end keys the bearer by the UE's id on the stack it serves.
-    Teid dlTeid = allocateTeid(gtpEndpoints_.at(bsGtpEndpoints_.at(secondaryId)));
-    Teid ulTeid = allocateTeid(gtpEndpoints_.at(bsGtpEndpoints_.at(masterId)));
-    GtpUserX2 *masterX2 = bsX2GtpEndpoints_.at(masterId);
-    GtpUserX2 *secondaryX2 = bsX2GtpEndpoints_.at(secondaryId);
-    secondaryX2->addDcTunnel(dlTeid, ueScgId, drbId, DL);
-    masterX2->setDcTunnelTeid(ueLteId, ueNrId, drbId, DL, dlTeid);
-    masterX2->addDcTunnel(ulTeid, ueMcgId, drbId, UL);
-    secondaryX2->setDcTunnelTeid(ueLteId, ueNrId, drbId, UL, ulTeid);
+    ConnectionControlEnb *master = gtpEndpoints_.at(bsGtpEndpoints_.at(masterId)).bs;
+    ConnectionControlEnb *secondary = gtpEndpoints_.at(bsGtpEndpoints_.at(secondaryId)).bs;
+    Teid dlTeid = secondary->addDcTunnel(ueScgId, drbId, DL);
+    master->setDcTunnelTeid(ueLteId, ueNrId, drbId, DL, dlTeid);
+    Teid ulTeid = master->addDcTunnel(ueMcgId, drbId, UL);
+    secondary->setDcTunnelTeid(ueLteId, ueNrId, drbId, UL, ulTeid);
 }
 
 // The definition a flow's bearer was authored from, if any: the entry whose UE and DRB id

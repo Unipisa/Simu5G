@@ -51,14 +51,7 @@ void GtpUser::initialize(int stage)
                 throw cRuntimeError("The required 'gateway' parameter is empty.");
         }
 
-        // A base station registers its tunnel endpoint with the Binder, from which the
-        // bearer configurator, standing in for the SMF, takes the endpoints whose TEID
-        // spaces it allocates the PDU sessions' tunnel endpoint ids from. A user plane
-        // node is programmed through its N4 endpoint instead (see UserPlaneNodeControl), which
-        // registers on the node's behalf.
         binder_.reference(this, "binderModule", true);
-        if (isBaseStation(ownerType_))
-            binder_->registerGtpEndpoint(this, ownerType_, myMacNodeID, gateway_);
         return;
     }
 

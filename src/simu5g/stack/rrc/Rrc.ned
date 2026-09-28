@@ -18,6 +18,8 @@ package simu5g.stack.rrc;
 //   - registration: registers the node with the Binder, sets up the interface
 //   - drbTable: the configuration of the node's data radio bearers
 //   - bearerManagement: sets up and tears down data radio bearers
+//   - connectionControl: the node's control-plane entry point, which the control
+//     plane of other nodes talks to (base stations only for now)
 //   - handoverController: manages handover decisions and procedures (UE only)
 //
 // The D2D-specific submodules (d2dModeController, d2dModeSelection) are added by
@@ -31,6 +33,7 @@ module Rrc like IRrc
         string interfaceTableModule;
         string routingTableModule;
 
+        bool hasConnectionControl = default(false);
         bool hasHandoverController = default(false);
         bool hasNrHandoverController = default(false);
 
@@ -46,6 +49,9 @@ module Rrc like IRrc
         }
         bearerManagement: <default("BearerManagement")> like IBearerManagement {
             @display("p=400,80");
+        }
+        connectionControl: <default("ConnectionControlEnb")> like IConnectionControl if hasConnectionControl {
+            @display("p=550,80");
         }
         handoverController: <default("HandoverController")> like IHandoverController if hasHandoverController {
             @display("p=550,80");

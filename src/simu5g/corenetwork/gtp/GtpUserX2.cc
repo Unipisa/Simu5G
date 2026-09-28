@@ -33,12 +33,7 @@ void GtpUserX2::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
-        // register this tunnel endpoint with the Binder, from which the bearer
-        // configurator, standing in for the SMF, takes the endpoints it tells about the
-        // PDU sessions' tunnels
-        MacNodeId bsId = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
         binder_.reference(this, "binderModule", true);
-        binder_->registerX2GtpEndpoint(bsId, this);
         return;
     }
 

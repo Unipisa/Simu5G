@@ -40,6 +40,8 @@ module LteNicEnb extends LteNicBase
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         bool compEnabled = default(false);
         *.handoverX2ForwarderModule = "^.handoverX2Forwarder";
+        rrc.hasConnectionControl = true;
+        rrc.connectionControl.macNodeId = parent.macNodeId;
 
     submodules:
         pdcpDcMux: DcMux {

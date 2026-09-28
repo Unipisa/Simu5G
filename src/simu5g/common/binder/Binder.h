@@ -27,8 +27,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class GtpUser;
-class GtpUserX2;
 class UserPlaneNodeControl;
 class UeStatsCollector;
 
@@ -152,15 +150,6 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
 
   public:
-    // The GTP-U tunnel endpoint of a base station, as it registered (see
-    // registerGtpEndpoint())
-    struct GtpEndpointRegistration {
-        GtpUser *module = nullptr;
-        CoreNodeType type = ENB;
-        MacNodeId bsId = NODEID_NONE;
-        std::string gateway;            // the core network gateway of a base station connected to the core network; empty otherwise
-    };
-
     // The N4 endpoint of a user plane node (a UPF/PGW or a MEC host's UPF), as it
     // registered (see registerUserPlaneNode())
     struct UserPlaneNodeRegistration {
@@ -170,8 +159,6 @@ class Binder : public cSimpleModule
     };
 
   private:
-    std::vector<GtpEndpointRegistration> gtpEndpoints_;     // in registration order
-    std::map<MacNodeId, GtpUserX2 *> x2GtpEndpoints_;       // by base station id
     std::vector<UserPlaneNodeRegistration> userPlaneNodes_;       // in registration order
 
   protected:
@@ -283,23 +270,11 @@ class Binder : public cSimpleModule
     virtual void unregisterNode(MacNodeId id);
 
     /**
-     * The base stations' tunnel endpoints register here during initialization, at
-     * INITSTAGE_LOCAL: their GTP-U endpoints (GtpUser) and their X2-U endpoints
-     * (GtpUserX2). The BearerConfigurator, which allocates the TEIDs of the PDU
-     * sessions' tunnels from the base stations' TEID spaces and tells the endpoints
-     * about them, takes them from here. gateway is that of a base station connected
-     * to the core network, and empty otherwise.
-     */
-    virtual void registerGtpEndpoint(GtpUser *module, CoreNodeType type, MacNodeId bsId, const std::string& gateway);
-    virtual void registerX2GtpEndpoint(MacNodeId bsId, GtpUserX2 *module);
-    const std::vector<GtpEndpointRegistration>& getGtpEndpoints() const { return gtpEndpoints_; }
-    const std::map<MacNodeId, GtpUserX2 *>& getX2GtpEndpoints() const { return x2GtpEndpoints_; }
-
-    /**
      * The user plane nodes' N4 endpoints (UserPlaneNodeControl) register here during
      * initialization, at INITSTAGE_LOCAL. The BearerConfigurator, standing in for the
-     * SMF, takes the user plane nodes it programs from here. gateway is that of a MEC
-     * host's UPF, and empty otherwise.
+     * SMF, takes the user plane nodes it programs from here. (The base stations'
+     * control-plane entry points, ConnectionControlEnb, are found through the node
+     * directory.) gateway is that of a MEC host's UPF, and empty otherwise.
      */
     virtual void registerUserPlaneNode(UserPlaneNodeControl *module, CoreNodeType type, const std::string& gateway);
     const std::vector<UserPlaneNodeRegistration>& getUserPlaneNodes() const { return userPlaneNodes_; }

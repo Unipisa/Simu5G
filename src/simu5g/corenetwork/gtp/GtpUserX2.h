@@ -37,8 +37,8 @@ using namespace omnetpp;
  *
  * Downlink data a handover source forwards travels on the downlink tunnel of the
  * datagram's PDU session at the target: the TEID the target allocated for the session
- * (the one the core network's downlink arrives with, see ~GtpUser), which the bearer
- * configurator tells the base stations of the session about. A PDCP PDU of a dual
+ * (the one the core network's downlink arrives with, see ~GtpUser), which the base
+ * stations of the session are told about (see ConnectionControlEnb). A PDCP PDU of a dual
  * connectivity bearer travels on the bearer's X2-U tunnel for its direction, whose TEID
  * the receiving end allocated; the receiver names the bearer to ~DcMux in an
  * X2DcTunnelInd tag.
@@ -89,8 +89,8 @@ class GtpUserX2 : public cSimpleModule
     virtual Teid getForwardingTeid(const SessionTag *session, MacNodeId targetBs);
 
   public:
-    // The tunnels of the PDU sessions, as the bearer configurator (the SMF stand-in) sets
-    // them up at the base station
+    // The tunnels of the PDU sessions, as the base station's control plane
+    // (ConnectionControlEnb) sets them up here
 
     // A tunnel ending at this base station: G-PDUs arriving with the TEID belong to the session
     virtual void addTunnel(Teid teid, const SessionRef& session);

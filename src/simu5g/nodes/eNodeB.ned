@@ -137,6 +137,7 @@ module eNodeB
             parameters:
                 @display("p=433,520");
                 nodeType = parent.nodeType;
+                rrc.connectionControl.gateway = parent.gateway;
         }
 
         pppIf: PppInterface {

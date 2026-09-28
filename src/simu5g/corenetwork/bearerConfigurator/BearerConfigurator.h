@@ -29,8 +29,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class GtpUser;
-class GtpUserX2;
+class ConnectionControlEnb;
 class UserPlaneNodeControl;
 
 /**
@@ -98,27 +97,20 @@ class BearerConfigurator : public cSimpleModule, public cListener
     };
     std::map<std::pair<MacNodeId, MacNodeId>, MulticastFlow> multicastFlows_;
 
-    // A tunnel endpoint of the network, as it registered with the Binder (see
-    // takeGtpEndpoints()): the GTP-U endpoint of a base station, whose TEID space this
-    // module allocates from on its behalf, or the N4 endpoint of a user plane node (a
-    // UPF/PGW or a MEC host's UPF), which allocates from its own and is programmed
-    // through the calls of UserPlaneNodeControl
+    // A node of the network that ends tunnels (see takeGtpEndpoints()), through its
+    // control-plane entry point: the N4 endpoint of a user plane node (a UPF/PGW or a
+    // MEC host's UPF), or the connection control of a base station. Each allocates
+    // its node's TEIDs itself, and is programmed through its calls.
     struct GtpEndpoint {
-        cModule *node = nullptr;        // the network node
-        GtpUser *module = nullptr;      // base stations only
-        UserPlaneNodeControl *userPlaneNode = nullptr;      // user plane nodes only
+        cModule *node = nullptr;              // the network node
+        UserPlaneNodeControl *userPlaneNode = nullptr;  // user plane nodes only
+        ConnectionControlEnb *bs = nullptr;   // base stations only
         CoreNodeType type = ENB;
-        MacNodeId bsId = NODEID_NONE;   // base stations only
-        std::string gateway;            // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
-        Teid lastTeid = TEID_NONE;      // base stations only: the TEID allocated last (see allocateTeid())
+        MacNodeId bsId = NODEID_NONE;         // base stations only
+        std::string gateway;                  // the core network gateway of a base station connected to the core network, or of a MEC host's UPF; empty otherwise
     };
-    std::vector<GtpEndpoint> gtpEndpoints_;       // in registration order
+    std::vector<GtpEndpoint> gtpEndpoints_;       // the user plane nodes, then the base stations
     std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
-
-    // The X2-U tunnel endpoint of each base station, which forwards downlink traffic to
-    // a handover target, and receives it, with the TEIDs the base stations allocate for
-    // the sessions' downlink tunnels (see takeGtpEndpoints())
-    std::map<MacNodeId, GtpUserX2 *> bsX2GtpEndpoints_;
 
     // A PDU session (TS 23.501 5.6), as the SMF keeps it: one per UE, established when
     // the UE first has a serving node, released when the UE leaves (see
@@ -135,7 +127,7 @@ class BearerConfigurator : public cSimpleModule, public cListener
         MacNodeId dlBaseStation = NODEID_NONE;      // where the downlink enters the RAN; NODEID_NONE while the UE is attached nowhere
         MacNodeId lastDlBaseStation = NODEID_NONE;  // where the downlink last entered the RAN, kept while the UE is attached nowhere
         FTeid dl;                                   // downlink F-TEID at dlBaseStation
-        std::map<MacNodeId, Teid> dlTeids;          // the downlink TEID at each base station the UE has been attached through, kept until release
+        std::map<MacNodeId, FTeid> dlTunnels;       // the downlink F-TEID at each base station the UE has been attached through, kept until release
     };
     typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the PDU Session ID
     std::map<CoreSessionKey, CoreSession> sessions_;
@@ -227,20 +219,11 @@ class BearerConfigurator : public cSimpleModule, public cListener
      */
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
 
-    // Take the tunnel endpoints the network's nodes registered with the Binder at
-    // INITSTAGE_LOCAL: the user plane nodes' N4 endpoints, then the base stations'
-    // GTP-U and X2-U endpoints, each in registration order. Before the first tunnel
-    // is set up.
+    // Take the nodes that end tunnels from the Binder: the user plane nodes' N4
+    // endpoints, registered there at INITSTAGE_LOCAL, in registration order, then the
+    // base stations' connection controls, through the node directory, in node id
+    // order. Before the first tunnel is set up.
     virtual void takeGtpEndpoints();
-
-    // Hand out the next TEID of a base station's TEID space (a user plane node
-    // allocates its own, see UserPlaneNodeControl). TEIDs are allocated in increasing order and
-    // never reused within a run, so a G-PDU still in flight on a released tunnel
-    // cannot be taken for a later session's.
-    virtual Teid allocateTeid(GtpEndpoint& endpoint);
-
-    // The transport address of a tunnel endpoint: that of its network node
-    virtual inet::L3Address getGtpEndpointAddress(const GtpEndpoint& endpoint);
 
     // The node a gateway parameter names, or nullptr
     virtual cModule *findGatewayNode(const std::string& gateway);
