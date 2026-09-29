@@ -456,7 +456,7 @@ void ConnectionControlEnb::establishStaticDrbs(cModule *ueModule, MacNodeId legI
     // the descriptors first, which the establishment consults
     for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions())
         if (!ab.onDemand && ab.ueModule == ueModule)
-            pushDrbToRrcs(ueModule, ab.desc);
+            pushDrbToRrcs(ab, ab.desc);
 
     for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions()) {
         if (ab.onDemand || ab.ueModule != ueModule)
@@ -613,8 +613,10 @@ void ConnectionControlEnb::setUplinkQfiRules(QfiRuleSet&& rules)
 
 // ---- bearer establishment ----
 
-void ConnectionControlEnb::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
+void ConnectionControlEnb::pushDrbToRrcs(const AuthoredBearer& ab, const DrbDesc& drb)
 {
+    cModule *ueModule = ab.ueModule;
+
     // node ids of the UE module, one per stack
     std::vector<MacNodeId> nodeIds;
     for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
@@ -624,9 +626,17 @@ void ConnectionControlEnb::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
 
     DrbId drbId = drb.getDrbId();
 
-    // the bearer belongs to the UE's session
+    // the bearer belongs to the UE's session; ROHC compresses IP headers, so it is on
+    // the bearers of an IP session only
     DrbDesc sessionDrb = drb;
     sessionDrb.sessionType = sessionTypeOf(ueModule);
+    if (!isIpSessionType(sessionDrb.sessionType) && !sessionDrb.rohcProfiles.empty()) {
+        if (!ab.rohcByPolicy)
+            throw cRuntimeError("ConnectionControlEnb: the definition of DRB %d of %s states \"rohc\", but the UE's session is of type \"%s\" -- "
+                    "header compression (ROHC) applies to IP sessions only", (int)num(drb.getDrbId()), ueModule->getFullPath().c_str(),
+                    sessionTypeToA(sessionDrb.sessionType).c_str());
+        sessionDrb.rohcProfiles.clear();   // the rohcForDrbProfiles policy covers IP sessions only
+    }
 
     // The UE keys its bearers by "my serving node" (NODEID_NONE), its serving
     // node by the UE. A dual-stack UE has one bearer per stack id, and the
@@ -715,7 +725,7 @@ DrbId ConnectionControlEnb::establishFromDefinition(const AuthoredBearer& ab, co
             desc.lcid = LogicalCid(num(drbId));
             EV << "ConnectionControlEnb::establishFromDefinition - on-demand definition materialized as DRB " << drbId
                << " for UE " << ab.ueModule->getFullPath() << endl;
-            pushDrbToRrcs(ab.ueModule, desc);
+            pushDrbToRrcs(ab, desc);
         }
         flow.drbId = it->second;
     }
@@ -757,7 +767,7 @@ DrbId ConnectionControlEnb::drbOfDefinition(const AuthoredBearer& ab, MacNodeId 
         desc.lcid = LogicalCid(num(drbId));
         EV << "ConnectionControlEnb::drbOfDefinition - on-demand DRB " << drbId
            << " materialized at UE " << ab.ueModule->getFullPath() << endl;
-        pushDrbToRrcs(ab.ueModule, desc);
+        pushDrbToRrcs(ab, desc);
     }
     return it->second;
 }

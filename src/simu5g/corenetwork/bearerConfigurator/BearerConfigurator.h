@@ -54,6 +54,7 @@ class BearerConfigurator : public cSimpleModule
         cModule *ueModule = nullptr;
         DrbDesc desc;                  // key = (NODEID_NONE, drbId); DRBID_NONE for onDemand
         bool onDemand = false;         // true = onDemandDrbs entry (ids assigned at first match, per pair)
+        bool rohcByPolicy = false;     // desc.rohcProfiles come from the rohcForDrbProfiles policy, not from the entry's "rohc" field
         std::vector<std::unique_ptr<inet::PacketFilter>> filters;   // compiled desc.filters
     };
 

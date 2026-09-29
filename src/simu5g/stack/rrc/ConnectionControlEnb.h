@@ -253,11 +253,15 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The body of establishBearer(flow, req), for the calls that come from inside
     virtual DrbId establishDataConnection(const FlowId& flow, const BearerRequest& req);
 
-    // Deliver one bearer's definition to the RRCs involved, typed by the UE's session
-    // (DrbDesc::sessionType, see sessionTypeOf()): the UE's (keyed by NODEID_NONE, "my
+    // Deliver the bearer of a definition (drb: the definition's descriptor, or its copy
+    // as materialized) to the RRCs involved, as a bearer of the UE's session: typed by
+    // the session (DrbDesc::sessionType, see sessionTypeOf()), and with header
+    // compression only if the session is an IP one -- the definition's ROHC is dropped
+    // on another session if it comes from the rohcForDrbProfiles policy, and an error
+    // if the definition states it. The RRCs are the UE's (keyed by NODEID_NONE, "my
     // serving node") and, for each attached stack, the serving node's (keyed by that
-    // stack's UE id), reserving the configured id per pair.
-    virtual void pushDrbToRrcs(omnetpp::cModule *ueModule, const DrbDesc& drb);
+    // stack's UE id); the configured id is reserved per pair.
+    virtual void pushDrbToRrcs(const BearerConfigurator::AuthoredBearer& ab, const DrbDesc& drb);
 
     // A D2D or multicast flow's bearer: outside the definition system (definitions
     // describe infrastructure bearers), with a fixed transitional configuration.

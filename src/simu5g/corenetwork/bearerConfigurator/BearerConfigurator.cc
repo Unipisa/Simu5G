@@ -599,11 +599,16 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
         }
 
         // rohc (optional): header compression, PDCP-Config headerCompression -- true (every
-        // modeled profile), false, or {profiles: [...]}
+        // modeled profile), false, or {profiles: [...]}. The header compression policy
+        // (rohcForDrbProfiles) is recorded as such: it applies to IP sessions only, which
+        // the base station knows when it installs the bearer.
+        bool rohcByPolicy = false;
         if (const cValue *v = field("rohc"))
             drb.rohcProfiles = parseRohcField(*v, paramName, i);
-        else if (entry->containsKey("profile") && contains(rohcForDrbProfiles_, entry->get("profile").stdstringValue()))
-            drb.rohcProfiles = rohcProfileNames();   // the header compression policy (rohcForDrbProfiles)
+        else if (entry->containsKey("profile") && contains(rohcForDrbProfiles_, entry->get("profile").stdstringValue())) {
+            drb.rohcProfiles = rohcProfileNames();
+            rohcByPolicy = true;
+        }
 
         // The entry names its UE by module path (patterns allowed), which is how the
         // configuration follows the UE instead of naming an allocation-order-dependent
@@ -644,6 +649,7 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
             ab.ueModule = ueModule;
             ab.desc = drb;
             ab.onDemand = onDemand;
+            ab.rohcByPolicy = rohcByPolicy;
             for (const std::string& spec : drb.filters) {
                 auto filter = std::make_unique<inet::PacketFilter>();
                 configurePacketFilter(*filter, spec.c_str());

@@ -159,7 +159,10 @@ package simu5g.corenetwork.bearerConfigurator;
 //    ~LtePdcpTxEntity for the model. Not modeled from PDCP-Config: maxCID (a bearer has up
 //    to 16 contexts), drb-ContinueROHC (a handover starts every context over), and
 //    uplinkOnlyROHC. A definition that does not state rohc follows the operator policy of
-//    the rohcForDrbProfiles parameter: on if it names one of the listed profiles.
+//    the rohcForDrbProfiles parameter: on if it names one of the listed profiles. ROHC
+//    compresses IP headers, so it applies to the bearers of IP sessions only (see the
+//    sessionType parameter of ~LteUe): the base station installs a bearer of another
+//    session without the policy's ROHC, and a stated rohc there is an error.
 //  - isDefault (bool, optional): marks this as the default DRB for the UE -- the fallback
 //    when no QFI-to-DRB mapping ("5gc") or packet filter ("epc") matches. If no entry of
 //    a UE is marked in either table, the UE's single static bearer takes the role; a UE
@@ -341,6 +344,6 @@ simple BearerConfigurator
         // the RAN chooses what to make of them)
         double amPerThreshold = default(1e-4);  // rlcMode derivation: a definition whose QoS profile has packetErrorRate <= this gets "AM", else "UM"
         object lcgPriorityBounds = default([25, 50, 75]);  // Lcg derivation: qosPriorityLevel < bounds[k] -> LCG k, else LCG 3; strictly ascending, one bound between each pair of adjacent LCGs
-        object rohcForDrbProfiles = default(["5qi-1", "qci-1"]);  // Header compression policy: definitions naming one of these profiles get "rohc: true" unless they state rohc themselves; default: the voice bearers
+        object rohcForDrbProfiles = default(["5qi-1", "qci-1"]);  // Header compression policy: definitions naming one of these profiles get "rohc: true" unless they state rohc themselves, on IP sessions; default: the voice bearers
         @display("i=block/cogwheel");
 }
