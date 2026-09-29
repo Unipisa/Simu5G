@@ -63,6 +63,7 @@ struct HandoverRequest
     std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
     std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
     UeCapabilities capabilities;               // what the leg reported of itself at connection setup
+    SessionType sessionType = IP_V4;           // the type of the UE's session, as the leg requested it at connection setup
 };
 
 /**
@@ -101,6 +102,7 @@ class ConnectionControlEnb : public ConnectionControlBase
         MacNodeId hoPeer = NODEID_NONE;        // the other base station of the leg's handover in progress
         std::vector<SessionResource> sessions; // target role: the session resources the preparation set up for the leg, reported in the PATH SWITCH REQUEST
         UeCapabilities capabilities;           // what the leg reported of itself at connection setup
+        SessionType sessionType = IP_V4;       // the type of the UE's session, as the leg requested it at connection setup
     };
     std::map<MacNodeId, UeContext> ues_;       // by the leg's node id
 
@@ -167,6 +169,12 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // This base station's resources of the session, or nullptr
     virtual SessionResource *findSession(const SessionRef& session);
+
+    // The type of the UE's session, as a leg of the UE this base station has a context
+    // of requested it at connection setup; throws if it has none. The core network
+    // establishes the session with that type or rejects it, and a base station not
+    // connected to a core network serves the leg's bearers as the session's anyway.
+    virtual SessionType sessionTypeOf(omnetpp::cModule *ueModule);
 
     // This base station's resources of the sessions of the UE the leg belongs to
     virtual std::vector<SessionResource> sessionsOf(MacNodeId legId);
@@ -245,9 +253,10 @@ class ConnectionControlEnb : public ConnectionControlBase
     // The body of establishBearer(flow, req), for the calls that come from inside
     virtual DrbId establishDataConnection(const FlowId& flow, const BearerRequest& req);
 
-    // Deliver one bearer's definition to the RRCs involved: the UE's (keyed by
-    // NODEID_NONE, "my serving node") and, for each attached stack, the serving
-    // node's (keyed by that stack's UE id), reserving the configured id per pair.
+    // Deliver one bearer's definition to the RRCs involved, typed by the UE's session
+    // (DrbDesc::sessionType, see sessionTypeOf()): the UE's (keyed by NODEID_NONE, "my
+    // serving node") and, for each attached stack, the serving node's (keyed by that
+    // stack's UE id), reserving the configured id per pair.
     virtual void pushDrbToRrcs(omnetpp::cModule *ueModule, const DrbDesc& drb);
 
     // A D2D or multicast flow's bearer: outside the definition system (definitions

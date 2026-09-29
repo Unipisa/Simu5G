@@ -35,9 +35,22 @@ typedef BearerConfigurator::AuthoredBearer AuthoredBearer;
 static const std::vector<std::string> KNOWN_ENTRY_FIELDS = {
     "coreNetwork", "ue", "drbId", "profile", "mappedQfis", "filters", "lcg", "rlcMode",
     "legs", "primaryPath", "ulDataSplitThreshold", "ulLegSelection", "dlLegSelection",
-    "pduSessionType", "upperProtocol", "isDefault", "suppressSdapHeader", "rohc",
+    "isDefault", "suppressSdapHeader", "rohc",
     "gbr", "packetDelayBudget", "packetErrorRate", "qosPriorityLevel"
 };
+
+// The fields a bearer definition no longer has: the type of a bearer's session is the
+// UE's (see the UE's sessionType parameter), and the protocol a received packet goes
+// up as follows from it. An entry or profile that still has one is rejected with a
+// pointer to the parameter, rather than as an unknown field.
+static void checkRemovedFields(const cValueMap *fields, const std::string& what)
+{
+    for (const char *key : {"pduSessionType", "upperProtocol"})
+        if (fields->containsKey(key))
+            throw cRuntimeError("%s: the \"%s\" field is no longer supported: the session type is the UE's, set by "
+                    "its sessionType parameter (e.g. **.ue[*].sessionType = \"IPv6\"), and a bearer's packets go up as "
+                    "the protocol the type implies", what.c_str(), key);
+}
 
 // The entry fields a profile may not carry: a profile describes what a bearer is,
 // never which UE it belongs to (ue, drbId) or which architecture and flows select
@@ -153,6 +166,7 @@ void BearerConfigurator::configureDrbs()
                 throw cRuntimeError("drbProfiles entry '%s' redefines a predefined profile; the standardized rows cannot be overridden",
                         profileName.c_str());
             const cValueMap *profile = check_and_cast<const cValueMap *>(value.objectValue());
+            checkRemovedFields(profile, "drbProfiles entry '" + profileName + "'");
             for (const auto& [key, fieldValue] : profile->getFields()) {
                 if (contains(FORBIDDEN_PROFILE_FIELDS, key))
                     throw cRuntimeError("drbProfiles entry '%s' must not contain the '%s' field", profileName.c_str(), key.c_str());
@@ -287,6 +301,7 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
         const cValueMap *entry = check_and_cast<const cValueMap *>(arr->get(i).objectValue());
 
         // A typo'd field name would be silently ignored, so unknown fields are rejected
+        checkRemovedFields(entry, std::string(paramName) + " entry " + std::to_string(i));
         for (const auto& [key, value] : entry->getFields())
             if (!contains(KNOWN_ENTRY_FIELDS, key))
                 throw cRuntimeError("%s entry %d: unknown field '%s'", paramName, i, key.c_str());
@@ -582,13 +597,6 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
             // Downlink has no threshold (the master cannot weigh the secondary's queue), so
             // dlLegSelection needs no threshold companion; it decides every downlink PDU.
         }
-
-        // pduSessionType (optional, default IPv4) and upperProtocol (optional, empty =
-        // derive from pduSessionType)
-        if (const cValue *v = field("pduSessionType"))
-            drb.pduSessionType = aToSessionType(v->stdstringValue());
-        if (const cValue *v = field("upperProtocol"))
-            drb.upperProtocol = v->stdstringValue();
 
         // rohc (optional): header compression, PDCP-Config headerCompression -- true (every
         // modeled profile), false, or {profiles: [...]}

@@ -114,6 +114,15 @@ SessionResource *ConnectionControlEnb::findSession(const SessionRef& session)
     return nullptr;
 }
 
+SessionType ConnectionControlEnb::sessionTypeOf(cModule *ueModule)
+{
+    for (const auto& [legId, ctx] : ues_)
+        if (ctx.ueModule == ueModule)
+            return ctx.sessionType;
+    throw cRuntimeError("ConnectionControlEnb: base station %d has no context of any leg of %s",
+            (int)num(nodeId_), ueModule->getFullPath().c_str());
+}
+
 std::vector<SessionResource> ConnectionControlEnb::sessionsOf(MacNodeId legId)
 {
     std::vector<SessionResource> sessions;
@@ -141,6 +150,7 @@ void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementR
     ctx.hoPeer = target;
     HandoverRequest request{legId, ctx.ueModule, ctx.ueRrc, sessionsOf(legId)};
     request.capabilities = ctx.capabilities;
+    request.sessionType = ctx.sessionType;
 
     // the leg's bearers: the on-demand definitions materialized within the leg's pair
     // with this node, and the descriptors of those and of the static definitions (a
@@ -169,6 +179,7 @@ void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, Conne
         throw cRuntimeError("ConnectionControlEnb: base station %d is asked to take leg %d over, which it serves already", (int)num(nodeId_), (int)num(legId));
     ctx = UeContext{request.ueModule, request.ueRrc};
     ctx.capabilities = request.capabilities;
+    ctx.sessionType = request.sessionType;
     ctx.state = UeContext::HO_TARGET_PREPARED;
     ctx.hoPeer = source->getNodeId();
 
@@ -396,6 +407,7 @@ void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId l
         throw cRuntimeError("ConnectionControlEnb: leg %d requests a connection at base station %d, which serves it already", (int)num(legId), (int)num(nodeId_));
     it->second = UeContext{ueModule, check_and_cast<ConnectionControlUe *>(ueRrc)};
     it->second.capabilities = capabilities;
+    it->second.sessionType = sessionType;
     // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
     if (getSimulation()->getContextType() != CTX_INITIALIZE) {
         attachAtAmc(legId);
@@ -612,10 +624,14 @@ void ConnectionControlEnb::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
 
     DrbId drbId = drb.getDrbId();
 
+    // the bearer belongs to the UE's session
+    DrbDesc sessionDrb = drb;
+    sessionDrb.sessionType = sessionTypeOf(ueModule);
+
     // The UE keys its bearers by "my serving node" (NODEID_NONE), its serving
     // node by the UE. A dual-stack UE has one bearer per stack id, and the
     // serving node of each stack is told about the one that is its own.
-    DrbDesc ueDrb = drb;
+    DrbDesc ueDrb = sessionDrb;
     ueDrb.key = DrbKey(NODEID_NONE, drbId);
     controlOf(nodeIds.front())->configureDrb(ueDrb);
 
@@ -623,7 +639,7 @@ void ConnectionControlEnb::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
         MacNodeId servingNodeId = binder_->getServingNode(ueId);
         if (servingNodeId == NODEID_NONE)
             continue;   // this stack is not attached to a cell
-        DrbDesc enbDrb = drb;
+        DrbDesc enbDrb = sessionDrb;
         enbDrb.key = DrbKey(ueId, drbId);
         ConnectionControlEnb *servingBs = baseStationControl(servingNodeId);
         if (servingBs == this)

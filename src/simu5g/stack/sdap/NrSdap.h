@@ -38,8 +38,8 @@ namespace simu5g {
  * encapsulates the data with SDAP headers if needed, and forwards the packets
  * to the PDCP layer.
  *
- * Supports all 3GPP PDU session types (IPv4, IPv6, Ethernet, Unstructured)
- * via the pduSessionType field of the pushed DRB configuration.
+ * A received packet goes up as the protocol the type of its bearer's session
+ * implies, which the pushed DRB configuration carries (see DrbDesc::sessionType).
  */
 class NrSdap : public cSimpleModule
 {

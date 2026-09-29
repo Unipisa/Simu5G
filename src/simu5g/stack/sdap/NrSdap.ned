@@ -45,8 +45,8 @@ package simu5g.stack.sdap;
 // pair's flow keeps its ownership while in infrastructure mode, since the
 // mode switch tears down and re-establishes within that machinery.
 //
-// Supports all 3GPP PDU session types (IPv4, IPv6, Ethernet, Unstructured)
-// via the pduSessionType field of the bearer configuration.
+// A received packet goes up as the protocol the type of the UE's session implies
+// (the sessionType parameter of ~LteUe), which every bearer's configuration carries.
 //
 // SDAP does not author its own configuration: the QFI-to-DRB mapping and the
 // per-bearer SDAP settings are authored network-wide (see the staticDrbs

@@ -81,9 +81,13 @@ struct DrbDesc {
     // keep UNKNOWN_CORE_NETWORK.
     CoreNetwork coreNetwork = UNKNOWN_CORE_NETWORK;
 
+    // The type of the session the bearer belongs to, i.e. the UE's session: given to
+    // the bearer by the base station that installs it (see
+    // ConnectionControlEnb::pushDrbToRrcs()), never authored. SDAP delivers a received
+    // packet up as the protocol the type implies (see NrSdap::getUpperProtocol()).
+    SessionType sessionType = IP_V4;
+
     // SDAP-Config
-    SessionType pduSessionType = IP_V4;
-    std::string upperProtocol;          // INET protocol name for upper-layer dispatch (empty = derive from pduSessionType)
     std::vector<Qfi> mappedQfis;           // mappedQoS-FlowsToAdd
     bool isDefault = false;             // defaultDRB (5gc: fallback for unmapped QFIs; epc: carries traffic matching no filter)
 
@@ -167,7 +171,7 @@ inline std::ostream& operator<<(std::ostream& os, const DrbDesc& drb) {
         }
         os << "]";
     }
-    os << " pduSession=" << sessionTypeToA(drb.pduSessionType);
+    os << " session=" << sessionTypeToA(drb.sessionType);
     if (!drb.rohcProfiles.empty()) {
         os << " rohc=[";
         for (size_t i = 0; i < drb.rohcProfiles.size(); i++) {
@@ -176,8 +180,6 @@ inline std::ostream& operator<<(std::ostream& os, const DrbDesc& drb) {
         }
         os << "]";
     }
-    if (!drb.upperProtocol.empty())
-        os << " upperProto=" << drb.upperProtocol;
     if (!drb.legs.empty()) {
         os << " legs=[";
         for (size_t i = 0; i < drb.legs.size(); i++) {

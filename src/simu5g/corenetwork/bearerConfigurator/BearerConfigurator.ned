@@ -50,10 +50,12 @@ package simu5g.corenetwork.bearerConfigurator;
 //    DRB, and the gNB could reconfigure the mapping afterwards (TS 38.300 Annex A);
 //    creating the DRB before the first packet is delivered is a shortcut.
 //  - One PDU session (in EPS terms: one PDN connection) per UE is assumed. QFI
-//    mappings, the default DRB and the pduSessionType are therefore scoped per UE,
-//    although the spec scopes all of them per PDU session (TS 37.324); a UE with
-//    several sessions, e.g. toward multiple DNs or with two session types, cannot
-//    be described yet.
+//    mappings and the default DRB are therefore scoped per UE, although the spec
+//    scopes them per PDU session (TS 37.324); a UE with several sessions, e.g. toward
+//    multiple DNs or with two session types, cannot be described yet. The session's
+//    type is not part of the bearer definitions: it is the UE's (the sessionType
+//    parameter of ~LteUe), and the base station gives it to every bearer it installs
+//    for the UE.
 //  - The QoS characteristics attached to a definition describe the DRB as a whole.
 //    In 5GS they belong to QoS flows, and flows with different QoS profiles may
 //    legitimately share a DRB; per-flow QoS is not modeled.
@@ -143,11 +145,12 @@ package simu5g.corenetwork.bearerConfigurator;
 //    derives them, as it always has. An SCG bearer's PDCP still terminates at the master
 //    node -- the core network delivers the UE's traffic there -- and every PDU is
 //    relayed to the secondary over X2 (an MN-terminated SCG bearer in TS 37.340 terms).
-//  - pduSessionType (string, optional): "IPv4", "IPv6", "IPv4v6", "Ethernet", "Unstructured";
-//    default: "IPv4". With SDAP, a received datagram of an IP version the session type
-//    does not allow is a configuration error (e.g. an IPv6 UE on the default "IPv4");
-//    an "IPv4v6" session carries both, and the receiver tells them apart by the datagram
-//    itself
+//  - pduSessionType, upperProtocol: no longer fields of a definition, and an error in an
+//    entry or a profile. The session type is the UE's (its sessionType parameter, see
+//    ~LteUe); with SDAP, a received datagram of an IP version the session type does not
+//    allow is a configuration error (e.g. an IPv6 UE on the default "IPv4"), while an
+//    "IPv4v6" session carries both, and the receiver tells them apart by the datagram
+//    itself. A received packet goes up as the protocol the session type implies.
 //  - rohc (bool or object, optional): PDCP header compression on the bearer (TS 38.331
 //    PDCP-Config headerCompression). true = ROHC with every modeled profile, false = none
 //    (the default), or an object restricting the profiles, e.g. {profiles: ["udp", "ip"]}.
@@ -157,9 +160,6 @@ package simu5g.corenetwork.bearerConfigurator;
 //    to 16 contexts), drb-ContinueROHC (a handover starts every context over), and
 //    uplinkOnlyROHC. A definition that does not state rohc follows the operator policy of
 //    the rohcForDrbProfiles parameter: on if it names one of the listed profiles.
-//  - upperProtocol (string, optional): INET protocol name for upper layer dispatch (this is
-//    normally only needed for "Unstructured" PDU sessions); default: derived from
-//    pduSessionType
 //  - isDefault (bool, optional): marks this as the default DRB for the UE -- the fallback
 //    when no QFI-to-DRB mapping ("5gc") or packet filter ("epc") matches. If no entry of
 //    a UE is marked in either table, the UE's single static bearer takes the role; a UE
@@ -322,7 +322,7 @@ simple BearerConfigurator
 {
     parameters:
         string binderModule = default("binder");
-        object staticDrbs = default([]);  // JSON array: [{coreNetwork, ue, drbId, profile, mappedQfis, filters, lcg, rlcMode, legs, pduSessionType, upperProtocol, isDefault, suppressSdapHeader, rohc, gbr, packetDelayBudget, packetErrorRate, qosPriorityLevel}, ...]; see banner comment for details
+        object staticDrbs = default([]);  // JSON array: [{coreNetwork, ue, drbId, profile, mappedQfis, filters, lcg, rlcMode, legs, isDefault, suppressSdapHeader, rohc, gbr, packetDelayBudget, packetErrorRate, qosPriorityLevel}, ...]; see banner comment for details
         object onDemandDrbs = default([  // JSON array, staticDrbs schema minus "drbId" (and "ue" optional): bearers created when traffic first matches them; the default value lets both stack kinds run unauthored; see banner comment for details
                 {coreNetwork: "epc", filters: ["VoIP*"], lcg: 0, rlcMode: "UM"},
                 {coreNetwork: "epc", filters: ["gaming*"], lcg: 2, rlcMode: "UM"},

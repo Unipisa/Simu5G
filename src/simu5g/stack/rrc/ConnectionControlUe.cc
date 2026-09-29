@@ -557,6 +557,12 @@ void ConnectionControlUe::multicastGroupJoined(MacNodeId nodeId, MacNodeId group
 void ConnectionControlUe::configureDrb(const DrbDesc& drb)
 {
     Enter_Method("configureDrb");
+    // The bearer belongs to the UE's session, whose payload the NIC carries: the NIC of
+    // an IP session carries every IP type, that of another type that type only
+    bool sameFamily = isIpSessionType(sessionType_) ? isIpSessionType(drb.sessionType) : drb.sessionType == sessionType_;
+    if (!sameFamily)
+        throw cRuntimeError("ConnectionControlUe: DRB %d is installed for a session of type \"%s\", but the UE requested a \"%s\" session",
+                (int)num(drb.getDrbId()), sessionTypeToA(drb.sessionType).c_str(), sessionTypeToA(sessionType_).c_str());
     bearerManagement_->configureDrb(drb);
 }
 

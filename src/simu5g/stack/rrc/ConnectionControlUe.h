@@ -205,7 +205,8 @@ class ConnectionControlUe : public ConnectionControlBase
     // the base station is told (ConnectionControlEnb::radioLinkFailure())
     void radioLinkFailure(MacNodeId localId, MacNodeId peerId) override;
     // Bearer installation, from the serving base station: each forwards to the UE's
-    // BearerManagement
+    // BearerManagement. A bearer of a session whose payload the UE's NIC cannot carry
+    // (see DrbDesc::sessionType) is an error.
     void configureDrb(const DrbDesc& drb) override;
     void createIncomingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;
     void createOutgoingConnection(const FlowId& flow, const BearerRequest& req, bool withPdcp) override;

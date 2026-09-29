@@ -95,33 +95,25 @@ bool NrSdap::shouldEnableReflectiveQos(Qfi qfi)
 
 const inet::Protocol *NrSdap::getUpperProtocol(const DrbDesc *ctx, inet::Packet *pkt)
 {
-    // If an explicit upperProtocol is configured on this DRB, use it
-    if (ctx && !ctx->upperProtocol.empty()) {
-        const inet::Protocol *proto = inet::Protocol::findProtocol(ctx->upperProtocol.c_str());
-        if (!proto)
-            throw cRuntimeError("Unknown protocol '%s' in the DRB's upperProtocol configuration", ctx->upperProtocol.c_str());
-        return proto;
-    }
-
-    // Otherwise derive from pduSessionType. 3GPP does not signal the IP version per
-    // packet: an IP session's receiver reads it from the datagram, and the session
-    // type only says which versions may occur.
-    SessionType pduSessionType = ctx ? ctx->pduSessionType : IP_V4;
-    switch (pduSessionType) {
+    // The protocol follows from the type of the bearer's session. 3GPP does not
+    // signal the IP version per packet: an IP session's receiver reads it from the
+    // datagram, and the session type only says which versions may occur.
+    SessionType sessionType = ctx ? ctx->sessionType : IP_V4;
+    switch (sessionType) {
         case IP_V4:
         case IP_V6:
         case IP_V4V6: {
             const inet::Protocol *protocol = &ipProtocolOf(pkt);
-            if ((pduSessionType == IP_V4 && protocol != &inet::Protocol::ipv4) || (pduSessionType == IP_V6 && protocol != &inet::Protocol::ipv6))
-                throw cRuntimeError("%s datagram received on a DRB of an %s PDU session", protocol->getDescriptiveName(), pduSessionType == IP_V4 ? "IPv4" : "IPv6");
+            if ((sessionType == IP_V4 && protocol != &inet::Protocol::ipv4) || (sessionType == IP_V6 && protocol != &inet::Protocol::ipv6))
+                throw cRuntimeError("%s datagram received on a DRB of an %s session", protocol->getDescriptiveName(), sessionType == IP_V4 ? "IPv4" : "IPv6");
             return protocol;
         }
         case ETHERNET:
             return &inet::Protocol::ethernetMac;
         case UNSTRUCTURED:
-            throw cRuntimeError("Unstructured PDU session requires explicit 'upperProtocol' in the DRB configuration");
+            throw cRuntimeError("Unstructured sessions are not supported yet");
         default:
-            throw cRuntimeError("Unknown PDU session type: %d", (int)pduSessionType);
+            throw cRuntimeError("Unknown session type: %d", (int)sessionType);
     }
 }
 
