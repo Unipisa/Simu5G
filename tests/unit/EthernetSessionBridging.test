@@ -1,0 +1,361 @@
+%description:
+
+The forwarding of a UPF's Ethernet bridge (EthernetSessionBridge) against
+TS 23.501 V20.3.0 clause 5.8.2.5.3, "Support of Ethernet PDU Session type": one
+case per sentence of the clause, each quoting the sentence it checks. The
+expected forwarding is decided from the spec text, not from the implementation
+(INET's BridgingLayer relay).
+
+A driver stands in for the rest of the UPF: it establishes and releases the
+sessions at the bridge (as UserPlaneNodeControl does), sends the sessions'
+uplink frames into the bridge (as GtpUser does, the FCS rebuilt), and receives
+their downlink frames; an Ethernet interface on the bridge's N6 link stands in
+for the data network. For each case the driver injects frames and checks the
+set of ports (sessions, N6) each frame comes out of, then prints PASS or FAIL.
+
+The VLAN-scoping sentence is a known deviation of the model (flooding is not
+scoped to a VLAN, as no port has a VLAN membership configured): its case is an
+EXPECTED FAILURE until that is modeled.
+
+%file: BridgeTestDriver.cc
+
+#include <functional>
+#include <sstream>
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/common/packet/chunk/ByteCountChunk.h>
+#include <inet/linklayer/common/InterfaceTag_m.h>
+#include <inet/linklayer/ethernet/common/EthernetMacHeader_m.h>
+#include <inet/linklayer/ieee8021q/Ieee8021qTagHeader_m.h>
+#include <inet/queueing/contract/IPassivePacketSink.h>
+#include "simu5g/common/L3Utils.h"
+#include "simu5g/common/SessionTag_m.h"
+#include "simu5g/corenetwork/ethernetSessionBridge/EthernetSessionMux.h"
+
+using namespace omnetpp;
+using namespace inet;
+using namespace simu5g;
+
+namespace EthernetSessionBridging {
+
+// frames of the N6 peer are pushed up by its Ethernet interface
+class BridgeTestDriver : public cSimpleModule, public virtual queueing::IPassivePacketSink
+{
+  protected:
+    struct Step { simtime_t time; std::function<void()> action; };
+    std::vector<Step> steps_;
+    size_t nextStep_ = 0;
+    cMessage *timer_ = nullptr;
+    EthernetSessionMux *mux_ = nullptr;
+    std::set<std::string> out_;   // the ports frames came out of since the last check ("s1", "n6", ...; "@vid" appended for tagged frames)
+
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
+    ~BridgeTestDriver() override { cancelAndDelete(timer_); }
+
+    bool canPushSomePacket(const cGate *gate) const override { return true; }
+    bool canPushPacket(Packet *packet, const cGate *gate) const override { return true; }
+    void pushPacket(Packet *packet, const cGate *gate) override { Enter_Method("pushPacket"); take(packet); packet->setArrival(getId(), gate->getId()); handleMessage(packet); }
+    void pushPacketStart(Packet *packet, const cGate *gate, bps datarate) override { throw cRuntimeError("Not supported"); }
+    void pushPacketEnd(Packet *packet, const cGate *gate) override { throw cRuntimeError("Not supported"); }
+    void pushPacketProgress(Packet *packet, const cGate *gate, bps datarate, b position, b extraProcessableLength) override { throw cRuntimeError("Not supported"); }
+
+    static SessionRef ref(int n) { SessionRef r; r.lteNodeId = MacNodeId(1024 + n); r.id = SessionId(1); return r; }
+    Packet *makeFrame(const char *src, const char *dest, int vid);
+    void fromSession(int n, const char *src, const char *dest, int vid = -1);
+    void fromN6(const char *src, const char *dest, int vid = -1);
+    void check(const char *name, std::set<std::string> expected, bool expectedFailure = false);
+    void buildCases();
+};
+
+Define_Module(BridgeTestDriver);
+
+void BridgeTestDriver::initialize()
+{
+    mux_ = check_and_cast<EthernetSessionMux *>(getModuleByPath("^.upf.bridge.sessionMux"));
+    timer_ = new cMessage("step");
+    buildCases();
+    scheduleAt(steps_[0].time, timer_);
+}
+
+void BridgeTestDriver::handleMessage(cMessage *msg)
+{
+    if (msg == timer_) {
+        steps_[nextStep_++].action();
+        if (nextStep_ < steps_.size())
+            scheduleAt(steps_[nextStep_].time, timer_);
+        return;
+    }
+    auto frame = check_and_cast<Packet *>(msg);
+    auto mac = frame->peekAtFront<EthernetMacHeader>();
+    std::string vid;
+    if (mac->getTypeOrLength() == 0x8100)
+        vid = "@" + std::to_string(frame->peekDataAt<Ieee8021qTagEpdHeader>(mac->getChunkLength())->getVid());
+    if (msg->arrivedOn("fromBridge"))
+        out_.insert("s" + std::to_string(num(frame->getTag<SessionTag>()->getLteNodeId()) - 1024) + vid);
+    else
+        out_.insert("n6" + vid);
+    delete frame;
+}
+
+Packet *BridgeTestDriver::makeFrame(const char *src, const char *dest, int vid)
+{
+    auto frame = new Packet("frame");
+    frame->insertAtBack(makeShared<ByteCountChunk>(B(46)));
+    if (vid >= 0) {
+        auto tag = makeShared<Ieee8021qTagEpdHeader>();
+        tag->setVid(vid);
+        tag->setTypeOrLength(46);
+        frame->insertAtFront(tag);
+    }
+    auto mac = makeShared<EthernetMacHeader>();
+    mac->setSrc(MacAddress(src));
+    mac->setDest(MacAddress(dest));
+    mac->setTypeOrLength(vid >= 0 ? 0x8100 : 46);
+    frame->insertAtFront(mac);
+    insertDeclaredEthernetFcs(frame);
+    frame->addTag<PacketProtocolTag>()->setProtocol(&Protocol::ethernetMac);
+    return frame;
+}
+
+void BridgeTestDriver::fromSession(int n, const char *src, const char *dest, int vid)
+{
+    auto frame = makeFrame(src, dest, vid);
+    attachSessionTag(frame, TunnelSession{ref(n), ETHERNET});
+    send(frame, "toBridge");
+}
+
+void BridgeTestDriver::fromN6(const char *src, const char *dest, int vid)
+{
+    send(makeFrame(src, dest, vid), "toN6");
+}
+
+void BridgeTestDriver::check(const char *name, std::set<std::string> expected, bool expectedFailure)
+{
+    auto str = [](const std::set<std::string>& s) { std::ostringstream os; for (auto& p : s) os << p << " "; return os.str(); };
+    bool ok = out_ == expected;
+    if (ok && !expectedFailure)
+        std::cout << "PASS " << name << endl;
+    else if (!ok && expectedFailure)
+        std::cout << "EXPECTED FAILURE " << name << ": expected [" << str(expected) << "], got [" << str(out_) << "]" << endl;
+    else
+        std::cout << "FAIL " << name << ": expected [" << str(expected) << "], got [" << str(out_) << "]" << endl;
+    out_.clear();
+}
+
+void BridgeTestDriver::buildCases()
+{
+    // A, B behind the UEs of sessions s1, s2 (later s3); D on the N6 side; E a device
+    // that moves from s1 to s2; V a tagged device behind s1
+    const char *A = "0A-00-00-00-00-0A", *B = "0A-00-00-00-00-0B", *C = "0A-00-00-00-00-0C";
+    const char *D = "0A-00-00-00-00-0D", *E = "0A-00-00-00-00-0E", *V = "0A-00-00-00-00-01";
+    const char *X = "0A-00-00-00-00-99", *BC = "FF-FF-FF-FF-FF-FF", *MC = "01-00-5E-00-00-01";
+    simtime_t t = 0.001;
+    auto at = [&](std::function<void()> f) { steps_.push_back({t, f}); t += 0.001; };
+
+    at([=]() { mux_->addSessionPort(ref(1)); mux_->addSessionPort(ref(2)); mux_->addSessionPort(ref(3)); });
+
+    // "for uplink and downlink unicast traffic received by UPF, if the destination MAC
+    // has not been learnt, the UPF should forward the traffic to every PDU session
+    // associated with the same N6 Network Instance and towards the N6 interface. In any
+    // case the traffic is not replicated on the PDU Session or the N6 interface of the
+    // incoming traffic."
+    at([=]() { fromSession(1, A, X); });
+    at([=]() { check("unknown-unicast-uplink", {"n6", "s2", "s3"}); });
+    at([=]() { fromN6(D, X); });
+    at([=]() { check("unknown-unicast-downlink", {"s1", "s2", "s3"}); });
+
+    // "The UPF learns the MAC address(es) of UE(s) and devices connected behind, if any,
+    // based on the source MAC address contained within the UL traffic received on a PDU
+    // Session (N3/N9 interface)." (A was the source of s1's frame above.)
+    // "The UPF forwards DL unicast traffic (with a known destination address) on a PDU
+    // Session determined based on the source MAC address(es) used by the UE for the UL
+    // traffic."
+    at([=]() { fromN6(D, A); });
+    at([=]() { check("learn-uplink-source-and-forward-downlink", {"s1"}); });
+
+    // "The UPF learns the MAC address(es) connected via N6 based on the source MAC
+    // addresses of the DL traffic received on a N6 Network Instance." (D was the
+    // source above.)
+    // "The UPF forwards UL unicast traffic (with a known destination address) on a port
+    // (PDU Session or N6 interface) determined based on the source MAC address(es)
+    // learned beforehand."
+    at([=]() { fromSession(2, B, D); });
+    at([=]() { check("learn-n6-source-and-forward-uplink-to-n6", {"n6"}); });
+    at([=]() { fromSession(3, C, A); });
+    at([=]() { check("forward-uplink-to-another-session", {"s1"}); });
+
+    // "for DL traffic received by UPF on a N6 Network Instance the UPF should forward the
+    // traffic to every DL PDU Session (corresponding to any N4 Session) associated with
+    // this Network Instance"
+    at([=]() { fromN6(D, BC); });
+    at([=]() { check("broadcast-downlink", {"s1", "s2", "s3"}); });
+    at([=]() { fromN6(D, MC); });
+    at([=]() { check("multicast-downlink", {"s1", "s2", "s3"}); });
+
+    // "for uplink traffic received by UPF over a PDU session on a N3/N9 interface, the
+    // UPF should forward the traffic to the N6 interface and downlink to every PDU
+    // session (except toward the one of the incoming traffic) associated with the same
+    // N6 Network Instance"
+    at([=]() { fromSession(2, B, BC); });
+    at([=]() { check("broadcast-uplink", {"n6", "s1", "s3"}); });
+    at([=]() { fromSession(2, B, MC); });
+    at([=]() { check("multicast-uplink", {"n6", "s1", "s3"}); });
+
+    // "if the destination MAC address of traffic refers to the same N6 interface or PDU
+    // session on which the traffic has been received, the frame shall be dropped."
+    at([=]() { fromSession(1, "0A-00-00-00-00-AA", A); });
+    at([=]() { check("destination-on-ingress-session-dropped", {}); });
+    at([=]() { fromN6("0A-00-00-00-00-DD", D); });
+    at([=]() { check("destination-on-ingress-n6-dropped", {}); });
+
+    // NOTE 3: "This release of the specification supports Independent VLAN Learning
+    // (IVL) and does not support Shared VLAN Learning (SVL)". V is learned on s1 in
+    // VLAN 42 only.
+    at([=]() { fromSession(1, V, X, 42); });
+    at([=]() { check("vlan-unknown-unicast-keeps-tag", {"n6@42", "s2@42", "s3@42"}); });
+    at([=]() { fromN6(D, V, 42); });
+    at([=]() { check("ivl-known-in-its-vlan", {"s1@42"}); });
+    at([=]() { fromN6(D, V, 81); });
+    at([=]() { check("ivl-unknown-in-another-vlan", {"s1@81", "s2@81", "s3@81"}); });
+
+    // "if the traffic is received with a VLAN ID, the above criteria apply only towards
+    // the N6 interface or PDU session matching the same VLAN ID, unless the UPF is
+    // instructed to remove the VLAN ID in the incoming traffic." s2 and s3 have carried
+    // untagged traffic only, so a VLAN 42 broadcast from s1 matches N6 at most.
+    at([=]() { fromSession(1, V, BC, 42); });
+    at([=]() { check("vlan-scoped-flooding", {"n6@42"}, true); });
+
+    // "a MAC address is considered as no longer associated with a UPF interface (source
+    // UE's PDU session) when [...] the MAC address has been detected under a different
+    // interface (target UE's PDU Session or N6)."
+    at([=]() { fromSession(1, E, D); });
+    at([=]() { check("moved-setup", {"n6"}); });
+    at([=]() { fromSession(2, E, D); });
+    at([=]() { check("moved-setup-2", {"n6"}); });
+    at([=]() { fromN6(D, E); });
+    at([=]() { check("moved-to-another-session", {"s2"}); });
+
+    // "a MAC address is considered as no longer associated with a UPF interface (source
+    // UE's PDU session) when the MAC address has not been detected as Source MAC address
+    // in UL traffic for a pre-defined period of time" (the MAC table's agingTime, 1s here)
+    t += 1.5;
+    at([=]() { fromN6(D, B); });
+    at([=]() { check("aged-out", {"s1", "s2", "s3"}); });
+
+    // Not a sentence of the clause, the model's own obligation: a released session's
+    // port and what was learned on it go (A was learned on s1 above; relearn it first)
+    at([=]() { fromSession(1, A, D); });
+    at([=]() { check("release-setup", {"n6"}); });
+    at([=]() { mux_->removeSessionPort(ref(1)); });
+    at([=]() { fromN6(D, A); });
+    at([=]() { check("released-session-forgotten", {"s2", "s3"}); });
+}
+
+} // namespace EthernetSessionBridging
+
+%file: test.ned
+
+import inet.networklayer.common.InterfaceTable;
+import inet.linklayer.ethernet.modular.LayeredEthernetInterface;
+import inet.node.ethernet.Eth1G;
+import simu5g.corenetwork.ethernetSessionBridge.EthernetSessionBridge;
+
+simple BridgeTestDriver
+{
+    gates:
+        output toBridge;
+        input fromBridge;
+        output toN6;
+        input fromN6;
+}
+
+// the UPF, as far as the bridge needs a node around it
+module UpfNode
+{
+    parameters:
+        @networkNode;
+    gates:
+        input sessionIn;
+        output sessionOut;
+        inout dnEthg;
+    submodules:
+        bridge: EthernetSessionBridge {
+            dnEth.bitrate = 1Gbps;
+            macTable.agingTime = 1s;
+        }
+    connections:
+        sessionIn --> bridge.sessionIn;
+        bridge.sessionOut --> sessionOut;
+        bridge.dnEthg <--> dnEthg;
+}
+
+// the data network's end of the bridge's N6 link
+module N6Peer
+{
+    parameters:
+        @networkNode;
+    gates:
+        inout ethg;
+        input upperIn;
+        output upperOut;
+    submodules:
+        interfaceTable: InterfaceTable;
+        eth: LayeredEthernetInterface {
+            interfaceTableModule = "^.interfaceTable";
+            bitrate = 1Gbps;
+        }
+    connections:
+        eth.phys <--> ethg;
+        upperIn --> eth.upperLayerIn;
+        eth.upperLayerOut --> upperOut;
+}
+
+network Test
+{
+    submodules:
+        upf: UpfNode;
+        n6Peer: N6Peer;
+        driver: BridgeTestDriver;
+    connections:
+        driver.toBridge --> upf.sessionIn;
+        upf.sessionOut --> driver.fromBridge;
+        upf.dnEthg <--> Eth1G <--> n6Peer.ethg;
+        driver.toN6 --> n6Peer.upperIn;
+        n6Peer.upperOut --> driver.fromN6;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Test
+cmdenv-express-mode = true
+sim-time-limit = 10s
+
+%contains: stdout
+PASS unknown-unicast-uplink
+PASS unknown-unicast-downlink
+PASS learn-uplink-source-and-forward-downlink
+PASS learn-n6-source-and-forward-uplink-to-n6
+PASS forward-uplink-to-another-session
+PASS broadcast-downlink
+PASS multicast-downlink
+PASS broadcast-uplink
+PASS multicast-uplink
+PASS destination-on-ingress-session-dropped
+PASS destination-on-ingress-n6-dropped
+PASS vlan-unknown-unicast-keeps-tag
+PASS ivl-known-in-its-vlan
+PASS ivl-unknown-in-another-vlan
+
+%contains-regex: stdout
+EXPECTED FAILURE vlan-scoped-flooding: .*
+
+%contains: stdout
+PASS moved-setup
+PASS moved-setup-2
+PASS moved-to-another-session
+PASS aged-out
+PASS release-setup
+PASS released-session-forgotten
+
+%not-contains-regex: stdout
+\nFAIL [a-z]
