@@ -35,6 +35,7 @@ const inet::Protocol LteProtocol::ltemac("ltemac", "LTE-MAC");  // Medium Access
 const inet::Protocol LteProtocol::gtp("gtp", "GTP");            // GPRS Tunneling Protocol
 const inet::Protocol LteProtocol::x2ap("x2ap", "X2AP");         // X2AP Protocol
 const inet::Protocol LteProtocol::sdap("sdap", "SDAP");         // Service Data Adaptation Protocol
+const inet::Protocol LteProtocol::unstructured("unstructured", "Unstructured");   // The payload of an Unstructured session
 
 const std::string rlcModeToA(RlcMode type)
 {

@@ -79,6 +79,7 @@ class LteProtocol
     static const inet::Protocol gtp;     // GPRS Tunneling Protocol
     static const inet::Protocol x2ap;    // X2AP Protocol
     static const inet::Protocol sdap;    // Service Data Adaptation Protocol
+    static const inet::Protocol unstructured;   // The payload of an Unstructured session: opaque data, carried as is
 };
 
 // Identity of one flow/bearer instance between two ends, as used to request bearer

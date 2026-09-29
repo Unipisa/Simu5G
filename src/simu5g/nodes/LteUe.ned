@@ -64,6 +64,7 @@ module LteUe
         //# Apps
         int numApps = default(0);   // Number of apps
                                     // Set the app types in the ini file, e.g. app[0..1].typename="UdpVideoStreamClient"
+        int numUnstructuredApps = default(0);  // Number of apps attached to the cellular NIC directly (0 or 1), for a UE whose session is of type Unstructured
 
         //# Transport layer
         bool hasUdp = default(firstAvailableOrEmpty("Udp") != "");
@@ -164,6 +165,9 @@ module LteUe
         app[numApps]: <> like IApp {
             @display("p=374,72,row,140");
         }
+        unstructuredApp[numUnstructuredApps]: <default("UnstructuredApp")> like IApp {
+            @display("p=726,72,row,140");
+        }
 
         //# message dispatcher for SAP between application and transport layer
         at: MessageDispatcher {
@@ -199,6 +203,13 @@ module LteUe
         for i=0..numApps-1 {
             app[i].socketOut --> at.in++;
             app[i].socketIn <-- at.out++;
+        }
+
+        // the payload of an Unstructured session goes to and from the NIC with no
+        // transport or network layer in between
+        for i=0..numUnstructuredApps-1 {
+            unstructuredApp[i].socketOut --> nl.in++;
+            unstructuredApp[i].socketIn <-- nl.out++;
         }
 
         at.out++ --> udp.appIn if hasUdp;
