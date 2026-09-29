@@ -433,11 +433,6 @@ class ConnectionControlEnb : public ConnectionControlBase
     // told (ConnectionControlUe::radioLinkFailure())
     void radioLinkFailure(MacNodeId localId, MacNodeId peerId) override;
 
-    // Deliver a static definition's bearer to the RRCs involved (see pushDrbToRrcs());
-    // the base station serving the UE's first attached stack does it for all of them.
-    // Called by the BearerConfigurator at initialization.
-    virtual void installStaticDrb(omnetpp::cModule *ueModule, const DrbDesc& drb);
-
     // Mark an externally chosen DRB ID as in use within the pair {a, b}, so
     // assignDrbId() cannot hand out the same one later (SDAP and the static definitions
     // name their bearers themselves). The pair's serving base station does it for a

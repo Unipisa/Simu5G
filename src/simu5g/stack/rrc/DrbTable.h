@@ -28,7 +28,7 @@ namespace simu5g {
  * Holds two collections of ~DrbDesc records, both keyed by (peer node, DRB id):
  *
  * - The CONFIGURED bearers, authored in the BearerConfigurator, delivered by the serving
- *   base station (see ConnectionControlEnb::installStaticDrb()) and taken in through
+ *   base station (see ConnectionControlEnb::pushDrbToRrcs()) and taken in through
  *   BearerManagement::configureDrb(): the
  *   bearers this node is configured with, before and independent of their establishment.
  *   On the UE side entries are keyed by NODEID_NONE ("my serving node"); on the gNB side

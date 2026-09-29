@@ -162,7 +162,7 @@ bool BearerManagement::servesNonAnchorLegOnly(MacNodeId ueId)
 }
 
 // Take delivery of one bearer's configuration from the serving base station's control
-// plane (see ConnectionControlEnb::installStaticDrb()). RRC records it, to establish the bearer
+// plane (see ConnectionControlEnb::pushDrbToRrcs()). RRC records it, to establish the bearer
 // from later, and
 // pushes on what the local layers consume: SDAP's QFI-to-DRB view and the eNB MAC's
 // per-bearer QoS profile are working copies those modules never author themselves.

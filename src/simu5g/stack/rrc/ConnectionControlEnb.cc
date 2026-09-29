@@ -601,12 +601,6 @@ void ConnectionControlEnb::setUplinkQfiRules(QfiRuleSet&& rules)
 
 // ---- bearer establishment ----
 
-void ConnectionControlEnb::installStaticDrb(cModule *ueModule, const DrbDesc& drb)
-{
-    Enter_Method("installStaticDrb");
-    pushDrbToRrcs(ueModule, drb);
-}
-
 void ConnectionControlEnb::pushDrbToRrcs(cModule *ueModule, const DrbDesc& drb)
 {
     // node ids of the UE module, one per stack

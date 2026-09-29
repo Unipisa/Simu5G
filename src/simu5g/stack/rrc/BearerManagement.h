@@ -207,7 +207,7 @@ class BearerManagement : public cSimpleModule
   public:
     ~BearerManagement() override;
     // Take delivery of one bearer's configuration from the serving base station's
-    // control plane (see ConnectionControlEnb::installStaticDrb()), through this
+    // control plane (see ConnectionControlEnb::pushDrbToRrcs()), through this
     // node's entry point. RRC never fetches this itself.
     virtual void configureDrb(const DrbDesc& drb);
 
