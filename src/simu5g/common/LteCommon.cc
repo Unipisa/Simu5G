@@ -69,7 +69,7 @@ RlcMode aToRlcMode(std::string s)
     return UNKNOWN_RLC_MODE;
 }
 
-const std::string pduSessionTypeToA(PduSessionType type)
+const std::string sessionTypeToA(SessionType type)
 {
     switch (type) {
         case IP_V4:
@@ -83,11 +83,11 @@ const std::string pduSessionTypeToA(PduSessionType type)
         case UNSTRUCTURED:
             return "Unstructured";
         default:
-            return "UNKNOWN_PDU_SESSION_TYPE";
+            return "UNKNOWN_SESSION_TYPE";
     }
 }
 
-PduSessionType aToPduSessionType(std::string s)
+SessionType aToSessionType(std::string s)
 {
     if (s == "IPv4")
         return IP_V4;
@@ -99,7 +99,7 @@ PduSessionType aToPduSessionType(std::string s)
         return ETHERNET;
     if (s == "Unstructured")
         return UNSTRUCTURED;
-    throw cRuntimeError("Unknown PDU session type: '%s'", s.c_str());
+    throw cRuntimeError("Unknown session type '%s' (expected \"IPv4\", \"IPv6\", \"IPv4v6\", \"Ethernet\" or \"Unstructured\")", s.c_str());
 }
 
 const std::string coreNetworkToA(CoreNetwork type)

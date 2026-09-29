@@ -32,10 +32,13 @@ module LteNicUe extends LteNicBase
         handoverPacketHolder.typename = default("HandoverPacketHolderUe");
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
+        string sessionType;  // The type of the UE's session (see ~LteUe), set by the node
+
         rrc.hasConnectionControl = true;
         rrc.connectionControl.typename = default("ConnectionControlUe");
         rrc.connectionControl.isNr = false;
         rrc.connectionControl.macNodeId = parent.macNodeId;
+        rrc.connectionControl.sessionType = this.sessionType;
         dlFbGen.macNodeId = parent.macNodeId;
 
     submodules:

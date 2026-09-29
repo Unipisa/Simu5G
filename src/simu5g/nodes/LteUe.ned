@@ -39,6 +39,13 @@ import simu5g.corenetwork.statsCollector.UeStatsCollector;
 // also features an Ethernet interface, which is utilized in real-time emulation mode to connect the UE
 // to the real network (outside the simulator) via a virtual Ethernet interface.
 //
+// The UE has one session, whose type it requests when it registers with the core
+// network (the PDU session type of the PDU Session Establishment Request in a 5G
+// core, the PDN type in an EPC): the sessionType parameter. The network establishes
+// the session with that type, or rejects it with an error if its core network cannot
+// carry it. The IP types ("IPv4", "IPv6", "IPv4v6") are carried by both core
+// networks; "Ethernet" and "Unstructured" are not supported yet.
+//
 module LteUe
 {
     parameters:
@@ -67,6 +74,7 @@ module LteUe
         string nodeType = "UE";  // DO NOT CHANGE
         int servingNodeId = default(0); // The initial serving eNodeB of the UE; 0 if none
         int macNodeId = default(1025+simu5g_seq("LteUe_macNodeId"));
+        string sessionType @enum("IPv4","IPv6","IPv4v6","Ethernet","Unstructured") = default("IPv4");  // The type of the session the UE requests (see the main comment)
 
         //# D2D support: selects the D2D-capable NIC variant (see the cellularNic submodule).
         //# An explicit cellularNic.typename in the ini file still overrides this.
@@ -113,6 +121,7 @@ module LteUe
         }
         cellularNic: <default(hasD2D ? "LteNicUeD2D" : "LteNicUe")> like ICellularNic {
             nodeType = parent.nodeType;
+            sessionType = parent.sessionType;
             @display("p=355,589");
         }
 

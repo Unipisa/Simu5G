@@ -33,6 +33,8 @@ simple ConnectionControlUe like IConnectionControl
         // MacNodeId of the stack leg this controller belongs to (set by the NIC)
         int macNodeId;
 
+        string sessionType;  // The type of the session the UE requests at connection setup (see ~LteUe), set by the NIC
+
         // Handover duration
         double handoverLatency @unit(s) = default(50ms);
         double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);

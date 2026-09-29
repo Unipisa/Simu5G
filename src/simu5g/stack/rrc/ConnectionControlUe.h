@@ -43,6 +43,9 @@ class ConnectionControlUe : public ConnectionControlBase
     MacNodeId nodeId_ = NODEID_NONE;
     bool isNr_ = false;
 
+    // The type of the session the UE requests (the sessionType parameter)
+    SessionType sessionType_ = IP_V4;
+
     /** The current serving node */
     MacNodeId servingNodeId_ = NODEID_NONE;
 

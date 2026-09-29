@@ -82,7 +82,7 @@ struct DrbDesc {
     CoreNetwork coreNetwork = UNKNOWN_CORE_NETWORK;
 
     // SDAP-Config
-    PduSessionType pduSessionType = IP_V4;
+    SessionType pduSessionType = IP_V4;
     std::string upperProtocol;          // INET protocol name for upper-layer dispatch (empty = derive from pduSessionType)
     std::vector<Qfi> mappedQfis;           // mappedQoS-FlowsToAdd
     bool isDefault = false;             // defaultDRB (5gc: fallback for unmapped QFIs; epc: carries traffic matching no filter)
@@ -167,7 +167,7 @@ inline std::ostream& operator<<(std::ostream& os, const DrbDesc& drb) {
         }
         os << "]";
     }
-    os << " pduSession=" << pduSessionTypeToA(drb.pduSessionType);
+    os << " pduSession=" << sessionTypeToA(drb.pduSessionType);
     if (!drb.rohcProfiles.empty()) {
         os << " rohc=[";
         for (size_t i = 0; i < drb.rohcProfiles.size(); i++) {

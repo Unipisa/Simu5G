@@ -106,7 +106,7 @@ const inet::Protocol *NrSdap::getUpperProtocol(const DrbDesc *ctx, inet::Packet 
     // Otherwise derive from pduSessionType. 3GPP does not signal the IP version per
     // packet: an IP session's receiver reads it from the datagram, and the session
     // type only says which versions may occur.
-    PduSessionType pduSessionType = ctx ? ctx->pduSessionType : IP_V4;
+    SessionType pduSessionType = ctx ? ctx->pduSessionType : IP_V4;
     switch (pduSessionType) {
         case IP_V4:
         case IP_V6:

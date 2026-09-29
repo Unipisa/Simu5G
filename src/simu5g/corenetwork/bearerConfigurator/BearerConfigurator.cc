@@ -586,7 +586,7 @@ void BearerConfigurator::parseDrbDefinitions(const char *paramName, bool onDeman
         // pduSessionType (optional, default IPv4) and upperProtocol (optional, empty =
         // derive from pduSessionType)
         if (const cValue *v = field("pduSessionType"))
-            drb.pduSessionType = aToPduSessionType(v->stdstringValue());
+            drb.pduSessionType = aToSessionType(v->stdstringValue());
         if (const cValue *v = field("upperProtocol"))
             drb.upperProtocol = v->stdstringValue();
 

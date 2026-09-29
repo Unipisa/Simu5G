@@ -55,8 +55,9 @@ enum RlcMode
     TM = 0; UM = 1; AM = 2; UNKNOWN_RLC_MODE = 3;
 };
 
-/// PDU Session Types (3GPP TS 23.501)
-enum PduSessionType
+/// The type of a UE's session: the PDU session types of a 5G core (TS 23.501
+/// 5.6.10), of which the IP ones are the PDN types of an EPC as well (TS 23.401)
+enum SessionType
 {
     IP_V4 = 0; IP_V6 = 1; IP_V4V6 = 2; ETHERNET = 3; UNSTRUCTURED = 4;
 };
