@@ -1,0 +1,41 @@
+This folder contains module tests for Simu5G: small simulations, each checking
+one behavior of a module or a few modules working together, by the outcome of
+the run (its output, its exit code, its error message). They complement the
+fingerprint tests (tests/fingerprint), which guard the example simulations
+against unintended change, and the unit tests (tests/unit), which exercise
+classes without a running simulation. The example simulations under
+simulations/ all run to completion; a configuration that must be rejected is
+tested here instead.
+
+Each *.test file is an opp_test test case: it defines the network in a %file
+section or takes one from lib/, gives its configuration in an %inifile section,
+and states what the run must produce (%exitcode, %contains, ...).
+
+Running the tests
+-----------------
+
+    ./runtest                # all tests, against the release library
+    ./runtest Foo.test ...   # selected tests
+    MODE=debug ./runtest     # against the debug library
+
+or, from the project root,
+
+    make moduletests
+    make MODE=debug moduletests
+
+Both the Simu5G and the INET shared library must be built in the requested
+mode, and SIMU5G_ROOT and INET_ROOT must be set (source the setenv script of
+both projects). The generated files and the captured output of each run end
+up in ./work, which is not under version control.
+
+Writing tests
+-------------
+
+The tests are NED and ini only; nothing is compiled. lib/ holds the networks
+several tests share (package simu5g.test.moduletest.lib) and defaults.ini,
+which a test's omnetpp.ini includes:
+
+    include ../../lib/defaults.ini
+
+A test of a rejected configuration expects exit code 1 and checks the error
+message on stderr, so that an error of another cause fails the test.

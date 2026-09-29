@@ -134,6 +134,8 @@ In the Simu5G root directory:
   To run them with the debug build, use `tests/fingerprint/fingerprints -d`.
 - `make unittests` runs the unit tests (see `tests/unit/README`);
   `make MODE=debug unittests` runs them against the debug build.
+- `make moduletests` runs the module tests (see `tests/module/README`);
+  `make MODE=debug moduletests` runs them against the debug build.
 
 Generating the documentation
 ----------------------------

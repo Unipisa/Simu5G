@@ -1,0 +1,23 @@
+%description:
+The QoS rules of an Ethernet PDU session classify frames, which have no DSCP field: a
+dscpAsQfi uplink rule scoped to the UE is an error of the core network (CoreControl) at
+the session's establishment.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.bearerConfigurator.ulQfiRules = [{ue: "ue[0]", dscpAsQfi: true}]
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+CoreControl: NrSessionTestNetwork.ue[0] requests an Ethernet session, whose frames have no DSCP field, but a dscpAsQfi rule of the ulQfiRules parameter of the bearer configurator is scoped to it
+%#--------------------------------------------------------------------------------------------------------------

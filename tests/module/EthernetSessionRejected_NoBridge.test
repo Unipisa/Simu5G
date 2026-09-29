@@ -1,0 +1,21 @@
+%description:
+An Ethernet PDU session needs an anchor UPF with an Ethernet session bridge (hasEthernetBridge):
+the UPF rejects the session's establishment without one.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.upf.hasEthernetBridge = false
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+UserPlaneNodeControl: NrSessionTestNetwork.upf anchors an Ethernet session, but has no Ethernet session bridge (see its hasEthernetBridge parameter)
+%#--------------------------------------------------------------------------------------------------------------

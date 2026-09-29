@@ -1,0 +1,23 @@
+%description:
+An Ethernet PDU session is not supported on a D2D-capable UE: the UE's RRC rejects the
+session type at initialization.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[*].hasD2D = true
+*.gnb.hasD2D = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+A "Ethernet" session is not supported on a D2D-capable UE (see the sessionType and hasD2D parameters of the UE)
+%#--------------------------------------------------------------------------------------------------------------

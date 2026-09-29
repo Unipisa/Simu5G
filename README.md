@@ -222,7 +222,7 @@ Documentation
 Testing
 -------
 
-Changes to Simu5G are validated with three kinds of tests:
+Changes to Simu5G are validated with four kinds of tests:
 
 - **Fingerprint tests** (`tests/fingerprint`) check that the example
   simulations follow the same event trajectory as recorded, so changes
@@ -234,8 +234,12 @@ Changes to Simu5G are validated with three kinds of tests:
 - **Unit tests** (`tests/unit`) exercise classes directly, without
   running a simulation; for example, the 3GPP propagation formulas are
   graded against oracle values computed from the reports.
+- **Module tests** (`tests/module`) run small simulations, each checking
+  one behavior of a module or a few modules by the outcome of the run;
+  for example, that a configuration the model does not support is
+  rejected with the intended error.
 
-See INSTALL.md for how to run the fingerprint and unit tests.
+See INSTALL.md for how to run the fingerprint, unit and module tests.
 
 Limitations
 -----------

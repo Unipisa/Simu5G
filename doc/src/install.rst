@@ -196,3 +196,6 @@ In the Simu5G root directory:
 
 - ``make unittests`` runs the unit tests; ``make MODE=debug unittests`` runs
   them against the debug build.
+
+- ``make moduletests`` runs the module tests; ``make MODE=debug moduletests``
+  runs them against the debug build.

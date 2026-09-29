@@ -1,0 +1,32 @@
+%description:
+An Unstructured PDU session has one QoS flow, on the default bearer: a second bearer
+defined for the UE is an error when the base station installs the UE's bearers.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.ue[*].sessionType = "Unstructured"
+*.ue[*].hasIpv4 = false
+*.ue[*].numUnstructuredApps = 1
+*.ue[*].unstructuredApp[0].source.packetLength = 100B
+*.ue[*].unstructuredApp[0].source.productionInterval = 20ms
+*.ue[*].unstructuredApp[0].source.initialProductionOffset = 0.1s
+*.upf.userPlaneNodeControl.unstructuredPrefix = "10.99.0.0/16"
+*.upf.userPlaneNodeControl.unstructuredServer = "server"
+*.upf.userPlaneNodeControl.unstructuredServerPort = 5000
+*.upf.userPlaneNodeControl.unstructuredPort = 5001
+*.bearerConfigurator.staticDrbs = [
+    {coreNetwork: "5gc", ue: "ue[*]", drbId: 1, isDefault: true, suppressSdapHeader: true, lcg: 3, rlcMode: "UM"},
+    {coreNetwork: "5gc", ue: "ue[*]", drbId: 2, mappedQfis: [1], lcg: 1, rlcMode: "UM"}
+    ]
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+ConnectionControlEnb: NrSessionTestNetwork.ue[0] has an Unstructured session, which has one QoS flow on the default bearer, but DRB 2 of its bearer definitions is another one
+%#--------------------------------------------------------------------------------------------------------------

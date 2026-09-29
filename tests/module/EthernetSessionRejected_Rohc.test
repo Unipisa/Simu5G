@@ -1,0 +1,30 @@
+%description:
+Header compression (ROHC) applies to IP sessions only: a bearer definition stating rohc
+is an error when the base station installs it for a UE of an Ethernet PDU session (here
+an on-demand bearer, installed when the UE's first frame arrives).
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[0].numApps = 1
+*.ue[0].app[0].typename = "EthernetSourceApp"
+*.ue[0].app[0].source.packetLength = 100B
+*.ue[0].app[0].source.productionInterval = 20ms
+*.ue[0].app[0].source.initialProductionOffset = 0.1s
+*.ue[0].app[0].io.interface = "cellular"
+*.ue[0].app[0].io.remoteAddress = "FF-FF-FF-FF-FF-FF"
+*.bearerConfigurator.onDemandDrbs = [{coreNetwork: "5gc", isDefault: true, suppressSdapHeader: true, lcg: 3, rlcMode: "UM", rohc: true}]
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+ConnectionControlEnb: the definition of DRB 1 of NrSessionTestNetwork.ue[0] states "rohc", but the UE's session is of type "Ethernet" -- header compression (ROHC) applies to IP sessions only
+%#--------------------------------------------------------------------------------------------------------------
