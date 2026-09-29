@@ -19,6 +19,8 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/UplinkUeTag_m.h"
+#include <inet/linklayer/ethernet/common/Ethernet.h>
+#include <inet/linklayer/ethernet/common/EthernetMacHeader_m.h>
 
 namespace simu5g {
 
@@ -173,6 +175,11 @@ void Ip2Nic::toStackUe(Packet *pkt)
         tos = ipFields->getTos();
     }
 
+    // An Ethernet frame enters the session without its FCS (TS 23.501 5.6.10.2: the UE
+    // strips it on the uplink), after the QoS rules have seen the full frame
+    if (sessionType_ == ETHERNET)
+        pkt->removeAtBack<EthernetFcs>(ETHER_FCS_BYTES);
+
     // Drop UL packets if this UE released its link to the serving node after RLF.
     if (!releasedUes_.empty()) {
         if (releasedUes_.count(binder_->getServingNodeOrSelf(nodeId_)) ||
@@ -221,6 +228,10 @@ void Ip2Nic::prepareForIp(Packet *datagram, const Protocol *protocol) {
 
 void Ip2Nic::toIpUe(Packet *pkt)
 {
+    // an Ethernet frame leaves the session with its FCS rebuilt, declared correct
+    if (sessionType_ == ETHERNET)
+        insertDeclaredEthernetFcs(pkt);
+
     // the protocol the session's payload is of: on an IP session the IP version from
     // the datagram itself, as on a real IPv4v6 session
     prepareForIp(pkt, &sessionPayloadProtocol(sessionType_, pkt));
@@ -235,7 +246,7 @@ void Ip2Nic::toIpBs(Packet *pkt)
     // The payload of a non-IP session comes up from SDAP as the protocol its bearer's
     // session implies (see NrSdap::getUpperProtocol()); anything else is an IP datagram.
     auto protocolTag = pkt->findTag<PacketProtocolTag>();
-    if (protocolTag == nullptr || protocolTag->getProtocol() != &LteProtocol::unstructured)
+    if (protocolTag == nullptr || !isNonIpSessionPayload(protocolTag->getProtocol()))
         pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&ipProtocolOf(pkt));
     EV << "Ip2Nic::toIpBs - message from stack: send to the tunnel entry" << endl;
     send(pkt, ipGateOut_);

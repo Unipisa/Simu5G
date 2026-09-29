@@ -15,6 +15,7 @@ import inet.common.MessageDispatcher;
 import inet.linklayer.ppp.PppInterface;
 import inet.node.base.ApplicationLayerNodeBase;
 import inet.transportlayer.udp.Udp;
+import simu5g.corenetwork.ethernetSessionBridge.EthernetSessionBridge;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.ndResponder.Ipv6NdResponder;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
@@ -37,6 +38,7 @@ module Upf extends ApplicationLayerNodeBase
         string nodeType = default("UPF");   // Do NOT change!
         string gateway = default("");
         bool hasNdResponder = default(false);  // Answer the IPv6 Neighbor Discovery of the UEs' sessions (needed when UEs run IPv6), see ~Ipv6NdResponder
+        bool hasEthernetBridge = default(false);  // Anchor Ethernet PDU sessions: the node's Ethernet bridge and N6 Ethernet link (dnEthg), see ~EthernetSessionBridge
         forwarding = default(true);
         multicastForwarding = default(false);
 
@@ -44,6 +46,8 @@ module Upf extends ApplicationLayerNodeBase
         // This gate is used for the UPF connected to the external data network
         // it must be left unconnected for intermediate UPFs
         inout dnPppg @loose @labels(PppFrame-conn);
+        // The N6 Ethernet link of the Ethernet PDU sessions (with hasEthernetBridge)
+        inout dnEthg @loose @labels(EtherFrame-conn);
 
     submodules:
         dnPpp: PppInterface {
@@ -70,6 +74,10 @@ module Upf extends ApplicationLayerNodeBase
             parameters:
                 @display("p=1000,175");
         }
+        ethernetBridge: EthernetSessionBridge if hasEthernetBridge {
+            parameters:
+                @display("p=1100,275");
+        }
 
     connections:
 
@@ -83,6 +91,10 @@ module Upf extends ApplicationLayerNodeBase
 
         gtp_user.ndOut --> ndResponder.in if hasNdResponder;
         gtp_user.ndIn <-- ndResponder.out if hasNdResponder;
+
+        gtp_user.ethernetBridgeOut --> ethernetBridge.sessionIn if hasEthernetBridge;
+        ethernetBridge.sessionOut --> trafficFlowFilter.ethernetBridgeIn if hasEthernetBridge;
+        ethernetBridge.dnEthg <--> dnEthg if hasEthernetBridge;
 
         dnPpp.phys <--> dnPppg;
 }

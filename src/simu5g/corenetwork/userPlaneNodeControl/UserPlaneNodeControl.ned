@@ -49,6 +49,10 @@ package simu5g.corenetwork.userPlaneNodeControl;
 // ports are the node's, not per data network: a UPF serves one data network here.
 // Both address families work; the server is resolved in the prefix's family.
 //
+// Ethernet sessions. A UPF with an ~EthernetSessionBridge anchors a UE's Ethernet session: its
+// establishment adds the session's port to the anchor's bridge, its release removes it
+// (flushing the addresses learned on it). A UPF without one rejects the session.
+//
 // Nothing outside the node reaches its ~GtpUser or ~TrafficFlowFilter directly; how
 // the node is composed is its own business. The module registers with the ~Binder
 // at initialization as the node's control-plane entry point, which is how the
@@ -62,6 +66,7 @@ simple UserPlaneNodeControl
         string binderModule = default("binder");
         string gtpUserModule = default("^.gtp_user");
         string trafficFlowFilterModule = default("^.trafficFlowFilter");
+        string ethernetBridgeModule = default("^.ethernetBridge.sessionMux");  // The node's Ethernet session bridge (see ~EthernetSessionBridge), if it has one
         string nodeType @enum(PGW,UPF,UPF_MEC);  // The type of the containing node, which sets it
         string gateway = default("");  // A MEC host UPF's core network gateway, the anchor UPF whose sessions it serves; empty at an anchor
         string unstructuredPrefix = default("");  // The prefix the N6 addresses of Unstructured sessions are allocated from, e.g. "2001:db8:5::/64" or "10.5.0.0/16"; empty = the node anchors no Unstructured session (see the main comment)

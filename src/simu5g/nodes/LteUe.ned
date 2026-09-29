@@ -47,7 +47,7 @@ import simu5g.corenetwork.statsCollector.UeStatsCollector;
 // core, the PDN type in an EPC): the sessionType parameter. The network establishes
 // the session with that type, or rejects it with an error if its core network cannot
 // carry it. The IP types ("IPv4", "IPv6", "IPv4v6") are carried by both core
-// networks; "Unstructured" needs a 5G core, and "Ethernet" is not supported yet.
+// networks; "Unstructured" and "Ethernet" need a 5G core.
 //
 // An Unstructured session carries opaque payload, from an application attached to
 // the NIC directly (an ~UnstructuredApp in the unstructuredApp submodule vector, see
@@ -55,6 +55,20 @@ import simu5g.corenetwork.statsCollector.UeStatsCollector;
 // configured with (see ~UserPlaneNodeControl). The session has one QoS flow, the
 // default one, on one bearer, the default DRB; it is not supported on a D2D-capable
 // UE (hasD2D). Such a UE normally has no IP layer (hasIpv4 = false).
+//
+// An Ethernet session carries Ethernet frames between the UE and the anchor UPF's
+// Ethernet bridge (see ~EthernetSessionBridge), which switches them among the UPF's Ethernet
+// sessions and its N6 Ethernet LAN; the frames cross the session without their FCS
+// (TS 23.501 5.6.10.2). The UE then has the link layer of an INET Ethernet node
+// (EthernetLayer, Ieee8021qProtocol), whose Ethernet ports are the cellular NIC and the
+// eth[] interfaces. With ethernetMode = "host", the UE is an Ethernet host: raw Ethernet
+// applications (e.g. INET's EthernetSourceApp and EthernetSinkApp) send and receive with
+// the NIC's MAC address. With ethernetMode = "bridge", the UE bridges (BridgingLayer)
+// the NIC and its eth[] interfaces, whose ethg[] gates connect the devices behind it
+// (numEthInterfaces). The QoS rules classify a frame by its headers (e.g. its 802.1Q
+// priority); a dscpAsQfi rule does not apply to a frame. The session is not supported
+// on a D2D-capable UE (hasD2D), and not with ROHC. Such a UE normally has no IP layer
+// (hasIpv4 = false): nothing configures IP over the session automatically.
 //
 module LteUe
 {

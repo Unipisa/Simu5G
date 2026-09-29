@@ -30,9 +30,17 @@ const inet::Protocol& ipProtocolOf(const inet::Packet *pkt);
 
 // The protocol of the payload of a session of the given type, which the packet is:
 // the IP version of the datagram on an IP session (see ipProtocolOf()), the
-// unstructured protocol on an Unstructured one. Throws for an Ethernet session,
-// which is not supported yet.
+// unstructured protocol on an Unstructured one, an Ethernet frame on an Ethernet one
 const inet::Protocol& sessionPayloadProtocol(SessionType type, const inet::Packet *pkt);
+
+// Whether a payload protocol is that of a non-IP session: the unstructured protocol,
+// or an Ethernet frame (see sessionPayloadProtocol())
+bool isNonIpSessionPayload(const inet::Protocol *protocol);
+
+// Appends a declared-correct FCS to an Ethernet frame, where the frame leaves an
+// Ethernet session: the 5GS does not carry the FCS (TS 23.501 5.6.10.2), so the ends of
+// the session rebuild it (the UE on the downlink, the anchor UPF on the uplink)
+void insertDeclaredEthernetFcs(inet::Packet *frame);
 
 // The IP header at the front of the packet, of either family
 inet::Ptr<const inet::NetworkHeaderBase> peekIpHeader(const inet::Packet *pkt);

@@ -43,6 +43,11 @@ namespace simu5g {
  *    the packet's DSCP field (IPv4 Type of Service or IPv6 Traffic Class) read as
  *    the QFI (exactly one of the two)
  *
+ * An Ethernet frame, the payload of an Ethernet session, is classified by the same
+ * rules, whose filter expressions read its headers (e.g.
+ * "expr(has(ieee8021qctag) && ieee8021qctag.pcp == 5)"); a dscpAsQfi rule does not
+ * match it, as it has no DSCP field (see classifyFrame()).
+ *
  * A packet matching no rule is left unclassified: classify() returns QFI_NONE,
  * and what that means -- the default flow, or no marking at all -- is the
  * caller's to decide. (The distinction matters because QFI 0 is a real
@@ -69,6 +74,10 @@ class QfiRuleSet
     // The QFI of the first matching rule, or QFI_NONE if no rule covers the packet;
     // dscp is the packet's DSCP field, the QFI of a dscpAsQfi rule
     Qfi classify(inet::Packet *pkt, uint8_t dscp) const;
+
+    // The same for an Ethernet frame (the payload of an Ethernet session), which has
+    // no DSCP field: a dscpAsQfi rule does not match it
+    Qfi classifyFrame(inet::Packet *pkt) const;
 
     bool empty() const { return rules_.empty(); }
 };

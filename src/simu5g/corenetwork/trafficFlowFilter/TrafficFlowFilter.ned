@@ -45,6 +45,11 @@ package simu5g.corenetwork.trafficFlowFilter;
 // UDP/IP headers go, and the payload goes into the session's tunnel on the default
 // QoS flow, with no rule evaluated.
 //
+// Ethernet sessions. At a UPF, the downlink frames of the Ethernet sessions come from the
+// node's ~EthernetSessionBridge, each tagged with its session: the frame goes into the session's
+// tunnel on the QFI of the first rule that matches the full frame (a dscpAsQfi rule does
+// not match a frame), else the default QoS flow.
+//
 simple TrafficFlowFilter
 {
     parameters:
@@ -55,5 +60,6 @@ simple TrafficFlowFilter
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;
+        input ethernetBridgeIn @loose;  // At a UPF: the downlink frames of the Ethernet sessions, from the ~EthernetSessionBridge
         output gtpUserGateOut;
 }

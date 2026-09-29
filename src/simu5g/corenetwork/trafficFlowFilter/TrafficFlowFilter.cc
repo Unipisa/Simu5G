@@ -12,6 +12,7 @@
 
 #include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
 #include <inet/common/ProtocolTag_m.h>
+#include "simu5g/common/SessionTag_m.h"
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/common/L3Tools.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
@@ -123,10 +124,16 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
 
     Packet *pkt = check_and_cast<Packet *>(msg);
 
-    // the payload of a non-IP session, which SDAP delivered up as such at a base
-    // station (see Ip2Nic::toIpBs()): no IP header to classify by
+    if (msg->arrivedOn("ethernetBridgeIn")) {
+        handleEthernetDownlink(pkt);
+        return;
+    }
+
+    // the payload of a non-IP session (an Unstructured payload, an Ethernet frame),
+    // which SDAP delivered up as such at a base station (see Ip2Nic::toIpBs()): no IP
+    // header to classify by
     auto protocolTag = pkt->findTag<PacketProtocolTag>();
-    if (protocolTag != nullptr && protocolTag->getProtocol() == &LteProtocol::unstructured) {
+    if (isBaseStation(ownerType_) && protocolTag != nullptr && isNonIpSessionPayload(protocolTag->getProtocol())) {
         handleNonIpUplink(pkt);
         return;
     }
@@ -231,6 +238,21 @@ void TrafficFlowFilter::handleN6Downlink(Packet *pkt, const N6Session& n6Session
     tftInfo->setUeNodeId(n6Session.session.lteNodeId);
     tftInfo->setQfi(Qfi(0));
     send(pkt, "gtpUserGateOut");
+}
+
+void TrafficFlowFilter::handleEthernetDownlink(Packet *frame)
+{
+    ASSERT(ownerType_ == UPF);
+    auto session = frame->removeTag<SessionTag>();
+    Qfi qfi = qfiRules_.classifyFrame(frame);
+    if (qfi == QFI_NONE)
+        qfi = Qfi(0);   // frames no rule covers belong to the default flow
+    auto tftInfo = frame->addTag<TftControlInfo>();
+    tftInfo->setTft(TFT_PDU_SESSION);
+    tftInfo->setUeNodeId(session->getLteNodeId());
+    tftInfo->setQfi(qfi);
+    EV << "TrafficFlowFilter::handleEthernetDownlink - " << frame->getName() << " of the session of UE " << session->getLteNodeId() << ", qfi=" << qfi << endl;
+    send(frame, "gtpUserGateOut");
 }
 
 void TrafficFlowFilter::addN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel)

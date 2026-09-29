@@ -31,7 +31,10 @@ package simu5g.corenetwork.gtp;
 // the "unstructured" protocol), and a base station attaches the session, with its
 // type, as a ~SessionTag. At an anchor UPF the uplink of an Unstructured session
 // leaves on the session's N6 tunnel, in a UDP/IP datagram this module builds from
-// the session's N6 address to the server (see ~UserPlaneNodeControl).
+// the session's N6 address to the server (see ~UserPlaneNodeControl). The uplink of an
+// Ethernet session goes to the UPF's ~EthernetSessionBridge, its FCS rebuilt (the 5GS does not
+// carry it); the downlink frames the traffic flow filter classified lose their FCS here,
+// before they enter the session's tunnel.
 //
 simple GtpUser
 {
@@ -51,5 +54,6 @@ simple GtpUser
         output pppGate;
         output ndOut @loose;  // To the Neighbor Discovery responder of a UPF or PGW, see ~Ipv6NdResponder
         input ndIn @loose;
+        output ethernetBridgeOut @loose;  // At a UPF: the uplink frames of the Ethernet sessions, to the ~EthernetSessionBridge
 }
 

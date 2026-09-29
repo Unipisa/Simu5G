@@ -720,6 +720,19 @@ bool BearerConfigurator::hasUplinkQfiRulesScopedTo(const cModule *ue) const
     return false;
 }
 
+bool BearerConfigurator::hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue) const
+{
+    const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
+    std::string uePath = relativeToNetwork(ue);
+    for (int i = 0; i < (int)table->size(); i++) {
+        const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
+        if (entry->containsKey("ue") && entry->containsKey("dscpAsQfi") && entry->get("dscpAsQfi").boolValue()
+                && inet::PatternMatcher(entry->get("ue").stringValue(), true, true, true).matches(uePath.c_str()))
+            return true;
+    }
+    return false;
+}
+
 void BearerConfigurator::validateQfiRules()
 {
     // Validate a whole table up front -- also the entries no site matches, whose

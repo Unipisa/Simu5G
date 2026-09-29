@@ -61,8 +61,8 @@ void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, Se
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
     if (session.dlTunnels.count(bsId) == 0) {
         ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-        // the UE's QoS rules; the one QoS flow of a non-IP session needs none
-        QfiRuleSet ulQfiRules = isIpSessionType(session.type) ? bearerConfigurator_->getUplinkQfiRules(session.ueModule) : QfiRuleSet();
+        // the UE's QoS rules; the one QoS flow of an Unstructured session needs none
+        QfiRuleSet ulQfiRules = session.type != UNSTRUCTURED ? bearerConfigurator_->getUplinkQfiRules(session.ueModule) : QfiRuleSet();
         FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session), std::move(ulQfiRules));
         registerRanTunnel(session, bsId, dl);
     }
@@ -229,10 +229,15 @@ void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
     // the default one, whose QoS rule has no packet filter (5.7.1.4): the UE's stack
     // must have SDAP, and no QoS rule may be authored for the UE. Its N6 address is
     // allocated here.
+    // An Ethernet session (5.6.10.2) is a 5G core's too, and its QoS rules classify
+    // frames, which have no DSCP field: a dscpAsQfi rule authored for the UE is an error.
+    if (!isIpSessionType(type) && !BearerConfigurator::ueStackHasSdap(ueModule))
+        throw cRuntimeError("CoreControl: %s requests an %s session, but its stack has no SDAP (a 5G core's sessions need it, see the hasSdap parameter of the NIC)",
+                ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str());
+    if (type == ETHERNET && bearerConfigurator_->hasUplinkDscpAsQfiRuleScopedTo(ueModule))
+        throw cRuntimeError("CoreControl: %s requests an Ethernet session, whose frames have no DSCP field, but a dscpAsQfi rule of the ulQfiRules "
+                "parameter of the bearer configurator is scoped to it", ueModule->getFullPath().c_str());
     if (type == UNSTRUCTURED) {
-        if (!BearerConfigurator::ueStackHasSdap(ueModule))
-            throw cRuntimeError("CoreControl: %s requests an Unstructured session, but its stack has no SDAP (a 5G core's sessions need it, see the hasSdap parameter of the NIC)",
-                    ueModule->getFullPath().c_str());
         if (bearerConfigurator_->hasUplinkQfiRulesScopedTo(ueModule))
             throw cRuntimeError("CoreControl: %s requests an Unstructured session, which has one QoS flow and no QoS rules, but the ulQfiRules "
                     "parameter of the bearer configurator has a rule scoped to it", ueModule->getFullPath().c_str());

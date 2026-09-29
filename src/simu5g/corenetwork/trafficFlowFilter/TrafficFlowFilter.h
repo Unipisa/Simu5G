@@ -109,6 +109,10 @@ class TrafficFlowFilter : public cSimpleModule
     // into the session's tunnel on the default QoS flow (TS 29.561 9.2)
     virtual void handleN6Downlink(inet::Packet *pkt, const N6Session& n6Session);
 
+    // At a UPF: a downlink frame of an Ethernet session, from the Ethernet session bridge, goes
+    // into the session's tunnel on the QFI its rules assign to the full frame
+    virtual void handleEthernetDownlink(inet::Packet *frame);
+
   public:
     // Take delivery of this filter's compiled QFI-assignment rules from the
     // bearer configurator

@@ -49,9 +49,6 @@ void ConnectionControlUe::initialize(int stage)
         isNr_ = par("isNr");
         nodeId_ = MacNodeId(par("macNodeId").intValue());
         sessionType_ = aToSessionType(par("sessionType").stdstringValue());
-        if (sessionType_ == ETHERNET)
-            throw cRuntimeError("Session type \"%s\" is not supported yet (see the sessionType parameter of the UE)",
-                    sessionTypeToA(sessionType_).c_str());
 
         enableHandover_ = par("enableHandover");
         handoverDetachmentTime_ = par("handoverDetachmentTime").doubleValue();

@@ -16,6 +16,7 @@
 #include <inet/common/ModuleAccess.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
+#include "simu5g/corenetwork/ethernetSessionBridge/EthernetSessionMux.h"
 #include "simu5g/corenetwork/gtp/GtpUser.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
 
@@ -49,6 +50,7 @@ void UserPlaneNodeControl::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         gtpUser_.reference(this, "gtpUserModule", true);
         trafficFlowFilter_.reference(this, "trafficFlowFilterModule", true);
+        ethernetBridge_.reference(this, "ethernetBridgeModule", false);
 
         binder_->registerUserPlaneNode(this, nodeType_, gateway_);
     }
@@ -136,6 +138,14 @@ FTeid UserPlaneNodeControl::establishUserPlaneSession(const SessionRef& session,
         gtpUser_->setN6Tunnel(session, n6Tunnel);
         trafficFlowFilter_->addN6Tunnel(session, n6Tunnel);
     }
+
+    // an Ethernet session's port in the node's bridge
+    if (type == ETHERNET) {
+        if (ethernetBridge_.getNullable() == nullptr)
+            throw cRuntimeError("UserPlaneNodeControl: %s anchors an Ethernet session, but has no Ethernet session bridge (see its hasEthernetBridge parameter)",
+                    getContainingNode(this)->getFullPath().c_str());
+        ethernetBridge_->addSessionPort(session);
+    }
     return tunnel;
 }
 
@@ -152,6 +162,8 @@ void UserPlaneNodeControl::releaseUserPlaneSession(const SessionRef& session)
     Enter_Method("releaseUserPlaneSession");
     gtpUser_->removeSession(session);
     trafficFlowFilter_->removeN6Tunnel(session);
+    if (ethernetBridge_.getNullable() != nullptr)
+        ethernetBridge_->removeSessionPort(session);
 }
 
 } //namespace

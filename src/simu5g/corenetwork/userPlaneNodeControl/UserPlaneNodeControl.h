@@ -24,6 +24,7 @@
 
 namespace simu5g {
 
+class EthernetSessionMux;
 class GtpUser;
 class TrafficFlowFilter;
 
@@ -42,6 +43,7 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<GtpUser> gtpUser_;
     inet::ModuleRefByPar<TrafficFlowFilter> trafficFlowFilter_;
+    inet::ModuleRefByPar<EthernetSessionMux> ethernetBridge_;   // the node's Ethernet session bridge, or nullptr
 
     // The node's TEID space: the TEID allocated last (see allocateTeid())
     Teid lastTeid_ = TEID_NONE;
@@ -95,7 +97,8 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     // session, which is of the given type, at this node, under a TEID allocated here;
     // returns the tunnel's F-TEID, for the base stations to send the session's uplink
     // on. An Unstructured session also gets its N6 tunnel here, under the given N6
-    // address (the anchor's only; unspecified for the other sessions and nodes).
+    // address (the anchor's only; unspecified for the other sessions and nodes); an
+    // Ethernet session gets its port in the node's Ethernet session bridge.
     virtual FTeid establishUserPlaneSession(const SessionRef& session, SessionType type, const inet::L3Address& n6Address);
 
     // PFCP Session Modification / GTP-C Modify Bearer: the session's downlink now goes

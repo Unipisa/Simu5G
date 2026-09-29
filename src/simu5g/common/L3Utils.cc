@@ -13,6 +13,8 @@
 #include "simu5g/common/LteCommon.h"
 
 #include <inet/common/packet/chunk/BytesChunk.h>
+#include <inet/linklayer/ethernet/common/Ethernet.h>
+#include <inet/linklayer/ethernet/common/EthernetMacHeader_m.h>
 #include <inet/networklayer/common/L3Tools.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/networklayer/ipv6/Ipv6Header.h>
@@ -48,9 +50,24 @@ const Protocol& sessionPayloadProtocol(SessionType type, const Packet *pkt)
             return ipProtocolOf(pkt);
         case UNSTRUCTURED:
             return LteProtocol::unstructured;
+        case ETHERNET:
+            return Protocol::ethernetMac;
         default:
-            throw cRuntimeError("Packet '%s' belongs to a session of type \"%s\", which is not supported yet", pkt->getName(), sessionTypeToA(type).c_str());
+            throw cRuntimeError("Packet '%s' belongs to a session of unknown type %d", pkt->getName(), (int)type);
     }
+}
+
+bool isNonIpSessionPayload(const Protocol *protocol)
+{
+    return protocol == &LteProtocol::unstructured || protocol == &Protocol::ethernetMac;
+}
+
+void insertDeclaredEthernetFcs(Packet *frame)
+{
+    auto fcs = makeShared<EthernetFcs>();
+    fcs->setFcsMode(FCS_DECLARED_CORRECT);
+    fcs->setFcs(computeEthernetFcs(frame, FCS_DECLARED_CORRECT));
+    frame->insertAtBack(fcs);
 }
 
 Ptr<const NetworkHeaderBase> peekIpHeader(const Packet *pkt)

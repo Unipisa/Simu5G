@@ -43,4 +43,12 @@ Qfi QfiRuleSet::classify(inet::Packet *pkt, uint8_t dscp) const
     return QFI_NONE;
 }
 
+Qfi QfiRuleSet::classifyFrame(inet::Packet *pkt) const
+{
+    for (const QfiRule& rule : rules_)
+        if (!rule.dscpAsQfi && (rule.filter == nullptr || rule.filter->matches(pkt)))
+            return rule.qfi;
+    return QFI_NONE;
+}
+
 } // namespace simu5g

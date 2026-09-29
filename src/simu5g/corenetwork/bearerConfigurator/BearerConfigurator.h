@@ -159,6 +159,9 @@ class BearerConfigurator : public cSimpleModule
     // Whether an entry of the ulQfiRules table names the given UE by its "ue" scope,
     // i.e. a QoS rule authored for the UE rather than for every UE
     virtual bool hasUplinkQfiRulesScopedTo(const cModule *ue) const;
+
+    // Whether such an entry, scoped to the given UE, is a dscpAsQfi rule
+    virtual bool hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue) const;
 };
 
 } //namespace

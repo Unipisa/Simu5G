@@ -20,6 +20,8 @@
 #include <inet/common/packet/printer/PacketPrinter.h>
 #include <inet/common/socket/SocketTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
+#include <inet/linklayer/ethernet/common/Ethernet.h>
+#include <inet/linklayer/ethernet/common/EthernetMacHeader_m.h>
 #include <inet/networklayer/common/L3Tools.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/networklayer/ipv6/Ipv6Header.h>
@@ -211,14 +213,17 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
     // the downlink of a UE's session goes on the session's tunnel, which the path
     // switch keeps pointing at the base station the downlink enters the RAN at
     const FTeid *dlTunnel = nullptr;
+    // an Ethernet session's frame, from the UPF's Ethernet session bridge
+    bool ethernetFrame = tft == TFT_PDU_SESSION && datagram->getTag<PacketProtocolTag>()->getProtocol() == &Protocol::ethernetMac;
     if (tft == TFT_PDU_SESSION) {
         MacNodeId ueNodeId = tftInfo->getUeNodeId();
         dlTunnel = findDownlinkTunnel(ueNodeId);
         if (dlTunnel == nullptr) {
             // a UE attached nowhere is dropped; the UE of another core network is its
-            // gateway's to reach
+            // gateway's to reach (a frame of an Ethernet session bridgeed here has no other
+            // way to its UE)
             bool attached = binder_->getServingNodeOrSelf(ueNodeId) != NODEID_NONE;
-            tft = attached ? TFT_EXTERNAL_DESTINATION : TFT_REMOVED_DESTINATION;
+            tft = attached && !ethernetFrame ? TFT_EXTERNAL_DESTINATION : TFT_REMOVED_DESTINATION;
         }
     }
 
@@ -287,6 +292,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         }
         else { // on the downlink tunnel of the destination UE's session
             ASSERT(tft == TFT_PDU_SESSION && dlTunnel != nullptr);
+            // an Ethernet frame enters the session without its FCS (TS 23.501 5.6.10.2)
+            if (ethernetFrame)
+                datagram->removeAtBack<EthernetFcs>(ETHER_FCS_BYTES);
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << *dlTunnel << endl;
             tunnelPeerAddress = dlTunnel->address;
             teid = dlTunnel->teid;
@@ -383,6 +391,19 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // N6 tunnel
         if (session != nullptr && session->type == UNSTRUCTURED) {
             tunnelUplinkOverN6(originalPacket, session->ref);
+            return;
+        }
+
+        // the uplink of an Ethernet session goes into the UPF's bridge, with its FCS
+        // rebuilt, tagged with its session
+        if (session != nullptr && session->type == ETHERNET) {
+            if (!gate("ethernetBridgeOut")->isConnected())
+                throw cRuntimeError("GtpUser: an uplink frame of the Ethernet %s arrived at %s, which has no Ethernet session bridge (see its hasEthernetBridge parameter)",
+                        (std::ostringstream() << session->ref).str().c_str(), getContainingNode(this)->getFullPath().c_str());
+            insertDeclaredEthernetFcs(originalPacket);
+            originalPacket->removeTagIfPresent<QfiReq>();
+            attachSessionTag(originalPacket, *session);
+            send(originalPacket, "ethernetBridgeOut");
             return;
         }
 

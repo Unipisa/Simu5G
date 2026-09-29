@@ -35,7 +35,7 @@ package simu5g.stack.sdap;
 simple QosFlowClassifier like IQosFlowClassifier
 {
     parameters:
-        string sessionType;  // The type of the UE's session (see ~LteUe); a non-IP session has one QoS flow, the default one, which every packet is classified to without evaluating the rules
+        string sessionType;  // The type of the UE's session (see ~LteUe): an Unstructured session has one QoS flow, the default one, which every packet is classified to without evaluating the rules; an Ethernet session's frames are classified by the rules (a dscpAsQfi rule does not match a frame)
         @display("i=block/classifier");
     gates:
         input upperLayerIn;

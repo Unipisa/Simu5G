@@ -35,10 +35,10 @@ void QosFlowClassifier::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
 
-    // The session of a non-IP type has one QoS flow, the default one: its default QoS
-    // rule has no packet filter and applies to every packet (TS 23.501 5.7.1.4), so
-    // no rule is evaluated
-    if (!isIpSessionType(sessionType_)) {
+    // An Unstructured session has one QoS flow, the default one: its default QoS rule
+    // has no packet filter and applies to every packet (TS 23.501 5.7.1.4), so no rule
+    // is evaluated
+    if (sessionType_ == UNSTRUCTURED) {
         pkt->addTagIfAbsent<QfiReq>()->setQfi(Qfi(0));
         send(pkt, "lowerLayerOut");
         return;
@@ -49,7 +49,8 @@ void QosFlowClassifier::handleMessage(cMessage *msg)
     // QFI 0 is a real classification (the default flow) and absence is what lets SDAP
     // fall back to reflective QoS.
     if (!pkt->hasTag<QfiReq>() && !qfiRules_.empty()) {
-        Qfi qfi = qfiRules_.classify(pkt, dscpOf(pkt->getTag<IpHeaderFieldsTag>()->getTos()));
+        // an Ethernet session's frame is classified as it is (TS 23.501 5.7.6.3)
+        Qfi qfi = sessionType_ == ETHERNET ? qfiRules_.classifyFrame(pkt) : qfiRules_.classify(pkt, dscpOf(pkt->getTag<IpHeaderFieldsTag>()->getTos()));
         if (qfi != QFI_NONE) {
             pkt->addTag<QfiReq>()->setQfi(qfi);
             EV_INFO << "QosFlowClassifier - " << pkt->getName() << " classified to QFI " << qfi << "\n";
