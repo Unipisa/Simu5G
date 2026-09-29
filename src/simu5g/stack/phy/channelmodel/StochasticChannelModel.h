@@ -45,6 +45,10 @@ class PathLossModel;
  *   history, speed, and the point at which shadowing and LOS were last drawn;
  * - the SINR statistics.
  *
+ * The state the evaluations carry from one to the next -- LOS states, shadowing
+ * samples, Jakes fading paths, position histories and correlation points -- is
+ * this model's own, but the radio medium keeps it (channelState()).
+ *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
  * computeShadowing and computeAngularAttenuation. Which 3GPP propagation study
@@ -107,13 +111,13 @@ class StochasticChannelModel : public ChannelModelBase
 
     bool enable_extCell_los_;
 
-    typedef std::pair<inet::simtime_t, inet::Coord> Position;
+    typedef ChannelState::Position Position;
+    typedef ChannelState::JakesFadingData JakesFadingData;
+    typedef ChannelState::JakesFadingVector JakesFadingVector;
+    typedef ChannelState::JakesFadingMap JakesFadingMap;
+    typedef ChannelState::ShadowFadingMap ShadowFadingMap;
 
-    // Last position of current user
-    std::map<MacNodeId, std::queue<Position>> positionHistory_;
-
-    // Per link: the position at which the LOS probability was last computed.
-    std::map<LinkKey, Position> lastCorrelationPoint_;
+    ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
 
     // Scenario
     DeploymentScenario scenario_;
@@ -125,13 +129,6 @@ class StochasticChannelModel : public ChannelModelBase
     // loss with the TR 36.814 formulas regardless of which propagation study
     // the model uses for its own links (see computeExtCellPathLoss); owned
     PathLossModel *extCellPathLoss_ = nullptr;
-
-    // Per link: whether it is in Line of Sight
-    std::map<LinkKey, bool> losMap_;
-
-    // Stores the last computed shadowing for each user
-    typedef std::map<LinkKey, std::pair<inet::simtime_t, double>> ShadowFadingMap;
-    ShadowFadingMap lastComputedSF_;
 
     // Correlation distance used in shadowing computation and
     // also used to recompute the probability of LOS
@@ -165,28 +162,6 @@ class StochasticChannelModel : public ChannelModelBase
     double delayRMS_;
 
     bool tolerateMaxDistViolation_;
-
-    // Struct used to store information about Jakes fading
-    struct JakesFadingData
-    {
-        std::vector<double> angleOfArrival;
-        std::vector<simtime_t> delaySpread;
-
-        friend std::ostream& operator<<(std::ostream& os, const JakesFadingData& e)
-        {
-            os << "paths=" << e.angleOfArrival.size();
-            return os;
-        }
-    };
-
-    // For each node and for each band we store information about Jakes fading
-    std::map<LinkKey, std::vector<JakesFadingData>> jakesFadingMap_;
-
-    // For each node and for each band we store information about Jakes fading
-    std::map<LinkKey, std::vector<JakesFadingData>> jakesFadingMapBgUe_;
-
-    typedef std::vector<JakesFadingData> JakesFadingVector;
-    typedef std::map<LinkKey, JakesFadingVector> JakesFadingMap;
 
     enum FadingType
     {
@@ -345,12 +320,12 @@ class StochasticChannelModel : public ChannelModelBase
 
     JakesFadingMap *getJakesMap()
     {
-        return &jakesFadingMap_;
+        return &channelState().jakesFadingMap;
     }
 
     ShadowFadingMap *getShadowingMap()
     {
-        return &lastComputedSF_;
+        return &channelState().shadowingMap;
     }
 
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
@@ -366,6 +341,13 @@ class StochasticChannelModel : public ChannelModelBase
      * (pathLoss_), chosen by the pathLossType parameter.
      */
     virtual PathLossModel *createPathLossModel();
+
+    /*
+     * This model's channel state, which the radio medium keeps. Resolved on
+     * first use, since the medium is not known before INITSTAGE_SIMU5G_POSTLOCAL.
+     */
+    ChannelState& channelState();
+    const ChannelState& channelState() const;
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and the

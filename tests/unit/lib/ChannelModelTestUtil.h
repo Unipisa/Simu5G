@@ -144,12 +144,8 @@ class ChannelModelProbe
   private:
     struct Access : StochasticChannelModel
     {
-        static auto positionHistoryPtr() { return &Access::positionHistory_; }
-        static auto lastCorrelationPointPtr() { return &Access::lastCorrelationPoint_; }
-        static auto losMapPtr() { return &Access::losMap_; }
-        static auto shadowingMapPtr() { return &Access::lastComputedSF_; }
-        static auto jakesMapPtr() { return &Access::jakesFadingMap_; }
-        static auto jakesMapBgUePtr() { return &Access::jakesFadingMapBgUe_; }
+        using ChannelStateAccessor = ChannelState& (StochasticChannelModel::*)();
+        static ChannelStateAccessor channelStatePtr() { return &Access::channelState; }
         static auto pathLossPtr() { return &Access::pathLoss_; }
         static auto fadingPtr() { return &Access::fading_; }
 
@@ -171,13 +167,14 @@ class ChannelModelProbe
 
     StochasticChannelModel *model() const { return model_; }
 
-    // state
-    auto& positionHistory() { return model_->*Access::positionHistoryPtr(); }
-    auto& lastCorrelationPoint() { return model_->*Access::lastCorrelationPointPtr(); }
-    auto& losMap() { return model_->*Access::losMapPtr(); }
-    auto& shadowingMap() { return model_->*Access::shadowingMapPtr(); }
-    auto& jakesMap() { return model_->*Access::jakesMapPtr(); }
-    auto& jakesMapBgUe() { return model_->*Access::jakesMapBgUePtr(); }
+    // state: the model's channel state, which the radio medium keeps
+    ChannelState& channelState() { return (model_->*Access::channelStatePtr())(); }
+    auto& positionHistory() { return channelState().positionHistory; }
+    auto& lastCorrelationPoint() { return channelState().lastCorrelationPoint; }
+    auto& losMap() { return channelState().losMap; }
+    auto& shadowingMap() { return channelState().shadowingMap; }
+    auto& jakesMap() { return channelState().jakesFadingMap; }
+    auto& jakesMapBgUe() { return channelState().jakesFadingMapBgUe; }
     PathLossModel *pathLoss() { return model_->*Access::pathLossPtr(); }
     bool& fading() { return model_->*Access::fadingPtr(); }
 

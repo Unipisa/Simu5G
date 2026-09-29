@@ -1,6 +1,6 @@
 %description:
 
-LinkKey, the identity of a radio link (ChannelModelBase.h).
+LinkKey, the identity of a radio link (ChannelState.h).
 
 It is a small type with a large job. The per-link channel state -- the LOS
 draw, the shadowing value, the Jakes fading realization -- is held in maps

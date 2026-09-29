@@ -157,4 +157,15 @@ IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const
     return radio;
 }
 
+ChannelState& CellularRadioMedium::getChannelState(const cComponent *channelModel)
+{
+    // NOTE: no Enter_Method(): data access only, as for findRadio()
+    return channelStates[channelModel];
+}
+
+void CellularRadioMedium::removeChannelState(const cComponent *channelModel)
+{
+    channelStates.erase(channelModel);
+}
+
 } // namespace simu5g

@@ -33,42 +33,6 @@ class AirFrame;
 class Binder;
 
 /**
- * Identifies a radio link for the purpose of indexing its channel state.
- *
- * LOS/NLOS, shadowing and multipath fading are properties of a *link*, not of a
- * node: two links from the same transmitter to peers in different directions and
- * at different distances have independent realizations. Keying that state by node
- * -- which is what this model did historically -- is harmless for cellular, where
- * a UE has exactly one link per channel-model instance, but wrong for D2D, where
- * one UE has many peers and they all shared a single slot.
- *
- * The pair is stored normalized so that a link is the same key seen from either
- * end. Cellular callers construct the degenerate key {id, id}, which reproduces
- * the historical node-keyed behavior exactly.
- */
-struct LinkKey
-{
-    MacNodeId a = NODEID_NONE;
-    MacNodeId b = NODEID_NONE;
-
-    LinkKey() = default;
-    explicit LinkKey(MacNodeId node) : a(node), b(node) {}
-    LinkKey(MacNodeId x, MacNodeId y)
-        : a(num(x) <= num(y) ? x : y), b(num(x) <= num(y) ? y : x) {}
-
-    bool operator<(const LinkKey& o) const
-    {
-        return num(a) != num(o.a) ? num(a) < num(o.a) : num(b) < num(o.b);
-    }
-    bool operator==(const LinkKey& o) const { return a == o.a && b == o.b; }
-};
-
-inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
-{
-    return num(k.a) == num(k.b) ? (os << k.a) : (os << "[" << k.a << "," << k.b << "]");
-}
-
-/**
  * A radio link between two arbitrary endpoints, and the parameters the channel
  * model needs to evaluate it.
  *
@@ -93,16 +57,16 @@ struct RadioLink
     inet::Coord rxCoord;
 
     // ---- channel state ----
-    // stateKey indexes the *per-link* state: losMap_, lastComputedSF_,
-    // jakesFadingMap_ and lastCorrelationPoint_.
+    // stateKey indexes the per-link entries of the channel state (ChannelState):
+    // LOS, shadowing, Jakes fading and the correlation point.
     LinkKey stateKey;
 
-    // stateNodeId is the *node* the state belongs to -- the UE. It selects which
-    // module owns the maps (with useUeSideMaps they are fetched from that UE's own
-    // channel model via obtainShadowingMap() / obtainUeJakesMap(), otherwise they
-    // are this module's), it indexes positionHistory_, which is genuinely a node
-    // property because it defines the node's speed, and it distinguishes
-    // background UEs.
+    // stateNodeId is the *node* the state belongs to -- the UE. It selects whose
+    // channel state holds the shadowing and Jakes entries (with useUeSideMaps,
+    // that of the UE's own channel model, via obtainShadowingMap() /
+    // obtainUeJakesMap(); otherwise the evaluating model's own), it indexes the
+    // position history, which is genuinely a node property because it defines
+    // the node's speed, and it distinguishes background UEs.
     MacNodeId stateNodeId = NODEID_NONE;
 
     inet::Coord stateCoord;      // position feeding computeSpeed + correlation distance

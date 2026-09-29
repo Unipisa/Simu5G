@@ -1,10 +1,10 @@
 %description:
 
-The mobility state StochasticChannelModel keeps per node and per link, and the
-call-order invariant getRSRP() documents about it.
+The mobility state a StochasticChannelModel evaluates against, per node and
+per link, and the call-order invariant getRSRP() documents about it.
 
-Three pieces of state. positionHistory_ is a two-entry window per node -- the
-past position and the current one -- from which computeSpeed() derives the
+Three pieces of state. The position history is a two-entry window per node --
+the past position and the current one -- from which computeSpeed() derives the
 speed that drives Doppler in Jakes fading and the shadowing recurrence. The
 correlation point, per link, is where the LOS state was last decided. The
 position history is not quite what its name suggests, in two respects, both

@@ -20,8 +20,8 @@ keeping a DL realization on the UE's side: with cqiDl it looks the UE up
 through the Binder (obtainUeJakesMap) and uses that UE's map. Get the selection
 wrong and the scheduler adapts to one channel while the UE decodes through
 another -- silently, since both are plausible fading. Background UEs have no
-channel model of their own, so theirs lives in the evaluating model's
-jakesFadingMapBgUe_.
+channel model of their own, so theirs is kept in a map of the evaluating
+model's own channel state (jakesFadingMapBgUe).
 
 rayleighFading() is pinned as a set of tripwires, because what it does is
 surprising and ought to fail loudly if it changes: it is a lookup in the one

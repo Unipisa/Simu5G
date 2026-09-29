@@ -3,7 +3,7 @@
 A radio link has one realization, and both of its ends should see it.
 
 That is the premise LinkKey is built on: the key is normalized so that a link
-is the same key from either end (ChannelModelBase.h), and the per-link
+is the same key from either end (ChannelState.h), and the per-link
 shadowing, LOS and fading state is indexed by it. Reciprocity is what makes
 that worth doing.
 
@@ -18,7 +18,7 @@ shadowing is a property of the link and not of the direction of travel. It
 does not. computeShadowing reads two different maps depending on which
 direction it is serving: a downlink CQI takes the map stored on the UE
 (obtainShadowingMap), everything else takes the evaluating module's own
-lastComputedSF_. The key into those maps is the same LinkKey; the maps are
+shadowing map. The key into those maps is the same LinkKey; the maps are
 not the same map. So one physical link acquires two independent shadowing
 realizations, and measured here the downlink is faded by 2.72 dB while the
 uplink is lifted by 9.22 dB at the same instant, for the same pair of nodes,

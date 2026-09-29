@@ -20,6 +20,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/stack/phy/medium/CellularTransmission.h"
+#include "simu5g/stack/phy/medium/ChannelState.h"
 
 namespace simu5g {
 
@@ -32,7 +33,8 @@ class IRadioEndpoint;
  * The radio medium of a cellular network (see the NED documentation). So far
  * it keeps the registry of the radios on the medium -- every PHY registers its
  * radio endpoint under its own MacNodeId, so a dual-stack UE's two PHYs are
- * two radios -- and delivers broadcast frames to the radios in range.
+ * two radios -- delivers broadcast frames to the radios in range, and keeps
+ * the channel state every channel model evaluates links against.
  */
 class CellularRadioMedium : public cSimpleModule
 {
@@ -48,6 +50,7 @@ class CellularRadioMedium : public cSimpleModule
     double maxInterferenceDistance = 0; // the range of a broadcast
     long nextTransmissionId = 0;
     std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
+    std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
 
   protected:
     virtual void initialize(int stage) override;
@@ -94,6 +97,16 @@ class CellularRadioMedium : public cSimpleModule
      * transmission map (the entries of a background UE are left out).
      */
     virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const;
+
+    /**
+     * The channel state the given channel model evaluates links against,
+     * created empty on first use. The reference stays valid until
+     * removeChannelState() is called for the same channel model.
+     */
+    virtual ChannelState& getChannelState(const cComponent *channelModel);
+
+    /** Drops the channel state of the given channel model, if it has any. */
+    virtual void removeChannelState(const cComponent *channelModel);
 };
 
 } // namespace simu5g
