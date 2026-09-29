@@ -13,6 +13,7 @@
 
 package simu5g.stack;
 
+import simu5g.stack.ethernet.EthernetPortal;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 
 //
@@ -49,5 +50,15 @@ module LteNicUe extends LteNicBase
         dlFbGen: LteDlFeedbackGenerator {
             @display("p=80,60,col;g=left");
         }
+        // the NIC's top in Ethernet mode, an Ethernet port of the UE's link layer
+        ethernetPortal: EthernetPortal if sessionType == "Ethernet" {
+            @display("p=440,20;is=s");
+        }
+
+    connections allowunconnected:
+        upperLayerIn --> { @reconnect; delay = parent.processingDelayIn; } --> ethernetPortal.upperLayerIn if sessionType == "Ethernet";
+        ethernetPortal.lowerLayerOut --> handoverPacketHolder.upperLayerIn if sessionType == "Ethernet";
+        ip2nic.upperLayerOut --> { @reconnect; } --> ethernetPortal.lowerLayerIn if sessionType == "Ethernet";
+        ethernetPortal.upperLayerOut --> { delay = parent.processingDelayOut; } --> upperLayerOut if sessionType == "Ethernet";
 }
 

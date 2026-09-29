@@ -20,6 +20,9 @@ import inet.common.packet.recorder.PcapRecorder;
 import inet.linklayer.contract.IEthernetLayer; // for inet-4.6
 import inet.linklayer.ethernet.contract.IEthernetLayer; // for inet-4.5
 import inet.linklayer.contract.IEthernetInterface;
+import inet.linklayer.contract.IIeee8021qLayer;
+import inet.linklayer.contract.IMacForwardingTable;
+import inet.protocolelement.contract.IProtocolLayer;
 import inet.linklayer.contract.ILoopbackInterface;
 import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
@@ -83,6 +86,8 @@ module LteUe
         int servingNodeId = default(0); // The initial serving eNodeB of the UE; 0 if none
         int macNodeId = default(1025+simu5g_seq("LteUe_macNodeId"));
         string sessionType @enum("IPv4","IPv6","IPv4v6","Ethernet","Unstructured") = default("IPv4");  // The type of the session the UE requests (see the main comment)
+        string ethernetMode @enum("host","bridge") = default("host");  // Ethernet sessions only: the UE is an Ethernet host, or a bridge for the devices on its eth[] interfaces (see the main comment)
+        bool hasEthernetSession = sessionType == "Ethernet";  // Do not change: whether the UE has the Ethernet link layer (see the main comment)
 
         //# D2D support: selects the D2D-capable NIC variant (see the cellularNic submodule).
         //# An explicit cellularNic.typename in the ini file still overrides this.
@@ -92,6 +97,10 @@ module LteUe
         bool hasIpv4 = default(true);
         bool hasIpv6 = default(false);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
+        bridging.macTableModule = default(absPath(".macTable"));
+        ethernet.registerProtocol = default(true);
+        ethernet.*.promiscuous = default(ethernetMode == "bridge");
+        ethernet.hasSocketSupport = default(true);
         *.routingTableModule = default("^.ipv4.routingTable");
         *.mobilityModule = default(absPath(".mobility"));
 
@@ -111,6 +120,7 @@ module LteUe
 
     gates:
         input radioIn @directIn;     // Connection to master
+        inout ethg[hasEthernetSession ? numEthInterfaces : 0] @labels(EtherFrame-conn);   // Ethernet session in bridge mode: the links to the devices behind the UE
 
     submodules:
         interfaceTable: InterfaceTable {
@@ -133,12 +143,37 @@ module LteUe
             @display("p=355,589");
         }
 
-        //# ethernet interface used for communicating with external applications in emulation mode
-        eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
+        //# ethernet interface used for communicating with external applications in emulation mode;
+        //# with an Ethernet session in bridge mode, the links to the devices behind the UE
+        eth[numEthInterfaces]: <default(hasEthernetSession ? "LayeredEthernetInterface" : "ExtLowerEthernetInterface")> like IEthernetInterface {
             parameters:
                 @display("p=674,590,row,150;q=txQueue");
         }
-        encap: <default("EthernetEncapsulation")> like IEthernetLayer if typename != "" {
+
+        //# the link layer of an Ethernet session (as in INET's LinkLayerNodeBase): the
+        //# cellular NIC and eth[] are its interfaces
+        cb: MessageDispatcher if hasEthernetSession {
+            @display("p=550,520;b=600,5,,,,1");
+        }
+        bridging: <default(ethernetMode == "bridge" ? "BridgingLayer" : "")> like IProtocolLayer if hasEthernetSession && typename != "" {
+            @display("p=375,520");
+        }
+        macTable: <default("MacForwardingTable")> like IMacForwardingTable if hasEthernetSession && ethernetMode == "bridge" {
+            @display("p=127,430;is=s");
+        }
+        bl: MessageDispatcher if hasEthernetSession {
+            @display("p=550,545;b=600,5,,,,1");
+        }
+        ethernet: <default("EthernetLayer")> like IEthernetLayer if hasEthernetSession {
+            @display("p=375,560");
+        }
+        ieee8021q: <default("Ieee8021qProtocol")> like IIeee8021qLayer if hasEthernetSession {
+            @display("p=525,560");
+        }
+        li: MessageDispatcher if hasEthernetSession {
+            @display("p=550,575;b=600,5,,,,1");
+        }
+        encap: <default(hasEthernetSession ? "" : "EthernetEncapsulation")> like IEthernetLayer if typename != "" {
             parameters:
                 registerProtocol = true;
                 @display("p=674,500");
@@ -260,15 +295,50 @@ module LteUe
         //# Internal link layer connections to network layer
         //#
 
-        cellularNic.upperLayerOut --> nl.in++;
-        cellularNic.upperLayerIn <-- nl.out++;
+        cellularNic.upperLayerOut --> nl.in++ if !hasEthernetSession;
+        cellularNic.upperLayerIn <-- nl.out++ if !hasEthernetSession;
 
         for i=0..numEthInterfaces-1 {
-            encap.lowerLayerOut --> eth[i].upperLayerIn;
-            encap.lowerLayerIn <-- eth[i].upperLayerOut;
+            encap.lowerLayerOut --> eth[i].upperLayerIn if !hasEthernetSession;
+            encap.lowerLayerIn <-- eth[i].upperLayerOut if !hasEthernetSession;
         }
-        encap.upperLayerOut --> nl.in++ if numEthInterfaces != 0;
-        encap.upperLayerIn <-- nl.out++ if numEthInterfaces != 0;
+        encap.upperLayerOut --> nl.in++ if numEthInterfaces != 0 && !hasEthernetSession;
+        encap.upperLayerIn <-- nl.out++ if numEthInterfaces != 0 && !hasEthernetSession;
+
+        //#
+        //# The link layer of an Ethernet session: nl <-> cb <-> (bridging) <-> bl <->
+        //# ethernet, ieee8021q <-> li <-> the cellular NIC and eth[]; raw Ethernet
+        //# applications reach it through at <-> tn <-> nl
+        //#
+        if hasEthernetSession {
+            at.out++ --> tn.in++;
+            at.in++ <-- tn.out++;
+            cb.out++ --> nl.in++;
+            cb.in++ <-- nl.out++;
+            cb.out++ --> bridging.upperLayerIn if exists(bridging);
+            bridging.upperLayerOut --> cb.in++ if exists(bridging);
+            bridging.lowerLayerOut --> bl.in++ if exists(bridging);
+            bl.out++ --> bridging.lowerLayerIn if exists(bridging);
+            cb.out++ --> bl.in++ if !exists(bridging);
+            bl.out++ --> cb.in++ if !exists(bridging);
+            bl.out++ --> ethernet.upperLayerIn;
+            ethernet.upperLayerOut --> bl.in++;
+            bl.out++ --> ieee8021q.upperLayerIn;
+            ieee8021q.upperLayerOut --> bl.in++;
+            bl.out++ --> li.in++;
+            li.out++ --> bl.in++;
+            ethernet.lowerLayerOut --> li.in++;
+            li.out++ --> ethernet.lowerLayerIn;
+            ieee8021q.lowerLayerOut --> li.in++;
+            li.out++ --> ieee8021q.lowerLayerIn;
+            cellularNic.upperLayerOut --> li.in++;
+            cellularNic.upperLayerIn <-- li.out++;
+        }
+        for i=0..numEthInterfaces-1 {
+            eth[i].upperLayerOut --> li.in++ if hasEthernetSession;
+            eth[i].upperLayerIn <-- li.out++ if hasEthernetSession;
+            eth[i].phys <--> ethg[i] if hasEthernetSession;
+        }
 
         for i=0..numLoInterfaces-1 {
             nl.out++ --> lo[i].upperLayerIn;

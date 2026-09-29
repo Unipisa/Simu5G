@@ -170,6 +170,16 @@ void Registration::registerInterface()
     // capabilities
     networkIf->setMulticast(true);
     networkIf->setPointToPoint(true);
+
+    // The NIC of an Ethernet session is an Ethernet port of the UE's link layer (see
+    // ~LteUe): broadcast, not point-to-point, with a MAC address of its own (3GPP assigns
+    // the UE none; the NIC needs one as any Ethernet port does)
+    if (nodeType == UE && sessionType_ == ETHERNET) {
+        networkIf->setProtocol(&Protocol::ethernetMac);
+        networkIf->setBroadcast(true);
+        networkIf->setPointToPoint(false);
+        networkIf->setMacAddress(MacAddress::generateAutoAddress());
+    }
 }
 
 void Registration::registerAddresses()
