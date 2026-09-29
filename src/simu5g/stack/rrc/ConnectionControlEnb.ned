@@ -40,11 +40,12 @@ package simu5g.stack.rrc;
 // torn-down bearer's returns to.
 //
 // Attach. A UE's leg connects here with connectionSetupRequest() (at initialization, at its
-// configured serving cell; during the run, when a detached leg finds a cell); the
-// base station takes it on at its AMC and registers the UE with the ~CoreControl
-// (the INITIAL UE MESSAGE of S1AP/NGAP), which establishes the UE's session and asks
-// this base station to set up its resources (sessionResourceSetup(): the tunnels,
-// the UE's uplink QoS rules, and the static bearers of the leg that carries them). A
+// configured serving cell; during the run, when a detached leg finds a cell), stating
+// the type of the session the UE requests; the base station takes it on at its AMC and
+// registers the UE with the ~CoreControl (the INITIAL UE MESSAGE of S1AP/NGAP), which
+// establishes the UE's session and asks this base station to set up its resources
+// (sessionResourceSetup(): the tunnels, which keep the session's type, the UE's uplink
+// QoS rules, and the static bearers of the leg that carries them). A
 // leg that lost its cell, or whose UE leaves, says so with connectionLost(): the base
 // station releases its state for the leg and tells the core network.
 //

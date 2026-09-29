@@ -102,6 +102,11 @@ SessionType aToSessionType(std::string s)
     throw cRuntimeError("Unknown session type '%s' (expected \"IPv4\", \"IPv6\", \"IPv4v6\", \"Ethernet\" or \"Unstructured\")", s.c_str());
 }
 
+bool isIpSessionType(SessionType type)
+{
+    return type == IP_V4 || type == IP_V6 || type == IP_V4V6;
+}
+
 const std::string coreNetworkToA(CoreNetwork type)
 {
     switch (type) {

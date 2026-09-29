@@ -71,10 +71,10 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     // filter (5GC: the PDRs/QERs PFCP would carry)
     virtual void setDownlinkClassifierRules(QfiRuleSet&& rules);
 
-    // PFCP Session Establishment / GTP-C Create Session: the session's uplink tunnel
-    // at this node, under a TEID allocated here; returns the tunnel's F-TEID, for the
-    // base stations to send the session's uplink on
-    virtual FTeid establishUserPlaneSession(const SessionRef& session);
+    // PFCP Session Establishment / GTP-C Create Session: the uplink tunnel of the
+    // session, which is of the given type, at this node, under a TEID allocated here;
+    // returns the tunnel's F-TEID, for the base stations to send the session's uplink on
+    virtual FTeid establishUserPlaneSession(const SessionRef& session, SessionType type);
 
     // PFCP Session Modification / GTP-C Modify Bearer: the session's downlink now goes
     // into tunnel dl (unset: nowhere, the UE is attached nowhere). If oldDl is set, the

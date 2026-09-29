@@ -23,7 +23,9 @@ package simu5g.corenetwork.userPlaneNodeControl;
 //    into the node's ~TrafficFlowFilter
 //  - establishUserPlaneSession(): a session's uplink tunnel at this node (PFCP Session
 //    Establishment; GTP-C Create Session), installed into the node's ~GtpUser under a
-//    tunnel endpoint id (TEID) allocated from the node's own TEID space
+//    tunnel endpoint id (TEID) allocated from the node's own TEID space, with the
+//    session's type (the PDU session type / PDN type these messages carry), which the
+//    tunnel end attaches to every datagram of the session (see ~SessionTag)
 //  - updateDownlinkTunnel(): the session's downlink tunnel, i.e. the F-TEID at the
 //    base station the downlink enters the RAN at, and the End Marker that closes the
 //    old path after a path switch (PFCP Session Modification; GTP-C Modify Bearer;

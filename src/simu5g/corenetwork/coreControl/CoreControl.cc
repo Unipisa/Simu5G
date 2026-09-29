@@ -40,26 +40,28 @@ void CoreControl::initialize(int stage)
     }
 }
 
-void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs)
+void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, SessionType sessionType)
 {
     Enter_Method("initialUeMessage");
 
-    // the session: once per UE, at its first leg's registration
+    // the session: once per UE, at its first leg's registration; the UE's legs request
+    // the type of the UE's one session (the UE's sessionType parameter)
     auto it = sessionOfNode_.find(legId);
     if (it == sessionOfNode_.end()) {
-        establishSession(legId);
+        establishSession(legId, sessionType);
         it = sessionOfNode_.find(legId);
         if (it == sessionOfNode_.end())
             return;   // the base station is not connected to a core network
     }
     CoreSession& session = sessions_.at(it->second);
+    ASSERT(session.type == sessionType);
 
     // the RAN resources: at every base station the UE attaches through (the master of
     // the leg's serving node), once
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
     if (session.dlTunnels.count(bsId) == 0) {
         ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, getUplinkTunnels(session),
+        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session),
                 bearerConfigurator_->getUplinkQfiRules(session.ueModule));
         registerRanTunnel(session, bsId, dl);
     }
@@ -89,6 +91,9 @@ void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, c
         if (resource.ref.id != session.ref.id)
             throw cRuntimeError("CoreControl: base station %d switches a session of %s that is not the UE's",
                     (int)num(bsId), session.ueModule->getFullPath().c_str());
+        if (resource.type != session.type)
+            throw cRuntimeError("CoreControl: base station %d switches the session of %s as one of type \"%s\", but it is of type \"%s\"",
+                    (int)num(bsId), session.ueModule->getFullPath().c_str(), sessionTypeToA(resource.type).c_str(), sessionTypeToA(session.type).c_str());
         auto known = session.dlTunnels.find(bsId);
         if (known == session.dlTunnels.end())
             registerRanTunnel(session, bsId, resource.dl);
@@ -177,7 +182,7 @@ MacNodeId CoreControl::findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId
     return NODEID_NONE;
 }
 
-void CoreControl::establishSession(MacNodeId ueNodeId)
+void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
 {
     cModule *ueModule = binder_->getNodeModule(ueNodeId);
     ASSERT(ueModule != nullptr);
@@ -185,6 +190,7 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
     CoreSession session;
     session.ueModule = ueModule;
     session.ref.id = SessionId(1);
+    session.type = type;
     for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
         if (info.moduleRef == ueModule)
             (isNrUe(nodeId) ? session.ref.nrNodeId : session.ref.lteNodeId) = nodeId;
@@ -210,11 +216,19 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
     // that core network too, i.e. those whose gateway is the anchor
     session.anchor = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
     const GtpEndpoint& anchor = gtpEndpoints_[session.anchor];
-    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref);
+
+    // An EPC carries IP sessions only (the PDN types of TS 23.401); the other session
+    // types are those of a 5G core
+    if (anchor.type == PGW && !isIpSessionType(type))
+        throw cRuntimeError("CoreControl: %s requests a session of type \"%s\", but its anchor %s is a PGW, whose EPC carries "
+                "IP sessions only (see the UE's sessionType parameter)",
+                ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str(), anchor.node->getFullPath().c_str());
+
+    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref, session.type);
     for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
         const GtpEndpoint& endpoint = gtpEndpoints_[i];
         if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchor.node)
-            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref);
+            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref, session.type);
     }
 
     CoreSessionKey key(ueModule->getId(), session.ref.id);
@@ -222,7 +236,7 @@ void CoreControl::establishSession(MacNodeId ueNodeId)
         if (nodeId != NODEID_NONE)
             sessionOfNode_[nodeId] = key;
     CoreSession& established = sessions_[key] = session;
-    EV_INFO << "CoreControl: session " << established.ref.id << " of " << ueModule->getFullPath()
+    EV_INFO << "CoreControl: session " << established.ref.id << " (" << sessionTypeToA(established.type) << ") of " << ueModule->getFullPath()
             << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
     for (const auto& [index, tunnel] : established.ulMecHosts)
         EV_INFO << ", to MEC host UPF " << tunnel;
@@ -273,7 +287,7 @@ void CoreControl::setUpRanTunnels(CoreSession& session, MacNodeId bsId)
     if (session.dlTunnels.count(bsId) != 0)
         return;
     ConnectionControlEnb *bs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-    FTeid dl = bs->sessionTunnelSetup(session.ref, getUplinkTunnels(session));
+    FTeid dl = bs->sessionTunnelSetup(session.ref, session.type, getUplinkTunnels(session));
     registerRanTunnel(session, bsId, dl);
 }
 

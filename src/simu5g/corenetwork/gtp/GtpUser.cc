@@ -71,22 +71,22 @@ void GtpUser::initialize(int stage)
         gwAddress_ = L3AddressResolver().resolve((binder_->getNetworkName() + "." + gateway_).c_str());
 }
 
-void GtpUser::addTunnel(Teid teid, const SessionRef& session)
+void GtpUser::addTunnel(Teid teid, const SessionRef& session, SessionType type)
 {
     Enter_Method_Silent("addTunnel");
     ASSERT(teid != TEID_NONE);
-    if (!rxTunnels_.emplace(teid, session).second)
+    if (!rxTunnels_.emplace(teid, TunnelSession{session, type}).second)
         throw cRuntimeError("GtpUser::addTunnel - TEID %u is already in use", num(teid));
-    EV_INFO << "GtpUser::addTunnel - TEID " << teid << " belongs to " << session << endl;
+    EV_INFO << "GtpUser::addTunnel - TEID " << teid << " belongs to " << session << " (" << sessionTypeToA(type) << ")" << endl;
 }
 
-void GtpUser::setUplinkTunnels(const SessionRef& session, const UplinkTunnels& tunnels)
+void GtpUser::setUplinkTunnels(const SessionRef& session, SessionType type, const UplinkTunnels& tunnels)
 {
     Enter_Method_Silent("setUplinkTunnels");
     ASSERT(isBaseStation(ownerType_));
     for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
         if (nodeId != NODEID_NONE)
-            ulTunnels_[nodeId] = UplinkSession{session, tunnels};
+            ulTunnels_[nodeId] = UplinkSession{TunnelSession{session, type}, tunnels};
     EV_INFO << "GtpUser::setUplinkTunnels - " << session << " enters the core network at " << tunnels.anchor << endl;
 }
 
@@ -336,8 +336,8 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
     if (isBaseStation(ownerType_)) {
         // the tunnel names the session, and so the UE, the datagram is for
-        const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-        EV << "GtpUser::handleFromUdp - Datagram of " << session << ", local delivery to the cellular NIC" << endl;
+        const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
+        EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << ", local delivery to the cellular NIC" << endl;
         attachSessionTag(originalPacket, session);
         send(originalPacket, "pppGate");
     }
@@ -345,8 +345,8 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // a tunnel from a base station names the session the datagram belongs to; a
         // relay from the UPF carries traffic of no session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
-            const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-            EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
+            const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
+            EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << endl;
         }
 
         // we are on the MEC, local delivery
@@ -357,8 +357,8 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // a tunnel from a base station names the session the datagram belongs to; a
         // relay from a MEC host's UPF carries traffic of no session
         if (gtpUserMsg->getTeid() != TEID_NONE) {
-            const SessionRef& session = findTunnel(gtpUserMsg->getTeid());
-            EV << "GtpUser::handleFromUdp - Datagram of " << session << endl;
+            const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
+            EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << endl;
         }
 
         // where the datagram goes next is the destination's matter: the data network, or
@@ -460,8 +460,8 @@ void GtpUser::handleEndMarker(Teid teid)
         throw cRuntimeError("GtpUser: an End Marker arrived at %s, which is no base station", getFullPath().c_str());
     // the end of the session's downlink on this tunnel: the handover source relays it
     // to where the UE went (see HandoverPacketHolderEnb)
-    const SessionRef& session = findTunnel(teid);
-    EV << "GtpUser::handleEndMarker - End Marker of " << session << endl;
+    const TunnelSession& session = findTunnel(teid);
+    EV << "GtpUser::handleEndMarker - End Marker of " << session.ref << endl;
     auto endMarker = new Packet("GtpEndMarker");
     attachSessionTag(endMarker, session);
     endMarker->addTag<GtpEndMarkerInd>();
@@ -474,7 +474,7 @@ const FTeid *GtpUser::findDownlinkTunnel(MacNodeId ueNodeId)
     return (it != dlTunnels_.end() && it->second.isSet()) ? &it->second : nullptr;
 }
 
-const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
+const TunnelSession& GtpUser::getServedSession(MacNodeId ueNodeId)
 {
     auto it = ulTunnels_.find(ueNodeId);
     if (it == ulTunnels_.end())
@@ -482,7 +482,7 @@ const SessionRef& GtpUser::getServedSession(MacNodeId ueNodeId)
     return it->second.session;
 }
 
-const SessionRef& GtpUser::findTunnel(Teid teid)
+const TunnelSession& GtpUser::findTunnel(Teid teid)
 {
     auto it = rxTunnels_.find(teid);
     if (it == rxTunnels_.end())

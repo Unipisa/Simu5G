@@ -509,6 +509,7 @@ char *cStringToLower(char *str);
 RlcMode aToRlcMode(std::string s);
 const std::string sessionTypeToA(SessionType type);
 SessionType aToSessionType(std::string s);
+bool isIpSessionType(SessionType type);   // IPv4, IPv6 or IPv4v6
 const std::string coreNetworkToA(CoreNetwork type);
 CoreNetwork aToCoreNetwork(std::string s);
 const std::string cellGroupToA(CellGroup group);

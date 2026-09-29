@@ -181,11 +181,11 @@ void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, Conne
     for (const SessionResource& atSource : request.sessions) {
         SessionResource here = atSource;
         if (ranBs == this) {
-            here.dl = setUpSessionTunnels(here.ref, here.uplink);
+            here.dl = setUpSessionTunnels(here.ref, here.type, here.uplink);
             gtpUserX2_->setForwardingTeid(here.ref, ctx.hoPeer, atSource.dl.teid);
         }
         else {
-            here.dl = ranBs->sessionTunnelSetup(here.ref, here.uplink);
+            here.dl = ranBs->sessionTunnelSetup(here.ref, here.type, here.uplink);
             ranBs->setForwardingTeid(here.ref, ctx.hoPeer, atSource.dl.teid);
         }
         ctx.sessions.push_back(here);
@@ -363,30 +363,32 @@ void ConnectionControlEnb::detachAtAmc(MacNodeId legId)
 
 // ---- the node's tunnels ----
 
-FTeid ConnectionControlEnb::sessionTunnelSetup(const SessionRef& session, const UplinkTunnels& uplink)
+FTeid ConnectionControlEnb::sessionTunnelSetup(const SessionRef& session, SessionType type, const UplinkTunnels& uplink)
 {
     Enter_Method("sessionTunnelSetup");
-    return setUpSessionTunnels(session, uplink);
+    return setUpSessionTunnels(session, type, uplink);
 }
 
-FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink)
+FTeid ConnectionControlEnb::setUpSessionTunnels(const SessionRef& session, SessionType type, const UplinkTunnels& uplink)
 {
     // once per session: a handover to a base station the UE was attached through
     // before finds them in place
-    if (const SessionResource *existing = findSession(session))
+    if (const SessionResource *existing = findSession(session)) {
+        ASSERT(existing->type == type);
         return existing->dl;
+    }
     FTeid dl{getAddress(), allocateTeid()};
-    gtpUser_->addTunnel(dl.teid, session);
-    gtpUser_->setUplinkTunnels(session, uplink);
+    gtpUser_->addTunnel(dl.teid, session, type);
+    gtpUser_->setUplinkTunnels(session, type, uplink);
     // the same TEID receives the downlink a handover source forwards over X2-U
-    gtpUserX2_->addTunnel(dl.teid, session);
-    sessions_.push_back(SessionResource{session, uplink, dl});
+    gtpUserX2_->addTunnel(dl.teid, session, type);
+    sessions_.push_back(SessionResource{session, type, uplink, dl});
     return dl;
 }
 
 // ---- attach ----
 
-void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities)
+void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities, SessionType sessionType)
 {
     Enter_Method("connectionSetupRequest");
     auto [it, inserted] = ues_.try_emplace(legId);
@@ -399,13 +401,13 @@ void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId l
         attachAtAmc(legId);
         legArrived(legId, it->second);
     }
-    coreControl_->initialUeMessage(legId, this);
+    coreControl_->initialUeMessage(legId, this, sessionType);
 }
 
-FTeid ConnectionControlEnb::sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules)
+FTeid ConnectionControlEnb::sessionResourceSetup(MacNodeId legId, const SessionRef& session, SessionType type, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules)
 {
     Enter_Method("sessionResourceSetup");
-    FTeid dl = setUpSessionTunnels(session, uplink);
+    FTeid dl = setUpSessionTunnels(session, type, uplink);
 
     // the UE's uplink QoS rules: a stack with SDAP classifies its uplink QoS flows by them
     cModule *ueModule = binder_->getNodeModule(legId);

@@ -75,11 +75,11 @@ void UserPlaneNodeControl::setDownlinkClassifierRules(QfiRuleSet&& rules)
     trafficFlowFilter_->setQfiRules(std::move(rules));
 }
 
-FTeid UserPlaneNodeControl::establishUserPlaneSession(const SessionRef& session)
+FTeid UserPlaneNodeControl::establishUserPlaneSession(const SessionRef& session, SessionType type)
 {
     Enter_Method("establishUserPlaneSession");
     FTeid tunnel{getAddress(), allocateTeid()};
-    gtpUser_->addTunnel(tunnel.teid, session);
+    gtpUser_->addTunnel(tunnel.teid, session, type);
     return tunnel;
 }
 

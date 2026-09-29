@@ -184,7 +184,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     virtual void detachAtAmc(MacNodeId legId);
 
     // The body of sessionTunnelSetup(), for the calls that come from inside
-    virtual FTeid setUpSessionTunnels(const SessionRef& session, const UplinkTunnels& uplink);
+    virtual FTeid setUpSessionTunnels(const SessionRef& session, SessionType type, const UplinkTunnels& uplink);
 
     // Whether the static bearers of the UE are established on this leg: the
     // technology-neutral LTE leg when the serving nodes form a DC setup (so that the
@@ -277,18 +277,20 @@ class ConnectionControlEnb : public ConnectionControlBase
 
     // RRCConnectionRequest (LTE) / RRCSetupRequest (NR), and the registration that
     // follows: a leg of a UE connects at this base station (at initialization, the
-    // leg's configured serving cell), reporting its capabilities. The base station
-    // registers the UE with the core network, which sets up the session's resources
-    // here (sessionResourceSetup()).
-    virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities);
+    // leg's configured serving cell), reporting its capabilities and the type of the
+    // session the UE requests (the NAS PDU Session Establishment Request / PDN
+    // Connectivity Request the RRC message carries, as far as the model needs it). The
+    // base station registers the UE with the core network, which sets up the session's
+    // resources here (sessionResourceSetup()).
+    virtual void connectionSetupRequest(omnetpp::cModule *ueModule, MacNodeId legId, ConnectionControlBase *ueRrc, const UeCapabilities& capabilities, SessionType sessionType);
 
     // E-RAB SETUP / INITIAL CONTEXT SETUP REQUEST (S1AP), PDU SESSION RESOURCE SETUP
     // REQUEST (NGAP), from the core network, for a leg that registered here: the
-    // session's tunnels at this base station (sessionTunnelSetup()), the UE's uplink
-    // QoS rules (the NAS container), and the static data radio bearers of the leg that
-    // carries them, installed at this node and at the UE. Returns the downlink tunnel's
-    // F-TEID.
-    virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
+    // tunnels of the session, which is of the given type, at this base station
+    // (sessionTunnelSetup()), the UE's uplink QoS rules (the NAS container), and the
+    // static data radio bearers of the leg that carries them, installed at this node
+    // and at the UE. Returns the downlink tunnel's F-TEID.
+    virtual FTeid sessionResourceSetup(MacNodeId legId, const SessionRef& session, SessionType type, const UplinkTunnels& uplink, QfiRuleSet&& ulQfiRules);
 
     // RRCRelease's counterpart the UE side sends, a simulation shortcut for the
     // network's own radio link monitoring: the leg lost the cell, detached, or is
@@ -361,9 +363,10 @@ class ConnectionControlEnb : public ConnectionControlBase
     // A session's tunnels at this base station: its downlink tunnel, under a TEID
     // allocated here, which also receives the downlink a handover source forwards
     // over X2-U; and its uplink tunnels into the core network, to send the UE's
-    // uplink on. Set up once per session, whichever side asks first; a later call
-    // finds them in place. Returns the downlink tunnel's F-TEID.
-    virtual FTeid sessionTunnelSetup(const SessionRef& session, const UplinkTunnels& uplink);
+    // uplink on. The tunnel ends keep the session's type. Set up once per session,
+    // whichever side asks first; a later call finds them in place. Returns the
+    // downlink tunnel's F-TEID.
+    virtual FTeid sessionTunnelSetup(const SessionRef& session, SessionType type, const UplinkTunnels& uplink);
 
     // The TEID of the session's downlink tunnel at another base station, to forward
     // the session's downlink to it with over X2-U during a handover

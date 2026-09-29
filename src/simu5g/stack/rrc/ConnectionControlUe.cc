@@ -115,7 +115,7 @@ void ConnectionControlUe::initialize(int stage)
         // ConnectionControlEnb::connectionSetupRequest()). The UEs do this in module order,
         // after the network-level modules' last stage.
         if (servingNodeId_ != NODEID_NONE)
-            baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities());
+            baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities(), sessionType_);
     }
 }
 
@@ -451,7 +451,7 @@ void ConnectionControlUe::doHandover()
     if (oldServingNodeId != NODEID_NONE && servingNodeId_ != NODEID_NONE)
         baseStationControl(servingNodeId_)->reconfigurationComplete(nodeId_);
     else if (servingNodeId_ != NODEID_NONE)
-        baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities());
+        baseStationControl(servingNodeId_)->connectionSetupRequest(inet::getContainingNode(this), nodeId_, this, getCapabilities(), sessionType_);
     else
         baseStationControl(oldServingNodeId)->connectionLost(nodeId_);
 }

@@ -56,7 +56,7 @@ class GtpUserX2 : public cSimpleModule
 
     // The tunnels ending here: the session of each TEID this base station allocated.
     // A released session's tunnels stay known, like at ~GtpUser.
-    std::map<Teid, SessionRef> rxTunnels_;
+    std::map<Teid, TunnelSession> rxTunnels_;
 
     // The TEID of each session's downlink tunnel at the other base stations it has
     // one at, by each of the UE's node ids, then by base station
@@ -92,8 +92,9 @@ class GtpUserX2 : public cSimpleModule
     // The tunnels of the sessions, as the base station's control plane
     // (ConnectionControlEnb) sets them up here
 
-    // A tunnel ending at this base station: G-PDUs arriving with the TEID belong to the session
-    virtual void addTunnel(Teid teid, const SessionRef& session);
+    // A tunnel ending at this base station: G-PDUs arriving with the TEID belong to the
+    // session, which is of the given type
+    virtual void addTunnel(Teid teid, const SessionRef& session, SessionType type);
 
     // The TEID of the session's downlink tunnel at another base station
     virtual void setForwardingTeid(const SessionRef& session, MacNodeId bsId, Teid teid);

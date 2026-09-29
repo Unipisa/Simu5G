@@ -23,6 +23,9 @@ namespace simu5g;
 // (TrafficFlowFilter's fastForwarding), from the destination UE's session (~GtpUser).
 // The modules after the entry read the UE from this tag, and each applies its own
 // policy for picking one of the UE's node ids (see ~HandoverPacketHolderEnb, ~Ip2Nic).
+// The tag also carries the session's type, as the tunnel end knows it from the
+// session's establishment, so no module after the entry has to parse the datagram to
+// learn what it carries.
 // A datagram forwarded to a handover target keeps it until ~GtpUserX2 sends it on the
 // session's tunnel there.
 //
@@ -33,6 +36,7 @@ class SessionTag extends inet::TagBase {
     SessionId sessionId;
     MacNodeId lteNodeId = NODEID_NONE;   // The UE's node id on its LTE stack
     MacNodeId nrNodeId = NODEID_NONE;    // The UE's node id on its NR stack; NODEID_NONE if it has none
+    SessionType sessionType = IP_V4;     // The session's type (see the sessionType parameter of ~LteUe)
 }
 
 //

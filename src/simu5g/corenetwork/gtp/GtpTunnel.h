@@ -60,15 +60,26 @@ inline std::ostream& operator<<(std::ostream& os, const SessionRef& session)
 }
 
 /**
- * Tells the modules after a tunnel end which session, and so which UE, a datagram
- * that arrived on the tunnel belongs to (see SessionTag).
+ * What a tunnel end keeps of the session a tunnel ending there belongs to: the
+ * session, and its type, which the session's establishment told the tunnel end
  */
-inline void attachSessionTag(inet::Packet *datagram, const SessionRef& session)
+struct TunnelSession
+{
+    SessionRef ref;
+    SessionType type = IP_V4;
+};
+
+/**
+ * Tells the modules after a tunnel end which session, and so which UE, a datagram
+ * that arrived on the tunnel belongs to, and the session's type (see SessionTag).
+ */
+inline void attachSessionTag(inet::Packet *datagram, const TunnelSession& session)
 {
     auto tag = datagram->addTag<SessionTag>();
-    tag->setSessionId(session.id);
-    tag->setLteNodeId(session.lteNodeId);
-    tag->setNrNodeId(session.nrNodeId);
+    tag->setSessionId(session.ref.id);
+    tag->setLteNodeId(session.ref.lteNodeId);
+    tag->setNrNodeId(session.ref.nrNodeId);
+    tag->setSessionType(session.type);
 }
 
 /**
@@ -84,14 +95,15 @@ struct UplinkTunnels
 };
 
 /**
- * A session's resources at a base station: the session, its uplink tunnels into
- * the core network, and the base station's downlink F-TEID, under which the session's
- * downlink -- from the core network, or forwarded by a handover source over X2-U --
- * enters the node (see ConnectionControlEnb::sessionTunnelSetup()).
+ * A session's resources at a base station: the session and its type, its uplink
+ * tunnels into the core network, and the base station's downlink F-TEID, under which
+ * the session's downlink -- from the core network, or forwarded by a handover source
+ * over X2-U -- enters the node (see ConnectionControlEnb::sessionTunnelSetup()).
  */
 struct SessionResource
 {
     SessionRef ref;
+    SessionType type = IP_V4;
     UplinkTunnels uplink;
     FTeid dl;
 };

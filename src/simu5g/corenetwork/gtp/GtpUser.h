@@ -66,12 +66,12 @@ class GtpUser : public cSimpleModule
     // The tunnels ending here: the session of each TEID allocated at this endpoint.
     // A released session's tunnels stay known, so that a G-PDU still in flight can be
     // attributed; TEIDs are not reused.
-    std::map<Teid, SessionRef> rxTunnels_;
+    std::map<Teid, TunnelSession> rxTunnels_;
 
     // At a base station: the uplink tunnels of the sessions of the UEs it serves or
     // has served, with the session, by each of the UE's node ids
     struct UplinkSession {
-        SessionRef session;
+        TunnelSession session;
         UplinkTunnels tunnels;
     };
     std::map<MacNodeId, UplinkSession> ulTunnels_;
@@ -114,21 +114,22 @@ class GtpUser : public cSimpleModule
 
     // At a base station: the session of a UE whose uplink enters the core network
     // here, by one of the UE's node ids; throws if it has none
-    const SessionRef& getServedSession(MacNodeId ueNodeId);
+    const TunnelSession& getServedSession(MacNodeId ueNodeId);
 
     // The session of a tunnel ending here; throws for an unknown TEID
-    const SessionRef& findTunnel(Teid teid);
+    const TunnelSession& findTunnel(Teid teid);
 
 
   public:
     // The tunnels of the sessions, as the bearer configurator (the SMF stand-in)
     // sets them up and moves them.
 
-    // A tunnel ending at this endpoint: G-PDUs arriving with the TEID belong to the session
-    virtual void addTunnel(Teid teid, const SessionRef& session);
+    // A tunnel ending at this endpoint: G-PDUs arriving with the TEID belong to the
+    // session, which is of the given type
+    virtual void addTunnel(Teid teid, const SessionRef& session, SessionType type);
 
-    // At a base station: the session's uplink tunnels
-    virtual void setUplinkTunnels(const SessionRef& session, const UplinkTunnels& tunnels);
+    // At a base station: the uplink tunnels of the session, which is of the given type
+    virtual void setUplinkTunnels(const SessionRef& session, SessionType type, const UplinkTunnels& tunnels);
 
     // At a UPF/PGW or a MEC host's UPF: the session's downlink tunnel, which the path
     // switch moves; an unset F-TEID while the UE is attached nowhere

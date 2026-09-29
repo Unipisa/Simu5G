@@ -112,7 +112,7 @@ void GtpUserX2::handleFromUdp(Packet *pkt)
     // PDCP PDU of a dual connectivity bearer
     Teid teid = gtpMsg->getTeid();
     if (auto it = rxTunnels_.find(teid); it != rxTunnels_.end()) {
-        EV << "GtpUserX2::handleFromUdp - Forwarded " << (gtpMsg->getMessageType() == GTPU_END_MARKER ? "End Marker" : "datagram") << " of " << it->second << endl;
+        EV << "GtpUserX2::handleFromUdp - Forwarded " << (gtpMsg->getMessageType() == GTPU_END_MARKER ? "End Marker" : "datagram") << " of " << it->second.ref << endl;
         attachSessionTag(pkt, it->second);
         if (gtpMsg->getMessageType() == GTPU_END_MARKER)
             pkt->addTag<GtpEndMarkerInd>();
@@ -142,11 +142,11 @@ Teid GtpUserX2::getForwardingTeid(const SessionTag *session, MacNodeId targetBs)
             num(session->getLteNodeId()), num(targetBs));
 }
 
-void GtpUserX2::addTunnel(Teid teid, const SessionRef& session)
+void GtpUserX2::addTunnel(Teid teid, const SessionRef& session, SessionType type)
 {
     Enter_Method_Silent("addTunnel");
     ASSERT(teid != TEID_NONE);
-    if (!rxTunnels_.emplace(teid, session).second)
+    if (!rxTunnels_.emplace(teid, TunnelSession{session, type}).second)
         throw cRuntimeError("GtpUserX2::addTunnel - TEID %u is already in use", num(teid));
 }
 

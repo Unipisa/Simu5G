@@ -20,10 +20,13 @@ package simu5g.corenetwork.coreControl;
 // base station is announced here by that base station (initialUeMessage(), the
 // INITIAL UE MESSAGE of S1AP/NGAP; at initialization, every leg attached to its
 // configured cell). As the gateways' control plane/SMF, it keeps a session per
-// UE (session id 1), established at the UE's first registration and released
-// when the UE leaves the simulation, and programs the nodes that end the session's
-// tunnels through their control-plane entry points: the user plane nodes'
-// ~UserPlaneNodeControl and the base stations'
+// UE (session id 1), of the type the UE requests with its registration (the
+// sessionType parameter of ~LteUe), established at the UE's first registration and
+// released when the UE leaves the simulation. A type the anchor's core network cannot
+// carry is an error: an EPC (a ~PgwStandard anchor) carries the IP types only. The
+// module programs the nodes that end the session's
+// tunnels, and tells them the session's type, through their control-plane entry
+// points: the user plane nodes' ~UserPlaneNodeControl and the base stations'
 // connection controls (~ConnectionControlEnb, whose sessionResourceSetup() also
 // installs the UE's uplink QoS rules and static bearers). A session has an uplink
 // tunnel at the anchor UPF (or PGW) and at each MEC host UPF of the anchor's core
