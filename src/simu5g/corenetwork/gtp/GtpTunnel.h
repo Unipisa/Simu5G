@@ -83,6 +83,26 @@ inline void attachSessionTag(inet::Packet *datagram, const TunnelSession& sessio
 }
 
 /**
+ * The N6 end of an Unstructured session at its anchor UPF: a point-to-point tunnel
+ * based on UDP/IP to the application server (TS 29.561 9.2). The session's address
+ * on N6 is the source of its uplink datagrams and the destination of its downlink
+ * ones; the UPF receives the downlink on localPort and sends the uplink to the
+ * server's address and port.
+ */
+struct N6Tunnel
+{
+    inet::L3Address sessionAddress;
+    int localPort = -1;
+    inet::L3Address serverAddress;
+    int serverPort = -1;
+};
+
+inline std::ostream& operator<<(std::ostream& os, const N6Tunnel& tunnel)
+{
+    return os << "[" << tunnel.sessionAddress.str() << "]:" << tunnel.localPort << " <-> [" << tunnel.serverAddress.str() << "]:" << tunnel.serverPort;
+}
+
+/**
  * The uplink tunnels of a session, for a base station to send the UE's traffic
  * into the core network through: to the anchor UPF/PGW, and to each MEC host UPF of
  * the anchor's core network, by the address of that UPF.

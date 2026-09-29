@@ -23,8 +23,12 @@ package simu5g.corenetwork.coreControl;
 // UE (session id 1), of the type the UE requests with its registration (the
 // sessionType parameter of ~LteUe), established at the UE's first registration and
 // released when the UE leaves the simulation. A type the anchor's core network cannot
-// carry is an error: an EPC (a ~PgwStandard anchor) carries the IP types only. The
-// module programs the nodes that end the session's
+// carry is an error: an EPC (a ~PgwStandard anchor) carries the IP types only. An
+// Unstructured session (a 5G core's) needs a UE stack with SDAP, and has one QoS
+// flow and no QoS rules: no ulQfiRules entry may be scoped to its UE. The module
+// allocates its N6 address from the anchor UPF's unstructuredPrefix (see
+// ~UserPlaneNodeControl), and gives it no MEC host tunnels, as MEC steering goes by
+// the IP destination. The module programs the nodes that end the session's
 // tunnels, and tells them the session's type, through their control-plane entry
 // points: the user plane nodes' ~UserPlaneNodeControl and the base stations'
 // connection controls (~ConnectionControlEnb, whose sessionResourceSetup() also

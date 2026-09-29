@@ -10,6 +10,7 @@
 //
 
 #include "simu5g/common/L3Utils.h"
+#include "simu5g/common/LteCommon.h"
 
 #include <inet/common/packet/chunk/BytesChunk.h>
 #include <inet/networklayer/common/L3Tools.h>
@@ -36,6 +37,20 @@ const Protocol& ipProtocolOf(const Packet *pkt)
     if (version == 6)
         return Protocol::ipv6;
     throw cRuntimeError("Packet '%s' does not start with an IP datagram (IP version field: %d)", pkt->getName(), version);
+}
+
+const Protocol& sessionPayloadProtocol(SessionType type, const Packet *pkt)
+{
+    switch (type) {
+        case IP_V4:
+        case IP_V6:
+        case IP_V4V6:
+            return ipProtocolOf(pkt);
+        case UNSTRUCTURED:
+            return LteProtocol::unstructured;
+        default:
+            throw cRuntimeError("Packet '%s' belongs to a session of type \"%s\", which is not supported yet", pkt->getName(), sessionTypeToA(type).c_str());
+    }
 }
 
 Ptr<const NetworkHeaderBase> peekIpHeader(const Packet *pkt)

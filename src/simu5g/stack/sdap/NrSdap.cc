@@ -47,6 +47,10 @@ void NrSdap::configureDrb(const DrbDesc& drb)
 {
     Enter_Method("configureDrb(drb %d)", (int)num(drb.getDrbId()));
     EV << "NrSdap::configureDrb - " << drb << endl;
+    // reflective QoS derives the uplink rules from the downlink packets' IP 5-tuple
+    if (isUe && reflectiveQosTable.getNullable() != nullptr && !isIpSessionType(drb.sessionType))
+        throw cRuntimeError("NrSdap: reflective QoS (useReflectiveQos) is not supported on a \"%s\" session, whose packets carry no IP header",
+                sessionTypeToA(drb.sessionType).c_str());
     drbTable_.addOrUpdateDrb(drb);
 }
 
@@ -111,7 +115,7 @@ const inet::Protocol *NrSdap::getUpperProtocol(const DrbDesc *ctx, inet::Packet 
         case ETHERNET:
             return &inet::Protocol::ethernetMac;
         case UNSTRUCTURED:
-            throw cRuntimeError("Unstructured sessions are not supported yet");
+            return &LteProtocol::unstructured;
         default:
             throw cRuntimeError("Unknown session type: %d", (int)sessionType);
     }

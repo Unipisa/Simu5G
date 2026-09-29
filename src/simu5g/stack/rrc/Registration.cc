@@ -39,6 +39,7 @@ void Registration::initialize(int stage)
             lteNodeId = nodeId;
             if (containingNode->hasPar("nrMacNodeId"))
                 nrNodeId = MacNodeId(containingNode->par("nrMacNodeId").intValue());
+            sessionType_ = aToSessionType(par("sessionType").stdstringValue());
         }
         if (nodeType == NODEB) {
             bool isNr = containingNode->par("nodeType").stdstringValue() == "GNODEB";
@@ -109,8 +110,9 @@ void Registration::initialize(int stage)
             // if the UE has been created dynamically, we need to manually add a default route having our cellular interface as output interface
             // otherwise we are not able to reach devices outside the cellular network
             // (An IPv6 UE gets its default route from the UPF's Router Advertisement.)
+            // The NIC of a non-IP session carries no IP traffic.
             IIpv4RoutingTable *irt = findModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
-            if (NOW > 0 && irt != nullptr) {
+            if (NOW > 0 && irt != nullptr && isIpSessionType(sessionType_)) {
                 /**
                  * TODO: might need a bit more care, if the interface has changed, the query might, too
                  */

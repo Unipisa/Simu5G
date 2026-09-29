@@ -64,6 +64,11 @@ class Ip2Nic : public cSimpleModule
     // Flag mirroring PDCP's (to be verified with ASSERTs, then used to replace PDCP dependency)
     bool isNr_ = false;
     bool hasSdap_ = false;
+
+    // At a UE: the type of the UE's session (the sessionType parameter). At a base
+    // station a packet's session type is its own: the SessionTag's on the downlink,
+    // the bearer's (which SDAP delivered it up as) on the uplink.
+    SessionType sessionType_ = IP_V4;
     bool establishBearersOnDemand_ = true;
 
     // Whether a UE is attached with its LTE stack, its NR stack, both (dual connectivity

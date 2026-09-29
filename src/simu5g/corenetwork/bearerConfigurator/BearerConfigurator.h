@@ -155,6 +155,10 @@ class BearerConfigurator : public cSimpleModule
     // it, likewise. Read by CoreControl, which delivers them to the UE's classifier as
     // the QoS rules of session establishment.
     virtual QfiRuleSet getUplinkQfiRules(const cModule *ue) const;
+
+    // Whether an entry of the ulQfiRules table names the given UE by its "ue" scope,
+    // i.e. a QoS rule authored for the UE rather than for every UE
+    virtual bool hasUplinkQfiRulesScopedTo(const cModule *ue) const;
 };
 
 } //namespace

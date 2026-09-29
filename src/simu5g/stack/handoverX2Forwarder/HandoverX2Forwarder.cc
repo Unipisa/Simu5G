@@ -81,12 +81,12 @@ void HandoverX2Forwarder::handleX2Message(cPacket *pkt)
     X2NodeId sourceId = x2msg->getSourceId();
 
     if (x2msg->getType() == X2_HANDOVER_DATA_MSG) {
-        // The payload is the forwarded IP datagram again; restore the protocol the
-        // forwarding side overwrote with x2ap, so downstream consumers (e.g. the
-        // packet-filter dissection of bearer definitions) see the packet for what
-        // it is.
+        // The payload is the forwarded datagram of the session again; restore the
+        // protocol the forwarding side overwrote with x2ap, so downstream consumers
+        // (e.g. the packet-filter dissection of bearer definitions) see the packet for
+        // what it is. The forwarding tunnel named the session (see GtpUserX2).
         if (datagram->findTag<GtpEndMarkerInd>() == nullptr)   // an End Marker carries no datagram
-            datagram->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&ipProtocolOf(datagram));
+            datagram->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&sessionPayloadProtocol(datagram->getTag<SessionTag>()->getSessionType(), datagram));
 
         // Restore the datagram's QoS flow, carried alongside it the way the 3GPP
         // forwarding tunnel carries the QFI (TS 38.425): the datagram re-enters the

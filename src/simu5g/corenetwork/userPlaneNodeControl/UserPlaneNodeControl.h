@@ -50,6 +50,17 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     // node's addresses are assigned after INITSTAGE_LOCAL (see getAddress())
     inet::L3Address address_;
 
+    // The N6 end of the Unstructured sessions this node anchors, as configured (the
+    // unstructured* parameters), checked and resolved at the first such session (see
+    // getN6Configuration()): the prefix the sessions' N6 addresses are allocated
+    // from, the server's address, and the ports
+    bool n6Configured_ = false;
+    inet::L3Address unstructuredPrefix_;
+    int unstructuredPrefixLength_ = -1;
+    inet::L3Address unstructuredServer_;
+    int unstructuredServerPort_ = -1;
+    int unstructuredPort_ = -1;
+
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
@@ -63,6 +74,10 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     // The transport address of the node's tunnel endpoint: that of the network node
     virtual const inet::L3Address& getAddress();
 
+    // Check and resolve the unstructured* parameters; throws if they do not describe
+    // the N6 end of Unstructured sessions
+    virtual void configureN6();
+
   public:
     CoreNodeType getNodeType() const { return nodeType_; }
     const std::string& getGateway() const { return gateway_; }
@@ -71,10 +86,17 @@ class UserPlaneNodeControl : public omnetpp::cSimpleModule
     // filter (5GC: the PDRs/QERs PFCP would carry)
     virtual void setDownlinkClassifierRules(QfiRuleSet&& rules);
 
+    // The prefix the N6 addresses of the Unstructured sessions this node anchors are
+    // allocated from (the unstructuredPrefix parameter), as (address, length); throws
+    // if the node is not configured for Unstructured sessions
+    virtual std::pair<inet::L3Address, int> getUnstructuredPrefix();
+
     // PFCP Session Establishment / GTP-C Create Session: the uplink tunnel of the
     // session, which is of the given type, at this node, under a TEID allocated here;
-    // returns the tunnel's F-TEID, for the base stations to send the session's uplink on
-    virtual FTeid establishUserPlaneSession(const SessionRef& session, SessionType type);
+    // returns the tunnel's F-TEID, for the base stations to send the session's uplink
+    // on. An Unstructured session also gets its N6 tunnel here, under the given N6
+    // address (the anchor's only; unspecified for the other sessions and nodes).
+    virtual FTeid establishUserPlaneSession(const SessionRef& session, SessionType type, const inet::L3Address& n6Address);
 
     // PFCP Session Modification / GTP-C Modify Bearer: the session's downlink now goes
     // into tunnel dl (unset: nowhere, the UE is attached nowhere). If oldDl is set, the

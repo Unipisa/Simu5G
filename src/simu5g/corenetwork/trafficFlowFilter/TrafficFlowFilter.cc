@@ -11,7 +11,10 @@
 //
 
 #include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
+#include <inet/common/ProtocolTag_m.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/networklayer/common/L3Tools.h>
+#include <inet/transportlayer/udp/UdpHeader_m.h>
 
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/QfiTag_m.h"
@@ -120,6 +123,14 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
 
     Packet *pkt = check_and_cast<Packet *>(msg);
 
+    // the payload of a non-IP session, which SDAP delivered up as such at a base
+    // station (see Ip2Nic::toIpBs()): no IP header to classify by
+    auto protocolTag = pkt->findTag<PacketProtocolTag>();
+    if (protocolTag != nullptr && protocolTag->getProtocol() == &LteProtocol::unstructured) {
+        handleNonIpUplink(pkt);
+        return;
+    }
+
     // the user-plane entry of the core network (downlink) or of a base station's
     // tunnel (uplink)
     auto ipFields = attachIpHeaderFields(pkt);
@@ -136,6 +147,15 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
         EV << "TrafficFlowFilter::handleMessage - link-local traffic on the data network link, consumed" << endl;
         delete pkt;
         return;
+    }
+
+    // the downlink of an Unstructured session, on its N6 tunnel
+    if (!isBaseStation(ownerType_)) {
+        auto it = n6Sessions_.find(destAddr);
+        if (it != n6Sessions_.end()) {
+            handleN6Downlink(pkt, it->second);
+            return;
+        }
     }
 
     // where the datagram goes
@@ -172,6 +192,64 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
 
     // send the datagram to the GTP-U module
     send(pkt, "gtpUserGateOut");
+}
+
+void TrafficFlowFilter::handleNonIpUplink(Packet *pkt)
+{
+    // MEC steering and local delivery go by the IP destination, which the payload has
+    // none of: the payload goes to the session's anchor
+    ASSERT(isBaseStation(ownerType_));
+    auto tftInfo = pkt->addTag<TftControlInfo>();
+    tftInfo->setTft(TFT_EXTERNAL_DESTINATION);
+    tftInfo->setUeNodeId(NODEID_NONE);
+    auto qfiInd = pkt->findTag<QfiInd>();
+    tftInfo->setQfi(qfiInd != nullptr ? qfiInd->getQfi() : Qfi(0));
+    EV << "TrafficFlowFilter::handleNonIpUplink - " << pkt->getName() << " goes to the anchor, qfi=" << tftInfo->getQfi() << endl;
+    send(pkt, "gtpUserGateOut");
+}
+
+void TrafficFlowFilter::handleN6Downlink(Packet *pkt, const N6Session& n6Session)
+{
+    // the datagram must be the N6 tunnel's: UDP to the port the UPF receives on
+    const Protocol& ipProtocol = ipProtocolOf(pkt);
+    auto ipHeader = removeNetworkProtocolHeader(pkt, ipProtocol);
+    if (ipHeader->getProtocol() != &Protocol::udp)
+        throw cRuntimeError("TrafficFlowFilter: a %s datagram arrived for %s, the N6 address of an Unstructured session, whose tunnel is UDP",
+                ipHeader->getProtocol() != nullptr ? ipHeader->getProtocol()->getName() : "non-UDP", n6Session.tunnel.sessionAddress.str().c_str());
+    auto udpHeader = pkt->removeAtFront<UdpHeader>();
+    if (udpHeader->getDestinationPort() != n6Session.tunnel.localPort)
+        throw cRuntimeError("TrafficFlowFilter: a UDP datagram arrived for %s, the N6 address of an Unstructured session, on port %d, "
+                "but the session's N6 tunnel receives on port %d", n6Session.tunnel.sessionAddress.str().c_str(),
+                (int)udpHeader->getDestinationPort(), n6Session.tunnel.localPort);
+    EV << "TrafficFlowFilter::handleN6Downlink - " << pkt->getName() << " is the downlink of " << n6Session.session << endl;
+
+    // the payload of the session, on its one QoS flow; no rule is evaluated
+    pkt->removeTag<IpHeaderFieldsTag>();
+    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::unstructured);
+    auto tftInfo = pkt->addTag<TftControlInfo>();
+    tftInfo->setTft(TFT_PDU_SESSION);
+    tftInfo->setUeNodeId(n6Session.session.lteNodeId);
+    tftInfo->setQfi(Qfi(0));
+    send(pkt, "gtpUserGateOut");
+}
+
+void TrafficFlowFilter::addN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel)
+{
+    Enter_Method_Silent("addN6Tunnel");
+    ASSERT(ownerType_ == UPF);
+    if (!n6Sessions_.emplace(tunnel.sessionAddress, N6Session{session, tunnel}).second)
+        throw cRuntimeError("TrafficFlowFilter: the N6 address %s is already that of another session", tunnel.sessionAddress.str().c_str());
+}
+
+void TrafficFlowFilter::removeN6Tunnel(const SessionRef& session)
+{
+    Enter_Method_Silent("removeN6Tunnel");
+    for (auto it = n6Sessions_.begin(); it != n6Sessions_.end(); ++it) {
+        if (it->second.session.lteNodeId == session.lteNodeId && it->second.session.id == session.id) {
+            n6Sessions_.erase(it);
+            return;
+        }
+    }
 }
 
 TftOutcome TrafficFlowFilter::findTrafficFlow(const L3Address& srcAddress, const L3Address& destAddress, MacNodeId& ueNodeId)

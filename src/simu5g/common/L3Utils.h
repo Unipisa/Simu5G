@@ -18,6 +18,7 @@
 #include <inet/networklayer/contract/ipv6/Ipv6Address.h>
 
 #include "simu5g/common/IpHeaderFieldsTag_m.h"
+#include "simu5g/common/LteCommonEnum_m.h"
 
 namespace simu5g {
 
@@ -26,6 +27,12 @@ namespace simu5g {
 // a receiver of an IPv4v6 session reads the version field). Throws if the packet
 // does not start with an IP datagram.
 const inet::Protocol& ipProtocolOf(const inet::Packet *pkt);
+
+// The protocol of the payload of a session of the given type, which the packet is:
+// the IP version of the datagram on an IP session (see ipProtocolOf()), the
+// unstructured protocol on an Unstructured one. Throws for an Ethernet session,
+// which is not supported yet.
+const inet::Protocol& sessionPayloadProtocol(SessionType type, const inet::Packet *pkt);
 
 // The IP header at the front of the packet, of either family
 inet::Ptr<const inet::NetworkHeaderBase> peekIpHeader(const inet::Packet *pkt);

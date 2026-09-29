@@ -12,6 +12,7 @@
 #include "HandoverPacketHolderUe.h"
 
 #include <inet/linklayer/common/InterfaceTag_m.h>
+#include <inet/common/ProtocolTag_m.h>
 #include <inet/common/socket/SocketTag_m.h>
 #include "simu5g/common/L3Utils.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -35,6 +36,7 @@ HandoverPacketHolderUe::~HandoverPacketHolderUe()
 void HandoverPacketHolderUe::initialize()
 {
     stackGateOut_ = gate("stackOut");
+    sessionType_ = aToSessionType(par("sessionType").stdstringValue());
 }
 
 void HandoverPacketHolderUe::setServingNodeIds(MacNodeId servingNodeId, MacNodeId nrServingNodeId)
@@ -63,8 +65,13 @@ void HandoverPacketHolderUe::fromIpUe(Packet *datagram)
     // Remove InterfaceReq Tag (we already are on an interface now)
     datagram->removeTagIfPresent<InterfaceReq>();
 
-    // the UE's uplink user-plane entry
-    attachIpHeaderFields(datagram);
+    // the UE's uplink user-plane entry: an IP session's datagram is parsed for the
+    // modules after it; the payload of another session is carried as is
+    if (isIpSessionType(sessionType_))
+        attachIpHeaderFields(datagram);
+    else if (datagram->getTag<PacketProtocolTag>()->getProtocol() != &sessionPayloadProtocol(sessionType_, datagram))
+        throw cRuntimeError("HandoverPacketHolderUe: a packet of protocol %s is sent on a \"%s\" session",
+                datagram->getTag<PacketProtocolTag>()->getProtocol()->getName(), sessionTypeToA(sessionType_).c_str());
 
     if (ueHold_) {
         // hold packets until handover is complete

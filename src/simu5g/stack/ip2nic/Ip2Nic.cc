@@ -50,6 +50,7 @@ void Ip2Nic::initialize(int stage)
             nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
             if (ue->hasPar("nrMacNodeId"))
                 nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
+            sessionType_ = aToSessionType(par("sessionType").stdstringValue());
         }
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
@@ -162,10 +163,15 @@ MacNodeId Ip2Nic::ueSourceNodeId()
 void Ip2Nic::toStackUe(Packet *pkt)
 {
     EV << "Ip2Nic::fromIpUe - message from IP layer: send to stack: " << pkt->str() << std::endl;
-    auto ipFields = pkt->getTag<IpHeaderFieldsTag>();
-    const L3Address& srcAddr = ipFields->getSrcAddress();
-    const L3Address& destAddr = ipFields->getDestAddress();
-    short int tos = ipFields->getTos();
+    // the addresses of an IP session's datagram; the payload of another session has none
+    L3Address srcAddr, destAddr;
+    short int tos = 0;
+    if (isIpSessionType(sessionType_)) {
+        auto ipFields = pkt->getTag<IpHeaderFieldsTag>();
+        srcAddr = ipFields->getSrcAddress();
+        destAddr = ipFields->getDestAddress();
+        tos = ipFields->getTos();
+    }
 
     // Drop UL packets if this UE released its link to the serving node after RLF.
     if (!releasedUes_.empty()) {
@@ -215,8 +221,9 @@ void Ip2Nic::prepareForIp(Packet *datagram, const Protocol *protocol) {
 
 void Ip2Nic::toIpUe(Packet *pkt)
 {
-    // the IP version from the datagram itself, as on a real IPv4v6 session
-    prepareForIp(pkt, &ipProtocolOf(pkt));
+    // the protocol the session's payload is of: on an IP session the IP version from
+    // the datagram itself, as on a real IPv4v6 session
+    prepareForIp(pkt, &sessionPayloadProtocol(sessionType_, pkt));
     EV << "Ip2Nic::toIpUe - message from stack: send to IP layer" << endl;
     send(pkt, ipGateOut_);
 }
@@ -224,8 +231,12 @@ void Ip2Nic::toIpUe(Packet *pkt)
 void Ip2Nic::toIpBs(Packet *pkt)
 {
     // The datagram goes to the node's tunnel entry (TrafficFlowFilter), which is
-    // wired to the NIC directly: a base station does not IP-route user-plane traffic
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&ipProtocolOf(pkt));
+    // wired to the NIC directly: a base station does not IP-route user-plane traffic.
+    // The payload of a non-IP session comes up from SDAP as the protocol its bearer's
+    // session implies (see NrSdap::getUpperProtocol()); anything else is an IP datagram.
+    auto protocolTag = pkt->findTag<PacketProtocolTag>();
+    if (protocolTag == nullptr || protocolTag->getProtocol() != &LteProtocol::unstructured)
+        pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&ipProtocolOf(pkt));
     EV << "Ip2Nic::toIpBs - message from stack: send to the tunnel entry" << endl;
     send(pkt, ipGateOut_);
 }
@@ -234,13 +245,19 @@ void Ip2Nic::toStackBs(Packet *pkt)
 {
     EV << "Ip2Nic::toStackBs - message from IP layer: send to stack" << endl;
     removeAllSimu5GTags(pkt);
-    auto ipFields = pkt->getTag<IpHeaderFieldsTag>();
-    const L3Address& srcAddr = ipFields->getSrcAddress();
-    const L3Address& destAddr = ipFields->getDestAddress();
-    short int tos = ipFields->getTos();
 
     // the UE the packet travels to: the one of its session
     auto session = pkt->getTag<SessionTag>();
+
+    // the addresses of an IP session's datagram; the payload of another session has none
+    L3Address srcAddr, destAddr;
+    short int tos = 0;
+    if (isIpSessionType(session->getSessionType())) {
+        auto ipFields = pkt->getTag<IpHeaderFieldsTag>();
+        srcAddr = ipFields->getSrcAddress();
+        destAddr = ipFields->getDestAddress();
+        tos = ipFields->getTos();
+    }
 
     // Drop DL packets destined to a UE whose context was released after RLF
     // (UE Context Release: discard rather than push at a torn-down bearer).

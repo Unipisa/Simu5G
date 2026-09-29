@@ -80,6 +80,14 @@ class GtpUser : public cSimpleModule
     // by each of the UE's node ids; none while the UE is attached nowhere
     std::map<MacNodeId, FTeid> dlTunnels_;
 
+    // At an anchor UPF: the N6 tunnel of each Unstructured session it anchors, by each
+    // of the UE's node ids (see UserPlaneNodeControl)
+    std::map<MacNodeId, N6Tunnel> n6Tunnels_;
+
+    // At an anchor UPF: the Identification field of the IPv4 datagrams it originates
+    // on the N6 tunnels of Unstructured sessions
+    uint16_t n6DatagramId_ = 0;
+
     CoreNodeType selectOwnerType(const char *type);
 
   protected:
@@ -100,6 +108,11 @@ class GtpUser : public cSimpleModule
     // encapsulate a datagram into GTP-U, and send it through the given downlink tunnel of
     // a session
     void tunnelDownlink(inet::Packet *datagram, const FTeid& tunnel, Qfi qfi);
+
+    // At an anchor UPF: send the uplink payload of an Unstructured session to the data
+    // network over the session's N6 tunnel, in a UDP/IP datagram this node originates
+    // (TS 29.561 9.2)
+    void tunnelUplinkOverN6(inet::Packet *payload, const SessionRef& session);
 
     // At a base station: an End Marker arrived on the tunnel with the given TEID
     void handleEndMarker(Teid teid);
@@ -139,7 +152,11 @@ class GtpUser : public cSimpleModule
     // moves the session's downlink off it (the "send end marker" instruction of the SMF)
     virtual void sendEndMarker(const FTeid& tunnel);
 
-    // The session is released: forget its uplink and downlink tunnels
+    // At an anchor UPF: the N6 tunnel of an Unstructured session, which its uplink
+    // leaves the node on
+    virtual void setN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel);
+
+    // The session is released: forget its uplink, downlink and N6 tunnels
     virtual void removeSession(const SessionRef& session);
 };
 

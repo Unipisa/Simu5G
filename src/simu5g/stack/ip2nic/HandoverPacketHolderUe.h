@@ -33,6 +33,8 @@ class HandoverPacketHolderUe : public cSimpleModule
     MacNodeId servingNodeId_ = NODEID_NONE;     // the LTE stack's serving node
     MacNodeId nrServingNodeId_ = NODEID_NONE;   // the NR stack's serving node
 
+    SessionType sessionType_ = IP_V4;   // the type of the UE's session (the sessionType parameter)
+
     bool ueHold_ = false;
     typedef std::list<inet::Packet *> IpDatagramQueue;
     IpDatagramQueue ueHoldFromIp_;

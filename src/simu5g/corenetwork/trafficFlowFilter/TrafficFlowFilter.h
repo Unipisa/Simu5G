@@ -24,6 +24,7 @@
 #include "simu5g/common/QfiRuleSet.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpTunnel.h"
 
 namespace simu5g {
 
@@ -78,6 +79,15 @@ class TrafficFlowFilter : public cSimpleModule
     // by the built-in residual instead (see handleMessage()).
     QfiRuleSet qfiRules_;
 
+    // At an anchor UPF: the Unstructured sessions it anchors, by the address of each
+    // session's N6 tunnel (see UserPlaneNodeControl), which the data network sends
+    // the session's downlink to
+    struct N6Session {
+        SessionRef session;
+        N6Tunnel tunnel;
+    };
+    std::map<inet::L3Address, N6Session> n6Sessions_;
+
   protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
@@ -90,10 +100,24 @@ class TrafficFlowFilter : public cSimpleModule
     // Where a datagram goes; for TFT_PDU_SESSION, ueNodeId is set to the destination UE
     TftOutcome findTrafficFlow(const inet::L3Address& srcAddress, const inet::L3Address& destAddress, MacNodeId& ueNodeId);
 
+    // At a base station: the uplink of a non-IP session enters the tunnel to the
+    // session's anchor, on the QoS flow SDAP attributed it to
+    virtual void handleNonIpUplink(inet::Packet *pkt);
+
+    // At an anchor UPF: a datagram of the data network on the N6 tunnel of an
+    // Unstructured session loses the tunnel's UDP/IP headers, and its payload goes
+    // into the session's tunnel on the default QoS flow (TS 29.561 9.2)
+    virtual void handleN6Downlink(inet::Packet *pkt, const N6Session& n6Session);
+
   public:
     // Take delivery of this filter's compiled QFI-assignment rules from the
     // bearer configurator
     virtual void setQfiRules(QfiRuleSet&& rules);
+
+    // At an anchor UPF: the N6 tunnel of an Unstructured session, whose address the
+    // session's downlink is recognized by; and its removal, at the session's release
+    virtual void addN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel);
+    virtual void removeN6Tunnel(const SessionRef& session);
 };
 
 } //namespace

@@ -44,7 +44,14 @@ import simu5g.corenetwork.statsCollector.UeStatsCollector;
 // core, the PDN type in an EPC): the sessionType parameter. The network establishes
 // the session with that type, or rejects it with an error if its core network cannot
 // carry it. The IP types ("IPv4", "IPv6", "IPv4v6") are carried by both core
-// networks; "Ethernet" and "Unstructured" are not supported yet.
+// networks; "Unstructured" needs a 5G core, and "Ethernet" is not supported yet.
+//
+// An Unstructured session carries opaque payload, from an application attached to
+// the NIC directly (an ~UnstructuredApp in the unstructuredApp submodule vector, see
+// numUnstructuredApps) to the server the anchor UPF's N6 end of the session is
+// configured with (see ~UserPlaneNodeControl). The session has one QoS flow, the
+// default one, on one bearer, the default DRB; it is not supported on a D2D-capable
+// UE (hasD2D). Such a UE normally has no IP layer (hasIpv4 = false).
 //
 module LteUe
 {

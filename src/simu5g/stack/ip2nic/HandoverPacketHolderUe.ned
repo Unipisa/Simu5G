@@ -20,6 +20,7 @@ package simu5g.stack.ip2nic;
 simple HandoverPacketHolderUe like IHandoverPacketHolder
 {
     parameters:
+        string sessionType;  // The type of the UE's session (see ~LteUe): the IP types parse the uplink datagram's header for the modules after this one, the others carry the payload as is
         @display("i=block/layer");
     gates:
         input upperLayerIn;

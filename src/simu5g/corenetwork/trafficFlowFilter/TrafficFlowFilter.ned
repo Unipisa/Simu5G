@@ -36,6 +36,15 @@ package simu5g.corenetwork.trafficFlowFilter;
 // traffic from a stack without SDAP is classified by a built-in DSCP-as-QFI
 // residual.
 //
+// Unstructured sessions (see the sessionType parameter of ~LteUe). At a base station,
+// their uplink payload, which SDAP delivers up as the "unstructured" protocol, goes
+// to the session's anchor on the QoS flow SDAP attributed it to: no MEC steering and
+// no local delivery, which go by an IP destination the payload has none of. At the
+// anchor UPF, a datagram of the data network addressed to an Unstructured session's
+// N6 address is that session's downlink (see ~UserPlaneNodeControl): the N6 tunnel's
+// UDP/IP headers go, and the payload goes into the session's tunnel on the default
+// QoS flow, with no rule evaluated.
+//
 simple TrafficFlowFilter
 {
     parameters:

@@ -69,17 +69,73 @@ const L3Address& UserPlaneNodeControl::getAddress()
     return address_;
 }
 
+void UserPlaneNodeControl::configureN6()
+{
+    if (n6Configured_)
+        return;
+    std::string node = getContainingNode(this)->getFullPath();
+    const char *where = node.c_str();
+    if (nodeType_ != UPF)
+        throw cRuntimeError("UserPlaneNodeControl: %s anchors an Unstructured session, but only a UPF can", where);
+
+    // the prefix, e.g. "2001:db8:5::/64" or "10.5.0.0/16"
+    std::string prefix = par("unstructuredPrefix").stdstringValue();
+    if (prefix.empty())
+        throw cRuntimeError("UserPlaneNodeControl: %s anchors an Unstructured session, but its unstructuredPrefix parameter is empty", where);
+    std::vector<std::string> parts = cStringTokenizer(prefix.c_str(), "/").asVector();
+    if (parts.size() != 2 || !unstructuredPrefix_.tryParse(parts[0].c_str()) || unstructuredPrefix_.getType() == L3Address::NONE)
+        throw cRuntimeError("UserPlaneNodeControl: invalid unstructuredPrefix '%s', must be an address and a prefix length, e.g. \"2001:db8:5::/64\"", prefix.c_str());
+    bool ipv6 = unstructuredPrefix_.getType() == L3Address::IPv6;
+    unstructuredPrefixLength_ = atoi(parts[1].c_str());
+    int maxLength = ipv6 ? 96 : 30;   // at least two host bits; an IPv6 session address differs from the prefix in its last 32 bits
+    if (unstructuredPrefixLength_ < 1 || unstructuredPrefixLength_ > maxLength)
+        throw cRuntimeError("UserPlaneNodeControl: invalid prefix length in unstructuredPrefix '%s', must be 1..%d", prefix.c_str(), maxLength);
+    if (unstructuredPrefix_.getPrefix(unstructuredPrefixLength_) != unstructuredPrefix_)
+        throw cRuntimeError("UserPlaneNodeControl: unstructuredPrefix '%s' has host bits set", prefix.c_str());
+
+    // the server, of the prefix's family
+    std::string server = par("unstructuredServer").stdstringValue();
+    if (server.empty())
+        throw cRuntimeError("UserPlaneNodeControl: %s anchors an Unstructured session, but its unstructuredServer parameter is empty", where);
+    unstructuredServer_ = L3AddressResolver().resolve((binder_->getNetworkName() + "." + server).c_str(), ipv6 ? L3AddressResolver::ADDR_IPv6 : L3AddressResolver::ADDR_IPv4);
+
+    unstructuredServerPort_ = par("unstructuredServerPort");
+    unstructuredPort_ = par("unstructuredPort");
+    for (int port : {unstructuredServerPort_, unstructuredPort_})
+        if (port < 0 || port > 65535)
+            throw cRuntimeError("UserPlaneNodeControl: %s anchors an Unstructured session, but its unstructuredServerPort and unstructuredPort parameters "
+                    "are not both set to UDP port numbers (TS 29.561 9.2: configured per data network, aligned with the server)", where);
+    n6Configured_ = true;
+}
+
+std::pair<L3Address, int> UserPlaneNodeControl::getUnstructuredPrefix()
+{
+    Enter_Method("getUnstructuredPrefix");
+    configureN6();
+    return {unstructuredPrefix_, unstructuredPrefixLength_};
+}
+
 void UserPlaneNodeControl::setDownlinkClassifierRules(QfiRuleSet&& rules)
 {
     Enter_Method("setDownlinkClassifierRules");
     trafficFlowFilter_->setQfiRules(std::move(rules));
 }
 
-FTeid UserPlaneNodeControl::establishUserPlaneSession(const SessionRef& session, SessionType type)
+FTeid UserPlaneNodeControl::establishUserPlaneSession(const SessionRef& session, SessionType type, const L3Address& n6Address)
 {
     Enter_Method("establishUserPlaneSession");
     FTeid tunnel{getAddress(), allocateTeid()};
     gtpUser_->addTunnel(tunnel.teid, session, type);
+
+    // an Unstructured session's N6 tunnel: the uplink leaves on it, the downlink is
+    // recognized by its address
+    if (!n6Address.isUnspecified()) {
+        ASSERT(type == UNSTRUCTURED);
+        configureN6();
+        N6Tunnel n6Tunnel{n6Address, unstructuredPort_, unstructuredServer_, unstructuredServerPort_};
+        gtpUser_->setN6Tunnel(session, n6Tunnel);
+        trafficFlowFilter_->addN6Tunnel(session, n6Tunnel);
+    }
     return tunnel;
 }
 
@@ -95,6 +151,7 @@ void UserPlaneNodeControl::releaseUserPlaneSession(const SessionRef& session)
 {
     Enter_Method("releaseUserPlaneSession");
     gtpUser_->removeSession(session);
+    trafficFlowFilter_->removeN6Tunnel(session);
 }
 
 } //namespace

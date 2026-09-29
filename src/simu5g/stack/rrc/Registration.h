@@ -31,6 +31,7 @@ class Registration : public cSimpleModule, public cListener
     MacNodeId lteNodeId = NODEID_NONE;
     MacNodeId nrNodeId = NODEID_NONE;
     RanNodeType nodeType = UNKNOWN_NODE_TYPE;
+    SessionType sessionType_ = IP_V4;   // UE only: the type of the UE's session (the sessionType parameter)
 
     // corresponding entry for our interface
     opp_component_ptr<inet::NetworkInterface> networkIf;

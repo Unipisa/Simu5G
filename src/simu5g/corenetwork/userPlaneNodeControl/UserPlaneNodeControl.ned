@@ -33,6 +33,22 @@ package simu5g.corenetwork.userPlaneNodeControl;
 //  - releaseUserPlaneSession(): the session's tunnels are forgotten (PFCP Session
 //    Deletion; GTP-C Delete Session)
 //
+// Unstructured sessions. A UPF anchors a UE's Unstructured session (see the
+// sessionType parameter of ~LteUe) with an N6 point-to-point tunnel based on UDP/IP to
+// one application server (TS 29.561 9.2): the session's uplink payload leaves the node
+// in a UDP/IP datagram from the session's N6 address and the unstructuredPort to the
+// unstructuredServer at the unstructuredServerPort, and a datagram of the data network
+// to the session's N6 address and the unstructuredPort is the session's downlink,
+// whose payload goes into the session's tunnel without the UDP/IP headers. The node
+// originates and ends those datagrams itself, as a forwarding node, on its N6
+// interface. The ~CoreControl (the SMF) allocates each session's N6 address from the
+// unstructuredPrefix, one address per session, and hands it over with the session's
+// establishment; the data network routes the prefix to this node. TS 29.561 defines
+// no port numbers: the UPF and the server use ports configured alike at both ends,
+// which is why the two port parameters have no default. The prefix, the server and the
+// ports are the node's, not per data network: a UPF serves one data network here.
+// Both address families work; the server is resolved in the prefix's family.
+//
 // Nothing outside the node reaches its ~GtpUser or ~TrafficFlowFilter directly; how
 // the node is composed is its own business. The module registers with the ~Binder
 // at initialization as the node's control-plane entry point, which is how the
@@ -48,4 +64,8 @@ simple UserPlaneNodeControl
         string trafficFlowFilterModule = default("^.trafficFlowFilter");
         string nodeType @enum(PGW,UPF,UPF_MEC);  // The type of the containing node, which sets it
         string gateway = default("");  // A MEC host UPF's core network gateway, the anchor UPF whose sessions it serves; empty at an anchor
+        string unstructuredPrefix = default("");  // The prefix the N6 addresses of Unstructured sessions are allocated from, e.g. "2001:db8:5::/64" or "10.5.0.0/16"; empty = the node anchors no Unstructured session (see the main comment)
+        string unstructuredServer = default("");  // The application server the Unstructured sessions' uplink goes to: a module path relative to the network, resolved in the family of unstructuredPrefix
+        int unstructuredServerPort = default(-1);  // The UDP port of unstructuredServer the uplink goes to; must be set for Unstructured sessions
+        int unstructuredPort = default(-1);  // The UDP port the node receives the Unstructured sessions' downlink on, and sends their uplink from; must be set for Unstructured sessions
 }

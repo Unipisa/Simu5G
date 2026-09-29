@@ -13,6 +13,7 @@
 #define _CORECONTROL_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,8 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
         omnetpp::cModule *ueModule = nullptr;
         SessionRef ref;                          // the UE's node ids and the session id
         SessionType type = IP_V4;                   // the session's type, as the UE requested it
+        inet::L3Address n6Address;                  // Unstructured sessions only: the session's address on the anchor's N6 tunnel, allocated from the anchor's prefix
+        uint32_t n6Suffix = 0;                      // the host part of n6Address within the prefix (0: none)
         int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
         FTeid ulAnchor;                             // uplink F-TEID at the anchor
         std::map<int, FTeid> ulMecHosts;            // uplink F-TEIDs at the MEC host UPFs of the anchor's core network, by index into gtpEndpoints_
@@ -80,6 +83,10 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the session id
     std::map<CoreSessionKey, CoreSession> sessions_;
     std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's session
+
+    // The host parts of the N6 addresses allocated from each anchor's prefix to the
+    // Unstructured sessions it anchors, by index into gtpEndpoints_
+    std::map<int, std::set<uint32_t>> n6AddressesInUse_;
 
   protected:
     void initialize(int stage) override;
@@ -141,6 +148,12 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
 
     // The session's uplink tunnels, as a base station uses them
     virtual UplinkTunnels getUplinkTunnels(const CoreSession& session);
+
+    // Allocate the N6 address of an Unstructured session from its anchor's prefix (the
+    // SMF's allocation of TS 29.561 9.2, one address per session): the lowest free one
+    // after the prefix itself; and free it at the session's release
+    virtual void allocateN6Address(CoreSession& session);
+    virtual void freeN6Address(const CoreSession& session);
 
     // Release the session of the UE with the given node id, if it has one
     virtual void releaseSession(MacNodeId ueNodeId);

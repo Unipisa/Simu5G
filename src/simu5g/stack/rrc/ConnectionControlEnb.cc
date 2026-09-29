@@ -638,6 +638,12 @@ void ConnectionControlEnb::pushDrbToRrcs(const AuthoredBearer& ab, const DrbDesc
         sessionDrb.rohcProfiles.clear();   // the rohcForDrbProfiles policy covers IP sessions only
     }
 
+    // an Unstructured session has one QoS flow (TS 23.501 5.7.1), carried by the UE's
+    // default bearer
+    if (sessionDrb.sessionType == UNSTRUCTURED && !sessionDrb.isDefault)
+        throw cRuntimeError("ConnectionControlEnb: %s has an Unstructured session, which has one QoS flow on the default bearer, but DRB %d "
+                "of its bearer definitions is another one", ueModule->getFullPath().c_str(), (int)num(drb.getDrbId()));
+
     // The UE keys its bearers by "my serving node" (NODEID_NONE), its serving
     // node by the UE. A dual-stack UE has one bearer per stack id, and the
     // serving node of each stack is told about the one that is its own.

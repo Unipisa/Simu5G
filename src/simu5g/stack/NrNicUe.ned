@@ -59,6 +59,7 @@ module NrNicUe extends LteNicUe
         // The NR leg's modules take their MacNodeId from the node's NR id
         rrc.nrConnectionControl.macNodeId = parent.nrMacNodeId;
         rrc.nrConnectionControl.sessionType = this.sessionType;
+        qosFlowClassifier.sessionType = this.sessionType;
         nrMac.macNodeId = parent.nrMacNodeId;
         nrPhy.macNodeId = parent.nrMacNodeId;
         nrDlFbGen.macNodeId = parent.nrMacNodeId;

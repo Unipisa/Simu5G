@@ -26,9 +26,23 @@ void QosFlowClassifier::setQfiRules(QfiRuleSet&& rules)
     qfiRules_ = std::move(rules);
 }
 
+void QosFlowClassifier::initialize()
+{
+    sessionType_ = aToSessionType(par("sessionType").stdstringValue());
+}
+
 void QosFlowClassifier::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
+
+    // The session of a non-IP type has one QoS flow, the default one: its default QoS
+    // rule has no packet filter and applies to every packet (TS 23.501 5.7.1.4), so
+    // no rule is evaluated
+    if (!isIpSessionType(sessionType_)) {
+        pkt->addTagIfAbsent<QfiReq>()->setQfi(Qfi(0));
+        send(pkt, "lowerLayerOut");
+        return;
+    }
 
     // An already-present QFI (an application that set it directly) is not second-guessed.
     // A packet no rule covers stays untagged -- deliberately not tagged with 0, because

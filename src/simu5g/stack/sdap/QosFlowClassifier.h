@@ -15,6 +15,7 @@
 #include <omnetpp.h>
 #include <inet/common/packet/Packet.h>
 
+#include "simu5g/common/LteCommon.h"
 #include "simu5g/common/QfiRuleSet.h"
 
 namespace simu5g {
@@ -38,6 +39,10 @@ class QosFlowClassifier : public cSimpleModule
     // until delivered, classifying nothing
     QfiRuleSet qfiRules_;
 
+    // The type of the UE's session (the sessionType parameter)
+    SessionType sessionType_ = IP_V4;
+
+    void initialize() override;
     void handleMessage(cMessage *msg) override;
 
   public:

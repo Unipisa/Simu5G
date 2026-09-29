@@ -49,7 +49,7 @@ void ConnectionControlUe::initialize(int stage)
         isNr_ = par("isNr");
         nodeId_ = MacNodeId(par("macNodeId").intValue());
         sessionType_ = aToSessionType(par("sessionType").stdstringValue());
-        if (sessionType_ == ETHERNET || sessionType_ == UNSTRUCTURED)
+        if (sessionType_ == ETHERNET)
             throw cRuntimeError("Session type \"%s\" is not supported yet (see the sessionType parameter of the UE)",
                     sessionTypeToA(sessionType_).c_str());
 
@@ -109,6 +109,12 @@ void ConnectionControlUe::initialize(int stage)
         emit(servingCellSignal_, (long)servingNodeId_);
     }
     else if (stage == inet::INITSTAGE_LAST) {
+        // D2D communication is between IP peers; the non-IP sessions are not supported
+        // on a leg that takes part in it
+        if (!isIpSessionType(sessionType_) && getCapabilities().d2d)
+            throw cRuntimeError("A \"%s\" session is not supported on a D2D-capable UE (see the sessionType and hasD2D parameters of the UE)",
+                    sessionTypeToA(sessionType_).c_str());
+
         // The RRC connection: a leg attached at initialization requests it from its
         // serving base station, which registers the UE with the core network and has
         // the session's resources and the static bearers set up (see

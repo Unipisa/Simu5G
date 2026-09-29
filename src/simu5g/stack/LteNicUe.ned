@@ -39,6 +39,9 @@ module LteNicUe extends LteNicBase
         rrc.connectionControl.isNr = false;
         rrc.connectionControl.macNodeId = parent.macNodeId;
         rrc.connectionControl.sessionType = this.sessionType;
+        rrc.registration.sessionType = this.sessionType;
+        handoverPacketHolder.sessionType = this.sessionType;
+        ip2nic.sessionType = this.sessionType;
         dlFbGen.macNodeId = parent.macNodeId;
 
     submodules:

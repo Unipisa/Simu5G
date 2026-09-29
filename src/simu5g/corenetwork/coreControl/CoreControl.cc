@@ -61,8 +61,9 @@ void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, Se
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
     if (session.dlTunnels.count(bsId) == 0) {
         ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session),
-                bearerConfigurator_->getUplinkQfiRules(session.ueModule));
+        // the UE's QoS rules; the one QoS flow of a non-IP session needs none
+        QfiRuleSet ulQfiRules = isIpSessionType(session.type) ? bearerConfigurator_->getUplinkQfiRules(session.ueModule) : QfiRuleSet();
+        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session), std::move(ulQfiRules));
         registerRanTunnel(session, bsId, dl);
     }
     updateDownlinkPath(session);
@@ -224,11 +225,27 @@ void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
                 "IP sessions only (see the UE's sessionType parameter)",
                 ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str(), anchor.node->getFullPath().c_str());
 
-    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref, session.type);
-    for (int i = 0; i < (int)gtpEndpoints_.size(); i++) {
+    // An Unstructured session (TS 23.501 5.6.10.3) is a 5G core's, and has one QoS flow,
+    // the default one, whose QoS rule has no packet filter (5.7.1.4): the UE's stack
+    // must have SDAP, and no QoS rule may be authored for the UE. Its N6 address is
+    // allocated here.
+    if (type == UNSTRUCTURED) {
+        if (!BearerConfigurator::ueStackHasSdap(ueModule))
+            throw cRuntimeError("CoreControl: %s requests an Unstructured session, but its stack has no SDAP (a 5G core's sessions need it, see the hasSdap parameter of the NIC)",
+                    ueModule->getFullPath().c_str());
+        if (bearerConfigurator_->hasUplinkQfiRulesScopedTo(ueModule))
+            throw cRuntimeError("CoreControl: %s requests an Unstructured session, which has one QoS flow and no QoS rules, but the ulQfiRules "
+                    "parameter of the bearer configurator has a rule scoped to it", ueModule->getFullPath().c_str());
+        allocateN6Address(session);
+    }
+
+    // The session's uplink tunnels: at the anchor, and at each MEC host UPF of an IP
+    // session (MEC steering goes by the IP destination, which a non-IP payload has none of)
+    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref, session.type, session.n6Address);
+    for (int i = 0; i < (int)gtpEndpoints_.size() && isIpSessionType(type); i++) {
         const GtpEndpoint& endpoint = gtpEndpoints_[i];
         if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchor.node)
-            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref, session.type);
+            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref, session.type, L3Address());
     }
 
     CoreSessionKey key(ueModule->getId(), session.ref.id);
@@ -240,6 +257,8 @@ void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
             << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
     for (const auto& [index, tunnel] : established.ulMecHosts)
         EV_INFO << ", to MEC host UPF " << tunnel;
+    if (!established.n6Address.isUnspecified())
+        EV_INFO << ", N6 address " << established.n6Address;
     EV_INFO << endl;
 }
 
@@ -311,6 +330,36 @@ UplinkTunnels CoreControl::getUplinkTunnels(const CoreSession& session)
     return tunnels;
 }
 
+void CoreControl::allocateN6Address(CoreSession& session)
+{
+    auto [prefix, prefixLength] = gtpEndpoints_[session.anchor].userPlaneNode->getUnstructuredPrefix();
+    bool ipv6 = prefix.getType() == L3Address::IPv6;
+    int hostBits = (ipv6 ? 128 : 32) - prefixLength;
+    uint64_t numAddresses = hostBits >= 32 ? (uint64_t(1) << 32) : (uint64_t(1) << hostBits);
+    std::set<uint32_t>& inUse = n6AddressesInUse_[session.anchor];
+    uint64_t suffix = 1;
+    while (inUse.count(suffix))
+        suffix++;
+    // the prefix itself, and in IPv4 its broadcast address, name no session
+    if (suffix >= numAddresses - (ipv6 ? 0 : 1))
+        throw cRuntimeError("CoreControl: the unstructuredPrefix %s/%d of %s has no free N6 address left for the session of %s",
+                prefix.str().c_str(), prefixLength, gtpEndpoints_[session.anchor].node->getFullPath().c_str(), session.ueModule->getFullPath().c_str());
+    inUse.insert(suffix);
+    session.n6Suffix = suffix;
+    if (ipv6) {
+        const uint32_t *words = prefix.toIpv6().words();
+        session.n6Address = Ipv6Address(words[0], words[1], words[2], words[3] + (uint32_t)suffix);
+    }
+    else
+        session.n6Address = Ipv4Address(prefix.toIpv4().getInt() + (uint32_t)suffix);
+}
+
+void CoreControl::freeN6Address(const CoreSession& session)
+{
+    if (session.n6Suffix != 0)
+        n6AddressesInUse_[session.anchor].erase(session.n6Suffix);
+}
+
 void CoreControl::releaseSession(MacNodeId ueNodeId)
 {
     auto it = sessionOfNode_.find(ueNodeId);
@@ -326,6 +375,8 @@ void CoreControl::releaseSession(MacNodeId ueNodeId)
         gtpEndpoints_[index].userPlaneNode->releaseUserPlaneSession(session.ref);
     for (const auto& [bsId, dl] : session.dlTunnels)
         gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs->sessionRelease(session.ref);
+
+    freeN6Address(session);
 
     for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
         sessionOfNode_.erase(nodeId);

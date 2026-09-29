@@ -105,11 +105,14 @@ void HandoverPacketHolderEnb::fromIpBs(Packet *pkt)
         return;
     }
 
-    // the base station's downlink user-plane entry
-    attachIpHeaderFields(pkt);
+    // the base station's downlink user-plane entry: an IP session's datagram is parsed
+    // for the modules after it, the payload of another session is carried as is
+    auto session = pkt->getTag<SessionTag>();
+    if (isIpSessionType(session->getSessionType()))
+        attachIpHeaderFields(pkt);
 
     // handle "forwarding" of packets during handover
-    MacNodeId destId = resolveUeNodeId(pkt->getTag<SessionTag>().get());
+    MacNodeId destId = resolveUeNodeId(session.get());
 
     if (hoForwarding_.find(destId) != hoForwarding_.end()) {
         // data packet must be forwarded (via X2) to another eNB
@@ -199,9 +202,11 @@ void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 
     // the base station's entry for downlink traffic forwarded by the handover source:
     // the forwarding tunnel named the session, and so the UE, the datagram is for
-    // (see GtpUserX2)
-    attachIpHeaderFields(datagram);
-    MacNodeId destId = resolveUeNodeId(datagram->getTag<SessionTag>().get());
+    // (see GtpUserX2), and so what it carries
+    auto session = datagram->getTag<SessionTag>();
+    if (isIpSessionType(session->getSessionType()))
+        attachIpHeaderFields(datagram);
+    MacNodeId destId = resolveUeNodeId(session.get());
 
     // A datagram the source forwards after the handover has completed here (it reached
     // the source late, see fromIpBs()) goes down right away; the queue below is drained

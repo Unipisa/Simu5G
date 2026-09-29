@@ -20,6 +20,13 @@
 #include <inet/common/packet/printer/PacketPrinter.h>
 #include <inet/common/socket/SocketTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
+#include <inet/networklayer/common/L3Tools.h>
+#include <inet/networklayer/ipv4/Ipv4Header_m.h>
+#include <inet/networklayer/ipv6/Ipv6Header.h>
+#include <inet/networklayer/ipv6/Ipv6InterfaceData.h>
+#include <inet/transportlayer/common/L4Tools.h>
+#include <inet/transportlayer/udp/Udp.h>
+#include <inet/transportlayer/udp/UdpHeader_m.h>
 
 namespace simu5g {
 
@@ -105,12 +112,23 @@ void GtpUser::setDownlinkTunnel(const SessionRef& session, const FTeid& tunnel)
     EV_INFO << "GtpUser::setDownlinkTunnel - the downlink of " << session << " is tunneled to " << tunnel << endl;
 }
 
+void GtpUser::setN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel)
+{
+    Enter_Method_Silent("setN6Tunnel");
+    ASSERT(ownerType_ == UPF);
+    for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId})
+        if (nodeId != NODEID_NONE)
+            n6Tunnels_[nodeId] = tunnel;
+    EV_INFO << "GtpUser::setN6Tunnel - the uplink of " << session << " leaves on the N6 tunnel " << tunnel << endl;
+}
+
 void GtpUser::removeSession(const SessionRef& session)
 {
     Enter_Method_Silent("removeSession");
     for (MacNodeId nodeId : {session.lteNodeId, session.nrNodeId}) {
         ulTunnels_.erase(nodeId);
         dlTunnels_.erase(nodeId);
+        n6Tunnels_.erase(nodeId);
     }
 }
 
@@ -229,8 +247,6 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
     }
     else {
         // the packet is ready to be tunneled via GTP to another node in the core network
-        L3Address destAddr = datagram->getTag<IpHeaderFieldsTag>()->getDestAddress();
-
         L3Address tunnelPeerAddress;
         Teid teid = TEID_NONE;
         // the QFI travels in a PDU Session Container on the tunnels of 5GC sessions (N3)
@@ -252,6 +268,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         }
         else if (tft == TFT_MEC_HOST) { // send to a MEC host
             // check if the destination MEC host is within the same core network
+            L3Address destAddr = datagram->getTag<IpHeaderFieldsTag>()->getDestAddress();
 
             // retrieve the address of the UPF included within the MEC host
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
@@ -318,11 +335,17 @@ void GtpUser::handleFromUdp(Packet *pkt)
         return;
     }
 
-    // re-create the original IP datagram and send it to the local network
+    // re-create the original datagram of the session and send it to the local network
     auto originalPacket = new Packet(pkt->getName());
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
     originalPacket->insertAtBack(pkt->peekData());
-    originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&ipProtocolOf(originalPacket));
+
+    // The tunnel names the session the T-PDU belongs to, and so what it carries (a
+    // base station knows every tunnel ending here); a relay between a MEC host's UPF
+    // and its anchor carries IP traffic of no session
+    const TunnelSession *session = (isBaseStation(ownerType_) || gtpUserMsg->getTeid() != TEID_NONE) ? &findTunnel(gtpUserMsg->getTeid()) : nullptr;
+    SessionType sessionType = session != nullptr ? session->type : IP_V4;
+    originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&sessionPayloadProtocol(sessionType, originalPacket));
 
     // Restore QFI from GTP-U header so SDAP can use it for QFI-to-DRB mapping.
     // Always set the tag, even for QFI 0 (unmarked/default-flow traffic): SDAP
@@ -336,18 +359,15 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
     if (isBaseStation(ownerType_)) {
         // the tunnel names the session, and so the UE, the datagram is for
-        const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
-        EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << ", local delivery to the cellular NIC" << endl;
-        attachSessionTag(originalPacket, session);
+        EV << "GtpUser::handleFromUdp - Datagram of " << session->ref << ", local delivery to the cellular NIC" << endl;
+        attachSessionTag(originalPacket, *session);
         send(originalPacket, "pppGate");
     }
     else if (ownerType_ == UPF_MEC) {
         // a tunnel from a base station names the session the datagram belongs to; a
         // relay from the UPF carries traffic of no session
-        if (gtpUserMsg->getTeid() != TEID_NONE) {
-            const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
-            EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << endl;
-        }
+        if (session != nullptr)
+            EV << "GtpUser::handleFromUdp - Datagram of " << session->ref << endl;
 
         // we are on the MEC, local delivery
         EV << "GtpUser::handleFromUdp - Datagram local delivery to the MEC host" << endl;
@@ -356,9 +376,14 @@ void GtpUser::handleFromUdp(Packet *pkt)
     else if (ownerType_ == PGW || ownerType_ == UPF) {
         // a tunnel from a base station names the session the datagram belongs to; a
         // relay from a MEC host's UPF carries traffic of no session
-        if (gtpUserMsg->getTeid() != TEID_NONE) {
-            const TunnelSession& session = findTunnel(gtpUserMsg->getTeid());
-            EV << "GtpUser::handleFromUdp - Datagram of " << session.ref << endl;
+        if (session != nullptr)
+            EV << "GtpUser::handleFromUdp - Datagram of " << session->ref << endl;
+
+        // the uplink of an Unstructured session goes to its server over the session's
+        // N6 tunnel
+        if (session != nullptr && session->type == UNSTRUCTURED) {
+            tunnelUplinkOverN6(originalPacket, session->ref);
+            return;
         }
 
         // where the datagram goes next is the destination's matter: the data network, or
@@ -431,6 +456,51 @@ void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
     delete datagram;
 
     socket_.sendTo(gtpMsg, tunnel.address, tunnelPeerPort_);
+}
+
+void GtpUser::tunnelUplinkOverN6(Packet *payload, const SessionRef& session)
+{
+    auto it = n6Tunnels_.find(session.lteNodeId);
+    if (it == n6Tunnels_.end())
+        throw cRuntimeError("GtpUser: the Unstructured session of UE %d has no N6 tunnel at %s", (int)num(session.lteNodeId), getContainingNode(this)->getFullPath().c_str());
+    const N6Tunnel& tunnel = it->second;
+    EV << "GtpUser::tunnelUplinkOverN6 - uplink of " << session << " over the N6 tunnel " << tunnel << endl;
+
+    // the N6 tunnel's UDP header, from the port the UPF receives the downlink on
+    bool ipv6 = tunnel.serverAddress.getType() == L3Address::IPv6;
+    const Protocol& ipProtocol = ipv6 ? Protocol::ipv6 : Protocol::ipv4;
+    auto udpHeader = makeShared<UdpHeader>();
+    udpHeader->setSourcePort(tunnel.localPort);
+    udpHeader->setDestinationPort(tunnel.serverPort);
+    udpHeader->setTotalLengthField(udpHeader->getChunkLength() + payload->getDataLength());
+    udpHeader->setChecksumMode(CHECKSUM_DECLARED_CORRECT);
+    Udp::insertChecksum(&ipProtocol, tunnel.sessionAddress, tunnel.serverAddress, udpHeader, payload);
+    insertTransportProtocolHeader(payload, Protocol::udp, udpHeader);
+
+    // and its IP header, from the session's address
+    if (ipv6) {
+        auto ipHeader = makeShared<Ipv6Header>();
+        ipHeader->setSrcAddress(tunnel.sessionAddress.toIpv6());
+        ipHeader->setDestAddress(tunnel.serverAddress.toIpv6());
+        ipHeader->setHopLimit(IPv6_DEFAULT_ADVCURHOPLIMIT);
+        ipHeader->setProtocolId(IP_PROT_UDP);
+        ipHeader->setPayloadLength(payload->getDataLength());
+        insertNetworkProtocolHeader(payload, Protocol::ipv6, ipHeader);
+    }
+    else {
+        auto ipHeader = makeShared<Ipv4Header>();
+        ipHeader->setSrcAddress(tunnel.sessionAddress.toIpv4());
+        ipHeader->setDestAddress(tunnel.serverAddress.toIpv4());
+        ipHeader->setTimeToLive(32);
+        ipHeader->setProtocolId(IP_PROT_UDP);
+        ipHeader->setIdentification(n6DatagramId_++);
+        ipHeader->setHeaderLength(ipHeader->getChunkLength());
+        ipHeader->setTotalLengthField(ipHeader->getChunkLength() + payload->getDataLength());
+        ipHeader->setChecksumMode(CHECKSUM_DECLARED_CORRECT);
+        ipHeader->updateChecksum();
+        insertNetworkProtocolHeader(payload, Protocol::ipv4, ipHeader);
+    }
+    send(payload, "pppGate");
 }
 
 const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId)

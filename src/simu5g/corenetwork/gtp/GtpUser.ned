@@ -26,6 +26,13 @@ package simu5g.corenetwork.gtp;
 // Used by all entities that need to communicate within the cellular core
 // network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MecHost modules.
 //
+// The tunnel a G-PDU arrives on names its session, and so what the T-PDU carries:
+// the payload goes out as the protocol the session's type implies (an IP datagram, or
+// the "unstructured" protocol), and a base station attaches the session, with its
+// type, as a ~SessionTag. At an anchor UPF the uplink of an Unstructured session
+// leaves on the session's N6 tunnel, in a UDP/IP datagram this module builds from
+// the session's N6 address to the server (see ~UserPlaneNodeControl).
+//
 simple GtpUser
 {
     parameters:
