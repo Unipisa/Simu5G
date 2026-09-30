@@ -220,9 +220,9 @@ wait(1.0);
     bool usedDocumented = true, differsFromReversed = false;
     for (size_t band = 0; band < withFading.size(); band++) {
         double applied = withFading[band] - withoutFading[band];
-        if (fabs(applied - m->jakesFading(link.stateKey, id, documented, band, false)) > 1e-9)
+        if (fabs(applied - m->jakesFading(probe.jakesMap(), link.linkKey, documented, band)) > 1e-9)
             usedDocumented = false;
-        if (fabs(applied - m->jakesFading(link.stateKey, id, reversed, band, false)) > 1e-9)
+        if (fabs(applied - m->jakesFading(probe.jakesMap(), link.linkKey, reversed, band)) > 1e-9)
             differsFromReversed = true;
     }
     c.check("getRSRP applies the Jakes fading at the speed read before getAttenuation", usedDocumented);

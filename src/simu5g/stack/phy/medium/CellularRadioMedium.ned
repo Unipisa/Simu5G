@@ -18,9 +18,9 @@ package simu5g.stack.phy.medium;
 // decisions. So far it keeps the registry of the radios (every PHY registers
 // its own), delivers broadcast frames, the base station beacons, to the
 // radios in range, and keeps the channel state the channel models evaluate
-// links against: whether each link is in line of sight and its shadowing,
-// once per link and carrier, shared by every channel model evaluating the
-// link, and its fading paths and position histories, one record per channel
+// links against: whether each link is in line of sight, its shadowing and
+// its fading paths, once per link and carrier, shared by every channel model
+// evaluating the link, and the position histories, one record per channel
 // model. The channel models still do everything else. Exactly one instance is
 // expected in the network, named radioMedium.
 //

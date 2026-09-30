@@ -46,10 +46,11 @@ class PathLossModel;
  * - the SINR statistics.
  *
  * The radio medium keeps the state the evaluations carry from one to the next:
- * whether each link is in line of sight and its shadowing, once per link and
- * shared by every channel model evaluating it (losMap(), shadowingMap()), and
- * this model's own Jakes fading paths, position histories and correlation
- * points (channelState()).
+ * whether each link is in line of sight, its shadowing and its Jakes fading
+ * paths, once per link and shared by every channel model evaluating it
+ * (losMap(), shadowingMap(), jakesFadingMap()), and this model's own position
+ * histories and correlation points, and the fading paths of its background
+ * UEs' links (channelState()).
  *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
@@ -123,6 +124,7 @@ class StochasticChannelModel : public ChannelModelBase
     ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
     std::map<LinkKey, bool> *losMap_ = nullptr; // the LOS state of the links on this model's carrier, kept by the radio medium; see losMap()
     ShadowFadingMap *shadowingMap_ = nullptr; // the shadowing of the links on this model's carrier, kept by the radio medium; see shadowingMap()
+    JakesFadingMap *jakesFadingMap_ = nullptr; // the Jakes fading paths of the links on this model's carrier, kept by the radio medium; see jakesFadingMap()
 
     // Scenario
     DeploymentScenario scenario_;
@@ -306,15 +308,18 @@ class StochasticChannelModel : public ChannelModelBase
     virtual double rayleighFading(MacNodeId id, unsigned int band);
 
     /*
-     * Compute Jakes fading
+     * Compute the Jakes fading of one band of a link. The link's fading paths
+     * are drawn into jakesMap, every band's at once, when it is first
+     * evaluated: for a link between radios that is jakesFadingMap(), kept once
+     * per link; a background UE's link keeps its own in the model's channel
+     * state.
      *
+     * @param jakesMap the fading paths, by link
+     * @param key the link
      * @param speed speed of UE
-     * @param nodeid mac node id of UE
      * @param band logical band id
-     * @param cqiDl if true, the jakesMap in the UE side should be used
-     * @param isBgUe if true, this is called for a background UE
      */
-    virtual double jakesFading(const LinkKey& key, MacNodeId ownerId, double speed, unsigned int band, bool cqiDl, bool isBgUe = false);
+    virtual double jakesFading(JakesFadingMap& jakesMap, const LinkKey& key, double speed, unsigned int band);
 
     /*
      * Decide whether the link is in line of sight -- drawn against the LOS
@@ -328,7 +333,7 @@ class StochasticChannelModel : public ChannelModelBase
 
     JakesFadingMap *getJakesMap()
     {
-        return &channelState().jakesFadingMap;
+        return &jakesFadingMap();
     }
 
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
@@ -365,6 +370,13 @@ class StochasticChannelModel : public ChannelModelBase
      * every channel model evaluating it. Resolved on first use.
      */
     ShadowFadingMap& shadowingMap();
+
+    /*
+     * The Jakes fading paths of each link on this model's carrier, by link
+     * (RadioLink::linkKey), which the radio medium keeps once per link for
+     * every channel model evaluating it. Resolved on first use.
+     */
+    JakesFadingMap& jakesFadingMap();
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and the

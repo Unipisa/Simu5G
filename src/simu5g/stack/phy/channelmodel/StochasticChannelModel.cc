@@ -88,6 +88,13 @@ StochasticChannelModel::ShadowFadingMap& StochasticChannelModel::shadowingMap()
     return *shadowingMap_;
 }
 
+StochasticChannelModel::JakesFadingMap& StochasticChannelModel::jakesFadingMap()
+{
+    if (jakesFadingMap_ == nullptr)
+        jakesFadingMap_ = &radioMedium_->getJakesFadingMap(carrierFrequency_);
+    return *jakesFadingMap_;
+}
+
 void StochasticChannelModel::initialize(int stage)
 {
     ChannelModelBase::initialize(stage);
@@ -702,7 +709,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
                 fadingAttenuation = rayleighFading(link.stateNodeId, i);
 
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(link.stateKey, link.stateNodeId, speed, i, link.useUeSideMaps);
+                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i);
         }
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
@@ -837,7 +844,10 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
                 fadingAttenuation = rayleighFading(bgUeId, i);
 
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(LinkKey(bgUeId), bgUeId, speed, i, cqiDl, true);
+                // a background UE's link keeps its fading paths in the model's own
+                // channel state, one map for a DL CQI and one for an UL CQI
+                fadingAttenuation = jakesFading(cqiDl ? channelState().jakesFadingMapBgUe : channelState().jakesFadingMap,
+                        LinkKey(bgUeId), speed, i);
         }
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
@@ -923,26 +933,10 @@ double StochasticChannelModel::rayleighFading(MacNodeId id,
     return linearToDb(temp1);
 }
 
-double StochasticChannelModel::jakesFading(const LinkKey& key, MacNodeId ownerId, double speed,
-        unsigned int band, bool cqiDl, bool isBgUe)
+double StochasticChannelModel::jakesFading(JakesFadingMap& jakesMap, const LinkKey& key, double speed,
+        unsigned int band)
 {
-    /**
-     * NOTE: there are two different Jakes maps. One on the UE side and one on the eNB side, with different values.
-     *
-     * eNB side => used for CQI computation and for error-probability evaluation in UL
-     * UE side  => used for error-probability evaluation in DL
-     *
-     * the one within eNB is referred to the UL direction
-     * the one within UE is referred to the DL direction
-     *
-     * thus the actual map should be chosen carefully (i.e. just check the cqiDL flag)
-     */
-    JakesFadingMap *actualJakesMap;
-
-    if (cqiDl) // if we are computing a DL CQI we need the Jakes Map stored on the UE side
-        actualJakesMap = (!isBgUe) ? obtainUeJakesMap(ownerId) : &channelState().jakesFadingMapBgUe;
-    else
-        actualJakesMap = &channelState().jakesFadingMap;
+    JakesFadingMap *actualJakesMap = &jakesMap;
 
     // if this is the first time that we compute fading for current user
     if (actualJakesMap->find(key) == actualJakesMap->end()) {

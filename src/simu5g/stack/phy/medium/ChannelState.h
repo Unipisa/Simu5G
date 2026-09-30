@@ -64,16 +64,16 @@ inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
 
 /**
  * The channel state a channel model evaluates links against, and updates as it
- * evaluates them: per link, its Jakes fading paths and the position its
- * correlation distance is measured from; per node, the recent positions its
- * speed is derived from.
+ * evaluates them: per link, the position its correlation distance is measured
+ * from; per node, the recent positions its speed is derived from; and the Jakes
+ * fading paths of its background UEs' links.
  *
  * The radio medium keeps one of these for every channel model that evaluates
  * links (CellularRadioMedium::getChannelState()). Each is that model's own: two
  * models evaluating the same link hold two independent entries for it. Whether
- * a link is in line of sight, and its shadowing, are not part of it: the medium
- * keeps those once per link (CellularRadioMedium::getLosMap(),
- * getShadowingMap()).
+ * a link between radios is in line of sight, its shadowing and its Jakes fading
+ * paths are not part of it: the medium keeps those once per link
+ * (CellularRadioMedium::getLosMap(), getShadowingMap(), getJakesFadingMap()).
  */
 struct ChannelState
 {
@@ -102,8 +102,8 @@ struct ChannelState
     };
     typedef std::map<LinkKey, ShadowingSample> ShadowFadingMap;
 
-    JakesFadingMap jakesFadingMap;                               // per link: the Jakes fading paths of every band
-    JakesFadingMap jakesFadingMapBgUe;                           // the same, for the links of background UEs
+    JakesFadingMap jakesFadingMap;                               // per background UE: the Jakes fading paths of its link, for an UL CQI
+    JakesFadingMap jakesFadingMapBgUe;                           // the same, for a DL CQI
     std::map<MacNodeId, std::queue<Position>> positionHistory;   // per node: its last two positions
     std::map<LinkKey, Position> lastCorrelationPoint;            // per link: the position the correlation distance is measured from
 };

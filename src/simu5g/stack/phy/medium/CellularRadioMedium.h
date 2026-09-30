@@ -53,6 +53,7 @@ class CellularRadioMedium : public cSimpleModule
     std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
     std::map<GHz, std::map<LinkKey, bool>> losMaps; // per carrier: whether each link is in line of sight
     std::map<GHz, ChannelState::ShadowFadingMap> shadowingMaps; // per carrier: the last shadowing sample of each link
+    std::map<GHz, ChannelState::JakesFadingMap> jakesFadingMaps; // per carrier: the Jakes fading paths of each link
 
   protected:
     virtual void initialize(int stage) override;
@@ -125,6 +126,13 @@ class CellularRadioMedium : public cSimpleModule
      * evaluating it. Created and kept as getLosMap().
      */
     virtual ChannelState::ShadowFadingMap& getShadowingMap(GHz carrierFrequency);
+
+    /**
+     * The Jakes fading paths of each link on the carrier, every band's, by
+     * link: one realization per link, shared by every channel model
+     * evaluating it. Created and kept as getLosMap().
+     */
+    virtual ChannelState::JakesFadingMap& getJakesFadingMap(GHz carrierFrequency);
 };
 
 } // namespace simu5g

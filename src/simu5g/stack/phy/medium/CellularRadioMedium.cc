@@ -178,4 +178,9 @@ ChannelState::ShadowFadingMap& CellularRadioMedium::getShadowingMap(GHz carrierF
     return shadowingMaps[carrierFrequency];
 }
 
+ChannelState::JakesFadingMap& CellularRadioMedium::getJakesFadingMap(GHz carrierFrequency)
+{
+    return jakesFadingMaps[carrierFrequency];
+}
+
 } // namespace simu5g
