@@ -16,15 +16,15 @@ names the receiving UE of a beacon, a frame with no destination.
 linkFor() is checked for the four cases it distinguishes: downlink data, which
 the UE decodes; uplink data, which the base station decodes; and the feedback
 variants, which the base station evaluates for a CQI. In each: the endpoints,
-the geometry, and the model's own channel state -- keyed on the UE, fed by the
-UE's position, and read from the UE's side only for a downlink CQI.
+the geometry, and the model's own channel state -- keyed on the UE and fed by
+the UE's position.
 
 The property that matters most is stated on its own. The link a downlink CQI
 is computed on, at the base station, and the link the UE decodes downlink data
 on are the same physical link evaluated from its two ends: same endpoints,
-positions and state key, differing in nothing but where the state is read.
-That is the geometric half of what the Jakes and shadowing tests assert about
-the state itself.
+positions and state key. The two ends see the same link, whose state the radio
+medium keeps once. That is the geometric half of what the Jakes and shadowing
+tests assert about the state itself.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -49,7 +49,7 @@ static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeI
     return info;
 }
 
-static bool sameLinkExceptSide(const RadioLink& a, const RadioLink& b)
+static bool sameLink(const RadioLink& a, const RadioLink& b)
 {
     return a.linkKey == b.linkKey && a.txId == b.txId && a.rxId == b.rxId && a.txCoord == b.txCoord && a.rxCoord == b.rxCoord
            && a.stateKey == b.stateKey && a.stateNodeId == b.stateNodeId && a.stateCoord == b.stateCoord
@@ -114,8 +114,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("DL data: the base station transmits to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
-    c.check("...and the UE's state, read from the decoder's own maps",
-            l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
+    c.check("...and the UE's state, fed by the UE's own position",
+            l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos);
     c.check("...and the link is the base station and the UE, by their node ids", l.linkKey == LinkKey(enbId, ueId));
 }
 {
@@ -125,8 +125,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("UL data: the UE transmits to the base station",
             l.txId == ueId && l.rxId == enbId && !l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
-    c.check("...and the UE's state -- always the UE's, fed by the UE's position -- from the base station's maps",
-            l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
+    c.check("...and the UE's state -- always the UE's, fed by the UE's position",
+            l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos);
     c.check("...the same link, named from the other end", l.linkKey == LinkKey(enbId, ueId));
 }
 {
@@ -138,18 +138,16 @@ ChannelModelProbe atEnb(bs), atUe(ue);
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
     c.check("...evaluated where the report arrived, from the UE's reported position",
             l.txCoord == enbPos && l.rxCoord == uePos && l.stateCoord == uePos);
-    c.check("...and the state read from the UE's side", l.useUeSideMaps);
     c.check("...on the same link", l.linkKey == LinkKey(enbId, ueId));
 }
 {
-    // Feedback for an uplink CQI is the uplink link, with the base station's
-    // own state.
+    // Feedback for an uplink CQI is the uplink link.
     UserControlInfo info = controlInfo(UL, FEEDBACKPKT, ueId, enbId, uePos);
     UserControlInfo data = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
     RadioLink uplinkData = atEnb.linkFor(&data);
     RadioLink l = atEnb.linkFor(&info);
     c.check("UL CQI: the same link as the uplink data it describes, state included",
-            sameLinkExceptSide(l, uplinkData) && !l.useUeSideMaps);
+            sameLink(l, uplinkData));
 }
 {
     // A beacon names no destination: the link is its sender and the radio
@@ -162,44 +160,38 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("...while the model's own state is keyed on the missing destination", l.stateKey == LinkKey(NODEID_NONE));
 }
 {
-    // The property the selection exists for, at the level of the link itself.
+    // The two ends see the same link, at the level of the link itself.
     UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
     UserControlInfo report = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
     RadioLink decoderView = atUe.linkFor(&decode);
     RadioLink cqiView = atEnb.linkFor(&report);
     c.check("the link a DL CQI is computed on is the link the UE decodes on, seen from the other end",
-            sameLinkExceptSide(cqiView, decoderView));
-    c.check("...both reading the UE's state -- the decoder its own, the base station the UE's",
-            !decoderView.useUeSideMaps && cqiView.useUeSideMaps);
+            sameLink(cqiView, decoderView));
 }
 
 //
 // --- cellularLink() ---
 //
 {
-    RadioLink dl = atUe.cellularLink(ueId, DL, enbPos, false);
+    RadioLink dl = atUe.cellularLink(ueId, DL, enbPos);
     c.check("cellularLink, DL: the other end transmits, the local end is the UE",
             dl.txIsBaseStation && dl.txCoord == enbPos && dl.rxCoord == uePos && dl.rxId == ueId);
     c.check("...and the UE's state is fed by the local position",
             dl.stateKey == LinkKey(ueId) && dl.stateNodeId == ueId && dl.stateCoord == uePos);
     c.check("...and the link is the UE and an unnamed base station", dl.linkKey == LinkKey(ueId, NODEID_NONE));
 
-    RadioLink ul = atEnb.cellularLink(ueId, UL, uePos, false);
+    RadioLink ul = atEnb.cellularLink(ueId, UL, uePos);
     c.check("cellularLink, UL: the UE at the given position transmits to the local base station",
             !ul.txIsBaseStation && ul.txCoord == uePos && ul.rxCoord == enbPos && ul.txId == ueId);
     c.check("...and the UE's state is fed by the given position", ul.stateCoord == uePos);
     c.check("...and the link is the UE and the local base station, named by its own radio",
             ul.rxId == enbId && ul.linkKey == LinkKey(ueId, enbId));
-
-    c.check("cellularLink takes the side of the state from its argument",
-            atEnb.cellularLink(ueId, DL, uePos, true).useUeSideMaps
-            && !atEnb.cellularLink(ueId, DL, uePos, false).useUeSideMaps);
 }
 
 c.summary();
 
 %contains: stdout
-modelchecks=24 modelfailures=0
+modelchecks=21 modelfailures=0
 
 %not-contains: stdout
 FAILED

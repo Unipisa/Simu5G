@@ -17,9 +17,6 @@ with this name fails instead of every test failing for no visible reason.
  - the network builds, and each channel model comes up on the carrier it was
    configured with;
  - a model's own endpoint is whatever the test hands setPhy();
- - a stub UE registered through the Binder's real API is the endpoint the model
-   reaches when it looks a UE up -- the route by which one channel model finds
-   another's Jakes state, and the one IRadioEndpoint lets a stub take part in;
  - an RngSnapshot reproduces the numbers the model draws next, which is what
    lets the other tests grade a random recurrence exactly.
 
@@ -68,7 +65,6 @@ sim-time-limit = 1s
 
 %activity:
 Checker c;
-Binder *binder = harnessModule<Binder>(this, "binder");
 auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 
@@ -86,31 +82,9 @@ auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
     own.coord = inet::Coord(12, 34, 1.5);
     bs->setPhy(&own);
     ChannelModelProbe probe(bs);
-    RadioLink link = probe.cellularLink(MacNodeId(1025), DL, inet::Coord(0, 0, 25), false);
+    RadioLink link = probe.cellularLink(MacNodeId(1025), DL, inet::Coord(0, 0, 25));
     c.check("the model's own position comes from the endpoint handed to setPhy()",
             link.rxCoord == own.coord);
-}
-{
-    // A UE registered through the Binder is the one the model reaches.
-    StubEndpoint ueEndpoint;
-    ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
-    const MacNodeId ueId = MacNodeId(1025);
-    StubUeRegistration registration(binder, ueId, &ueEndpoint);
-
-    ChannelModelProbe probe(bs);
-    c.check("a registered stub UE's Jakes map is the one its own model holds",
-            probe.obtainUeJakesMap(ueId) == ue->getJakesMap());
-    c.expectRejected("an id nobody registered is rejected, not answered with no map", [&] {
-        probe.obtainUeJakesMap(MacNodeId(1099));
-    });
-
-    // A registered UE whose model on this carrier is not a StochasticChannelModel
-    // is rejected too.
-    StubEndpoint modelless;
-    StubUeRegistration modellessRegistration(binder, MacNodeId(1026), &modelless);
-    c.expectRejected("a UE without a stochastic model on the carrier is rejected (Jakes)", [&] {
-        probe.obtainUeJakesMap(MacNodeId(1026));
-    });
 }
 {
     // The snapshot replays the model's own stream, draw for draw.
@@ -126,7 +100,7 @@ auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 c.summary();
 
 %contains: stdout
-modelchecks=7 modelfailures=0
+modelchecks=4 modelfailures=0
 
 %not-contains: stdout
 FAILED

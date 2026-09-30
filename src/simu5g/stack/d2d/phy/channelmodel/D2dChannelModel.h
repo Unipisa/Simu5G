@@ -46,7 +46,7 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
      * what makes a D2D link different: no sectorial antenna (hence no angular
      * attenuation); the gains and the noise figure are the two UEs' radios'.
      */
-    RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord, bool useUeSideMaps);
+    RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
 
     /*
      * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction

@@ -33,7 +33,7 @@ void D2dChannelModel::initialize(int stage)
     }
 }
 
-RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId destId, Coord destCoord, bool useUeSideMaps)
+RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId destId, Coord destCoord)
 {
     RadioLink link;
     link.dir = D2D;
@@ -53,13 +53,12 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     // of sharing the transmitter's single slot (and colliding with the
     // transmitter's own cellular state).
     //
-    // The owning node stays the transmitter: it is that UE's channel model that
-    // holds the maps, and it is that UE's motion that defines the speed.
+    // The owning node stays the transmitter: it is that UE's motion that defines
+    // the speed.
     link.linkKey = LinkKey(link.txId, link.rxId);
     link.stateKey = LinkKey(srcId, destId);
     link.stateNodeId = srcId;
     link.stateCoord = srcCoord;
-    link.useUeSideMaps = useUeSideMaps;
 
     return link;
 }
@@ -68,8 +67,7 @@ std::vector<double> D2dChannelModel::getRSRP_D2D(AirFrame *frame, UserControlInf
 {
     EV << "------------ GET RSRP D2D----------------" << endl;
 
-    // D2D is like DL for the receivers, so the UE-side fading/shadowing maps apply.
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord, true);
+    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
 
     // Note the D2D-specific transmit power: a D2D transmission does not use the
     // power the UE would use towards the base station.
@@ -90,7 +88,7 @@ std::vector<double> D2dChannelModel::getSINR_D2D(AirFrame *frame, UserControlInf
 
     // The desired signal is already known; the core adds noise and interference,
     // asking computeInterferencePlusNoise() below for the D2D denominator.
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord, true);
+    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
     link.cellId = enbId;
 
     // The caller is expected to supply one RSRP value per band. The one-to-many
@@ -228,8 +226,8 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
 
                 // get tx power and attenuation from this UE
                 double rxPwr = txPwr - cableLossOf(destId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(destId, antennaGainUe_);
-                // interferer -> our receiver; the eNB-side maps are used for interferers
-                double att = getAttenuation(d2dLink(ueId, ueCoord, destId, destCoord, false));
+                // interferer -> our receiver
+                double att = getAttenuation(d2dLink(ueId, ueCoord, destId, destCoord));
                 (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
                 EV << "\t band " << i << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[i] << "]" << endl;

@@ -145,7 +145,7 @@ const bool los1 = atUe.losMap().at(link1);
 {
     // What the interference computation evaluates.
     long long before = drawn(otherBs);
-    otherBs->getAttenuation(atOther.cellularLink(MacNodeId(1025), UL, ue.coord, false));
+    otherBs->getAttenuation(atOther.cellularLink(MacNodeId(1025), UL, ue.coord));
     c.expectValue("the other cell evaluating its link to the UE, as for interference, reads that state: no draw",
             drawn(otherBs) - before, 0);
 }

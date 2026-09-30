@@ -158,7 +158,7 @@ void StochasticChannelModel::initialize(int stage)
     }
 }
 
-RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord, bool cqiDl)
+RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord)
 {
     // The local module is one endpoint and 'coord' the other; 'dir' says which
     // of the two is the UE. The UE is the node whose channel state we track.
@@ -168,7 +168,6 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     // UE: a model keeps one entry per UE, whichever base station is the other end.
     link.stateKey = LinkKey(ueId);
     link.stateNodeId = ueId;
-    link.useUeSideMaps = cqiDl;
 
     if (dir == DL) { // the local module is the UE, 'coord' is the BS
         link.txIsBaseStation = true;
@@ -215,7 +214,6 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         eNbId = lteInfo->getSourceId();
         ueCoord = phy_->getCoord();
         enbCoord = coord;
-        link.useUeSideMaps = false;
     }
     /*
      * If the direction is UL, or the packet is a feedback packet, this function is called
@@ -227,8 +225,6 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         eNbId = lteInfo->getDestId();
         ueCoord = coord;
         enbCoord = phy_->getCoord();
-        // for a DL CQI we need the maps stored on the UE side
-        link.useUeSideMaps = (link.dir == DL);
     }
 
     if (link.dir == DL) {
@@ -749,7 +745,8 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     double noiseFigure = 0.0;
     double speed = 0.0;
 
-    // true if we are computing a CQI for the DL direction
+    // true if we are computing a CQI for the DL direction, which selects the
+    // background UE's DL-CQI Jakes map rather than its UL-CQI one
     bool cqiDl = false;
 
     EV << "------------ GET SINR for background UE ----------------" << endl;
@@ -764,7 +761,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
         //set antenna gain figure
         antennaGainTx = antennaGainEnB_; //dB
         antennaGainRx = antennaGainUe_;  //dB
-        // use the jakes map on the UE side
+        // the background UE's DL-CQI Jakes map
         cqiDl = true;
     }
     else { // if( dir == UL )
@@ -772,7 +769,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
         antennaGainTx = antennaGainUe_;
         antennaGainRx = antennaGainEnB_;
         noiseFigure = bsNoiseFigure_;
-        // use the jakes map on the eNb side
+        // the background UE's UL-CQI Jakes map
         cqiDl = false;
     }
     speed = computeSpeed(bgUeId, ueCoord);
@@ -791,7 +788,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     // Note that shadowing and fading effects are not applied here and left FFW
 
     // UL because we are computing a feedback
-    RadioLink link = cellularLink(bgUeId, UL, ueCoord, cqiDl);
+    RadioLink link = cellularLink(bgUeId, UL, ueCoord);
     double attenuation = getAttenuation(link);
 
     //compute recvPower
@@ -1345,33 +1342,6 @@ double StochasticChannelModel::computeExtCellPathLoss(double dist, const LinkKey
     return attenuation;
 }
 
-StochasticChannelModel *StochasticChannelModel::obtainUeChannelModel(MacNodeId id)
-{
-    // obtain a reference to the UE's endpoint
-    IRadioEndpoint *phy = nullptr;
-
-    for (const auto& ueInfo : binder_->getUeList()) {
-        if (ueInfo->id == id) {
-            phy = ueInfo->phy;
-            break;
-        }
-    }
-
-    if (phy == nullptr)
-        throw cRuntimeError("StochasticChannelModel::obtainUeChannelModel - UE %d is not known to the Binder", (int)num(id));
-
-    StochasticChannelModel *model = dynamic_cast<StochasticChannelModel *>(phy->getChannelModel(carrierFrequency_));
-    if (model == nullptr)
-        throw cRuntimeError("StochasticChannelModel::obtainUeChannelModel - UE %d has no StochasticChannelModel on carrier %g GHz",
-                (int)num(id), carrierFrequency_.get());
-    return model;
-}
-
-StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap(MacNodeId id)
-{
-    return obtainUeChannelModel(id)->getJakesMap();
-}
-
 bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,
         std::vector<double> *interference)
 {
@@ -1410,7 +1380,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             continue;
 
         // compute attenuation using data structures within the cell
-        double att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
+        double att = interfChanModel->getAttenuation(ueId, UL, coord);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]";
 
         //=============== ANGULAR ATTENUATION =================
@@ -1526,7 +1496,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
 
                     // get rx power and attenuation from this UE
                     double rxPwr = txPwr - cableLossOf(eNbId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(eNbId, antennaGainEnB_);
-                    double att = getAttenuation(ueId, UL, ueCoord, false);
+                    double att = getAttenuation(ueId, UL, ueCoord);
                     (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
                     EV << "\t band " << i << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[i] << "]" << endl;
@@ -1569,7 +1539,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
 
                     // get tx power and attenuation from this UE
                     double rxPwr = txPwr - cableLossOf(eNbId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(eNbId, antennaGainEnB_);
-                    double att = getAttenuation(ueId, UL, ueCoord, false);
+                    double att = getAttenuation(ueId, UL, ueCoord);
                     (*interference)[i] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
                     EV << "\t band " << i << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[i] << "]" << endl;

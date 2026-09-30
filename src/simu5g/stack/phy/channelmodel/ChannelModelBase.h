@@ -38,12 +38,12 @@ class Binder;
  *
  * The channel model used to be phrased as "a link between me (phy_->getCoord())
  * and one remote endpoint", with Direction selecting -- all at once -- which
- * endpoint was mobile, which antenna gains applied, which noise figure applied,
- * and which fading/shadowing map to use. A UE-to-UE link fits neither of those
- * two shapes, which is why the D2D channel model had to re-implement the whole
- * propagation path rather than reuse it.
+ * endpoint was mobile, which antenna gains applied, and which noise figure
+ * applied. A UE-to-UE link fits neither of those two shapes, which is why the
+ * D2D channel model had to re-implement the whole propagation path rather than
+ * reuse it.
  *
- * Here those four things are data. `dir` survives only as a tag: it selects the
+ * Here those things are data. `dir` survives only as a tag: it selects the
  * statistic to emit and dispatches the (genuinely cellular-topology-aware)
  * interference computation, but it no longer derives any of the link geometry
  * or the link budget.
@@ -76,7 +76,6 @@ struct RadioLink
     MacNodeId stateNodeId = NODEID_NONE;
 
     inet::Coord stateCoord;      // position feeding computeSpeed + correlation distance
-    bool useUeSideMaps = false;  // the former 'cqiDl' flag
 
     // ---- radios ----
     // The link budget is not part of the link: the antenna gains, the cable loss

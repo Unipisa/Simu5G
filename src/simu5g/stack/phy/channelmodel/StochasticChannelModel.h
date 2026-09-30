@@ -207,9 +207,9 @@ class StochasticChannelModel : public ChannelModelBase
      * @param dir traffic direction
      * @param coord position of end point communication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
+    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord)
     {
-        return getAttenuation(cellularLink(nodeId, dir, coord, cqiDl));
+        return getAttenuation(cellularLink(nodeId, dir, coord));
     }
 
     /*
@@ -331,11 +331,6 @@ class StochasticChannelModel : public ChannelModelBase
      */
     virtual void computeLosProbability(double d3D, double d2D, const LinkKey& key);
 
-    JakesFadingMap *getJakesMap()
-    {
-        return &jakesFadingMap();
-    }
-
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
     /*
      * Compute the received useful signal (RSRP) per band over a radio link.
@@ -390,7 +385,7 @@ class StochasticChannelModel : public ChannelModelBase
      * local module is one endpoint, 'coord' the other, and 'dir' says which of
      * the two is the UE.
      */
-    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord, bool cqiDl);
+    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord);
 
     /*
      * Emit the received-SINR statistic for a decoded frame, on the UE's
@@ -524,21 +519,6 @@ class StochasticChannelModel : public ChannelModelBase
      * @return attenuation expressed in dBm
      */
     virtual double computeExtCellPathLoss(double dist, const LinkKey& key);
-
-    /*
-     * The channel model of the specified UE on this model's carrier. Throws if
-     * the Binder does not know the UE, or if that model is not a
-     * StochasticChannelModel.
-     * @param id mac id of the user
-     */
-    virtual StochasticChannelModel *obtainUeChannelModel(MacNodeId id);
-
-    /*
-     * Obtain the jakes map for the specified UE
-     * @param id mac id of the user
-     */
-    virtual JakesFadingMap *obtainUeJakesMap(MacNodeId id);
-
 };
 
 } //namespace

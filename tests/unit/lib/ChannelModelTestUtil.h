@@ -160,7 +160,6 @@ class ChannelModelProbe
         static auto computeCorrelationDistancePtr() { return &Access::computeCorrelationDistance; }
         static auto updateCorrelationDistancePtr() { return &Access::updateCorrelationDistance; }
         static auto updatePositionHistoryPtr() { return &Access::updatePositionHistory; }
-        static auto obtainUeJakesMapPtr() { return &Access::obtainUeJakesMap; }
         static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
     };
 
@@ -188,9 +187,9 @@ class ChannelModelProbe
 
     // internal steps
     RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info); }
-    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord, bool cqiDl)
+    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord)
     {
-        return (model_->*Access::cellularLinkPtr())(ueId, dir, coord, cqiDl);
+        return (model_->*Access::cellularLinkPtr())(ueId, dir, coord);
     }
     double computeSpeed(MacNodeId id, inet::Coord coord) { return (model_->*Access::computeSpeedPtr())(id, coord); }
     double computeCorrelationDistance(const LinkKey& key, inet::Coord coord)
@@ -202,7 +201,6 @@ class ChannelModelProbe
         (model_->*Access::updateCorrelationDistancePtr())(key, coord);
     }
     void updatePositionHistory(MacNodeId id, inet::Coord coord) { (model_->*Access::updatePositionHistoryPtr())(id, coord); }
-    auto *obtainUeJakesMap(MacNodeId id) { return (model_->*Access::obtainUeJakesMapPtr())(id); }
     void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
     {
         (model_->*Access::emitRcvdSinrPtr())(dir, ueId, carrierFrequency, sinr);
