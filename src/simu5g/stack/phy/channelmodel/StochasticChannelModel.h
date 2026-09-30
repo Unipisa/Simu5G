@@ -49,8 +49,7 @@ class PathLossModel;
  * whether each link is in line of sight, its shadowing and its Jakes fading
  * paths, once per link and shared by every channel model evaluating it
  * (losMap(), shadowingMap(), jakesFadingMap()), and this model's own position
- * histories and correlation points, and the fading paths of its background
- * UEs' links (channelState()).
+ * histories and correlation points (channelState()).
  *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
@@ -310,9 +309,8 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * Compute the Jakes fading of one band of a link. The link's fading paths
      * are drawn into jakesMap, every band's at once, when it is first
-     * evaluated: for a link between radios that is jakesFadingMap(), kept once
-     * per link; a background UE's link keeps its own in the model's channel
-     * state.
+     * evaluated; the channel model's evaluations use jakesFadingMap(), kept
+     * once per link.
      *
      * @param jakesMap the fading paths, by link
      * @param key the link

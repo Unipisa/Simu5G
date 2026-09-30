@@ -16,9 +16,9 @@ evaluate the same operations in the same order.
 A link has one realization, kept once per link by the radio medium and used by
 whichever end evaluates it: a DL CQI computed at the base station describes
 exactly the channel the UE then decodes through, and the uplink of the same pair
-of nodes is faded by the same paths. Background UEs have no radio on the medium,
-so theirs are kept in the evaluating model's own channel state, one map for a DL
-CQI and one for an UL CQI.
+of nodes is faded by the same paths. A background UE has no radio on the medium,
+but its link to the base station is a link like any other: its DL and UL CQIs
+fade by one realization.
 
 rayleighFading() is pinned as a set of tripwires, because what it does is
 surprising and ought to fail loudly if it changes: it is a lookup in the one
@@ -274,19 +274,31 @@ wait(0.010);
     c.check("...and no new entry", bsProbe.jakesMap().size() == entries && bsProbe.jakesMap().count(link) == 1);
 }
 {
-    // A background UE has no radio on the medium; its realization lives in the
-    // evaluating model's background maps, one for a DL CQI and one for an UL CQI.
-    const LinkKey key(MacNodeId(BGUE_MIN_ID + 3));
-    size_t mediumMapSize = bsProbe.jakesMap().size();
-    bs->jakesFading(bsProbe.bgUeJakesMapDl(), key, 3.0, 0);
-    c.check("a background UE's DL CQI fades from the model's background DL map",
-            bsProbe.bgUeJakesMapDl().count(key) == 1);
-    c.check("...and touches no link's map", bsProbe.jakesMap().size() == mediumMapSize);
+    // A background UE has no radio on the medium, but its link to the base
+    // station is a link like any other: its CQIs, DL and UL, are computed at
+    // the base station over one realization, kept once per link.
+    const MacNodeId bgUeId = MacNodeId(BGUE_MIN_ID + 3);
+    const LinkKey link(bgUeId, MacNodeId(1));
+    AirFrame frame;
+    UserControlInfo dl = controlInfo(DL, FEEDBACKPKT, bgUeId, MacNodeId(1), inet::Coord(80, 60, 1.5));
+    dl.setTxPower(40.0);
+    UserControlInfo ul = dl;
+    ul.setDirection(UL);
+    ul.setTxPower(23.0);
 
-    const LinkKey key2(MacNodeId(BGUE_MIN_ID + 4));
-    bs->jakesFading(bsProbe.bgUeJakesMapUl(), key2, 3.0, 0);
-    c.check("its UL CQI fades from the model's background UL map",
-            bsProbe.bgUeJakesMapUl().count(key2) == 1 && bsProbe.bgUeJakesMapDl().count(key2) == 0);
+    bs->getSINR_bgUe(&frame, &dl);
+    c.check("a background UE's DL CQI draws the fading paths of its link to the base station",
+            bsProbe.jakesMap().count(link) == 1);
+
+    // what the UL CQI draws, against what an identical evaluation draws at once
+    // (the path loss may draw on its own account)
+    unsigned long before = bs->getRNG(0)->getNumbersDrawn();
+    bs->getSINR_bgUe(&frame, &ul);
+    long long ulDraws = bs->getRNG(0)->getNumbersDrawn() - before;
+    before = bs->getRNG(0)->getNumbersDrawn();
+    bs->getSINR_bgUe(&frame, &ul);
+    long long repeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
+    c.expectValue("...and its UL CQI fades by the same paths, drawing none of its own", ulDraws, repeatDraws);
 }
 
 //
@@ -320,7 +332,7 @@ wait(0.010);
 c.summary();
 
 %contains: stdout
-modelchecks=22 modelfailures=0
+modelchecks=21 modelfailures=0
 
 %not-contains: stdout
 FAILED

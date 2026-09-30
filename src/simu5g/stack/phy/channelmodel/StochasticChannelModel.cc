@@ -745,9 +745,6 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     double noiseFigure = 0.0;
     double speed = 0.0;
 
-    // true if we are computing a CQI for the DL direction, which selects the
-    // background UE's DL-CQI Jakes map rather than its UL-CQI one
-    bool cqiDl = false;
 
     EV << "------------ GET SINR for background UE ----------------" << endl;
     //===================== PARAMETERS SETUP ============================
@@ -761,16 +758,12 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
         //set antenna gain figure
         antennaGainTx = antennaGainEnB_; //dB
         antennaGainRx = antennaGainUe_;  //dB
-        // the background UE's DL-CQI Jakes map
-        cqiDl = true;
     }
     else { // if( dir == UL )
         // TODO check if antennaGainEnB should be added in UL direction too
         antennaGainTx = antennaGainUe_;
         antennaGainRx = antennaGainEnB_;
         noiseFigure = bsNoiseFigure_;
-        // the background UE's UL-CQI Jakes map
-        cqiDl = false;
     }
     speed = computeSpeed(bgUeId, ueCoord);
 
@@ -841,10 +834,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
                 fadingAttenuation = rayleighFading(bgUeId, i);
 
             else if (fadingType_ == JAKES)
-                // a background UE's link keeps its fading paths in the model's own
-                // channel state, one map for a DL CQI and one for an UL CQI
-                fadingAttenuation = jakesFading(cqiDl ? channelState().jakesFadingMapBgUe : channelState().jakesFadingMap,
-                        LinkKey(bgUeId), speed, i);
+                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i);
         }
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm

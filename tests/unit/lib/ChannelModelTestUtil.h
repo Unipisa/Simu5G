@@ -174,8 +174,6 @@ class ChannelModelProbe
     ChannelState& channelState() { return (model_->*Access::channelStatePtr())(); }
     auto& positionHistory() { return channelState().positionHistory; }
     auto& lastCorrelationPoint() { return channelState().lastCorrelationPoint; }
-    auto& bgUeJakesMapUl() { return channelState().jakesFadingMap; }
-    auto& bgUeJakesMapDl() { return channelState().jakesFadingMapBgUe; }
     // the LOS state of the links on the model's carrier, which the radio medium keeps once per link
     std::map<LinkKey, bool>& losMap() { return (model_->*Access::losMapPtr())(); }
     // the shadowing of the links on the model's carrier, which the radio medium keeps once per link

@@ -64,9 +64,9 @@
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 0,                          5s,         6986-7682/tplx;f377-052f/tilx;e800-b05c/~tNl;a392-5a97/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 1,                          5s,         47b1-4d4f/tplx;34bc-6b93/tilx;e800-b05c/~tNl;e3e7-e620/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 2,                          5s,         ba7d-cc78/tplx;949f-9dc5/tilx;e800-b05c/~tNl;078c-e941/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         1c4e-ccac/tplx;06fb-2cde/tilx;631b-72e9/~tNl;7645-098d/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         9154-0665/tplx;dc87-f556/tilx;97c7-c676/~tNl;ea48-4828/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         8e7d-f68f/tplx;476f-c672/tilx;64fe-8d7a/~tNl;0e1d-acb3/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         ea52-3cc2/tplx;b23f-b482/tilx;eeeb-ce43/~tNl;355c-fe27/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         10a1-240e/tplx;fafa-058d/tilx;2b24-25fe/~tNl;81db-229d/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         4b7a-cc43/tplx;20b8-a3c6/tilx;2ac4-ae65/~tNl;b83a-12b9/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         fb79-601c/tplx;f792-401b/tilx;34c3-9a0a/~tNl;d218-9cba/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         8c1f-08fd/tplx;e0c4-fa26/tilx;a161-8489/~tNl;dbb5-4dd7/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         260d-0da2/tplx;0c3b-2d99/tilx;4818-1816/~tNl;372d-eaff/sz, PASS, radio bgcell bgue
