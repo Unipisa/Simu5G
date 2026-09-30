@@ -168,4 +168,9 @@ void CellularRadioMedium::removeChannelState(const cComponent *channelModel)
     channelStates.erase(channelModel);
 }
 
+std::map<LinkKey, bool>& CellularRadioMedium::getLosMap(GHz carrierFrequency)
+{
+    return losMaps[carrierFrequency];
+}
+
 } // namespace simu5g

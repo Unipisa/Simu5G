@@ -51,6 +51,7 @@ class CellularRadioMedium : public cSimpleModule
     long nextTransmissionId = 0;
     std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
     std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
+    std::map<GHz, std::map<LinkKey, bool>> losMaps; // per carrier: whether each link is in line of sight
 
   protected:
     virtual void initialize(int stage) override;
@@ -107,6 +108,15 @@ class CellularRadioMedium : public cSimpleModule
 
     /** Drops the channel state of the given channel model, if it has any. */
     virtual void removeChannelState(const cComponent *channelModel);
+
+    /**
+     * Whether each link on the carrier is in line of sight, by link: one state
+     * per link, shared by every channel model evaluating it. Created empty on
+     * first use; the reference stays valid for the lifetime of the medium.
+     * Entries are never removed: node ids are not reused, so the links of a
+     * radio that has left are simply never looked up again.
+     */
+    virtual std::map<LinkKey, bool>& getLosMap(GHz carrierFrequency);
 };
 
 } // namespace simu5g

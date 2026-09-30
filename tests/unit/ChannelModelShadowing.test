@@ -25,7 +25,8 @@ specification, change them together with that test.
 sigma is not the model's to choose: it comes from the path-loss strategy's
 getShadowingStdDev() for the link's LOS state, which PathLossShadowing grades
 against the 3GPP tables. Asserting the delegation here is what keeps that
-test covering the value this one uses.
+test covering the value this one uses. The caller passes that state in: whether
+a link is in line of sight is decided once per link, not by the shadowing.
 
 Per-link keying is checked because it is the whole point of LinkKey: two links
 of the same node are two independent realizations, not one shared value. The
@@ -51,6 +52,7 @@ static RadioLink linkTo(MacNodeId node, const inet::Coord& bs, const inet::Coord
     link.rxId = node;
     link.txCoord = bs;
     link.rxCoord = ueCoord;
+    link.linkKey = LinkKey(MacNodeId(1), node);
     link.stateKey = LinkKey(node);
     link.stateNodeId = node;
     link.stateCoord = ueCoord;
@@ -120,11 +122,9 @@ const double d3D = 200.0, d2D = 198.6;
 // --- the first value, and where sigma comes from ---
 //
 {
-    // Two fresh links of different LOS state: each first value is one normal
+    // Two fresh links, one in LOS and one not: each first value is one normal
     // draw with the strategy's sigma for that state.
-    const LinkKey los(MacNodeId(1100)), nlos(MacNodeId(1101));
-    bsProbe.losMap()[los] = true;
-    bsProbe.losMap()[nlos] = false;
+    const LinkKey losLink(MacNodeId(1100)), nlosLink(MacNodeId(1101));
     double sigmaLos = pathLoss->getShadowingStdDev(d3D, d2D, true);
     double sigmaNlos = pathLoss->getShadowingStdDev(d3D, d2D, false);
     c.check("the strategy's sigma differs between LOS and NLOS here, so the next checks discriminate",
@@ -132,13 +132,13 @@ const double d3D = 200.0, d2D = 198.6;
             "LOS=" + std::to_string(sigmaLos) + " NLOS=" + std::to_string(sigmaNlos));
 
     RngSnapshot snapshot(bs);
-    double gotLos = bs->computeShadowing(d3D, d2D, los, MacNodeId(1100), 0.0, false);
-    double gotNlos = bs->computeShadowing(d3D, d2D, nlos, MacNodeId(1101), 0.0, false);
+    double gotLos = bs->computeShadowing(d3D, d2D, true, losLink, MacNodeId(1100), 0.0, false);
+    double gotNlos = bs->computeShadowing(d3D, d2D, false, nlosLink, MacNodeId(1101), 0.0, false);
     c.expectNear("a link's first shadowing value is N(0, sigma), sigma from the strategy for LOS",
             gotLos, omnetpp::normal(snapshot.rng(), 0, sigmaLos), 0);
     c.expectNear("...and for NLOS", gotNlos, omnetpp::normal(snapshot.rng(), 0, sigmaNlos), 0);
     c.check("...and it is stored, stamped with the time it was drawn",
-            bsProbe.shadowingMap().at(los).first == simTime() && bsProbe.shadowingMap().at(los).second == gotLos);
+            bsProbe.shadowingMap().at(losLink).first == simTime() && bsProbe.shadowingMap().at(losLink).second == gotLos);
 }
 
 //
@@ -148,13 +148,12 @@ const double d3D = 200.0, d2D = 198.6;
     // A stationary UE never moves past the correlation distance, so its
     // shadowing is a constant offset for the whole run.
     const LinkKey key(MacNodeId(1102));
-    bsProbe.losMap()[key] = false;
-    double first = bs->computeShadowing(d3D, d2D, key, MacNodeId(1102), 0.0, false);
+    double first = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1102), 0.0, false);
     unsigned long drawn = bs->getRNG(0)->getNumbersDrawn();
     bool constant = true;
     for (int i = 0; i < 5; i++) {
         wait(7.0);
-        if (bs->computeShadowing(d3D, d2D, key, MacNodeId(1102), 0.0, false) != first)
+        if (bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1102), 0.0, false) != first)
             constant = false;
     }
     c.check("a stationary UE keeps its shadowing for the whole run", constant);
@@ -165,12 +164,11 @@ const double d3D = 200.0, d2D = 198.6;
     // Moving, but not yet past the correlation distance: held. Exactly at it:
     // still held, the inequality is strict.
     const LinkKey key(MacNodeId(1103));
-    bsProbe.losMap()[key] = false;
-    double first = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
+    double first = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1103), 10.0, false);
     wait(2.0);                                   // 20 m at 10 m/s
-    double within = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
+    double within = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1103), 10.0, false);
     wait(3.0);                                   // 50 m in all: exactly dcorr
-    double atBoundary = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
+    double atBoundary = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1103), 10.0, false);
     c.check("PINNED DEFECT: below the correlation distance the value is held", within == first);
     c.check("PINNED DEFECT: exactly at the correlation distance it is still held (the test is strict)",
             atBoundary == first, "dcorr=" + std::to_string(dcorr));
@@ -181,7 +179,7 @@ const double d3D = 200.0, d2D = 198.6;
     simtime_t stamped = bsProbe.shadowingMap().at(key).first;
     double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
     RngSnapshot snapshot(bs);
-    double updated = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
+    double updated = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1103), 10.0, false);
     double space = (simTime() - stamped).dbl() * 10.0;
     double a = exp(-0.5 * (space / dcorr));
     double expected = a * old + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
@@ -198,12 +196,10 @@ const double d3D = 200.0, d2D = 198.6;
     // Two links of one node are two independent realizations.
     const MacNodeId owner = MacNodeId(1104);
     const LinkKey toPeerA(owner, MacNodeId(1105)), toPeerB(owner, MacNodeId(1106));
-    bsProbe.losMap()[toPeerA] = false;
-    bsProbe.losMap()[toPeerB] = false;
     double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
     RngSnapshot snapshot(bs);
-    double a = bs->computeShadowing(d3D, d2D, toPeerA, owner, 0.0, false);
-    double b = bs->computeShadowing(d3D, d2D, toPeerB, owner, 0.0, false);
+    double a = bs->computeShadowing(d3D, d2D, false, toPeerA, owner, 0.0, false);
+    double b = bs->computeShadowing(d3D, d2D, false, toPeerB, owner, 0.0, false);
     c.check("two links of one node get two entries", bsProbe.shadowingMap().count(toPeerA) == 1
             && bsProbe.shadowingMap().count(toPeerB) == 1);
     c.check("...each its own draw",
@@ -214,18 +210,16 @@ const double d3D = 200.0, d2D = 198.6;
     // A DL CQI at the base station reads the UE's own map, and so assumes the
     // shadowing the UE decodes through.
     const LinkKey key(ueId);
-    bsProbe.losMap()[key] = false;
-    ueProbe.losMap()[key] = false;
-    double cqiView = bs->computeShadowing(d3D, d2D, key, ueId, 0.0, true);
+    double cqiView = bs->computeShadowing(d3D, d2D, false, key, ueId, 0.0, true);
     c.check("a DL CQI's shadowing is kept in the UE's map", ueProbe.shadowingMap().count(key) == 1
             && bsProbe.shadowingMap().count(key) == 0);
-    double decoderView = ue->computeShadowing(d3D, d2D, key, ueId, 0.0, false);
+    double decoderView = ue->computeShadowing(d3D, d2D, false, key, ueId, 0.0, false);
     c.check("the shadowing a DL CQI assumes is the shadowing the UE decodes through",
             cqiView == decoderView);
 
     // A UE the Binder does not know is an error, not a silent default.
     c.expectRejected("a DL CQI for a UE the Binder does not know is rejected", [&] {
-        bs->computeShadowing(d3D, d2D, LinkKey(MacNodeId(1199)), MacNodeId(1199), 0.0, true);
+        bs->computeShadowing(d3D, d2D, false, LinkKey(MacNodeId(1199)), MacNodeId(1199), 0.0, true);
     });
 }
 

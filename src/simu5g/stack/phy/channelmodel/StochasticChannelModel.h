@@ -45,9 +45,11 @@ class PathLossModel;
  *   history, speed, and the point at which shadowing and LOS were last drawn;
  * - the SINR statistics.
  *
- * The state the evaluations carry from one to the next -- LOS states, shadowing
- * samples, Jakes fading paths, position histories and correlation points -- is
- * this model's own, but the radio medium keeps it (channelState()).
+ * The radio medium keeps the state the evaluations carry from one to the next:
+ * whether each link is in line of sight, once per link and shared by every
+ * channel model evaluating it (losMap()), and this model's own shadowing
+ * samples, Jakes fading paths, position histories and correlation points
+ * (channelState()).
  *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
@@ -118,6 +120,7 @@ class StochasticChannelModel : public ChannelModelBase
     typedef ChannelState::ShadowFadingMap ShadowFadingMap;
 
     ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
+    std::map<LinkKey, bool> *losMap_ = nullptr; // the LOS state of the links on this model's carrier, kept by the radio medium; see losMap()
 
     // Scenario
     DeploymentScenario scenario_;
@@ -235,10 +238,11 @@ class StochasticChannelModel : public ChannelModelBase
      *
      * @param d3D 3D distance between UE and eNodeB
      * @param d2D 2D distance between UE and eNodeB
+     * @param los whether the link is in line of sight, which selects the standard deviation
      * @param nodeid mac node id of UE
      * @param speed speed of UE
      */
-    virtual double computeShadowing(double d3D, double d2D, const LinkKey& key, MacNodeId ownerId, double speed, bool cqiDl);
+    virtual double computeShadowing(double d3D, double d2D, bool los, const LinkKey& key, MacNodeId ownerId, double speed, bool cqiDl);
 
     /*
      * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
@@ -310,11 +314,12 @@ class StochasticChannelModel : public ChannelModelBase
     virtual double jakesFading(const LinkKey& key, MacNodeId ownerId, double speed, unsigned int band, bool cqiDl, bool isBgUe = false);
 
     /*
-     * Compute LOS probability
+     * Decide whether the link is in line of sight -- drawn against the LOS
+     * probability, or fixedLos if dynamicLos is off -- and record it in losMap()
      *
      * @param d3D 3D distance between UE and eNodeB
      * @param d2D 2D distance between UE and eNodeB
-     * @param nodeid mac node id of UE
+     * @param key the link (RadioLink::linkKey)
      */
     virtual void computeLosProbability(double d3D, double d2D, const LinkKey& key);
 
@@ -348,6 +353,13 @@ class StochasticChannelModel : public ChannelModelBase
      */
     ChannelState& channelState();
     const ChannelState& channelState() const;
+
+    /*
+     * Whether each link on this model's carrier is in line of sight, by link
+     * (RadioLink::linkKey), which the radio medium keeps once per link for
+     * every channel model evaluating it. Resolved on first use.
+     */
+    std::map<LinkKey, bool>& losMap();
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and the
@@ -475,18 +487,23 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Evaluates total interference from external cells seen from the spot given by coord
+     * @param link the link the interference is computed for, whose LOS state the
+     *        path loss from the external cells takes (see computeExtCellPathLoss)
      * @return total interference expressed in dBm
      */
-    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference);
+    virtual bool computeExtCellInterference(MacNodeId eNbId, const LinkKey& link, inet::Coord coord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference);
 
     /*
      * Evaluates total interference from external cells seen from the spot given by coord
+     * @param link the link the interference is computed for, whose LOS state the
+     *        path loss from the background cells takes (see computeExtCellPathLoss)
      * @return total interference expressed in dBm
      */
-    virtual bool computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double> *interference);
+    virtual bool computeBackgroundCellInterference(const LinkKey& link, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double> *interference);
 
     /*
-     * Compute attenuation due to path loss and shadowing
+     * Compute attenuation due to path loss, in the LOS state of the given link
+     * (RadioLink::linkKey) unless enableExtCellLos is off
      * @return attenuation expressed in dBm
      */
     virtual double computeExtCellPathLoss(double dist, const LinkKey& key);

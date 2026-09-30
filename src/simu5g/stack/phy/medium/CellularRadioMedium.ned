@@ -17,11 +17,12 @@ package simu5g.stack.phy.medium;
 // the SINR, while the nodes keep their antennas, receivers and reception
 // decisions. So far it keeps the registry of the radios (every PHY registers
 // its own), delivers broadcast frames, the base station beacons, to the
-// radios in range, and keeps the channel state -- LOS states, shadowing
-// samples, fading paths, position histories -- that the channel models
-// evaluate links against, one record per channel model; the channel models
-// still do the rest. Exactly one instance is expected in the network, named
-// radioMedium.
+// radios in range, and keeps the channel state the channel models evaluate
+// links against: whether each link is in line of sight, once per link and
+// carrier, shared by every channel model evaluating the link, and its
+// shadowing samples, fading paths and position histories, one record per
+// channel model. The channel models still do everything else. Exactly one
+// instance is expected in the network, named radioMedium.
 //
 // The parameters pMax, sat, alpha and carrierFrequency are not part of the
 // radio propagation model -- that is the channel model of each PHY -- but they

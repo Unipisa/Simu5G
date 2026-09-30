@@ -57,11 +57,14 @@ struct RadioLink
     inet::Coord rxCoord;
 
     // ---- channel state ----
-    // linkKey is the link itself: the node ids of its two radios.
+    // linkKey is the link itself: the node ids of its two radios. It indexes the
+    // state the radio medium keeps per link and shares among every channel
+    // model evaluating the link: whether it is in line of sight.
     LinkKey linkKey;
 
-    // stateKey indexes the per-link entries of the channel state (ChannelState):
-    // LOS, shadowing, Jakes fading and the correlation point.
+    // stateKey indexes the per-link entries of the evaluating channel model's
+    // own channel state (ChannelState): shadowing, Jakes fading and the
+    // correlation point.
     LinkKey stateKey;
 
     // stateNodeId is the *node* the state belongs to -- the UE. It selects whose

@@ -196,6 +196,7 @@ wait(1.0);
     link.rxId = id;
     link.txCoord = Coord(-200, 0, 10);
     link.rxCoord = now;
+    link.linkKey = LinkKey(MacNodeId(1), id);
     link.stateKey = LinkKey(id);
     link.stateNodeId = id;
     link.stateCoord = now;

@@ -7,11 +7,17 @@ transmits and whose channel state to use -- so these two functions are where
 those choices are made. (The link budget is not part of the link: it is the
 two radios'.)
 
+The link itself is linkKey: the node ids of its two radios. It is what the
+state the medium keeps per link -- whether the link is in line of sight -- is
+indexed by, and it is the same key from either end. linkFor() takes the
+frame's source as the other end and the local radio as this one, which also
+names the receiving UE of a beacon, a frame with no destination.
+
 linkFor() is checked for the four cases it distinguishes: downlink data, which
 the UE decodes; uplink data, which the base station decodes; and the feedback
 variants, which the base station evaluates for a CQI. In each: the endpoints,
-the geometry, and the channel state -- keyed on the UE, fed by the UE's
-position, and read from the UE's side only for a downlink CQI.
+the geometry, and the model's own channel state -- keyed on the UE, fed by the
+UE's position, and read from the UE's side only for a downlink CQI.
 
 The property that matters most is stated on its own. The link a downlink CQI
 is computed on, at the base station, and the link the UE decodes downlink data
@@ -45,7 +51,7 @@ static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeI
 
 static bool sameLinkExceptSide(const RadioLink& a, const RadioLink& b)
 {
-    return a.txId == b.txId && a.rxId == b.rxId && a.txCoord == b.txCoord && a.rxCoord == b.rxCoord
+    return a.linkKey == b.linkKey && a.txId == b.txId && a.rxId == b.rxId && a.txCoord == b.txCoord && a.rxCoord == b.rxCoord
            && a.stateKey == b.stateKey && a.stateNodeId == b.stateNodeId && a.stateCoord == b.stateCoord
            && a.txIsBaseStation == b.txIsBaseStation
            && a.cellId == b.cellId && a.dir == b.dir;
@@ -92,6 +98,8 @@ const Coord enbPos(0, 0, 25), uePos(120, 45, 1.5);
 StubEndpoint enbEndpoint, ueEndpoint;
 enbEndpoint.coord = enbPos;
 ueEndpoint.coord = uePos;
+enbEndpoint.nodeId = enbId;
+ueEndpoint.nodeId = ueId;
 bs->setPhy(&enbEndpoint);
 ue->setPhy(&ueEndpoint);
 ChannelModelProbe atEnb(bs), atUe(ue);
@@ -108,6 +116,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
     c.check("...and the UE's state, read from the decoder's own maps",
             l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
+    c.check("...and the link is the base station and the UE, by their node ids", l.linkKey == LinkKey(enbId, ueId));
 }
 {
     // Uplink data, decoded at the base station: the UE sent it.
@@ -118,6 +127,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
     c.check("...and the UE's state -- always the UE's, fed by the UE's position -- from the base station's maps",
             l.stateKey == LinkKey(ueId) && l.stateNodeId == ueId && l.stateCoord == uePos && !l.useUeSideMaps);
+    c.check("...the same link, named from the other end", l.linkKey == LinkKey(enbId, ueId));
 }
 {
     // Feedback for a downlink CQI, evaluated at the base station: the UE sent
@@ -129,6 +139,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("...evaluated where the report arrived, from the UE's reported position",
             l.txCoord == enbPos && l.rxCoord == uePos && l.stateCoord == uePos);
     c.check("...and the state read from the UE's side", l.useUeSideMaps);
+    c.check("...on the same link", l.linkKey == LinkKey(enbId, ueId));
 }
 {
     // Feedback for an uplink CQI is the uplink link, with the base station's
@@ -139,6 +150,15 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     RadioLink l = atEnb.linkFor(&info);
     c.check("UL CQI: the same link as the uplink data it describes, state included",
             sameLinkExceptSide(l, uplinkData) && !l.useUeSideMaps);
+}
+{
+    // A beacon names no destination: the link is its sender and the radio
+    // that received it. The model's own state is still keyed on the UE the
+    // frame names, which is none.
+    UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE, enbPos);
+    RadioLink l = atUe.linkFor(&info);
+    c.check("a beacon: the link is its sender and the receiving radio", l.linkKey == LinkKey(enbId, ueId));
+    c.check("...while the model's own state is keyed on the missing destination", l.stateKey == LinkKey(NODEID_NONE));
 }
 {
     // The property the selection exists for, at the level of the link itself.
@@ -161,11 +181,13 @@ ChannelModelProbe atEnb(bs), atUe(ue);
             dl.txIsBaseStation && dl.txCoord == enbPos && dl.rxCoord == uePos && dl.rxId == ueId);
     c.check("...and the UE's state is fed by the local position",
             dl.stateKey == LinkKey(ueId) && dl.stateNodeId == ueId && dl.stateCoord == uePos);
+    c.check("...and the link is the UE and an unnamed base station", dl.linkKey == LinkKey(ueId, NODEID_NONE));
 
     RadioLink ul = atEnb.cellularLink(ueId, UL, uePos, false);
     c.check("cellularLink, UL: the UE at the given position transmits to the local base station",
             !ul.txIsBaseStation && ul.txCoord == uePos && ul.rxCoord == enbPos && ul.txId == ueId);
     c.check("...and the UE's state is fed by the given position", ul.stateCoord == uePos);
+    c.check("...and the link is the UE and the local base station", ul.linkKey == LinkKey(ueId, enbId));
 
     c.check("cellularLink takes the side of the state from its argument",
             atEnb.cellularLink(ueId, DL, uePos, true).useUeSideMaps
@@ -175,7 +197,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 c.summary();
 
 %contains: stdout
-modelchecks=17 modelfailures=0
+modelchecks=24 modelfailures=0
 
 %not-contains: stdout
 FAILED

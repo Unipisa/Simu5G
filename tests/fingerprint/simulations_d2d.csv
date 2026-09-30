@@ -83,7 +83,7 @@
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-UL -r 3,              10s,         74bd-4d14/tplx;2459-242c/tilx;d2e6-aa57/~tNl;437c-9647/sz, PASS, radio interference multicarrier
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-UL -r 4,              10s,         02a4-1c79/tplx;bc3c-e1e5/tilx;a642-4062/~tNl;2353-29d0/sz, PASS, radio interference multicarrier
 /simulations/nr/test_tdd/,               -f omnetpp.ini -c TestTdd -r 0,                         5s,         e7ee-935b/tplx;fdd8-94eb/tilx;b85d-91ea/~tNl;d48c-874a/sz, PASS, radio interference
-/simulations/nr/d2d/,                    -f omnetpp.ini -c ChannelModel-DynamicLos -r 0,         20s,        8792-0e10/tplx;3b9b-f084/tilx;df30-d642/~tNl;f9bc-e1bc/sz, PASS, radio propagation
+/simulations/nr/d2d/,                    -f omnetpp.ini -c ChannelModel-DynamicLos -r 0,         20s,        7097-4d6f/tplx;2a52-4c36/tilx;96ac-684d/~tNl;b8e8-fe0e/sz, PASS, radio propagation
 /simulations/nr/d2d/,                    -f omnetpp.ini -c ChannelModel-IndoorD2D -r 0,           5s,        daf1-c2e4/tplx;a858-2f27/tilx;3e0c-4cc1/~tNl;34dc-e4f4/sz, PASS, radio propagation
 /simulations/nr/dualConnectivity/,       -f omnetpp.ini -c NeDualConn-VoIP-DL-IPv6 -r 0,           5s,        87bd-6a43/tplx;fdc0-1215/tilx;de38-15ee/~tNl;d072-f0b6/sz, PASS, radio
 /simulations/lte/d2d/,                   -f omnetpp.ini -c SinglePair-UDP-D2D-IPv6 -r 0,           5s,        9b44-edef/tplx;67bd-53ee/tilx;422e-bbdf/~tNl;9190-1394/sz, PASS, radio
