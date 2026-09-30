@@ -89,7 +89,18 @@ struct ChannelState
 
     typedef std::vector<JakesFadingData> JakesFadingVector;          // one entry per band
     typedef std::map<LinkKey, JakesFadingVector> JakesFadingMap;
-    typedef std::map<LinkKey, std::pair<simtime_t, double>> ShadowFadingMap; // when drawn, and the value in dB
+    /**
+     * A link's last shadowing sample: when it was drawn, where the link's two
+     * radios were then, in the order of its key, and its value in dB.
+     */
+    struct ShadowingSample
+    {
+        simtime_t time;
+        inet::Coord positionA; // where LinkKey::a was
+        inet::Coord positionB; // where LinkKey::b was
+        double value = 0;
+    };
+    typedef std::map<LinkKey, ShadowingSample> ShadowFadingMap;
 
     JakesFadingMap jakesFadingMap;                               // per link: the Jakes fading paths of every band
     JakesFadingMap jakesFadingMapBgUe;                           // the same, for the links of background UEs

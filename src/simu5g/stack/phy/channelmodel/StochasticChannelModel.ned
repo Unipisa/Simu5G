@@ -63,6 +63,9 @@ simple StochasticChannelModel extends ChannelModelBase
         double ueHeight @unit(m) = default(1.5m);
         bool tolerateMaxDistViolation = default(false);
 
+        // How far a link's ends must move before its LOS state and its shadowing
+        // are drawn again: the shadowing is redrawn, correlated with the previous
+        // sample, when either end has moved farther than this since that sample
         double correlationDistance @unit(m) = default(50m);
 
         // Target BLER used to compute feedback

@@ -5,12 +5,13 @@ and how it evolves -- the second of the two stateful mechanisms a refactoring
 of the medium has to move, after Jakes fading.
 
 The model keeps one shadowing value per link and updates it with a first-order
-recurrence: once the UE has travelled more than the correlation distance since
-the last update,
+recurrence the specification does not give but the model states: once either
+end of the link is farther than the correlation distance from where the last
+sample was drawn,
 
     att = a * old + sqrt(1 - a^2) * N(0, sigma),   a = exp(-0.5 * space / dcorr)
 
-and below that distance the previous value is returned unchanged. The draws
+and at or below that distance the previous value is returned unchanged. The draws
 are replayed from an RngSnapshot, so the recurrence is graded exactly rather
 than statistically, including the strict inequality at the boundary.
 
@@ -21,6 +22,13 @@ a = exp(-dx/d_cor) at every displacement. ChannelModelShadowingCorrelation
 asserts the specification as an expected failure. The pins are here so that
 any change to the model's update fails by name; when the model follows the
 specification, change them together with that test.
+
+Distance here is displacement, not distance travelled, and time plays no part: a
+UE that goes out and comes back keeps its sample, and one that jumps past the
+correlation distance is redrawn at once. Both ends of the link count, the
+farther-moved one deciding, so a D2D link's sample is the same whichever of its
+UEs transmits; for a cellular link, whose base station stays put, it is how far
+the UE has moved.
 
 sigma is not the model's to choose: it comes from the path-loss strategy's
 getShadowingStdDev() for the link's LOS state, which PathLossShadowing grades
@@ -71,6 +79,23 @@ static RadioLink linkTo(MacNodeId node, const inet::Coord& bs, const inet::Coord
     link.stateNodeId = node;
     link.stateCoord = ueCoord;
     link.txIsBaseStation = true;
+    return link;
+}
+
+// The link between two UEs, from 'tx' to 'rx'.
+static RadioLink d2dLinkBetween(MacNodeId tx, const inet::Coord& txCoord, MacNodeId rx, const inet::Coord& rxCoord)
+{
+    RadioLink link;
+    link.dir = D2D;
+    link.txId = tx;
+    link.rxId = rx;
+    link.txCoord = txCoord;
+    link.rxCoord = rxCoord;
+    link.linkKey = LinkKey(tx, rx);
+    link.stateKey = LinkKey(tx, rx);
+    link.stateNodeId = tx;
+    link.stateCoord = txCoord;
+    link.txIsBaseStation = false;
     return link;
 }
 
@@ -133,6 +158,7 @@ ChannelModelProbe bsProbe(bs), ueProbe(ue);
 PathLossModel *pathLoss = bsProbe.pathLoss();
 const double dcorr = bs->par("correlationDistance").doubleValue();
 const double d3D = 200.0, d2D = 198.6;
+const inet::Coord bsPos(0, 0, 25);
 
 //
 // --- the first value, and where sigma comes from ---
@@ -140,7 +166,10 @@ const double d3D = 200.0, d2D = 198.6;
 {
     // Two fresh links, one in LOS and one not: each first value is one normal
     // draw with the strategy's sigma for that state.
-    const LinkKey losLink(MacNodeId(1100)), nlosLink(MacNodeId(1101));
+    const LinkKey losKey(MacNodeId(1), MacNodeId(1100));
+    const inet::Coord uePos(200, 0, 1.5);
+    const RadioLink losLink = linkTo(MacNodeId(1100), bsPos, uePos);
+    const RadioLink nlosLink = linkTo(MacNodeId(1101), bsPos, uePos);
     double sigmaLos = pathLoss->getShadowingStdDev(d3D, d2D, true);
     double sigmaNlos = pathLoss->getShadowingStdDev(d3D, d2D, false);
     c.check("the strategy's sigma differs between LOS and NLOS here, so the next checks discriminate",
@@ -148,13 +177,15 @@ const double d3D = 200.0, d2D = 198.6;
             "LOS=" + std::to_string(sigmaLos) + " NLOS=" + std::to_string(sigmaNlos));
 
     RngSnapshot snapshot(bs);
-    double gotLos = bs->computeShadowing(d3D, d2D, true, losLink, 0.0);
-    double gotNlos = bs->computeShadowing(d3D, d2D, false, nlosLink, 0.0);
+    double gotLos = bs->computeShadowing(d3D, d2D, true, losLink);
+    double gotNlos = bs->computeShadowing(d3D, d2D, false, nlosLink);
     c.expectNear("a link's first shadowing value is N(0, sigma), sigma from the strategy for LOS",
             gotLos, omnetpp::normal(snapshot.rng(), 0, sigmaLos), 0);
     c.expectNear("...and for NLOS", gotNlos, omnetpp::normal(snapshot.rng(), 0, sigmaNlos), 0);
-    c.check("...and it is stored, stamped with the time it was drawn",
-            bsProbe.shadowingMap().at(losLink).first == simTime() && bsProbe.shadowingMap().at(losLink).second == gotLos);
+    const auto& sample = bsProbe.shadowingMap().at(losKey);
+    c.check("...and it is stored, stamped with when and where it was drawn",
+            sample.time == simTime() && sample.value == gotLos
+            && sample.positionA == bsPos && sample.positionB == uePos);
 }
 
 //
@@ -163,13 +194,13 @@ const double d3D = 200.0, d2D = 198.6;
 {
     // A stationary UE never moves past the correlation distance, so its
     // shadowing is a constant offset for the whole run.
-    const LinkKey key(MacNodeId(1102));
-    double first = bs->computeShadowing(d3D, d2D, false, key, 0.0);
+    const RadioLink link = linkTo(MacNodeId(1102), bsPos, inet::Coord(200, 0, 1.5));
+    double first = bs->computeShadowing(d3D, d2D, false, link);
     unsigned long drawn = bs->getRNG(0)->getNumbersDrawn();
     bool constant = true;
     for (int i = 0; i < 5; i++) {
         wait(7.0);
-        if (bs->computeShadowing(d3D, d2D, false, key, 0.0) != first)
+        if (bs->computeShadowing(d3D, d2D, false, link) != first)
             constant = false;
     }
     c.check("a stationary UE keeps its shadowing for the whole run", constant);
@@ -177,32 +208,84 @@ const double d3D = 200.0, d2D = 198.6;
             (long long)(bs->getRNG(0)->getNumbersDrawn() - drawn), 0);
 }
 {
-    // Moving, but not yet past the correlation distance: held. Exactly at it:
-    // still held, the inequality is strict.
-    const LinkKey key(MacNodeId(1103));
-    double first = bs->computeShadowing(d3D, d2D, false, key, 10.0);
-    wait(2.0);                                   // 20 m at 10 m/s
-    double within = bs->computeShadowing(d3D, d2D, false, key, 10.0);
-    wait(3.0);                                   // 50 m in all: exactly dcorr
-    double atBoundary = bs->computeShadowing(d3D, d2D, false, key, 10.0);
+    // Moving, but not yet past the correlation distance from where the sample
+    // was drawn: held. Exactly at it: still held, the inequality is strict.
+    const MacNodeId node = MacNodeId(1103);
+    const LinkKey key(MacNodeId(1), node);
+    double first = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(200, 0, 1.5)));
+    double within = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(220, 0, 1.5)));
+    double atBoundary = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(250, 0, 1.5)));
     c.check("PINNED DEFECT: below the correlation distance the value is held", within == first);
     c.check("PINNED DEFECT: exactly at the correlation distance it is still held (the test is strict)",
             atBoundary == first, "dcorr=" + std::to_string(dcorr));
 
     // Past it: the recurrence, graded from the replayed draw.
-    wait(1.0);                                   // 60 m since the value was drawn
-    double old = bsProbe.shadowingMap().at(key).second;
-    simtime_t stamped = bsProbe.shadowingMap().at(key).first;
+    double old = bsProbe.shadowingMap().at(key).value;
     double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
     RngSnapshot snapshot(bs);
-    double updated = bs->computeShadowing(d3D, d2D, false, key, 10.0);
-    double space = (simTime() - stamped).dbl() * 10.0;
+    double updated = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(260, 0, 1.5)));
+    double space = 60.0;
     double a = exp(-0.5 * (space / dcorr));
     double expected = a * old + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
-    c.expectNear("PINNED DEFECT: past it, att = a*old + sqrt(1-a^2)*N(0,sigma), a = exp(-0.5*space/dcorr)",
+    c.expectNear("PINNED DEFECT: past it, att = a*old + sqrt(1-a^2)*N(0,sigma), a = exp(-0.5*space/dcorr), space the distance moved",
             updated, expected, 0);
-    c.check("...and the update restarts the distance count from now",
-            bsProbe.shadowingMap().at(key).first == simTime());
+    const auto& sample = bsProbe.shadowingMap().at(key);
+    c.check("...and the new sample records where and when it was drawn",
+            sample.positionB == inet::Coord(260, 0, 1.5) && sample.time == simTime());
+}
+
+//
+// --- displacement, not distance travelled ---
+//
+{
+    const MacNodeId node = MacNodeId(1107);
+    const LinkKey key(MacNodeId(1), node);
+    double first = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(200, 0, 1.5)));
+    unsigned long drawn = bs->getRNG(0)->getNumbersDrawn();
+    double out = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(240, 0, 1.5)));
+    double back = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(210, 0, 1.5)));
+    c.check("PINNED DEFECT: a UE that goes out and comes back keeps its sample: what counts is how far it is from "
+            "where the sample was drawn, not how far it went",
+            out == first && back == first
+            && bs->getRNG(0)->getNumbersDrawn() == drawn);
+
+    // No time passes: the jump is graded like any other update.
+    double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
+    RngSnapshot snapshot(bs);
+    double jumped = bs->computeShadowing(d3D, d2D, false, linkTo(node, bsPos, inet::Coord(300, 0, 1.5)));
+    double space = 100.0;
+    double a = exp(-0.5 * (space / dcorr));
+    double expected = a * first + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
+    c.expectNear("PINNED DEFECT: ...and the time it took does not matter: a jump past the correlation distance redraws at once",
+            jumped, expected, 0);
+}
+
+//
+// --- both ends of a link count ---
+//
+{
+    const MacNodeId tx = MacNodeId(1110), rx = MacNodeId(1111);
+    const LinkKey key(tx, rx);
+    const inet::Coord txPos(500, 0, 1.5), rxPos(520, 0, 1.5), rxMoved(580, 0, 1.5);
+    double first = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(tx, txPos, rx, rxPos));
+
+    // Only the receiver moves.
+    double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
+    RngSnapshot snapshot(bs);
+    double updated = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(tx, txPos, rx, rxMoved));
+    double space = 60.0;
+    double a = exp(-0.5 * (space / dcorr));
+    double expected = a * first + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
+    c.check("a link's sample is redrawn when either end has moved past the correlation distance -- here the receiver",
+            updated != first);
+    c.expectNear("PINNED DEFECT: ...as the recurrence, with the distance the receiver moved", updated, expected, 0);
+
+    // The other direction, at the same positions.
+    unsigned long drawn = bs->getRNG(0)->getNumbersDrawn();
+    double reverse = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(rx, rxMoved, tx, txPos));
+    c.check("...and it is the same sample whichever end transmits: the other direction, at the same positions, holds it",
+            reverse == updated && bs->getRNG(0)->getNumbersDrawn() == drawn
+            && bsProbe.shadowingMap().count(key) == 1);
 }
 
 //
@@ -210,14 +293,14 @@ const double d3D = 200.0, d2D = 198.6;
 //
 {
     // Two links of one node are two independent realizations.
-    const MacNodeId owner = MacNodeId(1104);
-    const LinkKey toPeerA(owner, MacNodeId(1105)), toPeerB(owner, MacNodeId(1106));
+    const MacNodeId owner = MacNodeId(1104), peerA = MacNodeId(1105), peerB = MacNodeId(1106);
+    const inet::Coord ownerPos(700, 0, 1.5);
     double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
     RngSnapshot snapshot(bs);
-    double a = bs->computeShadowing(d3D, d2D, false, toPeerA, 0.0);
-    double b = bs->computeShadowing(d3D, d2D, false, toPeerB, 0.0);
-    c.check("two links of one node get two entries", bsProbe.shadowingMap().count(toPeerA) == 1
-            && bsProbe.shadowingMap().count(toPeerB) == 1);
+    double a = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(owner, ownerPos, peerA, inet::Coord(720, 0, 1.5)));
+    double b = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(owner, ownerPos, peerB, inet::Coord(740, 0, 1.5)));
+    c.check("two links of one node get two entries", bsProbe.shadowingMap().count(LinkKey(owner, peerA)) == 1
+            && bsProbe.shadowingMap().count(LinkKey(owner, peerB)) == 1);
     c.check("...each its own draw",
             a == omnetpp::normal(snapshot.rng(), 0, sigma) && b == omnetpp::normal(snapshot.rng(), 0, sigma));
     c.check("...so the two differ", a != b);
@@ -254,7 +337,7 @@ const double d3D = 200.0, d2D = 198.6;
     // At the same geometry and LOS state, a regular UE's attenuation exceeds a
     // background UE's by exactly the regular UE's shadowing.
     const inet::Coord bsCoord(0, 0, 25), ueCoord(200, 0, 1.5);
-    const MacNodeId regular = MacNodeId(1107), background = MacNodeId(BGUE_MIN_ID + 7);
+    const MacNodeId regular = MacNodeId(1108), background = MacNodeId(BGUE_MIN_ID + 7);
     double attRegular = bs->getAttenuation(linkTo(regular, bsCoord, ueCoord));
 
     // The path loss may draw on its own account -- the TR 38.901 UMa formula
@@ -270,7 +353,7 @@ const double d3D = 200.0, d2D = 198.6;
     long long backgroundDraws = bs->getRNG(0)->getNumbersDrawn() - before;
 
     c.expectNear("a background UE's attenuation lacks exactly the shadowing a regular UE's has",
-            attRegular - attBackground, bsProbe.shadowingMap().at(LinkKey(MacNodeId(1), regular)).second, 1e-9);
+            attRegular - attBackground, bsProbe.shadowingMap().at(LinkKey(MacNodeId(1), regular)).value, 1e-9);
     c.check("...no shadowing is kept for it", bsProbe.shadowingMap().count(LinkKey(MacNodeId(1), background)) == 0);
     c.expectValue("...and it draws only what the path loss itself draws", backgroundDraws, pathLossDraws);
 }
@@ -278,7 +361,7 @@ const double d3D = 200.0, d2D = 198.6;
 c.summary();
 
 %contains: stdout
-modelchecks=20 modelfailures=0
+modelchecks=25 modelfailures=0
 
 %not-contains: stdout
 FAILED

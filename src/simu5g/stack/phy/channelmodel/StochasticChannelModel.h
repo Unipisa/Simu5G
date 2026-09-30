@@ -117,6 +117,7 @@ class StochasticChannelModel : public ChannelModelBase
     typedef ChannelState::JakesFadingData JakesFadingData;
     typedef ChannelState::JakesFadingVector JakesFadingVector;
     typedef ChannelState::JakesFadingMap JakesFadingMap;
+    typedef ChannelState::ShadowingSample ShadowingSample;
     typedef ChannelState::ShadowFadingMap ShadowFadingMap;
 
     ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
@@ -235,15 +236,16 @@ class StochasticChannelModel : public ChannelModelBase
     virtual double computeAngularAttenuation(double hAngle, double vAngle = 0);
 
     /*
-     * Compute shadowing
+     * Compute the shadowing of a link: its first sample is drawn, and it is
+     * redrawn, correlated with the previous sample, when either of its radios
+     * has moved more than the correlation distance since that sample was drawn
      *
      * @param d3D 3D distance between UE and eNodeB
      * @param d2D 2D distance between UE and eNodeB
      * @param los whether the link is in line of sight, which selects the standard deviation
-     * @param key the link (RadioLink::linkKey)
-     * @param speed speed of UE
+     * @param link the link, whose linkKey keys the sample and whose ends' positions it is drawn at
      */
-    virtual double computeShadowing(double d3D, double d2D, bool los, const LinkKey& key, double speed);
+    virtual double computeShadowing(double d3D, double d2D, bool los, const RadioLink& link);
 
     /*
      * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading

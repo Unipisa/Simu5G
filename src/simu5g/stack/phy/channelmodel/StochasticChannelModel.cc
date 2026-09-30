@@ -281,7 +281,6 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     double threeDimDistance = link.txCoord.distance(link.rxCoord);
     double twoDimDistance = getTwoDimDistance(link.txCoord, link.rxCoord);
 
-    double speed = computeSpeed(link.stateNodeId, link.stateCoord);
     double correlationDist = computeCorrelationDistance(link.stateKey, link.stateCoord);
 
     // If Euclidean distance since last LOS probability computation is greater than
@@ -300,7 +299,7 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     //    Applying shadowing only if it is enabled by configuration
     //    log-normal shadowing (not available for background UEs)
     if (num(link.stateNodeId) < BGUE_MIN_ID && shadowing_)
-        attenuation += computeShadowing(threeDimDistance, twoDimDistance, los, link.linkKey, speed);
+        attenuation += computeShadowing(threeDimDistance, twoDimDistance, los, link);
 
     // update the tracked node's current position
     updatePositionHistory(link.stateNodeId, link.stateCoord);
@@ -311,63 +310,57 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     return attenuation;
 }
 
-double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los, const LinkKey& key, double speed)
+double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los, const RadioLink& link)
 {
+    ASSERT(link.linkKey == LinkKey(link.txId, link.rxId));
+
     // one realization per link, whichever end and whichever direction asks
     ShadowFadingMap *actualShadowingMap = &shadowingMap();
+    const LinkKey& key = link.linkKey;
+
+    // where the link's two radios are, in the order of its key
+    bool txIsA = link.txId == key.a;
+    const Coord& positionA = txIsA ? link.txCoord : link.rxCoord;
+    const Coord& positionB = txIsA ? link.rxCoord : link.txCoord;
 
     double mean = 0;
 
     // Get std deviation according to LOS/NLOS and selected scenario
     double stdDev = pathLoss_->getShadowingStdDev(d3D, d2D, los);
-    double time = 0;
-    double space = 0;
     double att;
 
-    // if direction is DOWNLINK it means that this module is located in the UE stack than
-    // the Move object associated with the UE is myMove_ variable
-    // if direction is UPLINK it means that this module is located in the UE stack than
-    // the Move object associated with the UE is move variable
-
-    // if shadowing for current user has never been computed
-    if (actualShadowingMap->find(key) == actualShadowingMap->end()) {
+    auto it = actualShadowingMap->find(key);
+    // if shadowing for this link has never been computed
+    if (it == actualShadowingMap->end()) {
         //Get the log-normal shadowing with std deviation stdDev
         att = normal(mean, stdDev);
 
-        //store the shadowing attenuation for this user and the temporal mark
-        std::pair<simtime_t, double> tmp(NOW, att);
-        (*actualShadowingMap)[key] = tmp;
-
-        //If the shadowing attenuation has been computed at least one time for this user
-        // and the distance traveled by the UE is greater than correlation distance
-    }
-    else if ((NOW - actualShadowingMap->at(key).first).dbl() * speed
-             > correlationDistance_)
-    {
-
-        //get the temporal mark of the last computed shadowing attenuation
-        time = (NOW - actualShadowingMap->at(key).first).dbl();
-
-        //compute the traveled distance
-        space = time * speed;
-
-        //Compute shadowing with an EAW (Exponential Average Window) (step 1)
-        double a = exp(-0.5 * (space / correlationDistance_));
-
-        //Get last shadowing attenuation computed
-        double old = actualShadowingMap->at(key).second;
-
-        //Compute shadowing with an EAW (Exponential Average Window) (step 2)
-        att = a * old + sqrt(1 - pow(a, 2)) * normal(mean, stdDev);
-
-        // Store the new computed shadowing
-        std::pair<simtime_t, double> tmp(NOW, att);
-        (*actualShadowingMap)[key] = tmp;
-
-        // if the distance traveled by the UE is smaller than correlation distance shadowing attenuation remains the same
+        //store the shadowing attenuation for this link, with when and where it was drawn
+        (*actualShadowingMap)[key] = ShadowingSample{NOW, positionA, positionB, att};
     }
     else {
-        att = actualShadowingMap->at(key).second;
+        // how far the link has moved since the sample was drawn: the farther of
+        // its two ends (a base station stays put, so for a cellular link it is
+        // how far the UE has moved)
+        double space = std::max(positionA.distance(it->second.positionA), positionB.distance(it->second.positionB));
+
+        // if either end has moved more than the correlation distance
+        if (space > correlationDistance_) {
+            //Compute shadowing with an EAW (Exponential Average Window) (step 1)
+            double a = exp(-0.5 * (space / correlationDistance_));
+
+            //Get last shadowing attenuation computed
+            double old = it->second.value;
+
+            //Compute shadowing with an EAW (Exponential Average Window) (step 2)
+            att = a * old + sqrt(1 - pow(a, 2)) * normal(mean, stdDev);
+
+            // Store the new computed shadowing
+            it->second = ShadowingSample{NOW, positionA, positionB, att};
+        }
+        // otherwise the shadowing attenuation remains the same
+        else
+            att = it->second.value;
     }
 
     return att;

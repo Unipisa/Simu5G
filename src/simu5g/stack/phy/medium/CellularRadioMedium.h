@@ -120,9 +120,9 @@ class CellularRadioMedium : public cSimpleModule
     virtual std::map<LinkKey, bool>& getLosMap(GHz carrierFrequency);
 
     /**
-     * The last shadowing sample of each link on the carrier, and when it was
-     * drawn, by link: one per link, shared by every channel model evaluating
-     * it. Created and kept as getLosMap().
+     * The last shadowing sample of each link on the carrier, with when and
+     * where it was drawn, by link: one per link, shared by every channel model
+     * evaluating it. Created and kept as getLosMap().
      */
     virtual ChannelState::ShadowFadingMap& getShadowingMap(GHz carrierFrequency);
 };
