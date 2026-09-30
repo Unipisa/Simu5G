@@ -157,9 +157,6 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     // of the two is the UE. The UE is the node whose channel state we track.
     RadioLink link;
     link.dir = dir;
-    // The link is the UE and the local radio. For DL the local radio is the UE
-    // itself, and the base station at 'coord' is not named.
-    link.linkKey = (dir == DL) ? LinkKey(ueId, NODEID_NONE) : LinkKey(ueId, phy_->getMacNodeId());
     // The degenerate key {ueId, ueId} keys the model's own channel state on the
     // UE: a model keeps one entry per UE, whichever base station is the other end.
     link.stateKey = LinkKey(ueId);
@@ -180,9 +177,13 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
         link.rxCoord = phy_->getCoord();
         link.stateCoord = coord;
         link.txId = ueId;
+        link.rxId = phy_->getMacNodeId();
         link.txRadio = radioMedium_->findRadio(ueId);
         link.rxRadio = phy_;
     }
+    // The link is the UE and the local radio. For DL the local radio is the UE
+    // itself, and the base station at 'coord' is not named.
+    link.linkKey = LinkKey(link.txId, link.rxId);
     return link;
 }
 
@@ -238,25 +239,27 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.rxCoord = enbCoord;
     }
 
-    // the two radios: the local one is this model's own, the other the peer's
+    // The two radios: the local one is this model's own, the other the frame's
+    // source -- the base station of a DL frame or a beacon, the UE of a UL frame
+    // or a CQI report. The local end is named by the local radio, not by the
+    // frame's destination: a beacon and a cell-selection probe carry none.
+    MacNodeId localId = phy_->getMacNodeId();
     if (link.dir == DL && lteInfo->getFrameType() != FEEDBACKPKT) { // decoding at the UE
+        link.rxId = localId;
         link.txRadio = radioMedium_->findRadio(eNbId);
         link.rxRadio = phy_;
     }
     else if (link.dir == DL) { // a DL CQI, at the base station
+        link.txId = localId;
         link.txRadio = phy_;
         link.rxRadio = radioMedium_->findRadio(ueId);
     }
     else { // UL data or a UL CQI, at the base station
+        link.rxId = localId;
         link.txRadio = radioMedium_->findRadio(ueId);
         link.rxRadio = phy_;
     }
-
-    // The link is the frame's source and the local radio: whatever the direction,
-    // the source is the other end -- the base station of a DL frame or a beacon,
-    // the UE of a UL frame or a CQI report. A beacon and a cell-selection probe
-    // carry no destination, so the local end is named by the local radio.
-    link.linkKey = LinkKey(lteInfo->getSourceId(), phy_->getMacNodeId());
+    link.linkKey = LinkKey(link.txId, link.rxId);
 
     // The UE owns the channel state, and it is always the UE's position that feeds
     // the speed and correlation-distance computation -- which is why the old code's
@@ -546,10 +549,10 @@ std::vector<double> StochasticChannelModel::getSINR(const RadioLink& link, UserC
     // if sender is an eNodeB
     if (link.dir == DL)
         // store the position of user
-        updatePositionHistory(ueId, phy_->getCoord());
+        updatePositionHistory(link.stateNodeId, phy_->getCoord());
     // sender is a UE
     else
-        updatePositionHistory(ueId, lteInfo->getCoord());
+        updatePositionHistory(link.stateNodeId, lteInfo->getCoord());
     return snrVector;
 }
 

@@ -55,7 +55,7 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     //
     // The owning node stays the transmitter: it is that UE's channel model that
     // holds the maps, and it is that UE's motion that defines the speed.
-    link.linkKey = LinkKey(srcId, destId);
+    link.linkKey = LinkKey(link.txId, link.rxId);
     link.stateKey = LinkKey(srcId, destId);
     link.stateNodeId = srcId;
     link.stateCoord = srcCoord;

@@ -7,7 +7,7 @@ transmits and whose channel state to use -- so these two functions are where
 those choices are made. (The link budget is not part of the link: it is the
 two radios'.)
 
-The link itself is linkKey: the node ids of its two radios. It is what the
+The link itself is linkKey: the node ids of its two radios, txId and rxId. It is what the
 state the medium keeps per link -- whether the link is in line of sight -- is
 indexed by, and it is the same key from either end. linkFor() takes the
 frame's source as the other end and the local radio as this one, which also
@@ -157,7 +157,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // frame names, which is none.
     UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE, enbPos);
     RadioLink l = atUe.linkFor(&info);
-    c.check("a beacon: the link is its sender and the receiving radio", l.linkKey == LinkKey(enbId, ueId));
+    c.check("a beacon: the link is its sender and the receiving radio",
+            l.txId == enbId && l.rxId == ueId && l.linkKey == LinkKey(enbId, ueId));
     c.check("...while the model's own state is keyed on the missing destination", l.stateKey == LinkKey(NODEID_NONE));
 }
 {
@@ -187,7 +188,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("cellularLink, UL: the UE at the given position transmits to the local base station",
             !ul.txIsBaseStation && ul.txCoord == uePos && ul.rxCoord == enbPos && ul.txId == ueId);
     c.check("...and the UE's state is fed by the given position", ul.stateCoord == uePos);
-    c.check("...and the link is the UE and the local base station", ul.linkKey == LinkKey(ueId, enbId));
+    c.check("...and the link is the UE and the local base station, named by its own radio",
+            ul.rxId == enbId && ul.linkKey == LinkKey(ueId, enbId));
 
     c.check("cellularLink takes the side of the state from its argument",
             atEnb.cellularLink(ueId, DL, uePos, true).useUeSideMaps

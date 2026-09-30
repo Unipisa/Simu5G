@@ -51,13 +51,16 @@ class Binder;
 struct RadioLink
 {
     // ---- geometry ----
+    // The node ids of the two radios. The builders name both, the local one by
+    // the evaluating model's own radio, except where a caller does not name the
+    // other end (cellularLink() for DL leaves the base station NODEID_NONE).
     MacNodeId txId = NODEID_NONE;
     MacNodeId rxId = NODEID_NONE;
     inet::Coord txCoord;
     inet::Coord rxCoord;
 
     // ---- channel state ----
-    // linkKey is the link itself: the node ids of its two radios. It indexes the
+    // linkKey is the link itself: LinkKey(txId, rxId). It indexes the
     // state the radio medium keeps per link and shares among every channel
     // model evaluating the link: whether it is in line of sight, and its
     // shadowing.
