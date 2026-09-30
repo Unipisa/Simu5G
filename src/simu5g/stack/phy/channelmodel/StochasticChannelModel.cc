@@ -104,8 +104,16 @@ void StochasticChannelModel::initialize(int stage)
         shadowing_ = par("shadowing");
         hBuilding_ = par("buildingHeight");
         inside_building_ = par("insideBuilding");
-        if (inside_building_)
-            inside_distance_ = uniform(0.0, 25.0);
+        if (inside_building_) {
+            // The distance from the building wall is the UE's, not a carrier's:
+            // the first channel model of the radio's carriers draws it, and the
+            // others take it (they initialize after it, in vector order).
+            auto *first = isVector() && getIndex() > 0 ? dynamic_cast<StochasticChannelModel *>(getParentModule()->getSubmodule(getName(), 0)) : nullptr;
+            if (first != nullptr && first->inside_building_)
+                inside_distance_ = first->inside_distance_;
+            else
+                inside_distance_ = uniform(0.0, 25.0);
+        }
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
         hUe_ = par("ueHeight");
 

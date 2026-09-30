@@ -93,7 +93,8 @@ class StochasticChannelModel : public ChannelModelBase
     // true if the UE is inside a building
     bool inside_building_;
 
-    // distance from the building wall
+    // distance from the building wall: one per radio, the same for each of
+    // its carriers' channel models
     double inside_distance_;
 
     // flag for using high-loss or low-loss model for building penetration
