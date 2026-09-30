@@ -173,4 +173,9 @@ std::map<LinkKey, bool>& CellularRadioMedium::getLosMap(GHz carrierFrequency)
     return losMaps[carrierFrequency];
 }
 
+ChannelState::ShadowFadingMap& CellularRadioMedium::getShadowingMap(GHz carrierFrequency)
+{
+    return shadowingMaps[carrierFrequency];
+}
+
 } // namespace simu5g

@@ -9,28 +9,15 @@ that worth doing.
 
 Without shadowing the two directions agree exactly: the downlink and uplink
 budgets differ only by constants, so SINR_DL - SINR_UL is a constant. That
-check is LinkReciprocityBudget.test (run 0 of this configuration), which
-passes; this file runs only run 1, so that its expected failure covers nothing
-but the shadowing.
+check is LinkReciprocityBudget.test (run 0 of this configuration); this file
+runs run 1, with shadowing.
 
-With shadowing the same difference has to stay the same constant, because
-shadowing is a property of the link and not of the direction of travel. It
-does not. computeShadowing reads two different maps depending on which
-direction it is serving: a downlink CQI takes the map stored on the UE
-(obtainShadowingMap), everything else takes the evaluating module's own
-shadowing map. The key into those maps is the same LinkKey; the maps are
-not the same map. So one physical link acquires two independent shadowing
-realizations, and measured here the downlink is faded by 2.72 dB while the
-uplink is lifted by 9.22 dB at the same instant, for the same pair of nodes,
-at the same distance.
-
-Recorded as an expected failure rather than fixed. Which of the two maps
-should survive -- or whether both should be replaced by state the medium owns
-once per link -- is the same modelling question that decides the data layout
-of any refactoring of the medium, and it is not this test's to answer. What
-the test is for is that the answer stops being a matter of belief.
-
-%expected-failure: shadowing is drawn per direction, so a link is not reciprocal
+With shadowing the difference has to stay the same constant, because shadowing
+is a property of the link and not of the direction of travel. The model keeps
+one shadowing realization per link, read by whichever end evaluates it, so the
+downlink and the uplink of the same pair of nodes, at the same instant and
+distance, are faded alike and the difference is the same constant to the last
+digit.
 
 %extraargs: -c LinkReciprocity -r 1
 

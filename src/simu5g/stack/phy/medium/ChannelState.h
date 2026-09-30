@@ -64,15 +64,16 @@ inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
 
 /**
  * The channel state a channel model evaluates links against, and updates as it
- * evaluates them: per link, its last shadowing sample, its Jakes fading paths
- * and the position its correlation distance is measured from; per node, the
- * recent positions its speed is derived from.
+ * evaluates them: per link, its Jakes fading paths and the position its
+ * correlation distance is measured from; per node, the recent positions its
+ * speed is derived from.
  *
  * The radio medium keeps one of these for every channel model that evaluates
  * links (CellularRadioMedium::getChannelState()). Each is that model's own: two
  * models evaluating the same link hold two independent entries for it. Whether
- * a link is in line of sight is not part of it: the medium keeps that once per
- * link (CellularRadioMedium::getLosMap()).
+ * a link is in line of sight, and its shadowing, are not part of it: the medium
+ * keeps those once per link (CellularRadioMedium::getLosMap(),
+ * getShadowingMap()).
  */
 struct ChannelState
 {
@@ -90,7 +91,6 @@ struct ChannelState
     typedef std::map<LinkKey, JakesFadingVector> JakesFadingMap;
     typedef std::map<LinkKey, std::pair<simtime_t, double>> ShadowFadingMap; // when drawn, and the value in dB
 
-    ShadowFadingMap shadowingMap;                               // per link: the last shadowing sample
     JakesFadingMap jakesFadingMap;                               // per link: the Jakes fading paths of every band
     JakesFadingMap jakesFadingMapBgUe;                           // the same, for the links of background UEs
     std::map<MacNodeId, std::queue<Position>> positionHistory;   // per node: its last two positions

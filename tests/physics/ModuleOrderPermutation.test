@@ -29,10 +29,11 @@ disabled as well, so that "deterministic" means no draw of any kind -- gives:
     stochastic      off                18
     stochastic      on                 32
 
-The configuration below keeps dynamic LOS on, which is the fuller exercise and
-which is why the recorded verdict is 38 rather than 32: the LOS coin flip is
-one more draw taken in evaluation order, and how many scalars two orderings
-happen to agree on is not a meaningful quantity. The decomposition above is.
+The configuration below keeps dynamic LOS on, which is the fuller exercise, so
+the number of differing scalars it reports is not the 32 above: the LOS coin
+flip is one more draw taken in evaluation order, and how many scalars two
+orderings happen to agree on is not a meaningful quantity. The decomposition
+above is.
 
 So the model is index-independent whenever the channel is deterministic --
 ModuleOrderPermutationDeterministic asserts that case, and passes --

@@ -52,6 +52,7 @@ class CellularRadioMedium : public cSimpleModule
     std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
     std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
     std::map<GHz, std::map<LinkKey, bool>> losMaps; // per carrier: whether each link is in line of sight
+    std::map<GHz, ChannelState::ShadowFadingMap> shadowingMaps; // per carrier: the last shadowing sample of each link
 
   protected:
     virtual void initialize(int stage) override;
@@ -117,6 +118,13 @@ class CellularRadioMedium : public cSimpleModule
      * radio that has left are simply never looked up again.
      */
     virtual std::map<LinkKey, bool>& getLosMap(GHz carrierFrequency);
+
+    /**
+     * The last shadowing sample of each link on the carrier, and when it was
+     * drawn, by link: one per link, shared by every channel model evaluating
+     * it. Created and kept as getLosMap().
+     */
+    virtual ChannelState::ShadowFadingMap& getShadowingMap(GHz carrierFrequency);
 };
 
 } // namespace simu5g

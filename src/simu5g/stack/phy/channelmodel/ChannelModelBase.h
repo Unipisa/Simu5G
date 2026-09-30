@@ -59,20 +59,20 @@ struct RadioLink
     // ---- channel state ----
     // linkKey is the link itself: the node ids of its two radios. It indexes the
     // state the radio medium keeps per link and shares among every channel
-    // model evaluating the link: whether it is in line of sight.
+    // model evaluating the link: whether it is in line of sight, and its
+    // shadowing.
     LinkKey linkKey;
 
     // stateKey indexes the per-link entries of the evaluating channel model's
-    // own channel state (ChannelState): shadowing, Jakes fading and the
-    // correlation point.
+    // own channel state (ChannelState): Jakes fading and the correlation point.
     LinkKey stateKey;
 
     // stateNodeId is the *node* the state belongs to -- the UE. It selects whose
-    // channel state holds the shadowing and Jakes entries (with useUeSideMaps,
-    // that of the UE's own channel model, via obtainShadowingMap() /
-    // obtainUeJakesMap(); otherwise the evaluating model's own), it indexes the
-    // position history, which is genuinely a node property because it defines
-    // the node's speed, and it distinguishes background UEs.
+    // channel state holds the Jakes entries (with useUeSideMaps, that of the
+    // UE's own channel model, via obtainUeJakesMap(); otherwise the evaluating
+    // model's own), it indexes the position history, which is genuinely a node
+    // property because it defines the node's speed, and it distinguishes
+    // background UEs.
     MacNodeId stateNodeId = NODEID_NONE;
 
     inet::Coord stateCoord;      // position feeding computeSpeed + correlation distance

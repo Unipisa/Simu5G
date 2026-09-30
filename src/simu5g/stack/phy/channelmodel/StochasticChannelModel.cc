@@ -81,6 +81,13 @@ std::map<LinkKey, bool>& StochasticChannelModel::losMap()
     return *losMap_;
 }
 
+StochasticChannelModel::ShadowFadingMap& StochasticChannelModel::shadowingMap()
+{
+    if (shadowingMap_ == nullptr)
+        shadowingMap_ = &radioMedium_->getShadowingMap(carrierFrequency_);
+    return *shadowingMap_;
+}
+
 void StochasticChannelModel::initialize(int stage)
 {
     ChannelModelBase::initialize(stage);
@@ -290,7 +297,7 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     //    Applying shadowing only if it is enabled by configuration
     //    log-normal shadowing (not available for background UEs)
     if (num(link.stateNodeId) < BGUE_MIN_ID && shadowing_)
-        attenuation += computeShadowing(threeDimDistance, twoDimDistance, los, link.stateKey, link.stateNodeId, speed, link.useUeSideMaps);
+        attenuation += computeShadowing(threeDimDistance, twoDimDistance, los, link.linkKey, speed);
 
     // update the tracked node's current position
     updatePositionHistory(link.stateNodeId, link.stateCoord);
@@ -301,14 +308,10 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     return attenuation;
 }
 
-double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los, const LinkKey& key, MacNodeId ownerId, double speed, bool cqiDl)
+double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los, const LinkKey& key, double speed)
 {
-    ShadowFadingMap *actualShadowingMap;
-
-    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
-        actualShadowingMap = obtainShadowingMap(ownerId);
-    else
-        actualShadowingMap = &channelState().shadowingMap;
+    // one realization per link, whichever end and whichever direction asks
+    ShadowFadingMap *actualShadowingMap = &shadowingMap();
 
     double mean = 0;
 
@@ -1377,11 +1380,6 @@ StochasticChannelModel *StochasticChannelModel::obtainUeChannelModel(MacNodeId i
 StochasticChannelModel::JakesFadingMap *StochasticChannelModel::obtainUeJakesMap(MacNodeId id)
 {
     return obtainUeChannelModel(id)->getJakesMap();
-}
-
-StochasticChannelModel::ShadowFadingMap *StochasticChannelModel::obtainShadowingMap(MacNodeId id)
-{
-    return obtainUeChannelModel(id)->getShadowingMap();
 }
 
 bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,

@@ -11,9 +11,7 @@ which the model reproduces to the last digit. It is the only assertion in this
 directory on the uplink budget.
 
 This is run 0 (shadowing off) of the LinkReciprocity configuration. Run 1, with
-shadowing, is LinkReciprocity.test, an expected failure; it used to share a
-file with this check, and the file-wide expected failure would have hidden a
-failure of this one.
+shadowing, is LinkReciprocity.test.
 
 %extraargs: -c LinkReciprocity -r 0
 

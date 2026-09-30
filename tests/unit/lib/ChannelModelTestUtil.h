@@ -149,6 +149,7 @@ class ChannelModelProbe
         using ChannelStateAccessor = ChannelState& (StochasticChannelModel::*)();
         static ChannelStateAccessor channelStatePtr() { return &Access::channelState; }
         static auto losMapPtr() { return &Access::losMap; }
+        static auto shadowingMapPtr() { return &Access::shadowingMap; }
         static auto pathLossPtr() { return &Access::pathLoss_; }
         static auto fadingPtr() { return &Access::fading_; }
 
@@ -159,7 +160,6 @@ class ChannelModelProbe
         static auto updateCorrelationDistancePtr() { return &Access::updateCorrelationDistance; }
         static auto updatePositionHistoryPtr() { return &Access::updatePositionHistory; }
         static auto obtainUeJakesMapPtr() { return &Access::obtainUeJakesMap; }
-        static auto obtainShadowingMapPtr() { return &Access::obtainShadowingMap; }
         static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
     };
 
@@ -174,11 +174,12 @@ class ChannelModelProbe
     ChannelState& channelState() { return (model_->*Access::channelStatePtr())(); }
     auto& positionHistory() { return channelState().positionHistory; }
     auto& lastCorrelationPoint() { return channelState().lastCorrelationPoint; }
-    auto& shadowingMap() { return channelState().shadowingMap; }
     auto& jakesMap() { return channelState().jakesFadingMap; }
     auto& jakesMapBgUe() { return channelState().jakesFadingMapBgUe; }
     // the LOS state of the links on the model's carrier, which the radio medium keeps once per link
     std::map<LinkKey, bool>& losMap() { return (model_->*Access::losMapPtr())(); }
+    // the shadowing of the links on the model's carrier, which the radio medium keeps once per link
+    ChannelState::ShadowFadingMap& shadowingMap() { return (model_->*Access::shadowingMapPtr())(); }
     PathLossModel *pathLoss() { return model_->*Access::pathLossPtr(); }
     bool& fading() { return model_->*Access::fadingPtr(); }
 
@@ -199,7 +200,6 @@ class ChannelModelProbe
     }
     void updatePositionHistory(MacNodeId id, inet::Coord coord) { (model_->*Access::updatePositionHistoryPtr())(id, coord); }
     auto *obtainUeJakesMap(MacNodeId id) { return (model_->*Access::obtainUeJakesMapPtr())(id); }
-    auto *obtainShadowingMap(MacNodeId id) { return (model_->*Access::obtainShadowingMapPtr())(id); }
     void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
     {
         (model_->*Access::emitRcvdSinrPtr())(dir, ueId, carrierFrequency, sinr);

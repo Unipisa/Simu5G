@@ -101,22 +101,22 @@ auto specUpdate = [&](double old, double dx, RngSnapshot& snapshot) {
     // Below d_cor: 20 m at 10 m/s. R(20 m) = exp(-0.4) = 0.67, so the value is
     // correlated with the old one, not equal to it.
     const LinkKey key(MacNodeId(1200));
-    double old = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1200), speed, false);
+    double old = bs->computeShadowing(d3D, d2D, false, key, speed);
     wait(2.0);
     RngSnapshot snapshot(bs);
     double expected = specUpdate(old, 2.0 * speed, snapshot);
-    double got = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1200), speed, false);
+    double got = bs->computeShadowing(d3D, d2D, false, key, speed);
     c.expectNear("after 20 m (below d_cor = 50 m) the value follows a = exp(-dx/d_cor), not held",
             got, expected, 1e-12);
 }
 {
     // Above d_cor: 60 m at 10 m/s. R(60 m) = exp(-1.2) = 0.30.
     const LinkKey key(MacNodeId(1201));
-    double old = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1201), speed, false);
+    double old = bs->computeShadowing(d3D, d2D, false, key, speed);
     wait(6.0);
     RngSnapshot snapshot(bs);
     double expected = specUpdate(old, 6.0 * speed, snapshot);
-    double got = bs->computeShadowing(d3D, d2D, false, key, MacNodeId(1201), speed, false);
+    double got = bs->computeShadowing(d3D, d2D, false, key, speed);
     c.expectNear("after 60 m (above d_cor) the value follows a = exp(-dx/d_cor), not exp(-0.5*dx/d_cor)",
             got, expected, 1e-12);
 }
