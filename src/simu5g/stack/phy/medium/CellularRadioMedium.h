@@ -51,7 +51,7 @@ class CellularRadioMedium : public cSimpleModule
     long nextTransmissionId = 0;
     std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
     std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
-    std::map<GHz, std::map<LinkKey, bool>> losMaps; // per carrier: whether each link is in line of sight
+    std::map<GHz, ChannelState::LosMap> losMaps; // per carrier: whether each link is in line of sight
     std::map<GHz, ChannelState::ShadowFadingMap> shadowingMaps; // per carrier: the last shadowing sample of each link
     std::map<GHz, ChannelState::JakesFadingMap> jakesFadingMaps; // per carrier: the Jakes fading paths of each link
 
@@ -112,13 +112,14 @@ class CellularRadioMedium : public cSimpleModule
     virtual void removeChannelState(const cComponent *channelModel);
 
     /**
-     * Whether each link on the carrier is in line of sight, by link: one state
-     * per link, shared by every channel model evaluating it. Created empty on
-     * first use; the reference stays valid for the lifetime of the medium.
+     * Whether each link on the carrier is in line of sight, and where its ends
+     * were when that was decided, by link: one state per link, shared by every
+     * channel model evaluating it. Created empty on first use; the reference
+     * stays valid for the lifetime of the medium.
      * Entries are never removed: node ids are not reused, so the links of a
      * radio that has left are simply never looked up again.
      */
-    virtual std::map<LinkKey, bool>& getLosMap(GHz carrierFrequency);
+    virtual ChannelState::LosMap& getLosMap(GHz carrierFrequency);
 
     /**
      * The last shadowing sample of each link on the carrier, with when and

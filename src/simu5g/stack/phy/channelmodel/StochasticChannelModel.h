@@ -41,15 +41,16 @@ class PathLossModel;
  * - the assembly of all of the above into a per-band SINR, and the mapping of
  *   that SINR onto a block error probability (with HARQ reduction) that decides
  *   reception;
- * - the per-node mobility state the correlated quantities need: position
- *   history, speed, and the point at which shadowing and LOS were last drawn;
+ * - the mobility the correlated quantities need: the position history and
+ *   speed of a node, and where a link's ends were when its LOS state and its
+ *   shadowing were last drawn;
  * - the SINR statistics.
  *
  * The radio medium keeps the state the evaluations carry from one to the next:
  * whether each link is in line of sight, its shadowing and its Jakes fading
  * paths, once per link and shared by every channel model evaluating it
  * (losMap(), shadowingMap(), jakesFadingMap()), and this model's own position
- * histories and correlation points (channelState()).
+ * histories (channelState()).
  *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
@@ -117,11 +118,12 @@ class StochasticChannelModel : public ChannelModelBase
     typedef ChannelState::JakesFadingData JakesFadingData;
     typedef ChannelState::JakesFadingVector JakesFadingVector;
     typedef ChannelState::JakesFadingMap JakesFadingMap;
+    typedef ChannelState::LosMap LosMap;
     typedef ChannelState::ShadowingSample ShadowingSample;
     typedef ChannelState::ShadowFadingMap ShadowFadingMap;
 
     ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
-    std::map<LinkKey, bool> *losMap_ = nullptr; // the LOS state of the links on this model's carrier, kept by the radio medium; see losMap()
+    LosMap *losMap_ = nullptr; // the LOS state of the links on this model's carrier, kept by the radio medium; see losMap()
     ShadowFadingMap *shadowingMap_ = nullptr; // the shadowing of the links on this model's carrier, kept by the radio medium; see shadowingMap()
     JakesFadingMap *jakesFadingMap_ = nullptr; // the Jakes fading paths of the links on this model's carrier, kept by the radio medium; see jakesFadingMap()
 
@@ -321,13 +323,14 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Decide whether the link is in line of sight -- drawn against the LOS
-     * probability, or fixedLos if dynamicLos is off -- and record it in losMap()
+     * probability, or fixedLos if dynamicLos is off -- and record it in losMap(),
+     * with where the link's ends are
      *
      * @param d3D 3D distance between UE and eNodeB
      * @param d2D 2D distance between UE and eNodeB
-     * @param key the link (RadioLink::linkKey)
+     * @param link the link
      */
-    virtual void computeLosProbability(double d3D, double d2D, const LinkKey& key);
+    virtual void computeLosProbability(double d3D, double d2D, const RadioLink& link);
 
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
     /*
@@ -355,7 +358,7 @@ class StochasticChannelModel : public ChannelModelBase
      * (RadioLink::linkKey), which the radio medium keeps once per link for
      * every channel model evaluating it. Resolved on first use.
      */
-    std::map<LinkKey, bool>& losMap();
+    LosMap& losMap();
 
     /*
      * The last shadowing sample of each link on this model's carrier, by link
@@ -444,17 +447,7 @@ class StochasticChannelModel : public ChannelModelBase
      */
     virtual double computeSpeed(const MacNodeId nodeId, const inet::Coord coord);
 
-    /*
-     * Compute the euclidean distance between the current position and the
-     * last position used to calculate the LOS probability
-     */
-    virtual double computeCorrelationDistance(const LinkKey& key, const inet::Coord coord) const;
 
-    /*
-     * Update base point if distance to previous value is greater than the
-     * correlationDistance_
-     */
-    virtual void updateCorrelationDistance(const LinkKey& key, const inet::Coord coord);
 
     /*
      * Updates position for a given node

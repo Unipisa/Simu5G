@@ -64,8 +64,7 @@ inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
 
 /**
  * The channel state a channel model evaluates links against, and updates as it
- * evaluates them: per link, the position its correlation distance is measured
- * from; per node, the recent positions its speed is derived from.
+ * evaluates them: per node, the recent positions its speed is derived from.
  *
  * The radio medium keeps one of these for every channel model that evaluates
  * links (CellularRadioMedium::getChannelState()). Each is that model's own: two
@@ -86,6 +85,18 @@ struct ChannelState
         std::vector<simtime_t> delaySpread;
     };
 
+    /**
+     * Whether a link is in line of sight, and where the link's two radios were,
+     * in the order of its key, when that was decided.
+     */
+    struct LosSample
+    {
+        inet::Coord positionA; // where LinkKey::a was
+        inet::Coord positionB; // where LinkKey::b was
+        bool los = false;
+    };
+    typedef std::map<LinkKey, LosSample> LosMap;
+
     typedef std::vector<JakesFadingData> JakesFadingVector;          // one entry per band
     typedef std::map<LinkKey, JakesFadingVector> JakesFadingMap;
     /**
@@ -102,7 +113,6 @@ struct ChannelState
     typedef std::map<LinkKey, ShadowingSample> ShadowFadingMap;
 
     std::map<MacNodeId, std::queue<Position>> positionHistory;   // per node: its last two positions
-    std::map<LinkKey, Position> lastCorrelationPoint;            // per link: the position the correlation distance is measured from
 };
 
 } // namespace simu5g

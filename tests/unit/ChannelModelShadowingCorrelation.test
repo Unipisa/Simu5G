@@ -52,7 +52,6 @@ static RadioLink linkTo(MacNodeId node, const inet::Coord& bs, const inet::Coord
     link.txCoord = bs;
     link.rxCoord = ueCoord;
     link.linkKey = LinkKey(MacNodeId(1), node);
-    link.stateKey = LinkKey(node);
     link.stateNodeId = node;
     link.stateCoord = ueCoord;
     link.txIsBaseStation = true;

@@ -3,12 +3,10 @@
 The mobility state a StochasticChannelModel evaluates against, per node and
 per link, and the call-order invariant getRSRP() documents about it.
 
-Three pieces of state. The position history is a two-entry window per node --
-the past position and the current one -- from which computeSpeed() derives the
-speed that drives Doppler in Jakes fading and the shadowing recurrence. The
-correlation point, per link, is where the LOS state was last decided. The
-position history is not quite what its name suggests, in two respects, both
-pinned:
+The position history is a two-entry window per node -- the past position and
+the current one -- from which computeSpeed() derives the speed that drives
+Doppler in Jakes fading and the shadowing recurrence. It is not quite what its
+name suggests, in two respects, both pinned:
 
  - the first position recorded in a TTI wins; a later one in the same TTI is
    ignored, not merged;
@@ -83,7 +81,6 @@ auto *m = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 StubEndpoint own;
 m->setPhy(&own);
 ChannelModelProbe probe(m);
-const double dcorr = m->par("correlationDistance").doubleValue();
 
 wait(1.0);
 
@@ -151,32 +148,6 @@ wait(1.0);
 }
 
 //
-// --- the correlation point ---
-//
-{
-    const LinkKey key(MacNodeId(1105));
-    auto& points = probe.lastCorrelationPoint();
-    double first = probe.computeCorrelationDistance(key, Coord(0, 0, 1.5));
-    c.check("a link with no correlation point is at distance 0, and reading it records nothing",
-            first == 0 && points.count(key) == 0);
-    probe.updateCorrelationDistance(key, Coord(0, 0, 1.5));
-    c.check("the first update records the point", points.count(key) == 1 && points[key].second == Coord(0, 0, 1.5));
-    wait(1.0);
-    double later = probe.computeCorrelationDistance(key, Coord(30, 0, 1.5));
-    c.check("...and afterwards measures from it without moving it",
-            later == 30 && points[key].second == Coord(0, 0, 1.5));
-
-    probe.updateCorrelationDistance(key, Coord(30, 0, 1.5));
-    c.check("within the correlation distance the point stays", points[key].second == Coord(0, 0, 1.5));
-    probe.updateCorrelationDistance(key, Coord(dcorr + 1, 0, 1.5));
-    c.check("beyond it, in a later TTI, the point moves to where the node is now",
-            points[key].second == Coord(dcorr + 1, 0, 1.5) && points[key].first == simTime());
-    probe.updateCorrelationDistance(key, Coord(500, 0, 1.5));
-    c.check("but not twice in one TTI, however far the node is",
-            points[key].second == Coord(dcorr + 1, 0, 1.5));
-}
-
-//
 // --- getRSRP reads the speed before getAttenuation moves the window ---
 //
 {
@@ -197,7 +168,6 @@ wait(1.0);
     link.txCoord = Coord(-200, 0, 10);
     link.rxCoord = now;
     link.linkKey = LinkKey(MacNodeId(1), id);
-    link.stateKey = LinkKey(id);
     link.stateNodeId = id;
     link.stateCoord = now;
     link.txRadio = &bsRadio;
@@ -232,7 +202,7 @@ wait(1.0);
 c.summary();
 
 %contains: stdout
-modelchecks=20 modelfailures=0
+modelchecks=14 modelfailures=0
 
 %not-contains: stdout
 FAILED

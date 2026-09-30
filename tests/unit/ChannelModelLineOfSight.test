@@ -13,6 +13,10 @@ within the correlation distance, which the draw counts show: every later
 evaluation, from any of those places, draws nothing, and another cell's link to
 the same UE is another link with a draw of its own.
 
+The state is decided again when either end of the link is farther than the
+correlation distance from where it was when the state was last decided -- a
+displacement, not a distance travelled, and whichever end evaluates it.
+
 Counting draws is exact because the configuration draws nothing else: the
 TR 38.901 UMi path loss draws nothing for an outdoor UE, shadowing is off, and
 getAttenuation() does not evaluate fading.
@@ -75,6 +79,7 @@ sim-time-limit = 1s
 **.scenario = "URBAN_MICROCELL"
 **.dynamicLos = true
 **.shadowing = false
+**.correlationDistance = 50m
 
 %no-default-inifile: 1
 
@@ -111,14 +116,14 @@ const LinkKey link1(MacNodeId(1), MacNodeId(1025)), link2(MacNodeId(2), MacNodeI
     ueModel->getAttenuation(atUe.linkFor(&info));
     bool expected = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= p;
     c.check("a link's first evaluation draws its LOS state against the strategy's LOS probability",
-            atUe.losMap().count(link1) == 1 && atUe.losMap().at(link1) == expected,
+            atUe.losMap().count(link1) == 1 && atUe.losMap().at(link1).los == expected,
             "p=" + std::to_string(p));
     c.expectValue("...one draw, and nothing else", drawn(ueModel) - before, 1);
 }
 c.check("every channel model on the carrier reads the same map, the medium's",
         &atEnb.losMap() == &atUe.losMap() && &atOther.losMap() == &atUe.losMap());
 
-const bool los1 = atUe.losMap().at(link1);
+const bool los1 = atUe.losMap().at(link1).los;
 {
     // The other end of the link.
     UserControlInfo info = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
@@ -140,7 +145,7 @@ const bool los1 = atUe.losMap().at(link1);
     c.expectValue("another cell's link to the same UE is another link, drawn on its own",
             drawn(ueModel) - before, 1);
     c.check("...and the first link's state is untouched",
-            atUe.losMap().count(link2) == 1 && atUe.losMap().at(link1) == los1);
+            atUe.losMap().count(link2) == 1 && atUe.losMap().at(link1).los == los1);
 }
 {
     // What the interference computation evaluates.
@@ -158,10 +163,68 @@ const bool los1 = atUe.losMap().at(link1);
 }
 c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.losMap().size(), 2);
 
+//
+// --- decided again when an end has moved ---
+//
+{
+    // Only the UE moves. Its evaluations use ue.coord as the local end.
+    const Coord decidedAt = atUe.losMap().at(link1).positionB;
+    const Coord enbAt = atUe.losMap().at(link1).positionA;
+    auto evaluateDl = [&]() {
+        UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025), enb.coord);
+        ueModel->getAttenuation(atUe.linkFor(&info));
+    };
+    auto moveTo = [&](double distance) { ue.coord = Coord(decidedAt.x + distance, decidedAt.y, decidedAt.z); };
+
+    moveTo(30);
+    long long before = drawn(ueModel);
+    evaluateDl();
+    c.check("within the correlation distance the LOS state is held",
+            drawn(ueModel) - before == 0 && atUe.losMap().at(link1).positionB == decidedAt
+            && atUe.losMap().at(link1).positionA == enbAt);
+
+    moveTo(50);
+    before = drawn(ueModel);
+    evaluateDl();
+    c.check("...and exactly at it, too (the test is strict)",
+            drawn(ueModel) - before == 0 && atUe.losMap().at(link1).positionB == decidedAt);
+
+    moveTo(60);
+    const Coord movedTo = ue.coord;
+    const double d3D = enb.coord.distance(ue.coord);
+    const double d2D = sqrt(pow(ue.coord.x - enb.coord.x, 2) + pow(ue.coord.y - enb.coord.y, 2));
+    double p = atUe.pathLoss()->computeLosProbability(d3D, d2D);
+    RngSnapshot snapshot(ueModel);
+    before = drawn(ueModel);
+    evaluateDl();
+    bool expected = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= p;
+    c.check("past it, the LOS state is decided again",
+            drawn(ueModel) - before == 1 && atUe.losMap().at(link1).positionB == movedTo,
+            "draws=" + std::to_string(drawn(ueModel) - before));
+    c.check("...against the strategy's LOS probability at the new geometry",
+            atUe.losMap().at(link1).los == expected, "p=" + std::to_string(p));
+
+    // The base station evaluates the same link, the UE at its new position.
+    UserControlInfo ul = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
+    before = drawn(bs);
+    bs->getAttenuation(atEnb.linkFor(&ul));
+    c.expectValue("...and it is decided for the link: the other end, at the same positions, holds it",
+            drawn(bs) - before, 0);
+
+    // Out 40 m and back: 10 m from where it was decided, however far it went.
+    before = drawn(ueModel);
+    ue.coord = Coord(movedTo.x + 40, movedTo.y, movedTo.z);
+    evaluateDl();
+    ue.coord = Coord(movedTo.x + 10, movedTo.y, movedTo.z);
+    evaluateDl();
+    c.expectValue("what counts is how far an end is from where it was, not how far it went",
+            drawn(ueModel) - before, 0);
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=10 modelfailures=0
+modelchecks=16 modelfailures=0
 
 %not-contains: stdout
 FAILED

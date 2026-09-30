@@ -74,7 +74,7 @@ const ChannelState& StochasticChannelModel::channelState() const
     return const_cast<StochasticChannelModel *>(this)->channelState();
 }
 
-std::map<LinkKey, bool>& StochasticChannelModel::losMap()
+StochasticChannelModel::LosMap& StochasticChannelModel::losMap()
 {
     if (losMap_ == nullptr)
         losMap_ = &radioMedium_->getLosMap(carrierFrequency_);
@@ -161,12 +161,9 @@ void StochasticChannelModel::initialize(int stage)
 RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord)
 {
     // The local module is one endpoint and 'coord' the other; 'dir' says which
-    // of the two is the UE. The UE is the node whose channel state we track.
+    // of the two is the UE. The UE is the node whose position history we track.
     RadioLink link;
     link.dir = dir;
-    // The degenerate key {ueId, ueId} keys the model's own channel state on the
-    // UE: a model keeps one entry per UE, whichever base station is the other end.
-    link.stateKey = LinkKey(ueId);
     link.stateNodeId = ueId;
 
     if (dir == DL) { // the local module is the UE, 'coord' is the BS
@@ -264,11 +261,10 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
     }
     link.linkKey = LinkKey(link.txId, link.rxId);
 
-    // The UE owns the channel state, and it is always the UE's position that feeds
-    // the speed and correlation-distance computation -- which is why the old code's
-    // "pass UL for a FEEDBACKPKT" special case is not needed here: it only existed
-    // to make getAttenuation() pick 'coord' rather than phy_->getCoord().
-    link.stateKey = LinkKey(ueId);
+    // It is always the UE's position that feeds the speed computation -- which is
+    // why the old code's "pass UL for a FEEDBACKPKT" special case is not needed
+    // here: it only existed to make getAttenuation() pick 'coord' rather than
+    // phy_->getCoord().
     link.stateNodeId = ueId;
     link.stateCoord = ueCoord;
 
@@ -284,19 +280,19 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     double threeDimDistance = link.txCoord.distance(link.rxCoord);
     double twoDimDistance = getTwoDimDistance(link.txCoord, link.rxCoord);
 
-    double correlationDist = computeCorrelationDistance(link.stateKey, link.stateCoord);
-
-    // If Euclidean distance since last LOS probability computation is greater than
-    // correlation distance the UE could have changed its state and
-    // its visibility from eNodeB, hence it is correct to recompute the LOS probability
-    if (correlationDist > correlationDistance_
-        || losMap().find(link.linkKey) == losMap().end())
+    // The link's LOS state is decided on its first evaluation, and decided again
+    // when either of its ends is farther than the correlation distance from
+    // where it was then: the UE could have changed its visibility from the
+    // other end
+    auto it = losMap().find(link.linkKey);
+    if (it == losMap().end()
+        || link.displacementSince(it->second.positionA, it->second.positionB) > correlationDistance_)
     {
-        computeLosProbability(threeDimDistance, twoDimDistance, link.linkKey);
+        computeLosProbability(threeDimDistance, twoDimDistance, link);
     }
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
-    bool los = losMap()[link.linkKey];
+    bool los = losMap()[link.linkKey].los;
     double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
 
     //    Applying shadowing only if it is enabled by configuration
@@ -306,7 +302,6 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
 
     // update the tracked node's current position
     updatePositionHistory(link.stateNodeId, link.stateCoord);
-    updateCorrelationDistance(link.stateKey, link.stateCoord);
 
     EV << "StochasticChannelModel::getAttenuation - computed attenuation at distance " << threeDimDistance << " for eNB is " << attenuation << endl;
 
@@ -322,9 +317,8 @@ double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los
     const LinkKey& key = link.linkKey;
 
     // where the link's two radios are, in the order of its key
-    bool txIsA = link.txId == key.a;
-    const Coord& positionA = txIsA ? link.txCoord : link.rxCoord;
-    const Coord& positionB = txIsA ? link.rxCoord : link.txCoord;
+    const Coord& positionA = link.positionA();
+    const Coord& positionB = link.positionB();
 
     double mean = 0;
 
@@ -345,7 +339,7 @@ double StochasticChannelModel::computeShadowing(double d3D, double d2D, bool los
         // how far the link has moved since the sample was drawn: the farther of
         // its two ends (a base station stays put, so for a cellular link it is
         // how far the UE has moved)
-        double space = std::max(positionA.distance(it->second.positionA), positionB.distance(it->second.positionB));
+        double space = link.displacementSince(it->second.positionA, it->second.positionB);
 
         // if either end has moved more than the correlation distance
         if (space > correlationDistance_) {
@@ -386,28 +380,6 @@ void StochasticChannelModel::updatePositionHistory(const MacNodeId nodeId,
     if (positionHistory[nodeId].size() > 2) // if we have more than a past and a current element
         // drop the oldest one
         positionHistory[nodeId].pop();
-}
-
-void StochasticChannelModel::updateCorrelationDistance(const LinkKey& nodeId, const inet::Coord coord) {
-    auto& lastCorrelationPoint = channelState().lastCorrelationPoint;
-
-    if (lastCorrelationPoint.find(nodeId) == lastCorrelationPoint.end()) {
-        // no lastCorrelationPoint set current point.
-        lastCorrelationPoint[nodeId] = Position(NOW, coord);
-    }
-    else if ((lastCorrelationPoint[nodeId].first != NOW) &&
-             lastCorrelationPoint[nodeId].second.distance(coord) > correlationDistance_)
-    {
-        // check simtime_t first
-        lastCorrelationPoint[nodeId] = Position(NOW, coord);
-    }
-}
-
-double StochasticChannelModel::computeCorrelationDistance(const LinkKey& nodeId, const inet::Coord coord) const {
-    // no correlation point yet: the link is new, and updateCorrelationDistance()
-    // records its first one
-    auto it = channelState().lastCorrelationPoint.find(nodeId);
-    return (it == channelState().lastCorrelationPoint.end()) ? 0.0 : it->second.second.distance(coord);
 }
 
 double StochasticChannelModel::computeSpeed(const MacNodeId nodeId,
@@ -636,7 +608,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
 
     // =============== PATH LOSS + SHADOWING + FADING =================
     EV << "\t using parameters - antennaGainTx=" << txAntennaGain << " - antennaGainRx=" << rxAntennaGain
-       << " - txPwr=" << txPower << " - for nodeId=" << link.stateKey << endl;
+       << " - txPwr=" << txPower << " - for link=" << link.linkKey << endl;
 
     // Speed must be read BEFORE getAttenuation(), which appends to the position
     // history: computeSpeed() derives from that history, so evaluating it
@@ -710,7 +682,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
 
-        EV << " StochasticChannelModel::getRSRP node " << link.stateKey
+        EV << " StochasticChannelModel::getRSRP link " << link.linkKey
            << " band " << i << " recvPower " << recvPower
            << " direction " << dirToA(link.dir) << " antenna gain tx "
            << txAntennaGain << " antenna gain rx " << rxAntennaGain
@@ -1081,14 +1053,17 @@ void StochasticChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz car
 }
 
 void StochasticChannelModel::computeLosProbability(double d3D, double d2D,
-        const LinkKey& key)
+        const RadioLink& link)
 {
+    ChannelState::LosSample& sample = losMap()[link.linkKey];
+    sample.positionA = link.positionA();
+    sample.positionB = link.positionB();
     if (!dynamicLos_) {
-        losMap()[key] = fixedLos_;
+        sample.los = fixedLos_;
         return;
     }
     double p = pathLoss_->computeLosProbability(d3D, d2D);
-    losMap()[key] = (uniform(0.0, 1.0) <= p);
+    sample.los = (uniform(0.0, 1.0) <= p);
 }
 
 double StochasticChannelModel::computePathLoss(double distance, double dbp, bool los)
@@ -1321,7 +1296,7 @@ double StochasticChannelModel::computeExtCellPathLoss(double dist, const LinkKey
 {
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
-    bool los = losMap()[key];
+    bool los = losMap()[key].los;
 
     if (!enable_extCell_los_)
         los = false;

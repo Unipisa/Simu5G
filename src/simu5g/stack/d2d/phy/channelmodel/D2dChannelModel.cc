@@ -49,14 +49,10 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     link.txIsBaseStation = false; // omnidirectional: no angular attenuation
 
     // The channel state is keyed on the *link*, so a UE's several D2D peers each
-    // get their own LOS state, shadowing realization and fading process, instead
-    // of sharing the transmitter's single slot (and colliding with the
-    // transmitter's own cellular state).
+    // get their own LOS state, shadowing realization and fading process.
     //
-    // The owning node stays the transmitter: it is that UE's motion that defines
-    // the speed.
+    // The node whose position history defines the speed is the transmitter.
     link.linkKey = LinkKey(link.txId, link.rxId);
-    link.stateKey = LinkKey(srcId, destId);
     link.stateNodeId = srcId;
     link.stateCoord = srcCoord;
 

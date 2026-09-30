@@ -66,16 +66,12 @@ struct RadioLink
     // and its Jakes fading paths.
     LinkKey linkKey;
 
-    // stateKey indexes the per-link entries of the evaluating channel model's
-    // own channel state (ChannelState): the correlation point.
-    LinkKey stateKey;
-
     // stateNodeId is the *node* the state belongs to -- the UE. It indexes the
     // position history, which is genuinely a node property because it defines
     // the node's speed, and it distinguishes background UEs.
     MacNodeId stateNodeId = NODEID_NONE;
 
-    inet::Coord stateCoord;      // position feeding computeSpeed + correlation distance
+    inet::Coord stateCoord;      // position feeding computeSpeed
 
     // ---- radios ----
     // The link budget is not part of the link: the antenna gains, the cable loss
@@ -94,6 +90,17 @@ struct RadioLink
 
     // ---- tag, not a switch ----
     Direction dir = UNKNOWN_DIRECTION;
+
+    // Where the two radios of linkKey are, in the order of the key
+    const inet::Coord& positionA() const { return txId == linkKey.a ? txCoord : rxCoord; }
+    const inet::Coord& positionB() const { return txId == linkKey.a ? rxCoord : txCoord; }
+
+    // How far the link has moved since its ends were at positionA0 and
+    // positionB0: the farther of its two ends
+    double displacementSince(const inet::Coord& positionA0, const inet::Coord& positionB0) const
+    {
+        return std::max(positionA().distance(positionA0), positionB().distance(positionB0));
+    }
 };
 
 /**
