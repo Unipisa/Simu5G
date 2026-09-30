@@ -1401,19 +1401,25 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
                 EV << "\t band " << i << " occupied " << temp << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
             }
         }
-        else { // error computation. We need to check the slot occupation of the previous TTI
+        else { // error computation: the interfering cell's transmissions of the slot just completed
             for (unsigned int i = 0; i < numBands; i++) {
                 // if we are decoding a data transmission and this RB has not been used, skip it
                 // TODO fix for multi-antenna case
                 if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
                     continue;
 
-                // compute the number of occupied slot (unnecessary)
-                int temp = enbInfo->mac->getDlPrevBandStatus(i);
-                if (temp != 0)
+                // the band is occupied if one of the cell's DL data transmissions on this
+                // carrier occupied it, or one of its background UEs, which have no radio
+                // on the medium, was allocated it
+                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i)
+                        || enbInfo->mac->isDlPrevBandUsedByBackgroundUes(i);
+                // for a cell with one carrier, that is what its scheduler allocated
+                ASSERT(enbInfo->mac->getCellInfo()->getCarriers().size() != 1
+                        || occupied == (enbInfo->mac->getDlPrevBandStatus(i) != 0));
+                if (occupied)
                     (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
-                EV << "\t band " << i << " occupied " << temp << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
+                EV << "\t band " << i << " occupied " << occupied << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
             }
         }
     }

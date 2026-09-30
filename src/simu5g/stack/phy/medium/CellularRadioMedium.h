@@ -102,6 +102,13 @@ class CellularRadioMedium : public cSimpleModule
     virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const;
 
     /**
+     * Whether a data transmission of the given node in the given direction on
+     * the carrier, one that ends now -- in the slot just completed -- occupies
+     * the band.
+     */
+    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const;
+
+    /**
      * The channel state the given channel model evaluates links against,
      * created empty on first use. The reference stays valid until
      * removeChannelState() is called for the same channel model.

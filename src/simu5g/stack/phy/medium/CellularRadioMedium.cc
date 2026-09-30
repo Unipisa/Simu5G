@@ -149,6 +149,24 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
     return true;
 }
 
+bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const
+{
+    auto it = transmissions.find(carrierFrequency);
+    if (it == transmissions.end())
+        return false;
+    for (auto t : it->second) {
+        if (t->sourceId != sourceId || t->direction != direction || t->frameType != DATAPKT || t->getEndTime() != simTime())
+            continue;
+        auto antennaIt = t->grantedBlocks.find(MACRO);
+        if (antennaIt == t->grantedBlocks.end())
+            continue;
+        auto bandIt = antennaIt->second.find(band);
+        if (bandIt != antennaIt->second.end() && bandIt->second != 0)
+            return true;
+    }
+    return false;
+}
+
 IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const
 {
     IRadioEndpoint *radio = findRadio(nodeId);

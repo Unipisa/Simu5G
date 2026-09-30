@@ -241,6 +241,12 @@ class LteAllocationModule
     virtual unsigned int getAllocatedBlocks(Plane plane, const Remote antenna, const Band band);
     virtual unsigned int getInterferingBlocks(Plane plane, const Remote antenna, const Band band);
 
+    /**
+     * Whether a background UE was allocated blocks of the band in the previous
+     * allocation round.
+     */
+    virtual bool isPrevBandUsedByBackgroundUes(Plane plane, const Remote antenna, const Band band) const;
+
     unsigned int getBytes(const Remote antenna, const Band band, const MacNodeId nodeId)
     {
         Plane plane = MAIN_PLANE;
