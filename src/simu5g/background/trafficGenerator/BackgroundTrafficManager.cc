@@ -28,6 +28,7 @@ void BackgroundTrafficManager::initialize(int stage)
         // Get the reference to the channel model for the given carrier
         bsTxPower_ = phy_->getTxPwr();
         bsCoord_ = phy_->getCoord();
+        bsNodeId_ = mac_->getMacNodeId();
         channelModel_ = phy_->getChannelModel(carrierFrequency_);
         if (channelModel_ == nullptr)
             throw cRuntimeError("BackgroundTrafficManagerBase::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_.get());

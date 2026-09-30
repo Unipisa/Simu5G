@@ -84,6 +84,12 @@ class IBackgroundTrafficManager
 
     // Update background UE's backlog and return true if the buffer is empty
     virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) = 0;
+
+    // Registers with the radio medium the transmission a background UE's
+    // allocation stands for: in DL from its base station to it, in UL from it;
+    // it lasts one slot of the carrier. Background UEs have no radio, so this
+    // is the medium's only record of the bands they occupy.
+    virtual void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) = 0;
 };
 
 } //namespace

@@ -21,17 +21,21 @@ namespace simu5g {
 using namespace omnetpp;
 
 class IRadioEndpoint;
+class TrafficGeneratorBase;
 
 /**
- * One transmission on the radio medium: a frame as it leaves a radio. The
- * transmitter builds it from the frame's control information, and the medium
- * keeps it in the order transmissions were created.
+ * One transmission on the radio medium: a frame as it leaves a radio, or the
+ * allocation of a background UE in a slot, which no radio sends. The
+ * transmitter builds the former from the frame's control information, the
+ * background traffic manager of the base station the latter from the
+ * allocation; the medium keeps them in the order they were created.
  */
 class CellularTransmission
 {
   public:
     long id = -1;                               // creation order on the medium
     IRadioEndpoint *transmitter = nullptr;      // the transmitting radio
+    TrafficGeneratorBase *backgroundUe = nullptr; // for a background UE's transmission, which no radio sends: its traffic generator
     MacNodeId sourceId = NODEID_NONE;
     MacNodeId destId = NODEID_NONE;
     Direction direction = UNKNOWN_DIRECTION;

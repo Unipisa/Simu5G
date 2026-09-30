@@ -181,20 +181,6 @@ unsigned int LteAllocationModule::getInterferingBlocks(Plane plane, const Remote
         return 1000;
 }
 
-bool LteAllocationModule::isPrevBandUsedByBackgroundUes(Plane plane, const Remote antenna, const Band band) const
-{
-    if (prevAllocatedRbsPerBand_.empty())
-        return false;
-    const auto& perBand = prevAllocatedRbsPerBand_[plane][antenna];
-    auto it = perBand.find(band);
-    if (it == perBand.end())
-        return false;
-    for (const auto& [nodeId, blocks] : it->second.ueAllocatedRbsMap_)
-        if (blocks > 0 && num(nodeId) >= BGUE_MIN_ID)
-            return true;
-    return false;
-}
-
 unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const Plane plane, const Band band)
 {
     ensureNodeInitialized(nodeId);

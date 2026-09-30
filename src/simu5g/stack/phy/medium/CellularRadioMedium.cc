@@ -134,13 +134,12 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
     for (size_t band = 0; band < map.size(); band++) {
         size_t i = 0;
         for (const auto& info : map[band]) {
-            if (info.trafficGen != nullptr)
-                continue; // a background UE: not a radio on the medium
             if (i >= view[band].size())
                 return false;
             auto t = view[band][i++];
+            // a PHY's entry is its radio's frame, a background UE's entry its registered allocation
             if (info.nodeId != t->sourceId || info.dir != t->direction
-                    || static_cast<IRadioEndpoint *>(info.phy) != t->transmitter)
+                    || static_cast<IRadioEndpoint *>(info.phy) != t->transmitter || info.trafficGen != t->backgroundUe)
                 return false;
         }
         if (i != view[band].size())

@@ -1409,10 +1409,8 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
                     continue;
 
                 // the band is occupied if one of the cell's DL data transmissions on this
-                // carrier occupied it, or one of its background UEs, which have no radio
-                // on the medium, was allocated it
-                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i)
-                        || enbInfo->mac->isDlPrevBandUsedByBackgroundUes(i);
+                // carrier that end now occupied it -- its background UEs' included
+                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i);
                 // for a cell with one carrier, that is what its scheduler allocated
                 ASSERT(enbInfo->mac->getCellInfo()->getCarriers().size() != 1
                         || occupied == (enbInfo->mac->getDlPrevBandStatus(i) != 0));

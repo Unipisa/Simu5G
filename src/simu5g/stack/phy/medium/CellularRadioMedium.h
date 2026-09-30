@@ -95,16 +95,18 @@ class CellularRadioMedium : public cSimpleModule
 
     /**
      * Whether the uplink transmissions on the carrier that end now -- data
-     * frames sent in UL or on the sidelink -- are, band by band and in
-     * creation order, the entries of a PHY in the Binder's uplink
-     * transmission map (the entries of a background UE are left out).
+     * frames sent in UL or on the sidelink, and the UL allocations of
+     * background UEs -- are, band by band and in creation order, the entries
+     * of the Binder's uplink transmission map: a PHY's entry matching its
+     * radio's frame, a background UE's entry its registered allocation.
      */
     virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const;
 
     /**
      * Whether a data transmission of the given node in the given direction on
      * the carrier, one that ends now -- in the slot just completed -- occupies
-     * the band.
+     * the band. A background UE's allocation counts, being a registered
+     * transmission: in DL, one of its base station.
      */
     virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const;
 

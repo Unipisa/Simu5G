@@ -754,12 +754,19 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
             toConsume = queueLength - (MAC_HEADER + RLC_HEADER_UM);
         bgTrafficManager->consumeBackloggedUeBytes(bgUeId, toConsume, direction_); // in bytes
 
+        // the allocation, if any, is a transmission of the background UE on the radio medium
         if (direction_ == UL) {
-            // If uplink interference is enabled, mark the occupation in the uplink transmission map (for uplink interference computation purposes)
+            // If uplink interference is enabled, mark the occupation in the uplink transmission map (for uplink interference computation purposes);
+            // the medium records the transmission exactly when the map does
             ChannelModelBase *channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
-            if (channelModel->isUplinkInterferenceEnabled())
+            if (channelModel->isUplinkInterferenceEnabled()) {
                 binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
+                if (cwAllocatedBytes > 0)
+                    bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
+            }
         }
+        else if (cwAllocatedBytes > 0)
+            bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
 
         EV << "LteSchedulerEnb::grant Codeword allocation: " << cwAllocatedBytes << " bytes" << endl;
         if (cwAllocatedBytes > 0) {
@@ -1319,13 +1326,19 @@ unsigned int LteSchedulerEnb::scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequen
             // update rb map
             allocatedRbMap[antenna] = allocatedRbMapEntry;
 
+            // the allocation is a transmission of the background UE on the radio medium;
             // uplink scheduler only: if uplink interference is enabled, mark the
-            // occupation in the ul transmission map (for ul interference computation purposes)
+            // occupation in the ul transmission map (for ul interference computation purposes),
+            // and the medium records the transmission exactly when the map does
             if (direction_ == UL) {
                 ChannelModelBase *channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
-                if (channelModel->isUplinkInterferenceEnabled())
+                if (channelModel->isUplinkInterferenceEnabled()) {
                     binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
+                    bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
+                }
             }
+            else
+                bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
 
             return allocatedBytes;
         }

@@ -973,11 +973,6 @@ unsigned int LteMacEnb::getDlBandStatus(Band b)
     return i;
 }
 
-bool LteMacEnb::isDlPrevBandUsedByBackgroundUes(Band b)
-{
-    return enbSchedulerDl_->allocator_->isPrevBandUsedByBackgroundUes(MAIN_PLANE, MACRO, b);
-}
-
 unsigned int LteMacEnb::getDlPrevBandStatus(Band b)
 {
     unsigned int i = enbSchedulerDl_->getInterferingBlocks(MAIN_PLANE, MACRO, b);

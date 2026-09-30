@@ -22,5 +22,6 @@ simple BackgroundTrafficManagerBase like IBackgroundTrafficManager
         @display("i=block/control");
         @class("BackgroundTrafficManager");
         string binderModule = default("binder");
+        string radioMediumModule = default("radioMedium");
         int numBgUes;
 }

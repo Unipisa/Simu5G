@@ -21,6 +21,7 @@
 #include "simu5g/background/trafficGenerator/generators/TrafficGeneratorBase.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/PhyEnb.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -58,6 +59,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // reference to binder module
     inet::ModuleRefByPar<Binder> binder_;
 
+    // reference to the radio medium
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
+
     //pointer to pisadata
     PhyPisaData *phyPisaData_ = nullptr;
 
@@ -72,6 +76,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // position of the e/gNodeB
     inet::Coord bsCoord_;
+
+    // node id of the e/gNodeB; NODEID_NONE for a background cell, which is not on the radio medium
+    MacNodeId bsNodeId_ = NODEID_NONE;
 
     /**************************************
      * Support to average CQI computation *
@@ -148,6 +155,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // update background UE's backlog and returns true if the buffer is empty
     unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) override;
+
+    // registers with the radio medium the transmission a background UE's allocation stands for
+    void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) override;
 };
 
 } //namespace

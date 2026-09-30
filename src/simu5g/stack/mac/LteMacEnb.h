@@ -307,13 +307,6 @@ class LteMacEnb : public LteMacBase
     unsigned int getDlBandStatus(Band b);
     unsigned int getDlPrevBandStatus(Band b);
 
-    /*
-     * Whether background UEs were allocated the DL band in the previous
-     * scheduling round. Background UEs have no radio on the medium, so this
-     * is the only record of the bands they occupy.
-     */
-    bool isDlPrevBandUsedByBackgroundUes(Band b);
-
     // Configuration push: RRC installs (or replaces) a bearer's QoS profile. MAC does
     // not author its own configuration; this is the only write path into the map.
     virtual void configureDrbQos(DrbKey key, const DrbQosProfile& qos);

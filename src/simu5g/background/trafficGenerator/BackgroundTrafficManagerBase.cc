@@ -11,6 +11,9 @@
 //
 
 #include "simu5g/background/trafficGenerator/BackgroundTrafficManagerBase.h"
+
+#include <algorithm>
+
 #include "simu5g/background/trafficGenerator/ActiveUeNotification_m.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
 
@@ -52,6 +55,7 @@ void BackgroundTrafficManagerBase::initialize(int stage)
         numBgUEs_ = par("numBgUes");
         binder_.reference(this, "binderModule", true);
         firstBgUeId_ = binder_->allocateBackgroundUeIds(numBgUEs_);
+        radioMedium_.reference(this, "radioMediumModule", true);
 
         // create vector of BackgroundUEs
         for (int i = 0; i < numBgUEs_; i++)
@@ -266,6 +270,35 @@ void BackgroundTrafficManagerBase::racHandled(MacNodeId bgUeId)
                                              //      there are 6 slots between the first BSR and actual data
         scheduleAt(NOW + offset, notification);
     }
+}
+
+void BackgroundTrafficManagerBase::registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap)
+{
+    Enter_Method("registerTransmission");
+    if (bsNodeId_ == NODEID_NONE)
+        throw cRuntimeError("BackgroundTrafficManagerBase::registerTransmission(): the base station of the background UEs is a background cell, which is not on the radio medium");
+    if (dir != DL && dir != UL)
+        throw cRuntimeError("BackgroundTrafficManagerBase::registerTransmission(): unrecognized direction %d", (int)dir);
+    // an allocation that occupies no band stands for no transmission
+    ASSERT(std::any_of(allocatedRbMap.begin(), allocatedRbMap.end(), [] (const auto& antennaBlocks) {
+        return std::any_of(antennaBlocks.second.begin(), antennaBlocks.second.end(), [] (const auto& bandBlocks) { return bandBlocks.second != 0; });
+    }));
+
+    TrafficGeneratorBase *bgUe = getTrafficGenerator(bgUeId);
+    auto transmission = new CellularTransmission();
+    transmission->backgroundUe = bgUe;
+    transmission->sourceId = (dir == DL) ? bsNodeId_ : bgUeId;
+    transmission->destId = (dir == DL) ? bgUeId : bsNodeId_;
+    transmission->direction = dir;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = carrierFrequency;
+    transmission->grantedBlocks = allocatedRbMap;
+    transmission->txPower = (dir == DL) ? bsTxPower_ : bgUe->getTxPwr();
+    transmission->startTime = simTime();
+    // one slot of the carrier, as the duration of a frame a radio sends on it
+    double slotDuration = binder_->getSlotDurationFromNumerologyIndex(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
+    transmission->duration = slotDuration;
+    radioMedium_->addTransmission(transmission);
 }
 
 void BackgroundTrafficManagerBase::initializeAvgInterferenceComputation()
