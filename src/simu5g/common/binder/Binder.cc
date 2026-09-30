@@ -559,6 +559,10 @@ simtime_t Binder::getLastUpdateUlTransmissionInfo()
 
 void Binder::initAndResetUlTransmissionInfo()
 {
+    // the update of this slot is done even if nothing is shifted, so a later
+    // call in the slot does not shift what has been stored since
+    lastUpdateUplinkTransmissionInfo_ = NOW;
+
     if (lastUplinkTransmission_ < NOW - 2 * TTI) {
         // data structures have not been used in the last 2 time slots,
         // so they do not need to be updated.
@@ -575,7 +579,6 @@ void Binder::initAndResetUlTransmissionInfo()
         if (!transmissions.empty())
             transmissions.erase(transmissions.begin());
     }
-    lastUpdateUplinkTransmissionInfo_ = NOW;
 }
 
 void Binder::storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, PhyBase *phy, Direction dir)

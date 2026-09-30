@@ -121,7 +121,7 @@
 /simulations/nr/tutorial/,               -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         ff84-3a01/tplx;2eb6-82be/tilx;cf70-5e71/~tNl;1ef4-bf21/sz, PASS, radio bgcell
 /simulations/nr/tutorial/,               -f omnetpp.ini -c Numerology -r 0,                      5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;84ef-1578/sz, PASS, radio bgcell multicarrier
 /simulations/nr/tutorial/,               -f omnetpp.ini -c Single-UE -r 0,                       5s,         ccd3-e58d/tplx;ff12-89aa/tilx;3c67-4ab3/~tNl;e516-71b8/sz, PASS, radio
-/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        b4a0-9f4a/tplx;87ea-3748/tilx;70d1-9a9f/~tNl;9255-94ea/sz, PASS, radio interference bgcell bgue
+/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        c354-06df/tplx;2497-5420/tilx;da68-2767/~tNl;b3d1-77fa/sz, PASS, radio interference bgcell bgue
 /tutorials/nr/,                          -f omnetpp.ini -c BgTraffic -r 0,                       5s,         e83d-d3d9/tplx;2611-3692/tilx;41e6-1778/~tNl;34dd-6df5/sz, PASS, radio bgcell
 /tutorials/nr/,                          -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         1e72-8d23/tplx;c19f-49e6/tilx;4919-f21d/~tNl;84ef-1578/sz, PASS, radio bgcell multicarrier
 /tutorials/nr/,                          -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         ff84-3a01/tplx;2eb6-82be/tilx;cf70-5e71/~tNl;1ef4-bf21/sz, PASS, radio bgcell
