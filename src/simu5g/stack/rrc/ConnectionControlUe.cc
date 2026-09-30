@@ -197,6 +197,21 @@ void ConnectionControlUe::beaconReceived(AirFrame *frame, UserControlInfo *lteIn
         return;
     }
 
+    // Simu5G models only the handover over X2 (Xn in NR): the source forwards
+    // the UE's data to the target over X2, and the target completes the
+    // handover towards the source over X2. Between cells with no X2 link, a
+    // real network hands over through the core network instead (S1-based in
+    // LTE, N2-based in NR), which Simu5G does not model. In its place, an
+    // attached UE does not hand over to a cell its serving cell has no X2 link
+    // to: a limitation of the model, not 3GPP behaviour. (A UE that is not
+    // attached may pick any cell.)
+    if (servingNodeId_ != NODEID_NONE && lteInfo->getSourceId() != servingNodeId_
+            && !binder_->hasX2Peer(servingNodeId_, lteInfo->getSourceId())) {
+        EV << "Cell " << lteInfo->getSourceId() << " has no X2 link to the serving cell " << servingNodeId_ << ": not a handover candidate" << endl;
+        delete frame;
+        return;
+    }
+
     if (rssi > candidateServingNodeRssi_ + hysteresisThreshold_) {
         if (lteInfo->getSourceId() == servingNodeId_) {
             // receiving even stronger broadcast from current serving node

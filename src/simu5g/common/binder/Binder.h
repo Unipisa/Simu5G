@@ -467,6 +467,16 @@ class Binder : public cSimpleModule
         return x2PeerAddress_[srcId][destId];
     }
 
+    /**
+     * Whether the base station has an X2 link to the peer: one of its X2
+     * applications connects to that peer.
+     */
+    virtual bool hasX2Peer(X2NodeId nodeId, X2NodeId peerId) const
+    {
+        auto it = x2PeerAddress_.find(nodeId);
+        return it != x2PeerAddress_.end() && it->second.count(peerId) != 0;
+    }
+
     virtual void setX2PeerAddress(X2NodeId srcId, X2NodeId destId, inet::L3Address interfAddr)
     {
         x2PeerAddress_[srcId].insert({destId, interfAddr});
