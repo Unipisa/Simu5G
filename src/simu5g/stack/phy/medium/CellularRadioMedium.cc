@@ -110,15 +110,24 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     carrierTransmissions.push_back(transmission);
 }
 
+std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsEndingNow(GHz carrierFrequency) const
+{
+    std::vector<const CellularTransmission *> ending;
+    auto it = transmissions.find(carrierFrequency);
+    if (it == transmissions.end())
+        return ending;
+    for (auto t : it->second)
+        if (t->frameType == DATAPKT && t->getEndTime() == simTime())
+            ending.push_back(t);
+    return ending;
+}
+
 std::vector<std::vector<const CellularTransmission *>> CellularRadioMedium::getUplinkTransmissionsByBand(GHz carrierFrequency) const
 {
     std::vector<std::vector<const CellularTransmission *>> byBand;
-    auto it = transmissions.find(carrierFrequency);
-    if (it == transmissions.end())
-        return byBand;
-    for (auto t : it->second) {
+    for (auto t : getDataTransmissionsEndingNow(carrierFrequency)) {
         bool uplink = t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI;
-        if (!uplink || t->frameType != DATAPKT || t->getEndTime() != simTime())
+        if (!uplink)
             continue;
         auto antennaIt = t->grantedBlocks.find(MACRO);
         if (antennaIt == t->grantedBlocks.end())
@@ -166,11 +175,8 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
 
 bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const
 {
-    auto it = transmissions.find(carrierFrequency);
-    if (it == transmissions.end())
-        return false;
-    for (auto t : it->second) {
-        if (t->sourceId != sourceId || t->direction != direction || t->frameType != DATAPKT || t->getEndTime() != simTime())
+    for (auto t : getDataTransmissionsEndingNow(carrierFrequency)) {
+        if (t->sourceId != sourceId || t->direction != direction)
             continue;
         auto antennaIt = t->grantedBlocks.find(MACRO);
         if (antennaIt == t->grantedBlocks.end())

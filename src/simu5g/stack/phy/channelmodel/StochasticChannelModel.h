@@ -489,6 +489,13 @@ class StochasticChannelModel : public ChannelModelBase
     static InterfererInfo describeInterferer(const CellularTransmission& transmission);
 
     /*
+     * The bands below numBands the transmission occupies that a reception with
+     * the given RB map uses (every band, if the RB map is empty), in increasing
+     * order.
+     */
+    static std::vector<unsigned int> sharedBands(const CellularTransmission& transmission, unsigned int numBands, const RbMap& rbmap);
+
+    /*
      * Compute total interference due to eNB coexistence for the DL direction
      * @param eNbId id of the considered eNb
      * @param isCqi if we are computing a CQI

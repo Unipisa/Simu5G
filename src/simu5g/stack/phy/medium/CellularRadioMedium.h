@@ -94,6 +94,13 @@ class CellularRadioMedium : public cSimpleModule
     virtual void addTransmission(CellularTransmission *transmission);
 
     /**
+     * The data transmissions on the carrier that end now -- in the slot just
+     * completed: data frames, and the allocations of background UEs -- in
+     * creation order.
+     */
+    virtual std::vector<const CellularTransmission *> getDataTransmissionsEndingNow(GHz carrierFrequency) const;
+
+    /**
      * The uplink transmissions on the carrier that end now -- in the slot just
      * completed: data frames sent in UL or on the sidelink, and the UL
      * allocations of background UEs -- by band, each band's in creation order.

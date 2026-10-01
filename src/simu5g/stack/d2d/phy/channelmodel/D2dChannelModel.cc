@@ -185,30 +185,33 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
     // get the D2D view of the eNodeB's MAC
     ID2dMacEnb *macEnb = check_and_cast<ID2dMacEnb *>(binder_->getMacFromMacNodeId(eNbId));
 
-    // what an interfering UE adds on the band
-    auto addInterference = [&] (const InterfererInfo& interferer, unsigned int band) {
-        const MacNodeId ueId = interferer.nodeId;
-        const MacCellId cellId = interferer.cellId;
-        const Direction dir = interferer.dir;
-
+    // whether an interfering UE counts at our receiver
+    auto interferes = [&] (const InterfererInfo& interferer) {
         // no self-interference
-        if (ueId == senderId || ueId == destId)
-            return;
+        if (interferer.nodeId == senderId || interferer.nodeId == destId)
+            return false;
 
         // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
-        if (dir == UL && cellId == eNbId)
-            return;
+        if (interferer.dir == UL && interferer.cellId == eNbId)
+            return false;
 
         // no interference from D2D connections of the same cell when reuse is disabled (otherwise, computation of CQI is misleading)
-        if (cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()))
-            return;
+        return !(interferer.cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()));
+    };
 
-        EV << NOW << " D2dChannelModel::computeD2DInterference - Interference from UE: " << ueId << "(dir " << dirToA(dir) << ") on band[" << band << "]" << endl;
+    // the attenuation from an interfering UE to our receiver
+    auto attenuationFrom = [&] (const InterfererInfo& interferer) {
+        return getAttenuation(d2dLink(interferer.nodeId, interferer.coord, destId, destCoord));
+    };
 
-        // get tx power and attenuation from this UE
+    // what an interfering UE adds on the band, at the given attenuation
+    auto addInterference = [&] (const InterfererInfo& interferer, unsigned int band, double att) {
+        const MacNodeId ueId = interferer.nodeId;
+
+        EV << NOW << " D2dChannelModel::computeD2DInterference - Interference from UE: " << ueId << "(dir " << dirToA(interferer.dir) << ") on band[" << band << "]" << endl;
+
+        // get tx power from this UE
         double rxPwr = interferer.txPwr - cableLossOf(destId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(destId, antennaGainUe_);
-        // interferer -> our receiver
-        double att = getAttenuation(d2dLink(ueId, interferer.coord, destId, destCoord));
         (*interference)[band] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
@@ -220,8 +223,11 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty()) {
             for (unsigned int i = 0; i < numBands_; i++) {
                 // the UEs transmitting on the same band
-                for (auto& allocation : ulTransmissionMap->at(i))
-                    addInterference(StochasticChannelModel::describeInterferer(allocation), i);
+                for (auto& allocation : ulTransmissionMap->at(i)) {
+                    const InterfererInfo interferer = StochasticChannelModel::describeInterferer(allocation);
+                    if (interferes(interferer))
+                        addInterference(interferer, i, attenuationFrom(interferer));
+                }
             }
         }
     }
@@ -230,6 +236,8 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         // the Binder's map of the previous TTI lists the same ones, band by band in the same order
         ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
         const auto ulTransmissions = radioMedium_->getUplinkTransmissionsByBand(carrierFrequency);
+        // each transmission's link is evaluated once, at the first band of the reception it occupies
+        std::map<const CellularTransmission *, double> attenuations;
         for (unsigned int i = 0; i < numBands_ && i < ulTransmissions.size(); i++) {
             // if we are decoding a data transmission and this RB has not been used, skip it
             // TODO fix for multi-antenna case
@@ -237,8 +245,15 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
                 continue;
 
             // the transmissions on the same band, in the order they were created
-            for (auto transmission : ulTransmissions[i])
-                addInterference(StochasticChannelModel::describeInterferer(*transmission), i);
+            for (auto transmission : ulTransmissions[i]) {
+                const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
+                if (!interferes(interferer))
+                    continue;
+                auto it = attenuations.find(transmission);
+                if (it == attenuations.end())
+                    it = attenuations.emplace(transmission, attenuationFrom(interferer)).first;
+                addInterference(interferer, i, it->second);
+            }
         }
     }
 
