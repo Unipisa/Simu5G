@@ -94,6 +94,14 @@ class CellularRadioMedium : public cSimpleModule
     virtual void addTransmission(CellularTransmission *transmission);
 
     /**
+     * The uplink transmissions on the carrier that end now -- in the slot just
+     * completed: data frames sent in UL or on the sidelink, and the UL
+     * allocations of background UEs -- by band, each band's in creation order.
+     * The result has an entry for every band up to the highest one occupied.
+     */
+    virtual std::vector<std::vector<const CellularTransmission *>> getUplinkTransmissionsByBand(GHz carrierFrequency) const;
+
+    /**
      * Whether the uplink transmissions on the carrier that end now -- data
      * frames sent in UL or on the sidelink, and the UL allocations of
      * background UEs -- are, band by band and in creation order, the entries

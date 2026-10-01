@@ -110,30 +110,39 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     carrierTransmissions.push_back(transmission);
 }
 
+std::vector<std::vector<const CellularTransmission *>> CellularRadioMedium::getUplinkTransmissionsByBand(GHz carrierFrequency) const
+{
+    std::vector<std::vector<const CellularTransmission *>> byBand;
+    auto it = transmissions.find(carrierFrequency);
+    if (it == transmissions.end())
+        return byBand;
+    for (auto t : it->second) {
+        bool uplink = t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI;
+        if (!uplink || t->frameType != DATAPKT || t->getEndTime() != simTime())
+            continue;
+        auto antennaIt = t->grantedBlocks.find(MACRO);
+        if (antennaIt == t->grantedBlocks.end())
+            continue;
+        for (const auto& [band, allocation] : antennaIt->second) {
+            if (allocation == 0)
+                continue;
+            if (band >= byBand.size())
+                byBand.resize(band + 1);
+            byBand[band].push_back(t);
+        }
+    }
+    return byBand;
+}
+
 bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>> *mapOrNull) const
 {
     static const std::vector<std::vector<UeAllocationInfo>> noMap;
     const auto& map = mapOrNull != nullptr ? *mapOrNull : noMap;
-    // the registry's view, band by band
-    std::vector<std::vector<const CellularTransmission *>> view(map.size());
-    auto it = transmissions.find(carrierFrequency);
-    if (it != transmissions.end()) {
-        for (auto t : it->second) {
-            bool uplink = t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI;
-            if (!uplink || t->frameType != DATAPKT || t->getEndTime() != simTime())
-                continue;
-            auto antennaIt = t->grantedBlocks.find(MACRO);
-            if (antennaIt == t->grantedBlocks.end())
-                continue;
-            for (const auto& [band, allocation] : antennaIt->second) {
-                if (allocation == 0)
-                    continue;
-                if (band >= view.size())
-                    return false;
-                view[band].push_back(t);
-            }
-        }
-    }
+    // the registry's view, band by band; its last band is occupied, so a longer view occupies a band the map does not have
+    auto view = getUplinkTransmissionsByBand(carrierFrequency);
+    if (view.size() > map.size())
+        return false;
+    view.resize(map.size());
     for (size_t band = 0; band < map.size(); band++) {
         size_t i = 0;
         for (const auto& info : map[band]) {

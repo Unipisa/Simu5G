@@ -21,6 +21,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class Binder;
+class CellularTransmission;
 class PathLossModel;
 
 /**
@@ -460,8 +461,8 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void updatePositionHistory(const MacNodeId nodeId, const inet::Coord coord);
 
     /*
-     * One interfering transmitter, normalized across the two kinds the UL
-     * transmission map can hold: a real UE (with a PHY) and a background UE
+     * One interfering transmitter, normalized across the two kinds an uplink
+     * transmission can come from: a real UE (with a PHY) and a background UE
      * (with a traffic generator).
      */
     struct InterfererInfo
@@ -479,6 +480,13 @@ class StochasticChannelModel : public ChannelModelBase
      * otherwise differ in their exclusion rules and antenna-gain terms.
      */
     static InterfererInfo describeInterferer(const UeAllocationInfo& allocation);
+
+    /*
+     * The same for a transmission on the radio medium. The position is the
+     * transmitter's current one, as for an entry of the UL transmission map,
+     * not the one the transmission started at.
+     */
+    static InterfererInfo describeInterferer(const CellularTransmission& transmission);
 
     /*
      * Compute total interference due to eNB coexistence for the DL direction
