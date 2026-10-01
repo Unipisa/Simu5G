@@ -508,11 +508,17 @@ class StochasticChannelModel : public ChannelModelBase
     simtime_t lastCompletedSlotEnd(GHz carrierFrequency);
 
     /*
-     * Compute total interference due to eNB coexistence for the DL direction
-     * @param eNbId id of the considered eNb
+     * Compute the interference at a UE in DL from the downlink data
+     * transmissions of the slot (a reception's just completed one, on its
+     * bands; a CQI's completed last, on every band) in creation order: the
+     * other cells' if cells is set, the external and background cells' as
+     * their switches say.
+     * @param eNbId id of the UE's cell
      * @param isCqi if we are computing a CQI
+     * @param link the link the interference is computed for, whose LOS state
+     *        the path loss from external and background cells takes
      */
-    virtual bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
+    virtual bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
 
     /*
      * Whether, for a cell with one carrier, the bands of a reception with the
@@ -525,25 +531,21 @@ class StochasticChannelModel : public ChannelModelBase
     bool dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId eNbId, GHz carrierFrequency, simtime_t slotStart, const RbMap& rbmap);
 
     /*
-     * Compute interference coming from neighboring cells for the UL direction
+     * Compute the interference at a base station, at enbCoord, in UL from the
+     * uplink transmissions of the slot (as for computeDownlinkInterference()) in
+     * creation order: the UEs of other cells if cells is set, the background
+     * cells' UEs as their switch says.
      */
-    virtual bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
+    virtual bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
 
     /*
-     * Evaluates total interference from external cells seen from the spot given by coord
-     * @param link the link the interference is computed for, whose LOS state the
-     *        path loss from the external cells takes (see computeExtCellPathLoss)
-     * @return total interference expressed in dBm
+     * The power, in dBm, with which a transmission of an external or a
+     * background cell, or of a background cell's UE, arrives at the given
+     * position: the TR 36.814 path loss in the LOS state of the given link (see
+     * computeExtCellPathLoss), the antenna's attenuation, the model's own gains
+     * and cable loss.
      */
-    virtual bool computeExtCellInterference(MacNodeId eNbId, const LinkKey& link, inet::Coord coord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference);
-
-    /*
-     * Evaluates total interference from external cells seen from the spot given by coord
-     * @param link the link the interference is computed for, whose LOS state the
-     *        path loss from the background cells takes (see computeExtCellPathLoss)
-     * @return total interference expressed in dBm
-     */
-    virtual bool computeBackgroundCellInterference(const LinkKey& link, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double> *interference);
+    double phantomPowerAt(const CellularTransmission& transmission, const inet::Coord& position, const LinkKey& link);
 
     /*
      * Compute attenuation due to path loss, in the LOS state of the given link

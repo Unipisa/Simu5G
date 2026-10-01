@@ -42,7 +42,8 @@ struct DlInterferenceAccess : StochasticChannelModel
 static std::vector<double> dlInterference(StochasticChannelModel *model, MacNodeId servingId, IRadioEndpoint *ue, bool isCqi, const RbMap& rbmap)
 {
     std::vector<double> interference(model->getNumBands(), 0.0);
-    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), isCqi, model->getCarrierFrequency(), rbmap, &interference);
+    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), isCqi, model->getCarrierFrequency(), rbmap, &interference,
+            LinkKey(servingId, ue->getMacNodeId()), true);
     return interference;
 }
 
