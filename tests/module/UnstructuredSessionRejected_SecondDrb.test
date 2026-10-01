@@ -13,10 +13,10 @@ network = simu5g.test.moduletest.lib.NrSessionTestNetwork
 *.ue[*].unstructuredApp[0].source.packetLength = 100B
 *.ue[*].unstructuredApp[0].source.productionInterval = 20ms
 *.ue[*].unstructuredApp[0].source.initialProductionOffset = 0.1s
-*.upf.userPlaneNodeControl.unstructuredPrefix = "10.99.0.0/16"
-*.upf.userPlaneNodeControl.unstructuredServer = "server"
-*.upf.userPlaneNodeControl.unstructuredServerPort = 5000
-*.upf.userPlaneNodeControl.unstructuredPort = 5001
+*.upf.nodeControl.unstructuredPrefix = "10.99.0.0/16"
+*.upf.nodeControl.unstructuredServer = "server"
+*.upf.nodeControl.unstructuredServerPort = 5000
+*.upf.nodeControl.unstructuredPort = 5001
 *.bearerConfigurator.staticDrbs = [
     {coreNetwork: "5gc", ue: "ue[*]", drbId: 1, isDefault: true, suppressSdapHeader: true, lcg: 3, rlcMode: "UM"},
     {coreNetwork: "5gc", ue: "ue[*]", drbId: 2, mappedQfis: [1], lcg: 1, rlcMode: "UM"}

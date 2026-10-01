@@ -71,7 +71,7 @@ module Upf extends ApplicationLayerNodeBase
                 @display("p=1000,75");
                 gateway = parent.gateway;
         }
-        userPlaneNodeControl: UserPlaneNodeControl {
+        nodeControl: UserPlaneNodeControl {
             parameters:
                 @display("p=1200,175");
                 nodeType = parent.nodeType;

@@ -65,9 +65,9 @@ module PgwStandard extends ApplicationLayerNodeBase
             parameters:
                 @display("p=1000,75");
         }
-        userPlaneNodeControl: UserPlaneNodeControl {
+        nodeControl: UserPlaneNodeControl {
             parameters:
-                @display("p=1200,175");
+                @display("p=125,400;is=s");
                 nodeType = parent.nodeType;
         }
         ndResponder: Ipv6NdResponder if hasNdResponder {
