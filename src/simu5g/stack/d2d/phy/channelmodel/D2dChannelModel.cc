@@ -217,38 +217,26 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
     };
 
-    if (isCqi) {
-        // CQI computation: the uplink transmissions of the slot completed last, band by band
-        const auto ulTransmissions = radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, lastCompletedSlotEnd(carrierFrequency));
-        for (unsigned int i = 0; i < numBands_; i++) {
-            // the transmissions on the same band, in the order they were created
-            for (auto transmission : ulTransmissions) {
-                if (!occupiesBand(*transmission, i))
-                    continue;
-                const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
-                if (interferes(interferer))
-                    addInterference(interferer, i, attenuationFrom(interferer));
-            }
-        }
-    }
-    else {
-        // error computation: the uplink transmissions of the slot just completed, in creation order;
-        // the Binder's map of the previous TTI lists the same ones
-        ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
-        for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, NOW)) {
-            const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
-            if (!interferes(interferer))
-                continue;
+    // a reception: the uplink transmissions of the slot just completed, on its bands -- the Binder's
+    // map of the previous TTI lists the same ones; a CQI: those of the slot completed last, on every band
+    static const RbMap everyBand;
+    ASSERT(isCqi || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
+    simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
+    const RbMap& receptionBands = isCqi ? everyBand : rbmap;
+    // in creation order
+    for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, slotEnd)) {
+        const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
+        if (!interferes(interferer))
+            continue;
 
-            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
-            auto bands = sharedBands(*transmission, numBands_, rbmap);
-            if (bands.empty())
-                continue;
+        // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+        auto bands = sharedBands(*transmission, numBands_, receptionBands);
+        if (bands.empty())
+            continue;
 
-            double att = attenuationFrom(interferer);
-            for (unsigned int i : bands)
-                addInterference(interferer, i, att);
-        }
+        double att = attenuationFrom(interferer);
+        for (unsigned int i : bands)
+            addInterference(interferer, i, att);
     }
 
     // Debug Output

@@ -470,9 +470,8 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void updatePositionHistory(const MacNodeId nodeId, const inet::Coord coord);
 
     /*
-     * One interfering transmitter, normalized across the two kinds an uplink
-     * transmission can come from: a real UE (with a PHY) and a background UE
-     * (with a traffic generator).
+     * One interfering uplink transmitter: a real UE (with a PHY) or a
+     * background UE (with a traffic generator).
      */
     struct InterfererInfo
     {
@@ -484,15 +483,10 @@ class StochasticChannelModel : public ChannelModelBase
     };
 
     /*
-     * Unpack a UeAllocationInfo into the properties every interference
-     * computation needs. Shared by the uplink and D2D interference loops, which
-     * otherwise differ in their exclusion rules and antenna-gain terms.
-     */
-    static InterfererInfo describeInterferer(const UeAllocationInfo& allocation);
-
-    /*
-     * The same for a transmission on the radio medium. The position is the one
-     * the transmission started at.
+     * The properties of an interfering transmission on the radio medium every
+     * interference computation needs, its position the one it started at.
+     * Shared by the uplink and D2D interference loops, which otherwise differ
+     * in their exclusion rules and antenna-gain terms.
      */
     static InterfererInfo describeInterferer(const CellularTransmission& transmission);
 
@@ -502,9 +496,6 @@ class StochasticChannelModel : public ChannelModelBase
      * order.
      */
     static std::vector<unsigned int> sharedBands(const CellularTransmission& transmission, unsigned int numBands, const RbMap& rbmap);
-
-    /* Whether the transmission occupies the band. */
-    static bool occupiesBand(const CellularTransmission& transmission, unsigned int band);
 
     /*
      * When the slot completed last on the carrier ended: the latest slot

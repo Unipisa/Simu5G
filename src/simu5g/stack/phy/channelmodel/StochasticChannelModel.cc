@@ -1362,94 +1362,47 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         return txPower - angularAtt - cableLossOf(ueId) + antennaGainOf(id, antennaGainEnB_) + antennaGainOf(ueId, antennaGainUe_);
     };
 
-    if (isCqi) { // CQI computation: the other cells' DL data transmissions of the slot completed last
-        simtime_t slotEnd = lastCompletedSlotEnd(carrierFrequency);
-        const auto& enbList = binder_->getEnbList();
-        for (auto& enbInfo : enbList) {
-            MacNodeId id = enbInfo->id;
+    // a reception: the other cells' DL data transmissions of the slot just completed, on its bands;
+    // a CQI: those of the slot completed last, on every band
+    static const RbMap everyBand;
+    simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
+    const RbMap& receptionBands = isCqi ? everyBand : rbmap;
+    // in creation order
+    for (auto transmission : radioMedium_->getDataTransmissionsEndingAt(carrierFrequency, slotEnd)) {
+        MacNodeId id = transmission->sourceId;
+        if (transmission->direction != DL || id == eNbId)
+            continue;
 
-            if (id == eNbId)
-                continue;
+        // the cell's radio, which also sends its background UEs' allocations
+        IRadioEndpoint *cell = radioMedium_->getRadio(id);
+        ASSERT(transmission->txPower == cell->getTxPwr());
+        StochasticChannelModel *interfChanModel = dynamic_cast<StochasticChannelModel *>(cell->getChannelModel(carrierFrequency));
+        if (interfChanModel == nullptr)
+            continue;
 
-            // initialize eNB data structures
-            if (!enbInfo->init) {
-                // obtain a reference to eNB phy and obtain tx power
-                enbInfo->phy = radioMedium_->getRadio(id);
+        // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+        unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
+        auto bands = sharedBands(*transmission, numBands, receptionBands);
+        if (bands.empty())
+            continue;
 
-                enbInfo->txPwr = enbInfo->phy->getTxPwr();//dBm
+        double txPwr = powerTowardsUe(id, cell, transmission->startPosition, transmission->txPower);
 
-                // get tx direction
-                enbInfo->txDirection = enbInfo->phy->getTxDirection();
+        // compute attenuation using data structures within the cell
+        double att = interfChanModel->getAttenuation(ueId, UL, coord);
+        EV << "EnbId [" << id << "] - attenuation [" << att << "]" << endl;
 
-                // get tx angle
-                enbInfo->txAngle = enbInfo->phy->getTxAngle();
+        for (unsigned int i : bands) {
+            (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
-                //get reference to mac layer
-                enbInfo->mac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(id));
-
-                enbInfo->init = true;
-            }
-
-            StochasticChannelModel *interfChanModel = dynamic_cast<StochasticChannelModel *>(enbInfo->phy->getChannelModel(carrierFrequency));
-
-            // if the eNB does not use the selected carrier frequency, skip it
-            if (interfChanModel == nullptr)
-                continue;
-
-            unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
-            double txPwr = powerTowardsUe(id, enbInfo->phy, enbInfo->phy->getCoord(), enbInfo->txPwr);
-            EV << "EnbId [" << id << "] - shared bands [" << numBands << "]" << endl;
-
-            // compute attenuation using data structures within the cell
-            double att = interfChanModel->getAttenuation(ueId, UL, coord);
-            EV << "EnbId [" << id << "] - attenuation [" << att << "]" << endl;
-
-            for (unsigned int i = 0; i < numBands; i++) {
-                // the band is occupied if one of the cell's DL data transmissions of that slot occupied it
-                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i, slotEnd);
-                if (occupied)
-                    (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
-
-                EV << "\t band " << i << " occupied " << occupied << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
-            }
+            EV << "\t band " << i << " occupied/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
         }
     }
-    else { // error computation: the other cells' DL data transmissions of the slot just completed, in creation order
-        for (auto transmission : radioMedium_->getDataTransmissionsEndingAt(carrierFrequency, NOW)) {
-            MacNodeId id = transmission->sourceId;
-            if (transmission->direction != DL || id == eNbId)
-                continue;
 
-            // the cell's radio, which also sends its background UEs' allocations
-            IRadioEndpoint *cell = radioMedium_->getRadio(id);
-            ASSERT(transmission->txPower == cell->getTxPwr());
-            StochasticChannelModel *interfChanModel = dynamic_cast<StochasticChannelModel *>(cell->getChannelModel(carrierFrequency));
-            if (interfChanModel == nullptr)
-                continue;
-
-            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
-            unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
-            auto bands = sharedBands(*transmission, numBands, rbmap);
-            if (bands.empty())
-                continue;
-
-            double txPwr = powerTowardsUe(id, cell, transmission->startPosition, transmission->txPower);
-
-            // compute attenuation using data structures within the cell
-            double att = interfChanModel->getAttenuation(ueId, UL, coord);
-            EV << "EnbId [" << id << "] - attenuation [" << att << "]" << endl;
-
-            for (unsigned int i : bands) {
-                (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
-
-                EV << "\t band " << i << " occupied/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
-            }
-        }
-
-        // for a cell with one carrier, the reception's bands its transmissions occupied are what its scheduler allocated
+    // for a cell with one carrier, the bands of a reception its transmissions occupied are what its scheduler allocated
+    if (!isCqi)
         for (auto enbInfo : binder_->getEnbList())
             ASSERT(dlOccupancyMatchesScheduler(enbInfo->id, eNbId, carrierFrequency, rbmap));
-    }
 
     return true;
 }
@@ -1472,26 +1425,6 @@ bool StochasticChannelModel::dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId
     return true;
 }
 
-StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterferer(const UeAllocationInfo& allocation)
-{
-    InterfererInfo info;
-    info.nodeId = allocation.nodeId;
-    info.cellId = allocation.cellId;
-    info.dir = allocation.dir;
-
-    if (allocation.phy != nullptr) {
-        PhyUe *uePhy = check_and_cast<PhyUe *>(allocation.phy);
-        info.txPwr = uePhy->getTxPwr(info.dir);
-        info.coord = uePhy->getCoord();
-    }
-    else { // this is a backgroundUe
-        TrafficGeneratorBase *trafficGen = check_and_cast<TrafficGeneratorBase *>(allocation.trafficGen);
-        info.txPwr = trafficGen->getTxPwr();
-        info.coord = trafficGen->getCoord();
-    }
-    return info;
-}
-
 StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterferer(const CellularTransmission& transmission)
 {
     InterfererInfo info;
@@ -1501,16 +1434,6 @@ StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterfere
     info.txPwr = transmission.txPower;
     info.coord = transmission.startPosition;
     return info;
-}
-
-bool StochasticChannelModel::occupiesBand(const CellularTransmission& transmission, unsigned int band)
-{
-    // TODO fix for multi-antenna case
-    auto antennaIt = transmission.grantedBlocks.find(MACRO);
-    if (antennaIt == transmission.grantedBlocks.end())
-        return false;
-    auto bandIt = antennaIt->second.find(band);
-    return bandIt != antennaIt->second.end() && bandIt->second != 0;
 }
 
 simtime_t StochasticChannelModel::lastCompletedSlotEnd(GHz carrierFrequency)
@@ -1568,36 +1491,26 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
     };
 
-    if (isCqi) { // CQI computation: the uplink transmissions of the slot completed last, band by band
-        const auto ulTransmissions = radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, lastCompletedSlotEnd(carrierFrequency));
-        for (unsigned int i = 0; i < numBands_; i++) {
-            // the transmissions on the same band, in the order they were created
-            for (auto transmission : ulTransmissions) {
-                if (!occupiesBand(*transmission, i))
-                    continue;
-                const InterfererInfo interferer = describeInterferer(*transmission);
-                if (interferes(interferer))
-                    addInterference(interferer, i, attenuationFrom(interferer));
-            }
-        }
-    }
-    else { // error computation: the uplink transmissions of the slot just completed, in creation order
-        // the Binder's map of the previous TTI lists the same transmissions
-        ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
-        for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, NOW)) {
-            const InterfererInfo interferer = describeInterferer(*transmission);
-            if (!interferes(interferer))
-                continue;
+    // a reception: the uplink transmissions of the slot just completed, on its bands -- the Binder's
+    // map of the previous TTI lists the same ones; a CQI: those of the slot completed last, on every band
+    static const RbMap everyBand;
+    ASSERT(isCqi || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
+    simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
+    const RbMap& receptionBands = isCqi ? everyBand : rbmap;
+    // in creation order
+    for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, slotEnd)) {
+        const InterfererInfo interferer = describeInterferer(*transmission);
+        if (!interferes(interferer))
+            continue;
 
-            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
-            auto bands = sharedBands(*transmission, numBands_, rbmap);
-            if (bands.empty())
-                continue;
+        // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+        auto bands = sharedBands(*transmission, numBands_, receptionBands);
+        if (bands.empty())
+            continue;
 
-            double att = attenuationFrom(interferer);
-            for (unsigned int i : bands)
-                addInterference(interferer, i, att);
-        }
+        double att = attenuationFrom(interferer);
+        for (unsigned int i : bands)
+            addInterference(interferer, i, att);
     }
 
     // Debug Output
