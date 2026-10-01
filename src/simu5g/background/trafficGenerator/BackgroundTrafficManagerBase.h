@@ -43,6 +43,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // reference to all the background UEs
     std::vector<TrafficGeneratorBase *> bgUe_;
 
+    // the node id of the first background UE; the others follow it in the order of their indices
+    MacNodeId firstBgUeId_ = MacNodeId(BGUE_MIN_ID);
+
     // indexes of the backlogged bg UEs
     std::list<int> backloggedBgUes_[2];
 
@@ -122,6 +125,8 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // returns the pointer to the traffic generator of the given background UE
     TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override;
+    MacNodeId getBgUeId(int bgUeIndex) override;
+    int getBgUeIndex(MacNodeId bgUeId) override;
 
     // returns the begin (end) iterator of the vector of UEs
     std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() override;

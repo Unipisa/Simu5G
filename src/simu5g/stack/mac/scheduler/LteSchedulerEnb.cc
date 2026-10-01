@@ -1178,7 +1178,7 @@ bool LteSchedulerEnb::rtxscheduleBackground(GHz carrierFrequency, BandLimitVecto
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
         for ( ; it != et; ++it) {
             int bgUeIndex = *it;
-            MacNodeId bgUeId = MacNodeId(BGUE_MIN_ID + bgUeIndex);
+            MacNodeId bgUeId = bgTrafficManager->getBgUeId(bgUeIndex);
 
             unsigned cw = 0;
             unsigned int rtxBytes = scheduleBgRtx(bgUeId, carrierFrequency, cw, bandLim);

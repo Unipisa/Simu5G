@@ -55,6 +55,12 @@ class IBackgroundTrafficManager
     // Returns the pointer to the traffic generator of the given background UE
     virtual TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) = 0;
 
+    // Returns the node id of the background UE with the given index
+    virtual MacNodeId getBgUeId(int bgUeIndex) = 0;
+
+    // Returns the index of the background UE with the given node id; throws if it is not one of this manager's
+    virtual int getBgUeIndex(MacNodeId bgUeId) = 0;
+
     // Returns the begin (end) iterator of the vector of UEs
     virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() = 0;
     virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd() = 0;

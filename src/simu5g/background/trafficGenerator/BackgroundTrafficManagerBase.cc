@@ -169,8 +169,22 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
 
 TrafficGeneratorBase *BackgroundTrafficManagerBase::getTrafficGenerator(MacNodeId bgUeId)
 {
-    int index = num(bgUeId) - BGUE_MIN_ID;
-    return bgUe_.at(index);
+    return bgUe_.at(getBgUeIndex(bgUeId));
+}
+
+MacNodeId BackgroundTrafficManagerBase::getBgUeId(int bgUeIndex)
+{
+    if (bgUeIndex < 0 || bgUeIndex >= numBgUEs_)
+        throw cRuntimeError("BackgroundTrafficManagerBase::getBgUeId(): no background UE with index %d", bgUeIndex);
+    return MacNodeId(num(firstBgUeId_) + bgUeIndex);
+}
+
+int BackgroundTrafficManagerBase::getBgUeIndex(MacNodeId bgUeId)
+{
+    int index = (int)num(bgUeId) - (int)num(firstBgUeId_);
+    if (index < 0 || index >= numBgUEs_)
+        throw cRuntimeError("BackgroundTrafficManagerBase::getBgUeIndex(): node %d is not one of this manager's background UEs", (int)num(bgUeId));
+    return index;
 }
 
 std::vector<TrafficGeneratorBase *>::const_iterator BackgroundTrafficManagerBase::getBgUesBegin()
@@ -211,13 +225,13 @@ std::list<int>::const_iterator BackgroundTrafficManagerBase::getWaitingForRacUes
 
 unsigned int BackgroundTrafficManagerBase::getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx)
 {
-    int index = num(bgUeId) - BGUE_MIN_ID;
+    int index = getBgUeIndex(bgUeId);
     return bgUe_.at(index)->getBufferLength(dir, rtx);
 }
 
 unsigned int BackgroundTrafficManagerBase::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx)
 {
-    int index = num(bgUeId) - BGUE_MIN_ID;
+    int index = getBgUeIndex(bgUeId);
     int newBuffLen = bgUe_.at(index)->consumeBytes(bytes, dir, rtx);
 
     if (newBuffLen == 0) { // bg UE is no longer active
@@ -233,7 +247,7 @@ void BackgroundTrafficManagerBase::racHandled(MacNodeId bgUeId)
 {
     Enter_Method("BackgroundTrafficManagerBase::racHandled");
 
-    int index = num(bgUeId) - BGUE_MIN_ID;
+    int index = getBgUeIndex(bgUeId);
 
     waitingForRac_.remove(index);
 

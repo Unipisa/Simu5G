@@ -51,7 +51,7 @@ std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction d
     UserControlInfo *cInfo = new UserControlInfo();
 
     // Build a control info
-    cInfo->setSourceId(MacNodeId(BGUE_MIN_ID + bgUeIndex));  // MacNodeId for the bgUe
+    cInfo->setSourceId(getBgUeId(bgUeIndex));  // MacNodeId for the bgUe
     cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
     cInfo->setFrameType(FEEDBACKPKT);
     cInfo->setCoord(bgUePos);
@@ -73,7 +73,7 @@ std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction d
 
 unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
 {
-    int index = num(bgUeId) - BGUE_MIN_ID;
+    int index = getBgUeIndex(bgUeId);
     Cqi cqi = bgUe_.at(index)->getCqi(dir);
 
     // Get bytes per block based on CQI
