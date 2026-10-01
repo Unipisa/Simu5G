@@ -1358,6 +1358,33 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         if (interfChanModel == nullptr)
             continue;
 
+        unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
+
+        // error computation: the reception's bands the cell's transmissions of the slot just completed occupied
+        std::vector<unsigned int> occupiedBands;
+        if (!isCqi) {
+            for (unsigned int i = 0; i < numBands; i++) {
+                // if we are decoding a data transmission and this RB has not been used, skip it
+                // TODO fix for multi-antenna case
+                if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
+                    continue;
+
+                // the band is occupied if one of the cell's DL data transmissions on this
+                // carrier that end now occupied it -- its background UEs' included
+                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i);
+                // for a cell with one carrier, that is what its scheduler allocated
+                ASSERT(enbInfo->mac->getCellInfo()->getCarriers().size() != 1
+                        || occupied == (enbInfo->mac->getDlPrevBandStatus(i) != 0));
+                if (occupied)
+                    occupiedBands.push_back(i);
+            }
+            // a cell that sent nothing on the reception's bands does not interfere with it: its link is not evaluated
+            if (occupiedBands.empty()) {
+                EV << "EnbId [" << id << "] - no transmission on the bands of the reception" << endl;
+                continue;
+            }
+        }
+
         // compute attenuation using data structures within the cell
         double att = interfChanModel->getAttenuation(ueId, UL, coord);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]";
@@ -1388,7 +1415,6 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
 
         double txPwr = enbInfo->txPwr - angularAtt - cableLossOf(ueId) + antennaGainOf(id, antennaGainEnB_) + antennaGainOf(ueId, antennaGainUe_);
 
-        unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
 
         if (isCqi) {// check slot occupation for this TTI
@@ -1402,22 +1428,10 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             }
         }
         else { // error computation: the interfering cell's transmissions of the slot just completed
-            for (unsigned int i = 0; i < numBands; i++) {
-                // if we are decoding a data transmission and this RB has not been used, skip it
-                // TODO fix for multi-antenna case
-                if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
-                    continue;
+            for (unsigned int i : occupiedBands) {
+                (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
-                // the band is occupied if one of the cell's DL data transmissions on this
-                // carrier that end now occupied it -- its background UEs' included
-                bool occupied = radioMedium_->isBandOccupied(carrierFrequency, id, DL, i);
-                // for a cell with one carrier, that is what its scheduler allocated
-                ASSERT(enbInfo->mac->getCellInfo()->getCarriers().size() != 1
-                        || occupied == (enbInfo->mac->getDlPrevBandStatus(i) != 0));
-                if (occupied)
-                    (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
-
-                EV << "\t band " << i << " occupied " << occupied << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
+                EV << "\t band " << i << " occupied/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
             }
         }
     }

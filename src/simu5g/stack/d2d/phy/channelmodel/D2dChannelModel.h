@@ -49,9 +49,10 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
     RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
 
     /*
-     * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction
+     * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction.
+     * For a data reception, only on the bands of rbmap (all bands if it is empty).
      */
-    bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference, Direction dir);
+    bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
 
     // Route D2D/D2D_MULTI receptions through getSINR_D2D (called from the core
     // isReceptionSuccessful()).

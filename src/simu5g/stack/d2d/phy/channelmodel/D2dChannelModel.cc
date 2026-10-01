@@ -124,7 +124,7 @@ void D2dChannelModel::computeInterferencePlusNoise(const RadioLink& link, UserCo
     d2dInterference.resize(numBands_, 0);
     if (enableD2DInterference_) {
         computeD2DInterference(link.cellId, link.txId, link.txCoord, link.rxId, link.rxCoord,
-                (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), &d2dInterference, link.dir);
+                (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &d2dInterference, link.dir);
     }
 
     EV << "D2dChannelModel::computeInterferencePlusNoise - distance from my Peer = "
@@ -178,7 +178,7 @@ void D2dChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFre
 }
 
 bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, Coord senderCoord, MacNodeId destId, Coord destCoord, bool isCqi, GHz carrierFrequency,
-        std::vector<double> *interference, Direction dir)
+        const RbMap& rbmap, std::vector<double> *interference, Direction dir)
 {
     EV << "**** D2D Interference for cellId[" << eNbId << "] node[" << destId << "] ****" << endl;
 
@@ -231,6 +231,11 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
         const auto ulTransmissions = radioMedium_->getUplinkTransmissionsByBand(carrierFrequency);
         for (unsigned int i = 0; i < numBands_ && i < ulTransmissions.size(); i++) {
+            // if we are decoding a data transmission and this RB has not been used, skip it
+            // TODO fix for multi-antenna case
+            if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
+                continue;
+
             // the transmissions on the same band, in the order they were created
             for (auto transmission : ulTransmissions[i])
                 addInterference(StochasticChannelModel::describeInterferer(*transmission), i);
