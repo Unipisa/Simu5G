@@ -137,6 +137,8 @@ class Binder : public cSimpleModule
      */
     // Counter for allocating new multicast destination IDs
     int16_t multicastDestIdCounter_ = MULTICAST_DEST_MIN_ID;
+    // the node id the next background traffic manager's UEs start at
+    unsigned int nextBackgroundUeId_ = BGUE_MIN_ID;
     // Mapping from IPv4 multicast addresses to allocated multicast destination IDs
     std::map<inet::Ipv4Address, MacNodeId> multicastAddrToDestId_;
     // Reverse mapping from multicast destination IDs to IPv4 addresses (optional, for debugging)
@@ -604,6 +606,13 @@ class Binder : public cSimpleModule
      */
     // Allocate an (MBMS-RNTI-like) multicast destination ID for a multicast IPv4 address
     virtual MacNodeId getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr);
+
+    /**
+     * Reserves the given number of consecutive node ids for the UEs of a
+     * background traffic manager and returns the first. Background UEs of
+     * different managers get different ids, all of them from BGUE_MIN_ID up.
+     */
+    virtual MacNodeId allocateBackgroundUeIds(int count);
     // Checks if a multicast destination ID was already assigned for a multicast IPv4 address
     virtual bool hasMulticastDestIdAssigned(inet::Ipv4Address multicastAddr) const {
         return multicastAddrToDestId_.find(multicastAddr) != multicastAddrToDestId_.end();

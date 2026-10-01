@@ -43,8 +43,8 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // reference to all the background UEs
     std::vector<TrafficGeneratorBase *> bgUe_;
 
-    // the node id of the first background UE; the others follow it in the order of their indices
-    MacNodeId firstBgUeId_ = MacNodeId(BGUE_MIN_ID);
+    // the node id of the first background UE, reserved by the Binder; the others follow it in the order of their indices
+    MacNodeId firstBgUeId_ = NODEID_NONE;
 
     // indexes of the backlogged bg UEs
     std::list<int> backloggedBgUes_[2];

@@ -856,6 +856,18 @@ cModule *Binder::getMacByNodeId(MacNodeId nodeId)
     return module->getSubmodule("cellularNic")->getSubmodule("mac");
 }
 
+MacNodeId Binder::allocateBackgroundUeIds(int count)
+{
+    Enter_Method_Silent();
+    if (count < 0)
+        throw cRuntimeError("Binder::allocateBackgroundUeIds(): invalid number of background UEs %d", count);
+    if (nextBackgroundUeId_ + count - 1 > UE_MAX_ID)
+        throw cRuntimeError("Binder::allocateBackgroundUeIds(): no node ids left for %d more background UEs", count);
+    MacNodeId first = MacNodeId(nextBackgroundUeId_);
+    nextBackgroundUeId_ += count;
+    return first;
+}
+
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)
 {
     if (inet::containsKey(multicastAddrToDestId_, multicastAddr))
