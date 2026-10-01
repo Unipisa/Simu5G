@@ -232,28 +232,22 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         }
     }
     else {
-        // error computation: the uplink transmissions of the slot just completed;
-        // the Binder's map of the previous TTI lists the same ones, band by band in the same order
+        // error computation: the uplink transmissions of the slot just completed, in creation order;
+        // the Binder's map of the previous TTI lists the same ones
         ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
-        const auto ulTransmissions = radioMedium_->getUplinkTransmissionsByBand(carrierFrequency);
-        // each transmission's link is evaluated once, at the first band of the reception it occupies
-        std::map<const CellularTransmission *, double> attenuations;
-        for (unsigned int i = 0; i < numBands_ && i < ulTransmissions.size(); i++) {
-            // if we are decoding a data transmission and this RB has not been used, skip it
-            // TODO fix for multi-antenna case
-            if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
+        for (auto transmission : radioMedium_->getUplinkTransmissionsEndingNow(carrierFrequency)) {
+            const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
+            if (!interferes(interferer))
                 continue;
 
-            // the transmissions on the same band, in the order they were created
-            for (auto transmission : ulTransmissions[i]) {
-                const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
-                if (!interferes(interferer))
-                    continue;
-                auto it = attenuations.find(transmission);
-                if (it == attenuations.end())
-                    it = attenuations.emplace(transmission, attenuationFrom(interferer)).first;
-                addInterference(interferer, i, it->second);
-            }
+            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+            auto bands = sharedBands(*transmission, numBands_, rbmap);
+            if (bands.empty())
+                continue;
+
+            double att = attenuationFrom(interferer);
+            for (unsigned int i : bands)
+                addInterference(interferer, i, att);
         }
     }
 

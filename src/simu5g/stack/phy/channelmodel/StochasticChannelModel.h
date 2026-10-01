@@ -503,6 +503,15 @@ class StochasticChannelModel : public ChannelModelBase
     virtual bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
 
     /*
+     * Whether, for a cell with one carrier, the bands of a reception with the
+     * given RB map that the cell's DL data transmissions of the slot just
+     * completed occupied are those its scheduler allocated. True for the
+     * receiving UE's own cell and for any other cell. A debug check of the
+     * radio medium against the MAC.
+     */
+    bool dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId eNbId, GHz carrierFrequency, const RbMap& rbmap);
+
+    /*
      * Compute interference coming from neighboring cells for the UL direction
      */
     virtual bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
