@@ -89,23 +89,25 @@ class CellularRadioMedium : public cSimpleModule
 
     /**
      * Adds a transmission, giving it the next id; the medium owns it. The
-     * transmissions on the same carrier that ended before now are dropped.
+     * transmissions on the same carrier that ended more than one of its
+     * durations (a slot) before its start are dropped.
      */
     virtual void addTransmission(CellularTransmission *transmission);
 
     /**
-     * The data transmissions on the carrier that end now -- in the slot just
-     * completed: data frames, and the allocations of background UEs -- in
-     * creation order.
+     * The data transmissions on the carrier that end at the given time -- in
+     * the slot that ends then: data frames, and the allocations of background
+     * UEs -- in creation order. The time is now or at most a slot ago.
      */
-    virtual std::vector<const CellularTransmission *> getDataTransmissionsEndingNow(GHz carrierFrequency) const;
+    virtual std::vector<const CellularTransmission *> getDataTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const;
 
     /**
-     * The uplink transmissions on the carrier that end now -- in the slot just
-     * completed: data frames sent in UL or on the sidelink, and the UL
-     * allocations of background UEs -- in creation order.
+     * The uplink transmissions on the carrier that end at the given time: data
+     * frames sent in UL or on the sidelink, and the UL allocations of
+     * background UEs, in creation order. The time is as for
+     * getDataTransmissionsEndingAt().
      */
-    virtual std::vector<const CellularTransmission *> getUplinkTransmissionsEndingNow(GHz carrierFrequency) const;
+    virtual std::vector<const CellularTransmission *> getUplinkTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const;
 
     /**
      * Whether the uplink transmissions on the carrier that end now -- data
@@ -119,11 +121,12 @@ class CellularRadioMedium : public cSimpleModule
 
     /**
      * Whether a data transmission of the given node in the given direction on
-     * the carrier, one that ends now -- in the slot just completed -- occupies
-     * the band. A background UE's allocation counts, being a registered
-     * transmission: in DL, one of its base station.
+     * the carrier, one that ends at the given time (see
+     * getDataTransmissionsEndingAt()), occupies the band. A background UE's
+     * allocation counts, being a registered transmission: in DL, one of its
+     * base station.
      */
-    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const;
+    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t endTime) const;
 
     /**
      * The channel state the given channel model evaluates links against,

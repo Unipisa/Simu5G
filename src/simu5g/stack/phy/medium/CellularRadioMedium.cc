@@ -98,9 +98,10 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     Enter_Method("addTransmission");
     transmission->id = nextTransmissionId++;
     auto& carrierTransmissions = transmissions[transmission->carrierFrequency];
-    simtime_t now = simTime();
-    auto ended = std::remove_if(carrierTransmissions.begin(), carrierTransmissions.end(), [now] (const CellularTransmission *t) {
-        if (t->getEndTime() < now) {
+    // the slot before this one is kept, for the questions about the slot completed last
+    simtime_t keptSince = transmission->startTime - transmission->duration;
+    auto ended = std::remove_if(carrierTransmissions.begin(), carrierTransmissions.end(), [keptSince] (const CellularTransmission *t) {
+        if (t->getEndTime() < keptSince) {
             delete t;
             return true;
         }
@@ -110,22 +111,22 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     carrierTransmissions.push_back(transmission);
 }
 
-std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsEndingNow(GHz carrierFrequency) const
+std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const
 {
     std::vector<const CellularTransmission *> ending;
     auto it = transmissions.find(carrierFrequency);
     if (it == transmissions.end())
         return ending;
     for (auto t : it->second)
-        if (t->frameType == DATAPKT && t->getEndTime() == simTime())
+        if (t->frameType == DATAPKT && t->getEndTime() == endTime)
             ending.push_back(t);
     return ending;
 }
 
-std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmissionsEndingNow(GHz carrierFrequency) const
+std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const
 {
     std::vector<const CellularTransmission *> uplink;
-    for (auto t : getDataTransmissionsEndingNow(carrierFrequency))
+    for (auto t : getDataTransmissionsEndingAt(carrierFrequency, endTime))
         if (t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI)
             uplink.push_back(t);
     return uplink;
@@ -137,7 +138,7 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
     const auto& map = mapOrNull != nullptr ? *mapOrNull : noMap;
     // the registry's view, band by band
     std::vector<std::vector<const CellularTransmission *>> view(map.size());
-    for (auto t : getUplinkTransmissionsEndingNow(carrierFrequency)) {
+    for (auto t : getUplinkTransmissionsEndingAt(carrierFrequency, simTime())) {
         auto antennaIt = t->grantedBlocks.find(MACRO);
         if (antennaIt == t->grantedBlocks.end())
             continue;
@@ -170,9 +171,9 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
     return true;
 }
 
-bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band) const
+bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t endTime) const
 {
-    for (auto t : getDataTransmissionsEndingNow(carrierFrequency)) {
+    for (auto t : getDataTransmissionsEndingAt(carrierFrequency, endTime)) {
         if (t->sourceId != sourceId || t->direction != direction)
             continue;
         auto antennaIt = t->grantedBlocks.find(MACRO);

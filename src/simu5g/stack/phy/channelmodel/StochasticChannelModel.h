@@ -503,6 +503,16 @@ class StochasticChannelModel : public ChannelModelBase
      */
     static std::vector<unsigned int> sharedBands(const CellularTransmission& transmission, unsigned int numBands, const RbMap& rbmap);
 
+    /* Whether the transmission occupies the band. */
+    static bool occupiesBand(const CellularTransmission& transmission, unsigned int band);
+
+    /*
+     * When the slot completed last on the carrier ended: the latest slot
+     * boundary of the carrier's numerology not after now. A CQI measures the
+     * interference of that slot.
+     */
+    simtime_t lastCompletedSlotEnd(GHz carrierFrequency);
+
     /*
      * Compute total interference due to eNB coexistence for the DL direction
      * @param eNbId id of the considered eNb

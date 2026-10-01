@@ -218,16 +218,16 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
     };
 
     if (isCqi) {
-        // CQI computation checks the slot occupation of the current TTI
-        const std::vector<std::vector<UeAllocationInfo>> *ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
-        if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty()) {
-            for (unsigned int i = 0; i < numBands_; i++) {
-                // the UEs transmitting on the same band
-                for (auto& allocation : ulTransmissionMap->at(i)) {
-                    const InterfererInfo interferer = StochasticChannelModel::describeInterferer(allocation);
-                    if (interferes(interferer))
-                        addInterference(interferer, i, attenuationFrom(interferer));
-                }
+        // CQI computation: the uplink transmissions of the slot completed last, band by band
+        const auto ulTransmissions = radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, lastCompletedSlotEnd(carrierFrequency));
+        for (unsigned int i = 0; i < numBands_; i++) {
+            // the transmissions on the same band, in the order they were created
+            for (auto transmission : ulTransmissions) {
+                if (!occupiesBand(*transmission, i))
+                    continue;
+                const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
+                if (interferes(interferer))
+                    addInterference(interferer, i, attenuationFrom(interferer));
             }
         }
     }
@@ -235,7 +235,7 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
         // error computation: the uplink transmissions of the slot just completed, in creation order;
         // the Binder's map of the previous TTI lists the same ones
         ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
-        for (auto transmission : radioMedium_->getUplinkTransmissionsEndingNow(carrierFrequency)) {
+        for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, NOW)) {
             const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
             if (!interferes(interferer))
                 continue;
