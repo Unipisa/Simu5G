@@ -157,6 +157,7 @@ class ChannelModelProbe
         static auto jakesFadingMapPtr() { return &Access::jakesFadingMap; }
         static auto pathLossPtr() { return &Access::pathLoss_; }
         static auto fadingPtr() { return &Access::fading_; }
+        static auto phyPtr() { return &Access::phy_; }
 
         static auto linkForPtr() { return &Access::linkFor; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
@@ -185,7 +186,8 @@ class ChannelModelProbe
     bool& fading() { return model_->*Access::fadingPtr(); }
 
     // internal steps
-    RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info); }
+    // the link of a frame that did not arrive through the model's radio: the local end where the radio is now
+    RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info, (model_->*Access::phyPtr())->getCoord()); }
     RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord)
     {
         return (model_->*Access::cellularLinkPtr())(ueId, dir, coord);

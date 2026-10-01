@@ -381,10 +381,19 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and the
-     * feedback variants). The D2D path builds its links separately -- its API
+     * feedback variants), the local radio at the given position (see
+     * receptionPosition()). The D2D path builds its links separately -- its API
      * takes the peer endpoint explicitly rather than deriving it.
      */
-    virtual RadioLink linkFor(UserControlInfo *lteInfo);
+    virtual RadioLink linkFor(UserControlInfo *lteInfo, const inet::Coord& localPosition);
+
+    /*
+     * Where the local radio was as the frame started to arrive, which is where
+     * its reception is evaluated; the radio's current position for a frame
+     * that did not arrive through it (a frame built to ask what a reception
+     * would be).
+     */
+    const inet::Coord& receptionPosition(const AirFrame *frame) const;
 
     /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
@@ -482,9 +491,8 @@ class StochasticChannelModel : public ChannelModelBase
     static InterfererInfo describeInterferer(const UeAllocationInfo& allocation);
 
     /*
-     * The same for a transmission on the radio medium. The position is the
-     * transmitter's current one, as for an entry of the UL transmission map,
-     * not the one the transmission started at.
+     * The same for a transmission on the radio medium. The position is the one
+     * the transmission started at.
      */
     static InterfererInfo describeInterferer(const CellularTransmission& transmission);
 

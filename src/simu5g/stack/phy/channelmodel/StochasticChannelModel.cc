@@ -198,7 +198,13 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     return link;
 }
 
-RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
+const Coord& StochasticChannelModel::receptionPosition(const AirFrame *frame) const
+{
+    const Coord& arrivalPosition = frame->getArrivalPosition();
+    return arrivalPosition.isUnspecified() ? phy_->getCoord() : arrivalPosition;
+}
+
+RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo, const Coord& localPosition)
 {
     RadioLink link;
     link.dir = lteInfo->getDirection();
@@ -217,7 +223,7 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
     if (link.dir == DL && (lteInfo->getFrameType() != FEEDBACKPKT)) {
         ueId = lteInfo->getDestId();
         eNbId = lteInfo->getSourceId();
-        ueCoord = phy_->getCoord();
+        ueCoord = localPosition;
         enbCoord = coord;
     }
     /*
@@ -229,7 +235,7 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         ueId = lteInfo->getSourceId();
         eNbId = lteInfo->getDestId();
         ueCoord = coord;
-        enbCoord = phy_->getCoord();
+        enbCoord = localPosition;
     }
 
     if (link.dir == DL) {
@@ -471,7 +477,7 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
 
 std::vector<double> StochasticChannelModel::getSINR(AirFrame *frame, UserControlInfo *lteInfo)
 {
-    RadioLink link = linkFor(lteInfo);
+    RadioLink link = linkFor(lteInfo, receptionPosition(frame));
 
     EV << "------------ GET SINR ----------------" << endl;
 
@@ -597,7 +603,7 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
 
 std::vector<double> StochasticChannelModel::getRSRP(AirFrame *frame, UserControlInfo *lteInfo)
 {
-    return getRSRP(linkFor(lteInfo), lteInfo->getTxPower());
+    return getRSRP(linkFor(lteInfo, receptionPosition(frame)), lteInfo->getTxPower());
 }
 
 std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, double txPower)
@@ -1328,7 +1334,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
 
     // the power of an interfering cell's transmission at the UE before the path loss: its transmit
     // power less its antenna's attenuation towards the UE, with the gains and losses of both ends
-    auto powerTowardsUe = [&] (MacNodeId id, IRadioEndpoint *cell, double txPower) {
+    auto powerTowardsUe = [&] (MacNodeId id, IRadioEndpoint *cell, const Coord& cellPosition, double txPower) {
         //=============== ANGULAR ATTENUATION =================
         double angularAtt = 0;
         if (cell->getTxDirection() == ANISOTROPIC) {
@@ -1336,14 +1342,14 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             double txAngle = cell->getTxAngle();
 
             // compute the angle between uePosition and reference axis, considering the eNB as center
-            double ueAngle = computeAngle(cell->getCoord(), coord);
+            double ueAngle = computeAngle(cellPosition, coord);
 
             // compute the reception angle between ue and eNB
             double recvAngle = fabs(txAngle - ueAngle);
             if (recvAngle > 180)
                 recvAngle = 360 - recvAngle;
 
-            double verticalAngle = computeVerticalAngle(cell->getCoord(), coord);
+            double verticalAngle = computeVerticalAngle(cellPosition, coord);
 
             // compute attenuation due to sectorial tx
             angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
@@ -1390,7 +1396,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
                 continue;
 
             unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
-            double txPwr = powerTowardsUe(id, enbInfo->phy, enbInfo->txPwr);
+            double txPwr = powerTowardsUe(id, enbInfo->phy, enbInfo->phy->getCoord(), enbInfo->txPwr);
             EV << "EnbId [" << id << "] - shared bands [" << numBands << "]" << endl;
 
             // compute attenuation using data structures within the cell
@@ -1426,7 +1432,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             if (bands.empty())
                 continue;
 
-            double txPwr = powerTowardsUe(id, cell, transmission->txPower);
+            double txPwr = powerTowardsUe(id, cell, transmission->startPosition, transmission->txPower);
 
             // compute attenuation using data structures within the cell
             double att = interfChanModel->getAttenuation(ueId, UL, coord);
@@ -1492,7 +1498,7 @@ StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterfere
     info.cellId = transmission.cellId;
     info.dir = transmission.direction;
     info.txPwr = transmission.txPower;
-    info.coord = transmission.backgroundUe != nullptr ? transmission.backgroundUe->getCoord() : transmission.transmitter->getCoord();
+    info.coord = transmission.startPosition;
     return info;
 }
 

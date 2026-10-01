@@ -152,7 +152,7 @@ std::vector<double> D2dChannelModel::getReceptionSinr(AirFrame *frame, UserContr
     Direction dir = lteInfo->getDirection();
     if (dir == D2D || dir == D2D_MULTI) {
         MacNodeId destId = lteInfo->getDestId();
-        Coord destCoord = phy_->getCoord();
+        Coord destCoord = receptionPosition(frame);
         MacNodeId enbId = binder_->getServingNodeOrSelf(lteInfo->getSourceId());
 
         // One-to-many reception decides on the RSRP captured by the capture-effect

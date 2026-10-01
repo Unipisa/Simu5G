@@ -42,7 +42,9 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
     if (channelModel == nullptr)
         throw cRuntimeError("D2dUePhyHelper::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
-    Coord myCoord = phy_->getCoord();
+    // where this radio was as the frame started to arrive
+    Coord myCoord = newFrame->getArrivalPosition();
+    ASSERT(!myCoord.isUnspecified());
     double distance = 0.0;
     double rsrpMean = 0.0;
     std::vector<double> rsrpVector;
