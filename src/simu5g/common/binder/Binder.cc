@@ -161,6 +161,8 @@ void Binder::registerNode(MacNodeId nodeId, cModule *nodeModule, RanNodeType typ
         throw cRuntimeError("Cannot register node %s in Binder: macNodeId %d already occupied", nodeModule->getFullPath().c_str(), num(nodeId));
 
     if (type == NODEB) {
+        if (phantomBaseStationIds_.count(nodeId) != 0)
+            throw cRuntimeError("Cannot register node %s in Binder: macNodeId %d is reserved for an external or background cell", nodeModule->getFullPath().c_str(), num(nodeId));
         if (getNodeTypeById(nodeId) != NODEB)
             throw cRuntimeError("Cannot register node %s in Binder: Wrong macNodeId %d: Does not correspond to the range Simu5G reserves for eNodeB/gNodeB nodes", nodeModule->getFullPath().c_str(), num(nodeId));
     }
@@ -866,6 +868,19 @@ MacNodeId Binder::allocateBackgroundUeIds(int count)
     MacNodeId first = MacNodeId(nextBackgroundUeId_);
     nextBackgroundUeId_ += count;
     return first;
+}
+
+MacNodeId Binder::allocatePhantomBaseStationId()
+{
+    Enter_Method_Silent();
+    for (unsigned int id = ENB_MAX_ID; id >= ENB_MIN_ID; id--) {
+        MacNodeId nodeId = MacNodeId(id);
+        if (phantomBaseStationIds_.count(nodeId) == 0 && nodeInfoMap_.find(nodeId) == nodeInfoMap_.end()) {
+            phantomBaseStationIds_.insert(nodeId);
+            return nodeId;
+        }
+    }
+    throw cRuntimeError("Binder::allocatePhantomBaseStationId(): no base-station node ids left");
 }
 
 MacNodeId Binder::getOrAssignDestIdForMulticastAddress(inet::Ipv4Address multicastAddr)

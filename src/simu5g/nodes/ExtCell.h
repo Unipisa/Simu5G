@@ -17,6 +17,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -40,6 +41,10 @@ class ExtCell : public cSimpleModule
 
     // ID among all the external cells
     int id_;
+
+    MacNodeId nodeId_ = NODEID_NONE; // the node id its transmissions on the radio medium name it by
+
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
 
     // TX power
     double txPower_;
@@ -83,6 +88,9 @@ class ExtCell : public cSimpleModule
 
     // Move the current status in the prevBandStatus structure and reset the former
     void resetBandStatus();
+
+    // registers with the radio medium the transmission the current band status stands for, lasting the given time
+    void registerTransmission(simtime_t duration);
     /*****************************/
 
   protected:
@@ -95,6 +103,8 @@ class ExtCell : public cSimpleModule
     const inet::Coord getPosition() { return position_; }
 
     int getId() { return id_; }
+
+    MacNodeId getNodeId() const { return nodeId_; }
 
     double getTxPower() { return txPower_; }
 

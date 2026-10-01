@@ -22,6 +22,7 @@
 #include "simu5g/nodes/ExtCell.h"
 #include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 #include "simu5g/stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 
 namespace simu5g {
 
@@ -38,6 +39,11 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 
     // id among all the background cells
     int id_;
+
+    // the node id its transmissions on the radio medium name it by
+    MacNodeId nodeId_ = NODEID_NONE;
+
+    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
 
     // tx power [dBm]
     double txPower_;
@@ -98,6 +104,9 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     // move the current status in the prevBandStatus structure and reset the former
     void resetAllocation(Direction dir);
 
+    // registers with the radio medium the transmissions of the current allocation: the base station's in DL, each UE's in UL
+    void registerTransmissions();
+
   public:
 
     // This module is subscribed to position changes.
@@ -108,6 +117,8 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     const inet::Coord getPosition() const { return pos_; }
 
     int getId() const { return id_; }
+
+    MacNodeId getNodeId() const { return nodeId_; }
 
     double getTtiPeriod() const { return ttiPeriod_; }
 

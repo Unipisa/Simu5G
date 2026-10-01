@@ -139,6 +139,9 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, sim
     // the registry's view, band by band
     std::vector<std::vector<const CellularTransmission *>> view(map.size());
     for (auto t : getUplinkTransmissionsDuring(carrierFrequency, from, to)) {
+        // background cells' UEs are not in the Binder's map
+        if (t->phantomCell != nullptr)
+            continue;
         auto antennaIt = t->grantedBlocks.find(MACRO);
         if (antennaIt == t->grantedBlocks.end())
             continue;

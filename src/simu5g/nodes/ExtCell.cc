@@ -47,6 +47,8 @@ void ExtCell::initialize(int stage)
         numBands_ = par("numBands");
 
         binder_.reference(this, "binderModule", true);
+        radioMedium_.reference(this, "radioMediumModule", true);
+        nodeId_ = binder_->allocatePhantomBaseStationId();
 
         // initialize band status structures
         bandStatus_.resize(numBands_, 0);
@@ -74,6 +76,9 @@ void ExtCell::initialize(int stage)
             // because FULL_ALLOC schedules no TTI tick.
             bandStatus_.assign(numBands_, 1);
             prevBandStatus_.assign(numBands_, 1);
+
+            // on the radio medium, a transmission on every band that never ends
+            registerTransmission(SimTime::getMaxTime() - NOW);
         }
         else {
             // get the band utilization
@@ -106,6 +111,7 @@ void ExtCell::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         updateBandStatus();
+        registerTransmission(TTI);
 
         scheduleAt(NOW + TTI, msg);
         return;
@@ -141,6 +147,33 @@ void ExtCell::updateBandStatus()
     }
 
     EV << "----- END EXT CELL ALLOCATION UPDATE -----" << std::endl;
+}
+
+void ExtCell::registerTransmission(simtime_t duration)
+{
+    RbMap blocks;
+    for (unsigned int band = 0; band < numBands_; ++band)
+        if (bandStatus_[band] != 0)
+            blocks[MACRO][band] = 1;
+    if (blocks.empty())
+        return;
+
+    // the cell is no node, and no radio sends its transmission
+    auto transmission = new CellularTransmission();
+    transmission->phantomCell = this;
+    transmission->sourceId = nodeId_;
+    transmission->cellId = nodeId_;
+    transmission->direction = DL;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = carrierFrequency_;
+    transmission->grantedBlocks = blocks;
+    transmission->txPower = txPower_;
+    transmission->startPosition = position_;
+    transmission->txDirection = txDirection_;
+    transmission->txAngle = txAngle_;
+    transmission->startTime = NOW;
+    transmission->duration = duration;
+    radioMedium_->addTransmission(transmission);
 }
 
 void ExtCell::resetBandStatus()

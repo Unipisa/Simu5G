@@ -13,6 +13,7 @@
 #ifndef _BINDER_H_
 #define _BINDER_H_
 
+#include <set>
 #include <string>
 
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
@@ -139,6 +140,8 @@ class Binder : public cSimpleModule
     int16_t multicastDestIdCounter_ = MULTICAST_DEST_MIN_ID;
     // the node id the next background traffic manager's UEs start at
     unsigned int nextBackgroundUeId_ = BGUE_MIN_ID;
+    // the node ids reserved for base stations that are no nodes (external and background cells)
+    std::set<MacNodeId> phantomBaseStationIds_;
     // Mapping from IPv4 multicast addresses to allocated multicast destination IDs
     std::map<inet::Ipv4Address, MacNodeId> multicastAddrToDestId_;
     // Reverse mapping from multicast destination IDs to IPv4 addresses (optional, for debugging)
@@ -613,6 +616,14 @@ class Binder : public cSimpleModule
      * different managers get different ids, all of them from BGUE_MIN_ID up.
      */
     virtual MacNodeId allocateBackgroundUeIds(int count);
+
+    /**
+     * Reserves a node id for a base station that is no node -- an external or
+     * a background cell -- by which its transmissions on the radio medium name
+     * it. Taken from the top of the base-station range down, skipping the
+     * registered base stations; a base station may not register with it later.
+     */
+    virtual MacNodeId allocatePhantomBaseStationId();
     // Checks if a multicast destination ID was already assigned for a multicast IPv4 address
     virtual bool hasMulticastDestIdAssigned(inet::Ipv4Address multicastAddr) const {
         return multicastAddrToDestId_.find(multicastAddr) != multicastAddrToDestId_.end();

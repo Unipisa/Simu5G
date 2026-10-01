@@ -226,6 +226,9 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
     const RbMap& receptionBands = isCqi ? everyBand : rbmap;
     // in creation order
     for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
+        // background cells' UEs are not D2D interferers
+        if (transmission->phantomCell != nullptr)
+            continue;
         const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
         if (!interferes(interferer))
             continue;

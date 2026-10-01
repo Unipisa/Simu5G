@@ -38,6 +38,7 @@ class CellularTransmission
     long id = -1;                               // creation order on the medium
     IRadioEndpoint *transmitter = nullptr;      // the transmitting radio
     TrafficGeneratorBase *backgroundUe = nullptr; // for a background UE's transmission, which no radio sends: its traffic generator
+    const cModule *phantomCell = nullptr;       // for a transmission of a cell that is no node (an external or a background cell) or of its UEs, which no radio sends: the cell
     MacNodeId sourceId = NODEID_NONE;
     MacNodeId destId = NODEID_NONE;
     MacCellId cellId = NODEID_NONE;             // the cell it belongs to: the sending base station's, the sending UE's serving cell; a background UE's base station's

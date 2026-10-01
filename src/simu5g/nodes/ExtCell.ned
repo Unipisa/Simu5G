@@ -27,6 +27,7 @@ simple ExtCell
         @display("i=device/antennatower;bgb=300,300");
 
         string binderModule = default("binder");
+        string radioMediumModule = default("radioMedium");
 
         // Coordinates
         double positionX @unit("m") = default(0m);

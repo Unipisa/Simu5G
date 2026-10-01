@@ -64,6 +64,8 @@ void BackgroundScheduler::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         binder_.reference(this, "binderModule", true);
+        radioMedium_.reference(this, "radioMediumModule", true);
+        nodeId_ = binder_->allocatePhantomBaseStationId();
 
         // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
         // Start TTI tick
@@ -91,6 +93,7 @@ void BackgroundScheduler::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         updateAllocation(UL);
         updateAllocation(DL);
+        registerTransmissions();
 
         scheduleAt(NOW + ttiPeriod_, msg);
         return;
@@ -277,6 +280,59 @@ void BackgroundScheduler::updateAllocation(Direction dir)
     emit(signal, (long)b);
 
     EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
+}
+
+void BackgroundScheduler::registerTransmissions()
+{
+    // the cell is no node, and no radio sends its transmissions or its UEs'
+    auto newTransmission = [&] (MacNodeId sourceId, MacNodeId destId, Direction dir, const RbMap& blocks) {
+        auto transmission = new CellularTransmission();
+        transmission->phantomCell = this;
+        transmission->sourceId = sourceId;
+        transmission->destId = destId;
+        transmission->cellId = nodeId_;
+        transmission->direction = dir;
+        transmission->frameType = DATAPKT;
+        transmission->carrierFrequency = carrierFrequency_;
+        transmission->grantedBlocks = blocks;
+        transmission->startTime = NOW;
+        transmission->duration = ttiPeriod_;
+        return transmission;
+    };
+
+    // the base station's: every band allocated in DL
+    RbMap dlBlocks;
+    for (unsigned int b = 0; b < numBands_; b++)
+        if (bandStatus_[DL][b] != 0)
+            dlBlocks[MACRO][b] = 1;
+    if (!dlBlocks.empty()) {
+        auto transmission = newTransmission(nodeId_, NODEID_NONE, DL, dlBlocks);
+        transmission->txPower = txPower_;
+        transmission->startPosition = pos_;
+        transmission->txDirection = txDirection_;
+        transmission->txAngle = txAngle_;
+        radioMedium_->addTransmission(transmission);
+    }
+
+    // each UE's: the bands allocated to it in UL, in the order of their first band
+    std::vector<MacNodeId> ues;
+    std::map<MacNodeId, RbMap> ulBlocks;
+    for (unsigned int b = 0; b < numBands_; b++) {
+        MacNodeId bgUeId = ulBandAllocation_[b];
+        if (bgUeId == NODEID_NONE)
+            continue;
+        if (ulBlocks.find(bgUeId) == ulBlocks.end())
+            ues.push_back(bgUeId);
+        ulBlocks[bgUeId][MACRO][b] = 1;
+    }
+    for (MacNodeId bgUeId : ues) {
+        TrafficGeneratorBase *bgUe = bgTrafficManager_->getTrafficGenerator(bgUeId);
+        auto transmission = newTransmission(bgUeId, nodeId_, UL, ulBlocks[bgUeId]);
+        transmission->backgroundUe = bgUe;
+        transmission->txPower = bgUe->getTxPwr();
+        transmission->startPosition = bgUe->getCoord();
+        radioMedium_->addTransmission(transmission);
+    }
 }
 
 void BackgroundScheduler::resetAllocation(Direction dir)

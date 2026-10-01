@@ -24,6 +24,7 @@ simple BackgroundScheduler
         @class("BackgroundScheduler");
 
         string binderModule = default("binder");
+        string radioMediumModule = default("radioMedium");
         string trafficManagerModule = default("^.bgTrafficGenerator.manager");
         string channelModelModule = default("^.bgChannelModel");
 

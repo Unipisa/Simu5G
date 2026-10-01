@@ -1161,8 +1161,10 @@ bool StochasticChannelModel::computeExtCellInterference(MacNodeId eNbId, const L
             if (isCqi) { // check slot occupation for this TTI
                 occ = extCell->getBandStatus(i);
             }
-            else {      // error computation. We need to check the slot occupation of the previous TTI
-                occ = extCell->getPrevBandStatus(i);
+            else {      // error computation: the cell's transmission during the slot just completed
+                occ = radioMedium_->isBandOccupied(carrierFrequency, extCell->getNodeId(), DL, i, NOW - slotDuration(carrierFrequency), NOW);
+                // where the cell's ticks are the carrier's slots, that is its band status of the previous TTI
+                ASSERT(slotDuration(carrierFrequency) != TTI || occ == (extCell->getPrevBandStatus(i) != 0));
             }
 
             // if the ext cell is active, add interference
@@ -1247,8 +1249,10 @@ bool StochasticChannelModel::computeBackgroundCellInterference(const LinkKey& li
                 if (isCqi) { // check slot occupation for this TTI
                     occ = bgScheduler->getBandStatus(i, DL);
                 }
-                else if (!rbmap.empty() && rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
-                    occ = bgScheduler->getPrevBandStatus(i, DL);
+                else if (!rbmap.empty() && rbmap.at(MACRO).at(i) != 0) {     // error computation: the cell's transmission during the slot just completed (only if the band has been used by the UE)
+                    occ = radioMedium_->isBandOccupied(carrierFrequency, bgScheduler->getNodeId(), DL, i, NOW - slotDuration(carrierFrequency), NOW);
+                    // where the cell's slots are the carrier's, that is its band status of the previous slot
+                    ASSERT(slotDuration(carrierFrequency) != bgScheduler->getTtiPeriod() || occ == (bgScheduler->getPrevBandStatus(i, DL) != 0));
                 }
 
                 // if the ext cell is active, add interference
@@ -1271,6 +1275,17 @@ bool StochasticChannelModel::computeBackgroundCellInterference(const LinkKey& li
             unsigned int numBands = std::min(numBands_, bgScheduler->getNumBands());
             EV << " - shared bands [" << numBands << "]" << endl;
 
+            // error computation: the cell's UEs' transmissions during the slot just completed, by band
+            std::vector<const CellularTransmission *> ueTransmissions(numBands, nullptr);
+            if (!isCqi) {
+                for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, NOW - slotDuration(carrierFrequency), NOW)) {
+                    if (transmission->cellId != bgScheduler->getNodeId())
+                        continue;
+                    for (unsigned int i : sharedBands(*transmission, numBands, RbMap()))
+                        ueTransmissions[i] = transmission;
+                }
+            }
+
             // add interference in those bands where a UE in the background cell is active
             for (unsigned int i = 0; i < numBands; i++) {
                 int occ = 0;
@@ -1280,10 +1295,13 @@ bool StochasticChannelModel::computeBackgroundCellInterference(const LinkKey& li
                     if (occ)
                         bgUe = bgScheduler->getBandInterferingUe(i);
                 }
-                else if (rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
-                    occ = bgScheduler->getPrevBandStatus(i, UL);
+                else if (rbmap.at(MACRO).at(i) != 0) {     // error computation (only if the band has been used by the UE)
+                    occ = ueTransmissions[i] != nullptr;
                     if (occ)
-                        bgUe = bgScheduler->getPrevBandInterferingUe(i);
+                        bgUe = ueTransmissions[i]->backgroundUe;
+                    // where the cell's slots are the carrier's, that is its allocation of the previous slot
+                    ASSERT(slotDuration(carrierFrequency) != bgScheduler->getTtiPeriod()
+                            || (occ == (bgScheduler->getPrevBandStatus(i, UL) != 0) && (!occ || bgUe == bgScheduler->getPrevBandInterferingUe(i))));
                 }
 
                 // if the ext cell is active, add interference
@@ -1373,6 +1391,9 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
     for (auto transmission : radioMedium_->getDataTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
         MacNodeId id = transmission->sourceId;
         if (transmission->direction != DL || id == eNbId)
+            continue;
+        // external and background cells interfere through computeExtCellInterference() and computeBackgroundCellInterference()
+        if (transmission->phantomCell != nullptr)
             continue;
 
         // the cell's radio, which also sends its background UEs' allocations
@@ -1506,6 +1527,9 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
     const RbMap& receptionBands = isCqi ? everyBand : rbmap;
     // in creation order
     for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
+        // background cells' UEs interfere through computeBackgroundCellInterference()
+        if (transmission->phantomCell != nullptr)
+            continue;
         const InterfererInfo interferer = describeInterferer(*transmission);
         if (!interferes(interferer))
             continue;
