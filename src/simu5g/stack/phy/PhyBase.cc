@@ -15,6 +15,7 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/radio/CellularAntenna.h"
+#include "simu5g/stack/phy/radio/CellularRadio.h"
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
@@ -74,6 +75,7 @@ void PhyBase::initialize(int stage)
         radioInGate_ = findGate("radioIn");
         radioOutGate_ = findGate("radioOut");
         radio_ = getModuleByPath(par("radioModule"));
+        check_and_cast<CellularRadio *>(radio_.get())->setEndpoint(this);
 
         // Initialize and watch statistics
         ueTxPower_ = par("ueTxPower");

@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/phy/radio/CellularRadio.h"
 
+#include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/radio/CellularTransmitter.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
@@ -37,7 +38,9 @@ void CellularRadio::handleMessage(cMessage *msg)
         // the end of a held frame's transmission
         send(msg, upperLayerOutGateId_);
     else if (msg->getArrivalGateId() == radioInGateId_) {
-        auto frame = check_and_cast<cPacket *>(msg);
+        auto frame = check_and_cast<AirFrame *>(msg);
+        // the reception is evaluated where the radio is as the frame starts to arrive
+        frame->setArrivalPosition(endpoint_->getCoord());
         if (frame->getDuration() == 0)
             send(frame, upperLayerOutGateId_);
         else

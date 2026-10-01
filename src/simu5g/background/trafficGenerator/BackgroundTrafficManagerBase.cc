@@ -295,6 +295,7 @@ void BackgroundTrafficManagerBase::registerTransmission(MacNodeId bgUeId, Direct
     transmission->carrierFrequency = carrierFrequency;
     transmission->grantedBlocks = allocatedRbMap;
     transmission->txPower = (dir == DL) ? bsTxPower_ : bgUe->getTxPwr();
+    transmission->startPosition = (dir == DL) ? bsCoord_ : bgUe->getCoord();
     transmission->startTime = simTime();
     // one slot of the carrier, as the duration of a frame a radio sends on it
     double slotDuration = binder_->getSlotDurationFromNumerologyIndex(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));

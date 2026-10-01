@@ -14,6 +14,8 @@
 
 #include <omnetpp.h>
 
+#include <inet/common/geometry/common/Coord.h>
+
 #include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
@@ -44,6 +46,7 @@ class CellularTransmission
     GHz carrierFrequency = GHz(0.0);
     RbMap grantedBlocks;                        // the resource blocks it occupies, per antenna
     double txPower = 0.0;                       // dBm; a one-to-one D2D frame's is the UE's D2D transmit power
+    inet::Coord startPosition;                  // where the transmitter was when the transmission started
     simtime_t startTime;
     simtime_t duration;
 

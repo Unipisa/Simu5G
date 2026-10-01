@@ -10,6 +10,7 @@
 // and cannot be removed from it.
 //
 
+import inet.common.geometry.Geometry; // for Coord
 import simu5g.common.LteControlInfo;
 
 cplusplus {{
@@ -29,4 +30,5 @@ namespace simu5g;
 //
 packet AirFrame extends cPacket {
     UserControlInfo additionalInfo @nopack;
+    inet::Coord arrivalPosition = inet::Coord(NaN, NaN, NaN) @nopack; // where the receiving radio was when the frame started to arrive; set by the receiving CellularRadio, unspecified until then
 }
