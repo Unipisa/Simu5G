@@ -1490,7 +1490,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
     else { // Error computation. We need to check the slot occupation of the previous TTI
         ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI);
         // the medium's registry holds the same transmissions for the completed slot
-        ASSERT(ulTransmissionMap == nullptr || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, *ulTransmissionMap));
+        ASSERT(radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, ulTransmissionMap));
         if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty()) {
             // For each band we have to check if the Band in the previous TTI was occupied by the interferingId
             for (unsigned int i = 0; i < numBands_; i++) {

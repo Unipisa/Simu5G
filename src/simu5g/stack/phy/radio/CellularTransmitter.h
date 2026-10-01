@@ -20,6 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class RadioTransmissionRequest;
 class UserControlInfo;
 
 /**
@@ -30,10 +31,10 @@ class CellularTransmitter : public cSimpleModule
   public:
     /**
      * The transmission of a frame with the given control information, sent
-     * now by the given radio, lasting for the given duration. The caller owns
-     * the result.
+     * now as the PHY requested: by its radio, for the cell and the duration
+     * given in the request. The caller owns the result.
      */
-    virtual CellularTransmission *createTransmission(IRadioEndpoint *radio, const UserControlInfo& info, simtime_t duration) const;
+    virtual CellularTransmission *createTransmission(const RadioTransmissionRequest& request, const UserControlInfo& info) const;
 };
 
 } // namespace simu5g

@@ -38,11 +38,12 @@ class CellularTransmission
     TrafficGeneratorBase *backgroundUe = nullptr; // for a background UE's transmission, which no radio sends: its traffic generator
     MacNodeId sourceId = NODEID_NONE;
     MacNodeId destId = NODEID_NONE;
+    MacCellId cellId = NODEID_NONE;             // the cell it belongs to: the sending base station's, the sending UE's serving cell; a background UE's base station's
     Direction direction = UNKNOWN_DIRECTION;
     LtePhyFrameType frameType = UNKNOWN_TYPE;
     GHz carrierFrequency = GHz(0.0);
     RbMap grantedBlocks;                        // the resource blocks it occupies, per antenna
-    double txPower = 0.0;                       // dBm
+    double txPower = 0.0;                       // dBm; a one-to-one D2D frame's is the UE's D2D transmit power
     simtime_t startTime;
     simtime_t duration;
 

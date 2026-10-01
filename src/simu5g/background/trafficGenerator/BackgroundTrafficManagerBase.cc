@@ -289,6 +289,7 @@ void BackgroundTrafficManagerBase::registerTransmission(MacNodeId bgUeId, Direct
     transmission->backgroundUe = bgUe;
     transmission->sourceId = (dir == DL) ? bsNodeId_ : bgUeId;
     transmission->destId = (dir == DL) ? bgUeId : bsNodeId_;
+    transmission->cellId = bsNodeId_;
     transmission->direction = dir;
     transmission->frameType = DATAPKT;
     transmission->carrierFrequency = carrierFrequency;

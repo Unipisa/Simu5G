@@ -15,6 +15,7 @@
 
 #include <inet/common/INETMath.h>
 
+#include "simu5g/background/trafficGenerator/generators/TrafficGeneratorBase.h"
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/PhyBase.h"
@@ -109,8 +110,10 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     carrierTransmissions.push_back(transmission);
 }
 
-bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>>& map) const
+bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>> *mapOrNull) const
 {
+    static const std::vector<std::vector<UeAllocationInfo>> noMap;
+    const auto& map = mapOrNull != nullptr ? *mapOrNull : noMap;
     // the registry's view, band by band
     std::vector<std::vector<const CellularTransmission *>> view(map.size());
     auto it = transmissions.find(carrierFrequency);
@@ -140,6 +143,10 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
             // a PHY's entry is its radio's frame, a background UE's entry its registered allocation
             if (info.nodeId != t->sourceId || info.dir != t->direction
                     || static_cast<IRadioEndpoint *>(info.phy) != t->transmitter || info.trafficGen != t->backgroundUe)
+                return false;
+            // the cell and the power the interference computation takes for the entry
+            double txPower = info.phy != nullptr ? info.phy->getTxPwr(info.dir) : info.trafficGen->getTxPwr();
+            if (info.cellId != t->cellId || txPower != t->txPower)
                 return false;
         }
         if (i != view[band].size())

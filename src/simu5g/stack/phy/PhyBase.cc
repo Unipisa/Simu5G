@@ -285,6 +285,7 @@ void PhyBase::sendBroadcast(AirFrame *airFrame, simtime_t duration)
     auto request = new RadioTransmissionRequest();
     request->broadcast = true;
     request->sender = this;
+    request->cellId = getCellId();
     request->duration = duration;
     airFrame->setControlInfo(request);
     send(airFrame, radioOutGate_);
@@ -313,6 +314,7 @@ void PhyBase::sendUnicast(AirFrame *frame, simtime_t duration)
     // the radio sends it to the receiving node's radio
     auto request = new RadioTransmissionRequest();
     request->sender = this;
+    request->cellId = getCellId();
     request->targets.push_back(receiver->gate(getReceiverGateIndex(receiver, dest)));
     request->duration = duration;
     frame->setControlInfo(request);

@@ -53,6 +53,8 @@ class PhyEnb : public PhyBase
 
     virtual void emitDistanceFromMaster() {}
 
+    MacCellId getCellId() const override { return nodeId_; }
+
   public:
     ~PhyEnb() override;
 

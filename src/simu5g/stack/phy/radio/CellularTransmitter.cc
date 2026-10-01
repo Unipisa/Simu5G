@@ -12,24 +12,29 @@
 #include "simu5g/stack/phy/radio/CellularTransmitter.h"
 
 #include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 namespace simu5g {
 
 Define_Module(CellularTransmitter);
 
-CellularTransmission *CellularTransmitter::createTransmission(IRadioEndpoint *radio, const UserControlInfo& info, simtime_t duration) const
+CellularTransmission *CellularTransmitter::createTransmission(const RadioTransmissionRequest& request, const UserControlInfo& info) const
 {
     auto transmission = new CellularTransmission();
-    transmission->transmitter = radio;
+    transmission->transmitter = request.sender;
     transmission->sourceId = info.getSourceId();
     transmission->destId = info.getDestId();
+    transmission->cellId = request.cellId;
     transmission->direction = (Direction)info.getDirection();
     transmission->frameType = (LtePhyFrameType)info.getFrameType();
     transmission->carrierFrequency = info.getCarrierFrequency();
     transmission->grantedBlocks = info.getGrantedBlocks();
-    transmission->txPower = info.getTxPower();
+    // a one-to-one D2D frame is sent at the UE's D2D power, which its control info carries besides the cellular one.
+    // NOTE: a one-to-many D2D frame is recorded at the cellular power, the power other receivers' interference
+    // takes it at, although its own receivers take the D2D power
+    transmission->txPower = transmission->direction == D2D ? info.getD2dTxPower() : info.getTxPower();
     transmission->startTime = simTime();
-    transmission->duration = duration;
+    transmission->duration = request.duration;
     return transmission;
 }
 

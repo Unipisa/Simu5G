@@ -257,6 +257,9 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     /// hands the prepared air frame to the channel, for the given transmission duration (default: unicast to the destination)
     virtual void transmitFrame(AirFrame *frame, const UserControlInfo *info, simtime_t duration);
 
+    /// the cell the PHY's transmissions belong to: a base station's own, a UE's serving cell
+    virtual MacCellId getCellId() const = 0;
+
     /**
      * Processes messages received from the wireless channel.
      *

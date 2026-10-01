@@ -214,6 +214,7 @@ void D2dUePhy<Base>::sendMulticast(AirFrame *frame, simtime_t duration)
     // the radio sends a copy to each node of the multicast group
     auto request = new RadioTransmissionRequest();
     request->sender = this;
+    request->cellId = this->getCellId();
     request->copyPerTarget = true;
     request->duration = duration;
     for (auto [destId, nodeInfo] : this->binder_->getNodeInfoMap()) {

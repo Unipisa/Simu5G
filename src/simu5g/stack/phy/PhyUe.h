@@ -58,6 +58,8 @@ class PhyUe : public PhyBase
     /// called once an incoming frame has passed the acceptance checks (default: nothing)
     virtual void frameAccepted(UserControlInfo *lteInfo) {}
 
+    MacCellId getCellId() const override { return servingNodeId_; }
+
     /// frame types handed to handleControlMsg() on the receive path
     virtual bool isControlFrameType(LtePhyFrameType type) { return type == HARQPKT || type == GRANTPKT || type == RACPKT; }
 

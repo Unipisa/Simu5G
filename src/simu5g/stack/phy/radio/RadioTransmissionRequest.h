@@ -16,6 +16,8 @@
 
 #include <omnetpp.h>
 
+#include "simu5g/common/LteTypes.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -39,6 +41,8 @@ class RadioTransmissionRequest : public cObject
     bool broadcast = false;
     /** The sending radio's endpoint. */
     IRadioEndpoint *sender = nullptr;
+    /** The cell the transmission belongs to: the sending base station's, or the sending UE's serving cell. */
+    MacCellId cellId = NODEID_NONE;
     /** How long the transmission lasts. */
     simtime_t duration;
 };
