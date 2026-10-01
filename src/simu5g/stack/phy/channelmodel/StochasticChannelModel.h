@@ -497,6 +497,9 @@ class StochasticChannelModel : public ChannelModelBase
      */
     static std::vector<unsigned int> sharedBands(const CellularTransmission& transmission, unsigned int numBands, const RbMap& rbmap);
 
+    /* How long a slot of the carrier's numerology lasts. */
+    simtime_t slotDuration(GHz carrierFrequency);
+
     /*
      * When the slot completed last on the carrier ended: the latest slot
      * boundary of the carrier's numerology not after now. A CQI measures the
@@ -514,11 +517,12 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * Whether, for a cell with one carrier, the bands of a reception with the
      * given RB map that the cell's DL data transmissions of the slot just
-     * completed occupied are those its scheduler allocated. True for the
+     * completed (from slotStart to now) occupied are those its scheduler
+     * allocated. True for the
      * receiving UE's own cell and for any other cell. A debug check of the
      * radio medium against the MAC.
      */
-    bool dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId eNbId, GHz carrierFrequency, const RbMap& rbmap);
+    bool dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId eNbId, GHz carrierFrequency, simtime_t slotStart, const RbMap& rbmap);
 
     /*
      * Compute interference coming from neighboring cells for the UL direction

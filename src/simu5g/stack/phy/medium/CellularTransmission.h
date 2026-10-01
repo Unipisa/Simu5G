@@ -47,6 +47,8 @@ class CellularTransmission
     RbMap grantedBlocks;                        // the resource blocks it occupies, per antenna
     double txPower = 0.0;                       // dBm; a one-to-one D2D frame's is the UE's D2D transmit power
     inet::Coord startPosition;                  // where the transmitter was when the transmission started
+    TxDirectionType txDirection = OMNI;         // whether its antenna radiates omnidirectionally or sectorially
+    double txAngle = 0;                         // the boresight of a sectorial antenna, in degrees
     simtime_t startTime;
     simtime_t duration;
 

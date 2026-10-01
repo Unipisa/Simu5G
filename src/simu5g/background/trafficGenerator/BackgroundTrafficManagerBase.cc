@@ -16,6 +16,7 @@
 
 #include "simu5g/background/trafficGenerator/ActiveUeNotification_m.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
+#include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 
 namespace simu5g {
 
@@ -296,6 +297,12 @@ void BackgroundTrafficManagerBase::registerTransmission(MacNodeId bgUeId, Direct
     transmission->grantedBlocks = allocatedRbMap;
     transmission->txPower = (dir == DL) ? bsTxPower_ : bgUe->getTxPwr();
     transmission->startPosition = (dir == DL) ? bsCoord_ : bgUe->getCoord();
+    if (dir == DL) {
+        // radiated by the base station's antenna
+        IRadioEndpoint *bs = radioMedium_->getRadio(bsNodeId_);
+        transmission->txDirection = bs->getTxDirection();
+        transmission->txAngle = bs->getTxAngle();
+    }
     transmission->startTime = simTime();
     // one slot of the carrier, as the duration of a frame a radio sends on it
     double slotDuration = binder_->getSlotDurationFromNumerologyIndex(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));

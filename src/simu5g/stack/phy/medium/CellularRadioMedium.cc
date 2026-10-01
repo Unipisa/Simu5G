@@ -111,34 +111,34 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     carrierTransmissions.push_back(transmission);
 }
 
-std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const
+std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const
 {
-    std::vector<const CellularTransmission *> ending;
+    std::vector<const CellularTransmission *> during;
     auto it = transmissions.find(carrierFrequency);
     if (it == transmissions.end())
-        return ending;
+        return during;
     for (auto t : it->second)
-        if (t->frameType == DATAPKT && t->getEndTime() == endTime)
-            ending.push_back(t);
-    return ending;
+        if (t->frameType == DATAPKT && t->startTime < to && t->getEndTime() > from)
+            during.push_back(t);
+    return during;
 }
 
-std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const
+std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const
 {
     std::vector<const CellularTransmission *> uplink;
-    for (auto t : getDataTransmissionsEndingAt(carrierFrequency, endTime))
+    for (auto t : getDataTransmissionsDuring(carrierFrequency, from, to))
         if (t->direction == UL || t->direction == D2D || t->direction == D2D_MULTI)
             uplink.push_back(t);
     return uplink;
 }
 
-bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>> *mapOrNull) const
+bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, simtime_t from, simtime_t to, const std::vector<std::vector<UeAllocationInfo>> *mapOrNull) const
 {
     static const std::vector<std::vector<UeAllocationInfo>> noMap;
     const auto& map = mapOrNull != nullptr ? *mapOrNull : noMap;
     // the registry's view, band by band
     std::vector<std::vector<const CellularTransmission *>> view(map.size());
-    for (auto t : getUplinkTransmissionsEndingAt(carrierFrequency, simTime())) {
+    for (auto t : getUplinkTransmissionsDuring(carrierFrequency, from, to)) {
         auto antennaIt = t->grantedBlocks.find(MACRO);
         if (antennaIt == t->grantedBlocks.end())
             continue;
@@ -171,9 +171,9 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, con
     return true;
 }
 
-bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t endTime) const
+bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t from, simtime_t to) const
 {
-    for (auto t : getDataTransmissionsEndingAt(carrierFrequency, endTime)) {
+    for (auto t : getDataTransmissionsDuring(carrierFrequency, from, to)) {
         if (t->sourceId != sourceId || t->direction != direction)
             continue;
         auto antennaIt = t->grantedBlocks.find(MACRO);

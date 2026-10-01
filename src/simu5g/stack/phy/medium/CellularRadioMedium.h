@@ -95,38 +95,39 @@ class CellularRadioMedium : public cSimpleModule
     virtual void addTransmission(CellularTransmission *transmission);
 
     /**
-     * The data transmissions on the carrier that end at the given time -- in
-     * the slot that ends then: data frames, and the allocations of background
-     * UEs -- in creation order. The time is now or at most a slot ago.
+     * The data transmissions on the carrier that overlap the interval [from,
+     * to) -- a slot: data frames, and the allocations of background UEs -- in
+     * creation order. The interval ends now or at most a slot ago.
      */
-    virtual std::vector<const CellularTransmission *> getDataTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const;
+    virtual std::vector<const CellularTransmission *> getDataTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const;
 
     /**
-     * The uplink transmissions on the carrier that end at the given time: data
+     * The uplink transmissions on the carrier that overlap the interval: data
      * frames sent in UL or on the sidelink, and the UL allocations of
-     * background UEs, in creation order. The time is as for
-     * getDataTransmissionsEndingAt().
+     * background UEs, in creation order. The interval is as for
+     * getDataTransmissionsDuring().
      */
-    virtual std::vector<const CellularTransmission *> getUplinkTransmissionsEndingAt(GHz carrierFrequency, simtime_t endTime) const;
+    virtual std::vector<const CellularTransmission *> getUplinkTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const;
 
     /**
-     * Whether the uplink transmissions on the carrier that end now -- data
+     * Whether the uplink transmissions on the carrier during the slot [from,
+     * to) just completed -- data
      * frames sent in UL or on the sidelink, and the UL allocations of
      * background UEs -- are, band by band and in creation order, the entries
      * of the Binder's uplink transmission map: a PHY's entry matching its
      * radio's frame, a background UE's entry its registered allocation, each
      * with the same cell and transmit power. A null map has no entries.
      */
-    virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, const std::vector<std::vector<UeAllocationInfo>> *map) const;
+    virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, simtime_t from, simtime_t to, const std::vector<std::vector<UeAllocationInfo>> *map) const;
 
     /**
      * Whether a data transmission of the given node in the given direction on
-     * the carrier, one that ends at the given time (see
-     * getDataTransmissionsEndingAt()), occupies the band. A background UE's
+     * the carrier, one that overlaps the interval (see
+     * getDataTransmissionsDuring()), occupies the band. A background UE's
      * allocation counts, being a registered transmission: in DL, one of its
      * base station.
      */
-    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t endTime) const;
+    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t from, simtime_t to) const;
 
     /**
      * The channel state the given channel model evaluates links against,

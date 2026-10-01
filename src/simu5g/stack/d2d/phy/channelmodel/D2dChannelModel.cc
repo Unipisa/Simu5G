@@ -220,11 +220,12 @@ bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId
     // a reception: the uplink transmissions of the slot just completed, on its bands -- the Binder's
     // map of the previous TTI lists the same ones; a CQI: those of the slot completed last, on every band
     static const RbMap everyBand;
-    ASSERT(isCqi || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
     simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
+    simtime_t slotStart = slotEnd - slotDuration(carrierFrequency);
+    ASSERT(isCqi || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, slotStart, slotEnd, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
     const RbMap& receptionBands = isCqi ? everyBand : rbmap;
     // in creation order
-    for (auto transmission : radioMedium_->getUplinkTransmissionsEndingAt(carrierFrequency, slotEnd)) {
+    for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
         const InterfererInfo interferer = StochasticChannelModel::describeInterferer(*transmission);
         if (!interferes(interferer))
             continue;

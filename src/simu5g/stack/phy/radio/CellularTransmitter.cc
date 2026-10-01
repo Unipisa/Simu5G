@@ -35,6 +35,8 @@ CellularTransmission *CellularTransmitter::createTransmission(const RadioTransmi
     // takes it at, although its own receivers take the D2D power
     transmission->txPower = transmission->direction == D2D ? info.getD2dTxPower() : info.getTxPower();
     transmission->startPosition = request.sender->getCoord();
+    transmission->txDirection = request.sender->getTxDirection();
+    transmission->txAngle = request.sender->getTxAngle();
     transmission->startTime = simTime();
     transmission->duration = request.duration;
     return transmission;
