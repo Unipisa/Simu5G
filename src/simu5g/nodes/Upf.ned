@@ -81,7 +81,7 @@ module Upf extends ApplicationLayerNodeBase
             parameters:
                 @display("p=1000,175");
         }
-        ethernetBridge: EthernetSessionBridge if hasEthernetBridge {
+        ethBridge: EthernetSessionBridge if hasEthernetBridge {
             parameters:
                 @display("p=1100,275");
         }
@@ -99,9 +99,9 @@ module Upf extends ApplicationLayerNodeBase
         gtp_user.ndOut --> ndResponder.in if hasNdResponder;
         gtp_user.ndIn <-- ndResponder.out if hasNdResponder;
 
-        gtp_user.ethernetBridgeOut --> ethernetBridge.sessionIn if hasEthernetBridge;
-        ethernetBridge.sessionOut --> trafficFlowFilter.ethernetBridgeIn if hasEthernetBridge;
-        ethernetBridge.dnEthg <--> dnEthg if hasEthernetBridge;
+        gtp_user.ethernetBridgeOut --> ethBridge.sessionIn if hasEthernetBridge;
+        ethBridge.sessionOut --> trafficFlowFilter.ethernetBridgeIn if hasEthernetBridge;
+        ethBridge.dnEthg <--> dnEthg if hasEthernetBridge;
 
         dnPpp.phys <--> dnPppg;
 }

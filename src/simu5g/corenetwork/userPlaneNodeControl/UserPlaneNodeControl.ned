@@ -66,7 +66,7 @@ simple UserPlaneNodeControl
         string binderModule = default("binder");
         string gtpUserModule = default("^.gtp_user");
         string trafficFlowFilterModule = default("^.trafficFlowFilter");
-        string ethernetBridgeModule = default("^.ethernetBridge.sessionMux");  // The node's Ethernet session bridge (see ~EthernetSessionBridge), if it has one
+        string ethernetBridgeModule = default("^.ethBridge.sessionMux");  // The node's Ethernet session bridge (see ~EthernetSessionBridge), if it has one
         string nodeType @enum(PGW,UPF,UPF_MEC);  // The type of the containing node, which sets it
         string gateway = default("");  // A MEC host UPF's core network gateway, the anchor UPF whose sessions it serves; empty at an anchor
         string unstructuredPrefix = default("");  // The prefix the N6 addresses of Unstructured sessions are allocated from, e.g. "2001:db8:5::/64" or "10.5.0.0/16"; empty = the node anchors no Unstructured session (see the main comment)
