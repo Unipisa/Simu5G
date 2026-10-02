@@ -1,0 +1,24 @@
+%description:
+The core network's nodes run IPv6 next to IPv4: the anchor (pgw) and the base station
+(eNB) have an IPv6 layer (hasIpv6). Their IPv6 runs Neighbor Discovery on every interface
+of their network layer, which must not include the user-plane interfaces: the anchor's
+N6 interface (dnPpp, no interface of its network layer) and the base station's cellular
+NIC (whose Neighbor Discovery the base station discards, see CellularNicNdSink). The
+simulation runs to its time limit without an error.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.EpcSessionTestNetwork
+
+*.pgw.hasIpv6 = true
+*.eNB.hasIpv6 = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+Simulation time limit reached
+%#--------------------------------------------------------------------------------------------------------------
