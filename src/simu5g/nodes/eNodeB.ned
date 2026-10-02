@@ -209,7 +209,13 @@ module eNodeB
         // message dispatcher for SAP to link layer
         nl: MessageDispatcher {
             parameters:
+                interfaceMapping = parent.hasIpv6 ? {"cellular": "cellularNdSink"} : {};  // WORKAROUND, see ~CellularNicNdSink
                 @display("p=750,446;b=1000,5,,,,1");
+        }
+        // WORKAROUND: takes the IPv6 Neighbor Discovery the network layer sends to the cellular NIC
+        cellularNdSink: CellularNicNdSink if hasIpv6 {
+            parameters:
+                @display("p=600,520");
         }
 
         //#
@@ -323,6 +329,9 @@ module eNodeB
 
         tn.out++ --> nl.in++;
         tn.in++ <-- nl.out++;
+
+        nl.out++ --> cellularNdSink.in if hasIpv6;
+        nl.in++ <-- cellularNdSink.out if hasIpv6;
 
         at.out++ --> tn.in++;
         at.in++ <-- tn.out++;
