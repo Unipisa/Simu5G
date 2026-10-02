@@ -169,9 +169,7 @@ class BackgroundCellChannelModel : public cSimpleModule
     bool fixedLos_;
 
     // TR 36.814 path-loss, LOS-probability and shadowing-sigma formulas;
-    // owned, created in initialize(). The main channel model's ext-cell path
-    // is permanently pinned to the same study (see its extCellPathLoss_),
-    // so background cells and ext cells evaluate identical formulas.
+    // owned, created in initialize()
     Tr36814PathLossModel *pathLoss_ = nullptr;
 
     /*

@@ -9,20 +9,17 @@ grades it rather than recording it.
 
 Worth having separately from InterferenceDelta, which covers the same
 arithmetic for a real neighbouring cell, because the background path is not
-the same code and does not use the same physics. computeExtCellPathLoss
-always applies the TR 36.814 formulas whatever propagation study the model
-itself is configured with, and it passes the plain distance between the two
-nodes as both the three-dimensional and the two-dimensional one. Neither is
-obvious from the outside, and a refactoring that unified the two paths would
-change the answer without changing anything a fingerprint could attribute.
+the same code: a background cell is a phantom transmitter with no radio, whose
+link takes the model's own propagation study, but not the link's own LOS
+state or shadowing.
 
 The scenario is one real cell, one background cell and a UE between them,
 with every random ingredient switched off, so both the wanted signal and the
 background cell's contribution are sums of configured constants and one path
-loss -- from two different studies:
+loss each, from the same study:
 
-    S = txPower   - PL_38901(d_serving) + Gtx + Grx - cableLoss
-    I = bgTxPower - PL_36814(d_bgCell)  + Gtx + Grx - cableLoss
+    S = txPower   - PL_38901_LOS(d_serving)  + Gtx + Grx - cableLoss
+    I = bgTxPower - PL_38901_NLOS(d_bgCell)  + Gtx + Grx - cableLoss
     N = thermalNoise + noiseFigure
 
 As in InterferenceDelta, the background scheduler does not occupy every band
@@ -34,7 +31,7 @@ the background load happened to fall.
 
 enableExtCellLos is switched off, so the background link is NLOS by
 configuration rather than by borrowing the serving link's LOS state -- which
-is what computeExtCellPathLoss does otherwise, and which would make the
+is what computePhantomPathLoss does otherwise, and which would make the
 expected value depend on a draw belonging to a different link.
 
 The interferer transmits at a different power from the server (37 dBm against 40 dBm), so that an

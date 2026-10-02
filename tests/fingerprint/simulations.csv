@@ -59,18 +59,18 @@
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-balanced -r 0,                5s,         c120-b7eb/tplx;c348-3c51/tilx;129f-c587/~tNl;fecd-255c/sz, PASS, radio interference anisotropic
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-Mesh-unbalanced -r 0,              5s,         9870-7a43/tplx;7d0d-86f1/tilx;6f67-3203/~tNl;3158-3c6f/sz, PASS, radio interference anisotropic
 /simulations/lte/x2/,                    -f omnetpp.ini -c X2-MeshTopology -r 0,                 5s,         829a-a5dd/tplx;1335-99c2/tilx;f7ac-b770/~tNl;ee5e-365e/sz, PASS, radio interference anisotropic
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 0,                          5s,         572f-0692/tplx;794e-d258/tilx;e800-b05c/~tNl;7e3e-7ef7/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 1,                          5s,         46ea-7490/tplx;9925-5e70/tilx;e800-b05c/~tNl;6c2a-5da6/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 2,                          5s,         6867-f89d/tplx;3c7f-108a/tilx;8ca5-7480/~tNl;40a6-e5d5/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 0,                          5s,         d03e-5930/tplx;0021-e9e6/tilx;e800-b05c/~tNl;0f6e-b7b7/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 1,                          5s,         ac8f-11f9/tplx;c64d-108c/tilx;e800-b05c/~tNl;5d0a-0e35/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL -r 2,                          5s,         e8dd-5c68/tplx;6548-0b6c/tilx;5f2d-42ba/~tNl;b707-4bd7/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 0,                          5s,         6986-7682/tplx;f377-052f/tilx;e800-b05c/~tNl;a392-5a97/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 1,                          5s,         47b1-4d4f/tplx;34bc-6b93/tilx;e800-b05c/~tNl;e3e7-e620/sz, PASS, radio bgcell bgue
 /simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL-NoBgCellInterference -r 2,                          5s,         ba7d-cc78/tplx;949f-9dc5/tilx;e800-b05c/~tNl;078c-e941/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         ea52-3cc2/tplx;b23f-b482/tilx;eeeb-ce43/~tNl;7f35-04a0/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         f01e-9ab7/tplx;e516-73dd/tilx;04e2-6a58/~tNl;c181-7483/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         4b7a-cc43/tplx;20b8-a3c6/tilx;2ac4-ae65/~tNl;d998-6650/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         b066-bb0a/tplx;6670-72a4/tilx;1b81-5b2b/~tNl;cac3-7f4f/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         a92f-0dad/tplx;5e0e-ecd0/tilx;7616-51c7/~tNl;840a-fd10/sz, PASS, radio bgcell bgue
-/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         260d-0da2/tplx;0c3b-2d99/tilx;4818-1816/~tNl;ca5a-c0d2/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 0,                       5s,         3869-f69f/tplx;5135-40ae/tilx;eeeb-ce43/~tNl;0531-a1cf/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 1,                       5s,         2702-d8fd/tplx;f057-d19d/tilx;52e8-23a5/~tNl;f9fe-60ed/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-DL_UL -r 2,                       5s,         c55b-7c3d/tplx;385f-b91b/tilx;10ad-8468/~tNl;4b42-942c/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 0,                          5s,         8db7-d2a4/tplx;b0c9-6c7a/tilx;9caf-8857/~tNl;b0b5-6653/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 1,                          5s,         5633-8933/tplx;607b-a456/tilx;8a06-c4dd/~tNl;8259-4b40/sz, PASS, radio bgcell bgue
+/simulations/nr/bgTraffic/,              -f omnetpp.ini -c CBR-UL -r 2,                          5s,         a45a-1657/tplx;2002-f302/tilx;0036-4657/~tNl;a411-8c75/sz, PASS, radio bgcell bgue
 /simulations/nr/mec/multiMecHost/,       -f omnetpp.ini -c MultiMec -r 0,                        20s,        cc8c-74a9/tplx;dced-9a72/tilx;7e05-41ca/~tNl;7e61-e6b8/sz,  PASS, radio interference
 /simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_MultiMec -r 0,          20s,        8944-9977/tplx;0943-4b77/tilx;00d6-a256/~tNl;94f5-a19a/sz,  PASS, radio interference multicarrier
 /simulations/nr/mec/multiOperator/,      -f omnetpp.ini -c MultiOperator_SingleMec -r 0,         20s,        98f8-f0a7/tplx;9df8-ab72/tilx;d671-5648/~tNl;b240-d873/sz,  PASS, radio interference multicarrier
@@ -117,16 +117,16 @@
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,             5s,         a30c-0f58/tplx;2540-9187/tilx;e894-fc1a/~tNl;fcbd-0c0a/sz, PASS, radio interference multicarrier
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-DL -r 0,            5s,         6bda-8a3c/tplx;8982-e48d/tilx;8799-9891/~tNl;78c7-d40b/sz, PASS, radio interference
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c SingleCarrier-CBR-UL -r 0,            5s,         26d4-e7ed/tplx;5190-1c77/tilx;ed85-815b/~tNl;6d65-7fb7/sz, PASS, radio interference
-/simulations/nr/tutorial/,               -f omnetpp.ini -c BgTraffic -r 0,                       5s,         3c91-0b95/tplx;e8dc-5547/tilx;0d91-ecb3/~tNl;9b0f-44ce/sz, PASS, radio bgcell
-/simulations/nr/tutorial/,               -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         3862-677b/tplx;a74c-8cc1/tilx;17bc-2aed/~tNl;ea65-5841/sz, PASS, radio bgcell multicarrier
-/simulations/nr/tutorial/,               -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         af6f-8c3c/tplx;37a6-71b8/tilx;216c-ff05/~tNl;d93a-0b31/sz, PASS, radio bgcell
-/simulations/nr/tutorial/,               -f omnetpp.ini -c Numerology -r 0,                      5s,         3862-677b/tplx;a74c-8cc1/tilx;17bc-2aed/~tNl;ea65-5841/sz, PASS, radio bgcell multicarrier
+/simulations/nr/tutorial/,               -f omnetpp.ini -c BgTraffic -r 0,                       5s,         0599-5a89/tplx;1956-ea12/tilx;a6cb-a586/~tNl;3266-ec37/sz, PASS, radio bgcell
+/simulations/nr/tutorial/,               -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         ec71-3a29/tplx;ec70-6e2b/tilx;17bc-2aed/~tNl;1e44-c166/sz, PASS, radio bgcell multicarrier
+/simulations/nr/tutorial/,               -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         32ad-8e1f/tplx;84f4-3a41/tilx;216c-ff05/~tNl;5b27-cda3/sz, PASS, radio bgcell
+/simulations/nr/tutorial/,               -f omnetpp.ini -c Numerology -r 0,                      5s,         ec71-3a29/tplx;ec70-6e2b/tilx;17bc-2aed/~tNl;1e44-c166/sz, PASS, radio bgcell multicarrier
 /simulations/nr/tutorial/,               -f omnetpp.ini -c Single-UE -r 0,                       5s,         d336-4b92/tplx;75c0-2580/tilx;b43f-c338/~tNl;a118-8777/sz, PASS, radio
-/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        412a-27cd/tplx;a340-e3c5/tilx;c665-45da/~tNl;be28-bed2/sz, PASS, radio interference bgcell bgue
-/tutorials/nr/,                          -f omnetpp.ini -c BgTraffic -r 0,                       5s,         3c91-0b95/tplx;e8dc-5547/tilx;0d91-ecb3/~tNl;9b0f-44ce/sz, PASS, radio bgcell
-/tutorials/nr/,                          -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         3862-677b/tplx;a74c-8cc1/tilx;17bc-2aed/~tNl;ea65-5841/sz, PASS, radio bgcell multicarrier
-/tutorials/nr/,                          -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         af6f-8c3c/tplx;37a6-71b8/tilx;216c-ff05/~tNl;d93a-0b31/sz, PASS, radio bgcell
-/tutorials/nr/,                          -f omnetpp.ini -c Numerology -r 0,                      5s,         3862-677b/tplx;a74c-8cc1/tilx;17bc-2aed/~tNl;ea65-5841/sz, PASS, radio bgcell multicarrier
+/simulations/nr/videostreaming_dataset_generator/, -f omnetpp.ini -c UrbanNetwork -r 0,          10s,        726b-40da/tplx;855e-ffd4/tilx;2cba-7dfa/~tNl;29a1-ec8f/sz, PASS, radio interference bgcell bgue
+/tutorials/nr/,                          -f omnetpp.ini -c BgTraffic -r 0,                       5s,         0599-5a89/tplx;1956-ea12/tilx;a6cb-a586/~tNl;3266-ec37/sz, PASS, radio bgcell
+/tutorials/nr/,                          -f omnetpp.ini -c CarrierAggregation -r 0,              5s,         ec71-3a29/tplx;ec70-6e2b/tilx;17bc-2aed/~tNl;1e44-c166/sz, PASS, radio bgcell multicarrier
+/tutorials/nr/,                          -f omnetpp.ini -c Multiple-UEs -r 0,                    5s,         32ad-8e1f/tplx;84f4-3a41/tilx;216c-ff05/~tNl;5b27-cda3/sz, PASS, radio bgcell
+/tutorials/nr/,                          -f omnetpp.ini -c Numerology -r 0,                      5s,         ec71-3a29/tplx;ec70-6e2b/tilx;17bc-2aed/~tNl;1e44-c166/sz, PASS, radio bgcell multicarrier
 /tutorials/nr/,                          -f omnetpp.ini -c Single-UE -r 0,                       5s,         d336-4b92/tplx;75c0-2580/tilx;b43f-c338/~tNl;a118-8777/sz, PASS, radio
 /simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Clean -r 0,                        5s,         3933-1e52/tplx;6ac8-798c/tilx;106a-ceb8/~tNl;2b1c-0337/sz, PASS, idealchannel
 /simulations/nr/rlc/,                    -f omnetpp.ini -c AM-Lossy -r 2,                        5s,         d1b9-a122/tplx;12a8-9036/tilx;4629-edc8/~tNl;924b-c38f/sz, PASS, idealchannel

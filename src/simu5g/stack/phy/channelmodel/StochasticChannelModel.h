@@ -135,11 +135,6 @@ class StochasticChannelModel : public ChannelModelBase
     // Formulas of the selected 3GPP propagation study; owned, created in initialize()
     PathLossModel *pathLoss_ = nullptr;
 
-    // The ext-cell and background-cell interference paths evaluate their path
-    // loss with the TR 36.814 formulas regardless of which propagation study
-    // the model uses for its own links (see computeExtCellPathLoss); owned
-    PathLossModel *extCellPathLoss_ = nullptr;
-
     // Correlation distance used in shadowing computation and
     // also used to recompute the probability of LOS
     double correlationDistance_;
@@ -541,18 +536,19 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * The power, in dBm, with which a transmission of an external or a
      * background cell, or of a background cell's UE, arrives at the given
-     * position: the TR 36.814 path loss in the LOS state of the given link (see
-     * computeExtCellPathLoss), the antenna's attenuation, the model's own gains
-     * and cable loss.
+     * position: the model's path loss in the LOS state of the given link (see
+     * computePhantomPathLoss), the antenna's attenuation, the model's own gains
+     * and cable loss. 'ue' is the receiving UE of a downlink transmission, whose
+     * building penetration applies; nullptr for an uplink one.
      */
-    double phantomPowerAt(const CellularTransmission& transmission, const inet::Coord& position, const LinkKey& link);
+    double phantomPowerAt(const CellularTransmission& transmission, const inet::Coord& position, const LinkKey& link, IRadioEndpoint *ue);
 
     /*
-     * Compute attenuation due to path loss, in the LOS state of the given link
-     * (RadioLink::linkKey) unless enableExtCellLos is off
-     * @return attenuation expressed in dBm
+     * The path loss of a phantom transmission, in dB: the model's own path-loss
+     * formulas, in the LOS state of the given link (RadioLink::linkKey) unless
+     * enableExtCellLos is off
      */
-    virtual double computeExtCellPathLoss(double dist, const LinkKey& key);
+    virtual double computePhantomPathLoss(double d3D, double d2D, const LinkKey& key);
 };
 
 } //namespace
