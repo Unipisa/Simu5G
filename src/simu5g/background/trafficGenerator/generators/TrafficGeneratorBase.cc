@@ -199,10 +199,10 @@ void TrafficGeneratorBase::updateMeasurements()
     }
     else {
         if (trafficEnabled_[DL])
-            cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, pos_);
+            cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, getCoord());
 
         if (trafficEnabled_[UL])
-            cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, pos_, txPower_);
+            cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, getCoord(), txPower_);
     }
 
     positionUpdated_ = false;
@@ -284,11 +284,18 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
     return (!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir];
 }
 
+inet::Coord TrafficGeneratorBase::getCoord()
+{
+    if (mobility_ != nullptr)
+        pos_ = mobility_->getCurrentPosition();
+    return pos_;
+}
+
 void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal) {
-        inet::IMobility *mobility = check_and_cast<inet::IMobility *>(obj);
-        pos_ = mobility->getCurrentPosition();
+        mobility_ = check_and_cast<inet::IMobility *>(obj);
+        pos_ = mobility_->getCurrentPosition();
         positionUpdated_ = true;
     }
 }

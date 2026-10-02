@@ -84,6 +84,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // the physical position of the UE (derived from display string or from mobility models)
     inet::Coord pos_;
 
+    // the UE's mobility module, once it has reported a position
+    inet::IMobility *mobility_ = nullptr;
+
     // flag that signals when new SNR and CQI must be computed
     bool positionUpdated_;
 
@@ -129,8 +132,8 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // returns the tx power of this bg UE
     virtual double getTxPwr() { return txPower_; }
 
-    // returns the position of this bg UE
-    virtual inet::Coord getCoord() { return pos_; }
+    // returns the position of this bg UE: its mobility's, at this instant
+    virtual inet::Coord getCoord();
 
     // This module is subscribed to position changes.
     void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;

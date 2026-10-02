@@ -19,6 +19,7 @@
 #include <math.h>
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/common/Units.h>
+#include <inet/mobility/contract/IMobility.h>
 
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/common/LteCommon.h"
@@ -86,8 +87,10 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     bool registeredWithMedium_ = false;
     /// the host that contains this PHY
     opp_component_ptr<cModule> hostModule_;
-    /// the position of the radio, kept up to date from the host's mobility module
-    inet::Coord radioPos_;
+    /// the position of the radio, as the host's mobility module last reported it
+    mutable inet::Coord radioPos_;
+    /// the host's mobility module, once it has reported a position
+    inet::IMobility *mobility_ = nullptr;
     /// whether the host's mobility module has reported a position yet
     bool positionUpdateArrived_ = false;
 
@@ -295,9 +298,10 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
 
   public:
     /*
-     * Returns the current position of the node
+     * Returns the current position of the node: the mobility's, at this
+     * instant, or the display string's for a host without mobility
      */
-    const inet::Coord& getCoord() const override { return radioPos_; }
+    const inet::Coord& getCoord() const override;
     /*
      * Whether the node is inside a building, and how far inside, as its
      * primary channel model is configured
