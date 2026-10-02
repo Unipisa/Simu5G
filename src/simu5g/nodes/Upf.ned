@@ -29,6 +29,11 @@ import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
 // act like IP routers in the current version.
 // Allows the connection of mobile terminals to external data networks or other 5G network elements through GTP tunneling.
 //
+// The N6 interface toward the data network (dnPpp, on the dnPppg gate) belongs to this user
+// plane: it is not in the node's interface table, so the node's own network layer (the stack
+// of the core network) neither sees nor uses it, and the address configurator gives it no
+// address.
+//
 module Upf extends ApplicationLayerNodeBase
 {
     parameters:
@@ -52,6 +57,7 @@ module Upf extends ApplicationLayerNodeBase
     submodules:
         dnPpp: PppInterface {
             parameters:
+                interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's N6 end
                 @display("p=1100,975");
         }
         trafficFlowFilter: TrafficFlowFilter {

@@ -30,6 +30,11 @@ import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
 // To accomplish this, it utilizes a ~GtpUser module that handles GTP (de)tunneling, along with the
 // ~TrafficFlowFilter module, which classifies incoming packets.
 //
+// The interface toward the Internet (dnPpp, on the dnPppg gate) belongs to this user plane:
+// it is not in the node's interface table, so the node's own network layer (the stack of
+// the core network) neither sees nor uses it, and the address configurator gives it no
+// address.
+//
 module PgwStandard extends ApplicationLayerNodeBase
 {
     parameters:
@@ -48,6 +53,7 @@ module PgwStandard extends ApplicationLayerNodeBase
     submodules:
         dnPpp: PppInterface {
             parameters:
+                interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's SGi end
                 @display("p=1100,975");
         }
         trafficFlowFilter: TrafficFlowFilter {
