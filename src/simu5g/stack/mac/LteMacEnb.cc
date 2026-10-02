@@ -423,10 +423,19 @@ void LteMacEnb::resolveRacCollisions()
         }
 
         for (auto *pkt : pkts) {
-            auto racPkt = pkt->removeAtFront<LteRac>();
             auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
             MacNodeId ueId = uinfo->getSourceId();
 
+            // a UE this cell no longer serves (it has left it, e.g. by a
+            // handover, since sending the request) gets no response
+            if (binder_->getServingNode(ueId) != nodeId_) {
+                EV << NOW << "LteMacEnb::resolveRacCollisions - UE " << ueId
+                   << " is no longer served by this cell, RAC dropped" << endl;
+                delete pkt;
+                continue;
+            }
+
+            auto racPkt = pkt->removeAtFront<LteRac>();
             if (collision) {
                 // preamble collision: RAC fails
                 racPkt->setSuccess(false);
