@@ -37,6 +37,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network SingleCell_D2D
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUeCell = default(1);
         int numUeD2DTx = default(0);
         int numUeD2DRx = default(0);

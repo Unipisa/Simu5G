@@ -308,7 +308,7 @@ def check_relabelled_runs(grader, table, reference, other, relabel, ref_name, la
 
 def grade_carrier_symmetry(grader):
     """A carrier is identified by its frequency; which slot of the
-    componentCarrier and channelModel vectors it occupies is not a physical
+    componentCarrier and the radio medium's channel model vectors it occupies is not a physical
     fact. Exchanging the two indices must therefore exchange the two carriers'
     results and change nothing else."""
     table = all_scalars_by_run(('swap',))
@@ -322,14 +322,7 @@ def grade_carrier_symmetry(grader):
     check_recorded(grader, table, 0.0, 'the unswapped run')
     check_relabelled_runs(
         grader, table, 0.0, 1.0, relabel, 'the unswapped run',
-        'carrier indices exchanged',
-        # The UE's LTE channel model has one carrier, so it has no index to be
-        # exchanged with, and it is pinned to componentCarrier[0] by default --
-        # which this configuration does swap the frequency of. It records
-        # nothing in a standalone NR scenario, but it is excluded by name
-        # rather than by being quietly unmatched. Only the UE's: the gNB's
-        # channelModel[0] and [1] are its per-carrier models and are compared.
-        ignore=('.ue[0].cellularNic.channelModel[',))
+        'carrier indices exchanged')
 
 
 def grade_module_order_permutation(grader):
@@ -671,7 +664,7 @@ def grade_d2d_link_budget(grader):
     # on heights TR 38.901 does not define for it.
     breakpoint = plr._dbp_effective(fc, hBS, hUT)
 
-    table = scalar_table('module =~ "*.ueD2DRx[0].cellularNic.nrChannelModel[*]" '
+    table = scalar_table('module =~ "*.radioMedium.nrChannelModel[*]" '
                          'AND name =~ "rcvdSinrD2D:*"', itervars=('d',))
     previous = None
     for d, row in table.iterrows():

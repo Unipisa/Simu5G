@@ -35,6 +35,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network SingleCell_D2DMulticast
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUeCell = default(1);
         int numUeD2D = default(0);
         @display("i=block/network2;bgb=991,558;bgi=background/budapest");

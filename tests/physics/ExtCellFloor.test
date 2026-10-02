@@ -92,7 +92,7 @@ seed-set = 0
 **.mobility.initFromDisplayString = false
 
 ############### The channel: one path loss and nothing else ##############
-**.cellularNic.channelModelType = "Tr38901ChannelModel"
+*.radioMedium.channelModelType = "Tr38901ChannelModel"
 **.scenario = "URBAN_MICROCELL"
 **.nodebHeight = 25m
 **.ueHeight = 1.5m

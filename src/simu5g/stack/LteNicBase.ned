@@ -22,7 +22,6 @@ import simu5g.stack.pdcp.IPdcpMux;
 import simu5g.stack.phy.IPhy;
 import simu5g.stack.rlc.IRlcMux;
 import simu5g.stack.rrc.IRrc;
-import simu5g.stack.phy.channelmodel.IChannelModel;
 import simu5g.stack.phy.radio.CellularRadio;
 
 
@@ -50,8 +49,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string nodeType;
         double processingDelayIn @unit(s) = default(0s);   // Additional processing delay for incoming ip packets
         double processingDelayOut @unit(s) = default(0s);   // Additional processing delay for outgoing ip packets
-
-        string channelModelType = default("StochasticChannelModel");
 
         bool dualConnectivityEnabled = default(false);
         int numCarriers = default(1);
@@ -106,10 +103,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         // the radio of the PHY leg
         radio: CellularRadio {
             @display("p=310,830");
-        }
-
-        channelModel[numCarriers]: <channelModelType> like IChannelModel {
-            @display("p=80,60,col;g=left");
         }
 
         //# Modules used to take trace of PDCP pkt flow

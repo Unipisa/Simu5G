@@ -33,6 +33,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network SingleCell
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe = default(1);
         @display("i=block/network2;bgb=991,558;bgi=background/budapest");
     submodules:

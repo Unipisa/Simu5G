@@ -39,6 +39,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network MultiCell_withSecondaryGnb
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe = default(1);
         int numBgCells = default(0);
         @display("i=block/network2;bgb=1100,800;bgi=background/pisa");

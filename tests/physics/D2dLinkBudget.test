@@ -28,9 +28,10 @@ LOS formula does not depend on the antenna heights beyond fixing the
 breakpoint itself; past it, the answer depends on which heights the model
 gives a UE-to-UE link. A tripwire asserts that the sweep stays below it.
 
-The SINR is read from rcvdSinrD2D, recorded at the receiving UE for every
-D2D reception. With nothing varying, every reception at one distance has
-to report the same value, and the value has to fall with distance.
+The SINR is read from rcvdSinrD2D, which the radio medium's NR channel
+model records for every D2D reception (there is one receiver). With nothing
+varying, every reception at one distance has to report the same value, and
+the value has to fall with distance.
 
 %extraargs: -c D2dLinkBudget
 
@@ -58,6 +59,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 ############### D2D: one pair, the flow started in D2D mode ##############
 **.ue*[*].hasD2D = true
 *.gnb.hasD2D = true
+*.radioMedium.nrChannelModelType = "Tr38901D2dChannelModel"
 *.numUeCell = 0
 *.numUeD2DTx = 1
 *.numUeD2DRx = 1

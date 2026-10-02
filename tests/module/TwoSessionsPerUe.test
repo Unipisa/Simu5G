@@ -71,6 +71,7 @@ simple SessionProbe like IApp
 network TwoSessionNetwork
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         **.cellularNic.hasSdap = default(true);
     submodules:
         configurator: Ipv4NetworkConfigurator;

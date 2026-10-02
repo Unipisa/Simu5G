@@ -84,8 +84,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 ############### Channel: a configurable error rate, nothing else ##############
 # No propagation at all, so the loss rate is the configured number rather than
 # an emergent property of geometry and MCS selection.
-*.gnb.cellularNic.channelModelType = "IdealChannelModel"
-*.ue[*].cellularNic.nrChannelModelType = "IdealChannelModel"
+*.radioMedium.nrChannelModelType = "IdealChannelModel"
 
 # Independent attempts. This is the assumption the closed form rests on.
 **.harqReduction = 1

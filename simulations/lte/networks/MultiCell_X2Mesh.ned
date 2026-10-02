@@ -36,6 +36,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network MultiCell_X2Mesh
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe1 = default(0);
         int numUe2 = default(0);
         int numUe3 = default(0);

@@ -9,9 +9,9 @@ configured. The testable statement is the one that matters anyway: exchanging
 which index holds which frequency has to exchange the two carriers' results
 and change nothing else.
 
-That is a direct exercise of the per-carrier channelModel[] vector, which is
-a structure any refactoring of the medium has to rebuild, and of the
-componentCarrierModule wiring that ties each channel model to its carrier. An
+That is a direct exercise of the radio medium's per-carrier channel model
+vectors, a structure any refactoring of the medium has to rebuild, and of the
+componentCarrierModules wiring that ties each PHY to its carriers. An
 index leaking into the physics -- a state map keyed on the carrier's position
 rather than on its frequency, say -- would show here and almost nowhere else.
 
@@ -21,9 +21,7 @@ each of them per carrier under the carrier's frequency (measuredSinrDl-2000MHz)
 as well as over both; those need no relabelling -- the value recorded under a
 frequency has to be the same whichever slot holds that frequency. A name with no counterpart is a failure rather than a
 silent skip, because a relabelling rule that quietly covers less than it
-should is exactly how this kind of test stops testing anything. The one
-exclusion is stated at the grader: the UE's LTE channel model has a single
-carrier, so it has no index to be exchanged with.
+should is exactly how this kind of test stops testing anything.
 
 Everything random is switched off, so what remains between the two carriers
 is the frequency-dependent path loss -- 81.22 dB of SINR on the 2 GHz carrier
@@ -61,11 +59,9 @@ seed-set = 0
 *.carrierAggregation.componentCarrier[1].numBands = 6
 
 *.gnb.cellularNic.numCarriers = 2
-*.gnb.cellularNic.channelModel[0].componentCarrierModule = "carrierAggregation.componentCarrier[0]"
-*.gnb.cellularNic.channelModel[1].componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+*.gnb.cellularNic.phy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
 *.ue[*].cellularNic.numNrCarriers = 2
-*.ue[*].cellularNic.nrChannelModel[0].componentCarrierModule = "carrierAggregation.componentCarrier[0]"
-*.ue[*].cellularNic.nrChannelModel[1].componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+*.ue[*].cellularNic.nrPhy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
 
 *.gnb.mobility.initialX = 300m
 *.gnb.mobility.initialY = 300m

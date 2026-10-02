@@ -26,7 +26,6 @@ simple ChannelModelBase like IChannelModel
 
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium");
-        string cellInfoModule = default("^.^.cellInfo");  // Optional
 
         // Component carrier for this channel model
         string componentCarrierModule = default("carrierAggregation.componentCarrier[0]");

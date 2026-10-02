@@ -36,6 +36,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network EthernetSessions
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         **.cellularNic.hasSdap = default(true);
         int numUe = default(1);
         int numDevices = default(0);

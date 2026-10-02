@@ -39,6 +39,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network SingleCell_Standalone
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe = default(1);
         int numBgCells = default(0);
         // The gNB connects to a 5GC (Upf), so every cellular stack has SDAP:

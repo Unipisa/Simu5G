@@ -16,7 +16,6 @@ package simu5g.stack;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.phy.IPhy;
-import simu5g.stack.phy.channelmodel.IChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.IRlcMux;
 import simu5g.stack.sdap.INrSdap;
@@ -43,7 +42,6 @@ module NrNicUe extends LteNicUe
         sdap.nodeRole = default("UE");
         sdap.useReflectiveQos = default(this.useReflectiveQos);
         sdap.reflectiveQosTableModule = default(this.useReflectiveQos ? "^.reflectiveQosTable" : "");
-        string nrChannelModelType = default("Tr38901ChannelModel");
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
@@ -65,7 +63,6 @@ module NrNicUe extends LteNicUe
         nrPhy.macNodeId = parent.nrMacNodeId;
         nrDlFbGen.macNodeId = parent.nrMacNodeId;
         rrc.nrConnectionControl.otherConnectionControlModule = "^.connectionControl";
-        nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.radioModule = "^.nrRadio";
         nrRadio.antenna.gain = default(0dBi);
         nrRadio.receiver.noiseFigure = default(7dB);
@@ -102,10 +99,6 @@ module NrNicUe extends LteNicUe
         // the radio of the NR PHY leg
         nrRadio: CellularRadio {
             @display("p=570,830");
-        }
-        // NR Channel Model
-        nrChannelModel[numNrCarriers]: <nrChannelModelType> like IChannelModel {
-            @display("p=80,60,col;g=left");
         }
 
         // Feedback generator submodule

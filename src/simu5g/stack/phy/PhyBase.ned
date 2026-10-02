@@ -35,8 +35,9 @@ simple PhyBase like IPhy
 
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium"); // The network's radio medium
+        string componentCarrierModules = default("carrierAggregation.componentCarrier[0]"); // The component carriers this leg operates on, space-separated, the primary first; the radio medium's channel model for each, of this leg's RAT, evaluates its links
+        string cellInfoModule = default("^.^.cellInfo"); // Optional; a base station registers its carriers there
         bool insideBuilding = default(false); // Whether the node is inside a building; its distance from the wall is drawn once, uniformly in [0, 25] m
-        string channelModelModule = default("^.channelModel[0]"); // Set to "^.nrChannelModel[0]" on an NR leg, see ~NrNicUe
         string radioModule = default("^.radio"); // This leg's radio; set to "^.nrRadio" on an NR leg, see ~NrNicUe
 
     gates:

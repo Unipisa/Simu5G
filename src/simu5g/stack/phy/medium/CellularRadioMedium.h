@@ -28,6 +28,7 @@ using namespace omnetpp;
 
 class AirFrame;
 class IRadioEndpoint;
+class ChannelModelBase;
 
 /**
  * The radio medium of a cellular network (see the NED documentation). So far
@@ -61,6 +62,13 @@ class CellularRadioMedium : public cSimpleModule
 
   public:
     virtual ~CellularRadioMedium();
+
+    /**
+     * The channel model of the given carrier for the radios of the given RAT:
+     * the one every radio of that RAT on that carrier evaluates links with.
+     * nullptr if the network has no such carrier.
+     */
+    virtual ChannelModelBase *getChannelModel(GHz carrierFrequency, bool isNr) const;
 
     /**
      * Adds a radio under the node id of its PHY. A radio registered with

@@ -39,6 +39,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network ExtUeAppMecAppExample
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         // The gNBs connect to a 5GC (Upf), so every cellular stack has SDAP:
         // TS 37.324 ties SDAP to the 5GC connection, not to the radio
         **.cellularNic.hasSdap = default(true);

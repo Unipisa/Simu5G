@@ -29,13 +29,6 @@ void ChannelModelBase::initialize(int stage)
         carrierFrequencyHz_ = Hz(carrierFrequency_).get();
         log10CarrierFrequencyGHz_ = log10(carrierFrequencyGHz_);
     }
-    if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
-        // register the carrier to the cellInfo module and the binder
-        cellInfo_.reference(this, "cellInfoModule", false);
-        if (cellInfo_ != nullptr) { // cellInfo is NULL on UEs
-            cellInfo_->registerCarrier(carrierFrequency_, numBands_, componentCarrier_->getNumerologyIndex());
-        }
-    }
 }
 
 std::vector<double> ChannelModelBase::getSINR(AirFrame *frame, UserControlInfo *lteInfo)

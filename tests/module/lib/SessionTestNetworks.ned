@@ -38,6 +38,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network NrSessionTestNetwork
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe = default(1);
         bool hasD2D = default(false);  // Whether the network hosts D2D-capable nodes
         **.cellularNic.hasSdap = default(true);
@@ -95,6 +96,7 @@ network NrSessionTestNetwork
 network EpcSessionTestNetwork
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numUe = default(1);
         @display("bgb=700,500");
     submodules:

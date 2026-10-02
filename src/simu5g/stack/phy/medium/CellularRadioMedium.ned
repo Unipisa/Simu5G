@@ -11,6 +11,8 @@
 
 package simu5g.stack.phy.medium;
 
+import simu5g.stack.phy.channelmodel.IChannelModel;
+
 //
 // The radio medium of a cellular network: the network-level module that is to
 // own signal propagation, the per-link channel realization, interference and
@@ -33,10 +35,22 @@ package simu5g.stack.phy.medium;
 module CellularRadioMedium
 {
     parameters:
+        int numCarriers = default(1); // The network's component carriers; the networks set it to carrierAggregation.numComponentCarriers
+        string channelModelType = default("StochasticChannelModel"); // The channel model of the LTE radios, one per carrier
+        string nrChannelModelType = default("Tr38901ChannelModel"); // The channel model of the NR radios, one per carrier
         double pMax @unit("mW") = default(20mW); // Maximum sending power used for this network (in mW)
         double sat @unit("dBm") = default(-110dBm); // Signal attenuation threshold (in dBm)
         double alpha = default(2); // Path loss coefficient
         double carrierFrequency @unit("Hz") = default(2.4GHz); // Carrier frequency (in Hz)
         @class(CellularRadioMedium);
         @display("i=misc/sun");
+    submodules:
+        channelModel[numCarriers]: <channelModelType> like IChannelModel {
+            componentCarrierModule = "carrierAggregation.componentCarrier[" + string(index) + "]";
+            @display("p=80,60,col;g=lte");
+        }
+        nrChannelModel[numCarriers]: <nrChannelModelType> like IChannelModel {
+            componentCarrierModule = "carrierAggregation.componentCarrier[" + string(index) + "]";
+            @display("p=200,60,col;g=nr");
+        }
 }

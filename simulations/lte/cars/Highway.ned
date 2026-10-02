@@ -40,6 +40,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network Highway
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         @display("bgb=732,483");
 
     submodules:

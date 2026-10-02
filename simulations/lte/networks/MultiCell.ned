@@ -38,6 +38,7 @@ import simu5g.stack.phy.medium.CellularRadioMedium;
 network MultiCell
 {
     parameters:
+        radioMedium.numCarriers = carrierAggregation.numComponentCarriers;
         int numExtCells = default(0);
         bool hasD2D = default(false);  // Whether the network hosts D2D-capable nodes
         @display("i=block/network2;bgb=991,558;bgi=background/budapest");

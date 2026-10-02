@@ -22,6 +22,8 @@
 #include <inet/common/InitStages.h>
 #include <inet/common/ModuleAccess.h>
 #include <inet/mobility/contract/IMobility.h>
+#include "simu5g/common/carrierAggregation/ComponentCarrier.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
 
 namespace inet {
 // this is needed to ensure the correct ordering among initialization stages
@@ -93,6 +95,19 @@ void PhyBase::initialize(int stage)
         // a PHY without a node id is on the medium, but cannot be looked up by id
         radioMedium_->addRadio(nodeId_, this, radio_);
         registeredWithMedium_ = true;
+
+        // the component carriers, registered with a base station's cell
+        cStringTokenizer tokenizer(par("componentCarrierModules").stringValue());
+        while (tokenizer.hasMoreTokens()) {
+            const char *path = tokenizer.nextToken();
+            componentCarriers_.push_back(check_and_cast<ComponentCarrier *>(getModuleByPath(path)));
+        }
+        if (componentCarriers_.empty())
+            throw cRuntimeError("PhyBase: componentCarrierModules names no component carrier");
+        auto *cellInfo = dynamic_cast<CellInfo *>(findModuleByPath(par("cellInfoModule").stringValue()));
+        if (cellInfo != nullptr) // none on UEs
+            for (auto *carrier : componentCarriers_)
+                cellInfo->registerCarrier(carrier->getCarrierFrequency(), carrier->getNumBands(), carrier->getNumerologyIndex());
     }
     else if (stage == inet::INITSTAGE_SINGLE_MOBILITY) {
         if (!positionUpdateArrived_ && hostModule_->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this)) {
@@ -255,24 +270,17 @@ void PhyBase::transmitFrame(AirFrame *frame, const UserControlInfo *info, simtim
 
 void PhyBase::initializeChannelModel()
 {
-    primaryChannelModel_.reference(this, "channelModelModule", true);
-    primaryChannelModel_->setPhy(this);
-    GHz carrierFreq = primaryChannelModel_->getCarrierFrequency();
-    unsigned int numerologyIndex = primaryChannelModel_->getNumerologyIndex();
-    channelModel_[carrierFreq] = primaryChannelModel_;
-
-    if (nodeType_ == UE)
-        binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
-
-    int numChannelModels = primaryChannelModel_->getVectorSize();
-    for (int index = 1; index < numChannelModels; index++) {
-        ChannelModelBase *chanModel = check_and_cast<ChannelModelBase *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
-        chanModel->setPhy(this);
-        GHz carrierFreq = chanModel->getCarrierFrequency();
-        unsigned int numerologyIndex = chanModel->getNumerologyIndex();
+    // the radio medium's channel model of each carrier, for this leg's RAT
+    for (auto *carrier : componentCarriers_) {
+        GHz carrierFreq = carrier->getCarrierFrequency();
+        ChannelModelBase *chanModel = radioMedium_->getChannelModel(carrierFreq, isNr_);
+        if (chanModel == nullptr)
+            throw cRuntimeError("PhyBase: the radio medium has no channel model for carrier %s", carrier->getFullPath().c_str());
+        if (primaryChannelModel_ == nullptr)
+            primaryChannelModel_ = chanModel;
         channelModel_[carrierFreq] = chanModel;
         if (nodeType_ == UE)
-            binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
+            binder_->registerCarrierUe(carrierFreq, carrier->getNumerologyIndex(), nodeId_);
     }
 
     std::vector<GHz> carrierFrequencies;

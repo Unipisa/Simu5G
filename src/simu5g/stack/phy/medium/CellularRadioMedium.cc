@@ -19,10 +19,22 @@
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/PhyBase.h"
+#include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
 
 namespace simu5g {
 
 Define_Module(CellularRadioMedium);
+
+ChannelModelBase *CellularRadioMedium::getChannelModel(GHz carrierFrequency, bool isNr) const
+{
+    const char *name = isNr ? "nrChannelModel" : "channelModel";
+    for (int i = 0; i < par("numCarriers").intValue(); i++) {
+        auto *model = check_and_cast<ChannelModelBase *>(getSubmodule(name, i));
+        if (model->getCarrierFrequency() == carrierFrequency)
+            return model;
+    }
+    return nullptr;
+}
 
 void CellularRadioMedium::initialize(int stage)
 {
