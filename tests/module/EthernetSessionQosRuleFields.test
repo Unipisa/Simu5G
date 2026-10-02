@@ -1,0 +1,191 @@
+%description:
+The QoS rules of an Ethernet PDU session classify frames by any field of their headers
+that INET's packet dissection exposes to a PacketFilter expression: the Ethernet MAC
+header (ethernetmac: dest, src, typeOrLength), the 802.1Q C-TAG (ieee8021qctag: pcp, dei,
+vid, typeOrLength) and S-TAG (ieee8021qstag, the same fields), the headers by class name
+(EthernetMacHeader, Ieee8021qTagEpdHeader), and the packet itself (pk); a rule may also
+be a message-name pattern. The uplink rules run at the UE (QosFlowClassifier), the
+downlink rules at the UPF (TrafficFlowFilter); the first matching rule wins. ue[0] and
+dnStation, a host on the UPF's N6 Ethernet LAN, each send one frame of each kind, and
+ue[1], whose 802.1Q layer inserts S-TAGs, an S-tagged frame; the test checks the QFI
+each frame gets.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: test.ned
+import inet.node.ethernet.Eth1G;
+import inet.node.inet.StandardHost;
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+network EthernetQosRuleTestNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        dnStation: StandardHost {
+            @display("p=650,75");
+        }
+    connections:
+        upf.dnEthg <--> Eth1G <--> dnStation.ethg++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = EthernetQosRuleTestNetwork
+
+# the classifiers' log lines are the output the test checks
+cmdenv-express-mode = false
+cmdenv-event-banners = false
+cmdenv-log-prefix = ""
+*.ue[*].cellularNic.qosFlowClassifier.cmdenv-log-level = info
+*.upf.trafficFlowFilter.cmdenv-log-level = info
+**.cmdenv-log-level = off
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.numUe = 2
+*.ue[0].cellularNic.address = "02-00-00-00-0E-01"
+*.ue[1].cellularNic.address = "02-00-00-00-0E-02"
+*.ue[1].ieee8021q.vlanTagType = "s"
+
+# dnStation: a raw Ethernet host with 802.1Q, whose C-TAGs have DEI set
+*.dnStation.hasIpv4 = false
+*.dnStation.eth[*].typename = "LayeredEthernetInterface"
+*.dnStation.eth[0].address = "02-00-00-00-0D-01"
+*.dnStation.eth[*].bitrate = 1Gbps
+*.dnStation.ethernet.typename = "EthernetLayer"
+*.dnStation.ethernet.hasSocketSupport = true
+*.dnStation.ieee8021q.typename = "Ieee8021qProtocol"
+*.dnStation.ieee8021q.qTagHeaderInserter.defaultDropEligible = 1
+*.dnStation.llc.typename = ""
+
+# the default QoS flow on DRB 1, every QFI the rules assign on DRB 2 (a downlink frame
+# to an address the UPF's bridge has not learned yet reaches both sessions)
+*.bearerConfigurator.staticDrbs = [
+    {coreNetwork: "5gc", ue: "ue[0]", drbId: 1, isDefault: true, lcg: 3, rlcMode: "UM"},
+    {coreNetwork: "5gc", ue: "ue[0]", drbId: 2, mappedQfis: [11, 12, 13, 14, 15, 16, 21, 22, 23], lcg: 1, rlcMode: "UM"},
+    {coreNetwork: "5gc", ue: "ue[1]", drbId: 1, isDefault: true, lcg: 3, rlcMode: "UM"},
+    {coreNetwork: "5gc", ue: "ue[1]", drbId: 2, mappedQfis: [11, 12, 13, 14, 15, 16, 21, 22, 23], lcg: 1, rlcMode: "UM"}
+    ]
+
+# uplink, classified at the UE
+*.bearerConfigurator.ulQfiRules = [
+    {ue: "ue[0]", filter: "ul-named*", qfi: 15},
+    {ue: "ue[0]", filter: "expr(has(ieee8021qctag) && ieee8021qctag.vid == 7 && ieee8021qctag.pcp == 3)", qfi: 11},
+    {ue: "ue[0]", filter: "expr(has(Ieee8021qTagEpdHeader) && Ieee8021qTagEpdHeader.vid == 8 && EthernetMacHeader.typeOrLength == 0x8100 && Ieee8021qTagEpdHeader.typeOrLength == 0x86F0)", qfi: 12},
+    {ue: "ue[0]", filter: "expr(ethernetmac.dest.getInt() == 0xFFFFFFFFFFFF && ethernetmac.src.str() == \"02-00-00-00-0E-01\")", qfi: 13},
+    {ue: "ue[0]", filter: "expr(!has(ieee8021qctag) && pk.byteLength == 318)", qfi: 14},
+    {ue: "ue[1]", filter: "expr(has(ieee8021qstag) && ieee8021qstag.vid == 81 && ieee8021qstag.pcp == 2 && ethernetmac.typeOrLength == 0x88A8)", qfi: 16}
+    ]
+
+# downlink, classified at the UPF
+*.bearerConfigurator.dlQfiRules = [
+    {filter: "expr(has(ieee8021qctag) && ieee8021qctag.vid == 9 && ieee8021qctag.pcp >= 6)", qfi: 22},
+    {filter: "expr(has(ieee8021qctag) && ieee8021qctag.dei)", qfi: 21},
+    {filter: "expr(!has(ieee8021qctag) && ethernetmac.src.str() == \"02-00-00-00-0D-01\" && ethernetmac.dest.str() == \"02-00-00-00-0E-01\" && ethernetmac.typeOrLength == 0x86F0)", qfi: 23}
+    ]
+
+# one frame per source app; the frame is named after its kind
+*.ue[0].numApps = 7
+*.ue[0].app[0..5].typename = "EthernetSourceApp"
+*.ue[0].app[0..1].tagger.typename = "PacketTagger"
+*.ue[0].app[0..1].tagger.encapsulationProtocols = ["ieee8021qctag"]
+*.ue[0].app[0].source.packetNameFormat = "ul-vid7"   # rule 2: vid and pcp
+*.ue[0].app[0].tagger.vlanId = 7
+*.ue[0].app[0].tagger.pcp = 3
+*.ue[0].app[1].source.packetNameFormat = "ul-vid8"   # rule 3: the headers by class name
+*.ue[0].app[1].tagger.vlanId = 8
+*.ue[0].app[2].source.packetNameFormat = "ul-bcast"  # rule 4: MAC addresses
+*.ue[0].app[2].io.remoteAddress = "FF-FF-FF-FF-FF-FF"
+*.ue[0].app[3].source.packetNameFormat = "ul-big"    # rule 5: the packet's length
+*.ue[0].app[3].source.packetLength = 300B
+*.ue[0].app[4].source.packetNameFormat = "ul-named"  # rule 1 (by name), although it is a ul-vid7 frame too
+*.ue[0].app[4].tagger.typename = "PacketTagger"
+*.ue[0].app[4].tagger.encapsulationProtocols = ["ieee8021qctag"]
+*.ue[0].app[4].tagger.vlanId = 7
+*.ue[0].app[4].tagger.pcp = 3
+*.ue[0].app[5].source.packetNameFormat = "ul-plain"  # no rule
+*.ue[0].app[6].typename = "EthernetSinkApp"
+*.ue[0].app[6].io.localAddress = "02-00-00-00-0E-01"
+*.ue[0].app[6].io.steal = true
+*.ue[0].app[6].io.remoteAddress = ""  # from any sender
+
+*.ue[1].numApps = 2
+*.ue[1].app[0].typename = "EthernetSourceApp"
+*.ue[1].app[0].source.packetNameFormat = "ul-stag81" # the S-TAG
+*.ue[1].app[0].tagger.typename = "PacketTagger"
+*.ue[1].app[0].tagger.encapsulationProtocols = ["ieee8021qstag"]
+*.ue[1].app[0].tagger.vlanId = 81
+*.ue[1].app[0].tagger.pcp = 2
+*.ue[1].app[1].typename = "EthernetSinkApp"
+*.ue[1].app[1].io.localAddress = "02-00-00-00-0E-02"
+*.ue[1].app[1].io.steal = true
+*.ue[1].app[1].io.remoteAddress = ""  # from any sender
+
+*.dnStation.numApps = 5
+*.dnStation.app[0..3].typename = "EthernetSourceApp"
+*.dnStation.app[0..1].tagger.typename = "PacketTagger"
+*.dnStation.app[0..1].tagger.encapsulationProtocols = ["ieee8021qctag"]
+*.dnStation.app[0].source.packetNameFormat = "dl-vid9"    # rule 1: vid and pcp (DEI set too)
+*.dnStation.app[0].tagger.vlanId = 9
+*.dnStation.app[0].tagger.pcp = 6
+*.dnStation.app[1].source.packetNameFormat = "dl-vid10"   # rule 2: DEI
+*.dnStation.app[1].tagger.vlanId = 10
+*.dnStation.app[2].source.packetNameFormat = "dl-plain"   # rule 3: MAC addresses, EtherType
+*.dnStation.app[3].source.packetNameFormat = "dl-bcast"   # no rule: the default QoS flow
+*.dnStation.app[3].io.remoteAddress = "FF-FF-FF-FF-FF-FF"
+*.dnStation.app[4].typename = "EthernetSinkApp"
+*.dnStation.app[4].io.localAddress = "02-00-00-00-0D-01"
+*.dnStation.app[4].io.steal = true
+*.dnStation.app[4].io.remoteAddress = ""  # from any sender
+
+# what the apps above do not set (the first matching line wins)
+*.ue[*].app[*].io.remoteAddress = "02-00-00-00-0D-01"
+*.dnStation.app[*].io.remoteAddress = "02-00-00-00-0E-01"
+*.ue[*].app[*].io.interface = "cellular"
+*.dnStation.app[*].io.interface = "eth0"
+**.app[*].source.productionInterval = 10s
+**.app[*].source.initialProductionOffset = 0.1s + 10ms * ancestorIndex(1)
+**.app[*].source.packetLength = 100B
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-vid7 classified to QFI 11
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-vid8 classified to QFI 12
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-bcast classified to QFI 13
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-big classified to QFI 14
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-named classified to QFI 15
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-plain matches no rule, left unclassified
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+QosFlowClassifier - ul-stag81 classified to QFI 16
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+TrafficFlowFilter::handleEthernetDownlink - dl-vid9 of the session of UE \d+, qfi=22
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+TrafficFlowFilter::handleEthernetDownlink - dl-vid10 of the session of UE \d+, qfi=21
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+TrafficFlowFilter::handleEthernetDownlink - dl-plain of the session of UE \d+, qfi=23
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+TrafficFlowFilter::handleEthernetDownlink - dl-bcast of the session of UE \d+, qfi=0
+%#--------------------------------------------------------------------------------------------------------------
