@@ -15,7 +15,6 @@
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
-#include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include <inet/common/ProtocolTag_m.h>
 #include "simu5g/common/LteControlInfoTags_m.h"
