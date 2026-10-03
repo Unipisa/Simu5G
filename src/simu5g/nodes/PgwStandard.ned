@@ -15,10 +15,9 @@ import inet.common.MessageDispatcher;
 import inet.linklayer.ppp.PppInterface;
 import inet.node.base.ApplicationLayerNodeBase;
 import inet.transportlayer.udp.Udp;
-import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.ndResponder.Ipv6NdResponder;
-import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
+import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 
 //
 // Implements a simplified EPC PDN Gateway (P-GW) of a 4G LTE network.
@@ -27,8 +26,8 @@ import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
 // the core network (e.g., the ~eNodeB that will transmit the packet to the destination User Equipment
 // through the radio access network) using the GPRS Tunneling Protocol (GTP). Conversely, packets
 // received from the core network are detunneled and sent to the Internet (e.g., towards a remote server).
-// To accomplish this, it utilizes a ~GtpUser module that handles GTP (de)tunneling, along with the
-// ~TrafficFlowFilter module, which classifies incoming packets.
+// To accomplish this, it utilizes a ~UserPlaneRelay, whose ~GtpUser handles GTP (de)tunneling and
+// whose ~TrafficFlowFilter classifies incoming packets.
 //
 // The interface toward the Internet (dnPpp, on the dnPppg gate) belongs to this user plane:
 // it is not in the node's interface table, so the node's own network layer (the stack of
@@ -56,14 +55,10 @@ module PgwStandard extends ApplicationLayerNodeBase
                 interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's SGi end
                 @display("p=1100,975");
         }
-        trafficFlowFilter: TrafficFlowFilter {
+        relay: UserPlaneRelay {
             parameters:
                 @display("p=1200,75");
                 ownerType = parent.nodeType;
-        }
-        gtp_user: GtpUser {
-            parameters:
-                @display("p=1000,75");
         }
         nodeControl: UserPlaneNodeControl {
             parameters:
@@ -77,16 +72,14 @@ module PgwStandard extends ApplicationLayerNodeBase
 
     connections:
 
-        gtp_user.socketOut --> at.in++;
-        gtp_user.socketIn <-- at.out++;
+        relay.socketOut --> at.in++;
+        relay.socketIn <-- at.out++;
 
-        dnPpp.upperLayerOut --> trafficFlowFilter.internetFilterGateIn;
-        dnPpp.upperLayerIn <-- gtp_user.pppGate;
+        dnPpp.upperLayerOut --> relay.lowerLayerIn;
+        dnPpp.upperLayerIn <-- relay.lowerLayerOut;
 
-        trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
-
-        gtp_user.ndOut --> ndResponder.in if hasNdResponder;
-        gtp_user.ndIn <-- ndResponder.out if hasNdResponder;
+        relay.ndOut --> ndResponder.in if hasNdResponder;
+        relay.ndIn <-- ndResponder.out if hasNdResponder;
 
         dnPpp.phys <--> dnPppg;
 }

@@ -64,8 +64,8 @@ simple UserPlaneNodeControl
     parameters:
         @display("i=block/cogwheel");
         string binderModule = default("binder");
-        string gtpUserModule = default("^.gtp_user");
-        string trafficFlowFilterModule = default("^.trafficFlowFilter");
+        string gtpUserModule = default("^.relay.gtpUser");
+        string trafficFlowFilterModule = default("^.relay.trafficFlowFilter");
         string ethernetBridgeModule = default("^.ethBridge.sessionMux");  // The node's Ethernet session bridge (see ~EthernetSessionBridge), if it has one
         string nodeType @enum(PGW,UPF,UPF_MEC);  // The type of the containing node, which sets it
         string gateway = default("");  // A MEC host UPF's core network gateway, the anchor UPF whose sessions it serves; empty at an anchor

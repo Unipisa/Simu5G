@@ -16,10 +16,9 @@ import inet.linklayer.ppp.PppInterface;
 import inet.node.base.ApplicationLayerNodeBase;
 import inet.transportlayer.udp.Udp;
 import simu5g.corenetwork.ethernetSessionBridge.EthernetSessionBridge;
-import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.ndResponder.Ipv6NdResponder;
-import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.corenetwork.userPlaneNodeControl.UserPlaneNodeControl;
+import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 
 //
 // Implements the 5G Core User Plane Function (UPF).
@@ -60,15 +59,10 @@ module Upf extends ApplicationLayerNodeBase
                 interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's N6 end
                 @display("p=1100,975");
         }
-        trafficFlowFilter: TrafficFlowFilter {
+        relay: UserPlaneRelay {
             parameters:
                 @display("p=1200,75");
                 ownerType = parent.nodeType;
-                gateway = parent.gateway;
-        }
-        gtp_user: GtpUser {
-            parameters:
-                @display("p=1000,75");
                 gateway = parent.gateway;
         }
         nodeControl: UserPlaneNodeControl {
@@ -88,19 +82,17 @@ module Upf extends ApplicationLayerNodeBase
 
     connections:
 
-        gtp_user.socketOut --> at.in++;
-        gtp_user.socketIn <-- at.out++;
+        relay.socketOut --> at.in++;
+        relay.socketIn <-- at.out++;
 
-        dnPpp.upperLayerOut --> trafficFlowFilter.internetFilterGateIn;
-        dnPpp.upperLayerIn <-- gtp_user.pppGate;
+        dnPpp.upperLayerOut --> relay.lowerLayerIn;
+        dnPpp.upperLayerIn <-- relay.lowerLayerOut;
 
-        trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
+        relay.ndOut --> ndResponder.in if hasNdResponder;
+        relay.ndIn <-- ndResponder.out if hasNdResponder;
 
-        gtp_user.ndOut --> ndResponder.in if hasNdResponder;
-        gtp_user.ndIn <-- ndResponder.out if hasNdResponder;
-
-        gtp_user.ethernetBridgeOut --> ethBridge.sessionIn if hasEthernetBridge;
-        ethBridge.sessionOut --> trafficFlowFilter.ethernetBridgeIn if hasEthernetBridge;
+        relay.ethernetBridgeOut --> ethBridge.sessionIn if hasEthernetBridge;
+        ethBridge.sessionOut --> relay.ethernetBridgeIn if hasEthernetBridge;
         ethBridge.dnEthg <--> dnEthg if hasEthernetBridge;
 
         dnPpp.phys <--> dnPppg;

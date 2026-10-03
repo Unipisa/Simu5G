@@ -36,7 +36,7 @@ cmdenv-express-mode = false
 cmdenv-event-banners = false
 cmdenv-log-prefix = ""
 *.ue[*].cellularNic.qosFlowClassifier.cmdenv-log-level = info
-*.upf.trafficFlowFilter.cmdenv-log-level = info
+*.upf.relay.trafficFlowFilter.cmdenv-log-level = info
 **.cmdenv-log-level = off
 
 # the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
