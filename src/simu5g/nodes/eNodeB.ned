@@ -225,6 +225,8 @@ module eNodeB
             parameters:
                 @display("p=1172,80");
                 ownerType = parent.nodeType;
+                gateway = parent.gateway;
+                mecHost = parent.mecHost;
         }
         gtpUser: GtpUser {
             parameters:

@@ -57,6 +57,8 @@ simple TrafficFlowFilter
 
         string binderModule = default("binder");
         string ownerType @enum(ENODEB,GNODEB,PGW,UPF,UPF_MEC); // Must be one of ENODEB, GNODEB, PGW, UPF, UPF_MEC
+        string gateway = default("");  // The core network gateway of a base station or a MEC host's UPF, a module path relative to the network; unused at an anchor (PGW, UPF), which is the gateway itself
+        string mecHost = default("");  // At a base station: the MEC host the base station steers traffic to (see the mecHost parameter of ~eNodeB); empty = none
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;

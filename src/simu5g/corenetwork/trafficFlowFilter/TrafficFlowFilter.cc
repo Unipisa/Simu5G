@@ -44,17 +44,10 @@ void TrafficFlowFilter::initialize(int stage)
 
     fastForwarding_ = par("fastForwarding");
 
-    if (ownerType_ == PGW || ownerType_ == UPF) {
-        gateway_ = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
-    }
-    else if (getParentModule()->hasPar("gateway")) {
-        gateway_ = binder_->getNetworkName() + "." + getParentModule()->par("gateway").stringValue();
-    }
-    else if (getParentModule()->getParentModule()->hasPar("gateway")) {
-        gateway_ = binder_->getNetworkName() + "." + getParentModule()->getParentModule()->par("gateway").stringValue();
-    }
+    if (ownerType_ == PGW || ownerType_ == UPF)
+        gateway_ = binder_->getNetworkName() + "." + getContainingNode(this)->getFullName();
     else
-        gateway_.clear();
+        gateway_ = binder_->getNetworkName() + "." + par("gateway").stdstringValue();
 
     // mec
     if (isBaseStation(ownerType_)) {
@@ -76,17 +69,14 @@ void TrafficFlowFilter::initialize(int stage)
         }
     }
 
-    if (getParentModule()->hasPar("mecHost")) {
+    meHost = par("mecHost").stdstringValue();
+    if (isBaseStation(ownerType_) && !meHost.empty()) {
+        std::stringstream meHostName;
+        meHostName << meHost << ".virtualisationInfrastructure";
+        meHost = meHostName.str();
+        meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
 
-        meHost = getParentModule()->par("mecHost").stringValue();
-        if (isBaseStation(ownerType_) && !meHost.empty()) {
-            std::stringstream meHostName;
-            meHostName << meHost << ".virtualisationInfrastructure";
-            meHost = meHostName.str();
-            meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
-
-            EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
-        }
+        EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
     }
     //end mec
 }

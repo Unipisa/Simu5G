@@ -64,6 +64,7 @@ module Upf extends ApplicationLayerNodeBase
             parameters:
                 @display("p=1200,75");
                 ownerType = parent.nodeType;
+                gateway = parent.gateway;
         }
         gtp_user: GtpUser {
             parameters:
