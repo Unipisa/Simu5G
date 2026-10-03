@@ -135,6 +135,7 @@ through the *pppIf* NIC. Likewise, packets received from the 5GC (i.e.,
 from the *pppIf* interface) need to be decapsulated in order to get the
 original data packet before sending them to the *cellularNic* module.
 The GTP encapsulation/decapsulation procedure is performed by the
+*relay* module (a *UserPlaneRelay*), which contains the
 *trafficFlowFilter* and *gtpUser* modules. More details on this will be
 provided in the dedicated section.
 
@@ -149,9 +150,10 @@ as it includes vectors of different NIC types (such as PPP, ethernet and
 wireless LAN) that allows one to connect the Upf module to any other
 module using any kind of data link type.
 
-Moreover, the *Upf* module includes the *trafficFlowFilter* and
-*gtpUser* modules to enable GTP encapsulation/decapsulation, similar to
-the gNodeB module. Again, more details on this can be found in the
+Moreover, the *Upf* module includes the *relay* module (a
+*UserPlaneRelay*, with the *trafficFlowFilter* and *gtpUser* modules) to
+enable GTP encapsulation/decapsulation, similar to the gNodeB module.
+Again, more details on this can be found in the
 dedicated section. These two modules are actually used by Upf only if it
 acts as the entry/exit point of the 5GC (i.e., connects the 5G network
 domain with the Internet domain).
@@ -256,7 +258,8 @@ Core network modeling
 =====================
 
 In particular, once an IP datagram is sent by the *cellularNic*, the
-latter sends it to the *gtpUser* module that takes care of i) identify
+latter sends it to the *gtpUser* module (in the *relay*) that takes
+care of i) identify
 the IP address of the next hop for the IP datagram within the 5GC, and
 ii) add a GTP header to the packet. The resulting GTP packet is then
 sent via the Udp and ipv4 modules to the node identified by the above IP
