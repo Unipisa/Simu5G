@@ -14,9 +14,10 @@ package simu5g.corenetwork.trafficFlowFilter;
 
 //
 // Maps IP 4-Tuples to Traffic Flow Template (TFT) identifiers, which are used by the ~GtpUser module
-// contained in the same node. It interacts with the ~Binder to determine the destination of the packet.
-// Resides in any module that also includes a ~GtpUser module, such as ~eNodeB, ~gNodeB, ~PgwStandard,
-// ~Upf, and ~MecHost modules. For instance, in a ~Upf module acting as the entry point of the 5G network, it
+// next to it. It interacts with the ~Binder to determine the destination of the packet.
+// Resides, with the ~GtpUser, in the ~UserPlaneRelay of every node that ends GTP-U tunnels: ~eNodeB,
+// ~gNodeB, ~PgwStandard and ~Upf (also as the UPF of a ~MecHost).
+// For instance, in a ~Upf module acting as the entry point of the 5G network, it
 // identifies the destination endpoint of the GTP tunnel that the packet should traverse, which is the gNodeB
 // serving the destination User Equipment (UE). In a base station, it receives the UEs'
 // uplink datagrams straight from the cellular NIC.

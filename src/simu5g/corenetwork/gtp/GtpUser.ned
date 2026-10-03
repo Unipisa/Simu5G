@@ -23,8 +23,8 @@ package simu5g.corenetwork.gtp;
 // IP-route the UEs' traffic), at a ~Upf or ~PgwStandard onto the data network, unless
 // the destination is a UE of the same core network, whose base station the datagram
 // is then tunneled on to.
-// Used by all entities that need to communicate within the cellular core
-// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MecHost modules.
+// Resides, with the ~TrafficFlowFilter, in the ~UserPlaneRelay of every node that ends
+// GTP-U tunnels: ~eNodeB, ~gNodeB, ~PgwStandard and ~Upf (also as the UPF of a ~MecHost).
 //
 // The tunnel a G-PDU arrives on names its session, and so what the T-PDU carries:
 // the payload goes out as the protocol the session's type implies (an IP datagram, or
