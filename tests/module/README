@@ -31,9 +31,12 @@ up in ./work, which is not under version control.
 Writing tests
 -------------
 
-The tests are NED and ini only; nothing is compiled. lib/ holds the networks
-several tests share (package simu5g.test.moduletest.lib) and defaults.ini,
-which a test's omnetpp.ini includes:
+A test may also carry C++ code in %file sections (e.g. a module subclass that
+stands for another configuration policy): the runner compiles the C++ of all
+tests into one executable, linked with the Simu5G and INET libraries, and runs
+every test on it. lib/ holds the networks several tests share (package
+simu5g.test.moduletest.lib) and defaults.ini, which a test's omnetpp.ini
+includes:
 
     include ../../lib/defaults.ini
 

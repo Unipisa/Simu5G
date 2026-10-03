@@ -8,7 +8,7 @@
 #
 
 MODE=${MODE:-release}
-if [ "$MODE" = "debug" ]; then PROG=`which opp_run_dbg`; else PROG=`which opp_run`; fi
+if [ "$MODE" = "debug" ]; then D="_dbg"; else D=""; fi
 
 TESTFILES=$*
 if [ "x$TESTFILES" = "x" ]; then TESTFILES='*.test'; fi
@@ -21,9 +21,17 @@ if [ ! -d work ]; then mkdir work; fi
 opp_test gen $OPT -v $TESTFILES || exit 1
 echo
 
-# The tests are NED and ini only: they run on the Simu5G library, nothing is compiled.
-# The NED path is relative to work/<testname>/, the working directory of each test run.
-opp_test run -p $PROG $OPT -v $TESTFILES \
-    -a -l $SIMU5G_ROOT/src/simu5g -n .:../../lib:$SIMU5G_ROOT/src:$INET_ROOT/src || exit 1
+# The C++ sources of the tests' %file sections are compiled into one executable,
+# linked with the Simu5G and INET libraries; tests without C++ run on it unchanged
+(cd work && opp_makemake -f --deep -o moduletests -DINET_IMPORT \
+     -I$SIMU5G_ROOT/src -I$INET_ROOT/src \
+     -L$SIMU5G_ROOT/src -lsimu5g'$(D)' \
+     -L$INET_ROOT/src -lINET'$(D)' \
+ && make MODE=$MODE -j$(nproc)) || exit 1
+echo
+
+# The NED path is relative to work/<testname>/, the working directory of each test run
+opp_test run -p moduletests$D $OPT -v $TESTFILES \
+    -a -n .:../../lib:$SIMU5G_ROOT/src:$INET_ROOT/src || exit 1
 echo
 echo Results can be found in ./work
