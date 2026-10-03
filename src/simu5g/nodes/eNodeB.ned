@@ -24,10 +24,9 @@ import inet.transportlayer.sctp.Sctp;
 import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 import simu5g.common.cellInfo.CellInfo;
-import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.statsCollector.IStatsCollector;
-import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
+import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 
 //
 // Models an evolved Node B (eNB) of a 4G LTE network. It is a specialized device equipped
@@ -38,8 +37,9 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 // received from the core network are detunneled and sent to the appropriate destination UE.
 // In addition to the 4G NIC, this compound module includes a configurable number of wired interfaces
 // to connect with routers of the core network or directly to the ~PgwStandard module, which serves
-// as the IP module to perform forwarding, and the ~GtpUser module that handles GTP (de)tunneling. The latter
-// utilizes the ~TrafficFlowFilter module to classify incoming packets and determine the next hop.
+// as the IP module to perform forwarding, and the ~UserPlaneRelay that relays between the NIC and the GTP
+// tunnels: its ~TrafficFlowFilter classifies incoming packets and determines the next hop, and its ~GtpUser
+// handles GTP (de)tunneling.
 // Furthermore, it features a configurable number of ~LteX2App modules to facilitate peer-to-peer communications with
 // other eNodeBs within the same LTE network.
 //
@@ -221,17 +221,12 @@ module eNodeB
         //#
         //# Modules for connecting to the core network and X2
         //#
-        trafficFlowFilter: TrafficFlowFilter {
+        relay: UserPlaneRelay {
             parameters:
-                @display("p=1172,80");
+                @display("p=1041,80");
                 ownerType = parent.nodeType;
                 gateway = parent.gateway;
                 mecHost = parent.mecHost;
-        }
-        gtpUser: GtpUser {
-            parameters:
-                @display("p=1041,80");
-                gateway = parent.gateway;
         }
 
         gtpUserX2: GtpUserX2 {
@@ -266,11 +261,10 @@ module eNodeB
         //# User plane: the cellular NIC is wired to the tunnel endpoint directly, the
         //# base station does not IP-route the UEs' traffic
         //#
-        cellularNic.upperLayerOut --> trafficFlowFilter.internetFilterGateIn;
-        trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
-        gtpUser.pppGate --> cellularNic.upperLayerIn;
-        gtpUser.socketOut --> at.in++;
-        gtpUser.socketIn <-- at.out++;
+        cellularNic.upperLayerOut --> relay.lowerLayerIn;
+        relay.lowerLayerOut --> cellularNic.upperLayerIn;
+        relay.socketOut --> at.in++;
+        relay.socketIn <-- at.out++;
 
 	    //# GTPUserX2 connections
         gtpUserX2.lteStackOut --> cellularNic.x2$i++;

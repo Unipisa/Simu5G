@@ -85,7 +85,7 @@ simple ConnectionControlEnb like IConnectionControl
         string bearerManagementModule = default("^.bearerManagement");
         string macModule = default("^.^.mac");
         string handoverPacketHolderModule = default("^.^.handoverPacketHolder");
-        string gtpUserModule = default("^.^.^.gtpUser");
+        string gtpUserModule = default("^.^.^.relay.gtpUser");
         string gtpUserX2Module = default("^.^.^.gtpUserX2");
         int macNodeId;  // The base station's node id; the NIC sets it from the node's
         string gateway = default("");  // The node's core network gateway, as its gateway parameter names it; ignored at a node not connected to a core network (a secondary node)
