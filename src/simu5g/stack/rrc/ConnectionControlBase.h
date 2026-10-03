@@ -43,18 +43,20 @@ class ConnectionControlBase : public omnetpp::cSimpleModule
   public:
     // ---- requests from the node's own data path and RRC ----
 
-    // The data path found no bearer for a flow it classified: establish one whose
-    // properties come from the bearer definition the packet matches (Ip2Nic; see
-    // ConnectionControlEnb::establishBearer()). Returns the bearer's DRB id.
-    virtual DrbId establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt) = 0;
+    // The data path found no bearer for a flow of the given session of the UE that it
+    // classified: establish one whose properties come from the session's bearer
+    // definition the packet matches (Ip2Nic; see ConnectionControlEnb::establishBearer()).
+    // Returns the bearer's DRB id.
+    virtual DrbId establishBearer(const FlowId& flow, SessionId session, const FlowBindingKey& key, const inet::Packet *pkt) = 0;
 
     // Establish the bearer of a flow whose DRB the requester already knows (SDAP's
     // mapped-but-not-established case, and the static definitions). Returns the DRB id.
     virtual DrbId establishBearer(const FlowId& flow, const BearerRequest& req) = 0;
 
-    // The DRB an unmapped QFI resolves to at the given UE, materializing an on-demand
-    // definition's bearer on first use; DRBID_NONE if nothing covers it (SDAP)
-    virtual DrbId resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi) = 0;
+    // The DRB an unmapped QFI of the given session resolves to at the given UE,
+    // materializing an on-demand definition's bearer on first use; DRBID_NONE if
+    // nothing covers it (SDAP). A QFI identifies a QoS flow within a session.
+    virtual DrbId resolveDrbForQfi(MacNodeId ueNodeId, SessionId session, Qfi qfi) = 0;
 
     // A bearer of this node was torn down: its DRB id returns to its pool where this
     // node owns the pool (BearerManagement)

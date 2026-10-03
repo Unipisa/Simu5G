@@ -150,15 +150,17 @@ class BearerConfigurator : public cSimpleModule
     // every UE; the records keep their addresses for the whole run
     virtual const std::vector<AuthoredBearer>& getBearerDefinitions() const { return authoredBearers_; }
 
-    // The "epc" definition of the UE that an uplink or downlink packet of the UE
-    // matches: the first entry, in table order, whose packet filter matches; failing
-    // that, the UE's default entry; nullptr if none covers it
-    virtual const AuthoredBearer *findDrbDefinition(const cModule *ueModule, const inet::Packet *pkt) const;
+    // The "epc" definition of the session of the UE that an uplink or downlink packet
+    // of the session matches: the first of the session's entries, in table order,
+    // whose packet filter matches; failing that, the session's default entry; nullptr
+    // if none covers it
+    virtual const AuthoredBearer *findDrbDefinition(const cModule *ueModule, SessionId session, const inet::Packet *pkt) const;
 
-    // The "5gc" definition of the UE that maps the QFI: the first entry, in table
-    // order, that names it; failing that, the UE's default entry (it carries the QFIs
-    // no other bearer maps); nullptr if none
-    virtual const AuthoredBearer *findDrbDefinitionForQfi(const cModule *ueModule, Qfi qfi) const;
+    // The "5gc" definition of the session of the UE that maps the QFI: the first of
+    // the session's entries, in table order, that names it; failing that, the
+    // session's default entry (it carries the QFIs no other bearer of the session
+    // maps); nullptr if none
+    virtual const AuthoredBearer *findDrbDefinitionForQfi(const cModule *ueModule, SessionId session, Qfi qfi) const;
 
     // The staticDrbs entry of the UE that names the DRB id, or nullptr. A static
     // definition owns its id for the whole run, so teardown must not release it.

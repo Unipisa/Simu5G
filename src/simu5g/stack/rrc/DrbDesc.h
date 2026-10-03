@@ -81,10 +81,13 @@ struct DrbDesc {
     // keep UNKNOWN_CORE_NETWORK.
     CoreNetwork coreNetwork = UNKNOWN_CORE_NETWORK;
 
-    // The type of the session the bearer belongs to, i.e. the UE's session: given to
-    // the bearer by the base station that installs it (see
-    // ConnectionControlEnb::pushDrbToRrcs()), never authored. SDAP delivers a received
-    // packet up as the protocol the type implies (see NrSdap::getUpperProtocol()).
+    // The session of the UE the bearer belongs to (TS 23.501 5.7: a DRB carries QoS
+    // flows of one PDU session), and the session's type: given to the bearer by the
+    // base station that installs it (see ConnectionControlEnb::pushDrbToRrcs()), from
+    // the definition's session (see BearerConfigurator::assignSession()); never
+    // authored. SDAP delivers a received packet up as the protocol the type implies
+    // (see NrSdap::getUpperProtocol()).
+    SessionId sessionId = SessionId(0);
     SessionType sessionType = IP_V4;
 
     // SDAP-Config
@@ -171,7 +174,7 @@ inline std::ostream& operator<<(std::ostream& os, const DrbDesc& drb) {
         }
         os << "]";
     }
-    os << " session=" << sessionTypeToA(drb.sessionType);
+    os << " session=" << drb.sessionId << " (" << sessionTypeToA(drb.sessionType) << ")";
     if (!drb.rohcProfiles.empty()) {
         os << " rohc=[";
         for (size_t i = 0; i < drb.rohcProfiles.size(); i++) {

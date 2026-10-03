@@ -194,9 +194,9 @@ class ConnectionControlUe : public ConnectionControlBase
     // The UE's control-plane entry point (ConnectionControlBase): the node's data
     // path asks for bearers here, and this leg's serving base station -- which is
     // where they are established -- is asked in turn
-    DrbId establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt) override;
+    DrbId establishBearer(const FlowId& flow, SessionId session, const FlowBindingKey& key, const inet::Packet *pkt) override;
     DrbId establishBearer(const FlowId& flow, const BearerRequest& req) override;
-    DrbId resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi) override;
+    DrbId resolveDrbForQfi(MacNodeId ueNodeId, SessionId session, Qfi qfi) override;
     // An infrastructure bearer's identity is its base station's to release; nothing
     // to do here (the D2D subclass returns a sidelink bearer's to the sidelink pool)
     void bearerReleased(DrbKey bearer) override;

@@ -731,6 +731,7 @@ const DrbDesc& BearerManagement::materializeDrb(const FlowId& flow, const Bearer
     // of the bearer.
     if (const DrbDesc *cfg = lookupConfiguredDrb(flow, peerId)) {
         drb.coreNetwork = cfg->coreNetwork;
+        drb.sessionId = cfg->sessionId;
         drb.sessionType = cfg->sessionType;
         drb.mappedQfis = cfg->mappedQfis;
         drb.isDefault = cfg->isDefault;

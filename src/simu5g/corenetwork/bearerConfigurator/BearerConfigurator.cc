@@ -837,14 +837,14 @@ void BearerConfigurator::validateStaticDrbs()
     }
 }
 
-const AuthoredBearer *BearerConfigurator::findDrbDefinition(const cModule *ueModule, const inet::Packet *pkt) const
+const AuthoredBearer *BearerConfigurator::findDrbDefinition(const cModule *ueModule, SessionId session, const inet::Packet *pkt) const
 {
     // First matching definition wins, in table order (staticDrbs records are retained
     // ahead of onDemandDrbs ones); the default eps entry catches the flows no filter
     // matched.
     const AuthoredBearer *defaultDef = nullptr;
     for (const AuthoredBearer& ab : authoredBearers_) {
-        if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_EPC)
+        if (ab.ueModule != ueModule || ab.sessionId != session || ab.desc.coreNetwork != CN_EPC)
             continue;
         for (auto& filter : ab.filters)
             if (filter->matches(pkt))
@@ -855,7 +855,7 @@ const AuthoredBearer *BearerConfigurator::findDrbDefinition(const cModule *ueMod
     return defaultDef;
 }
 
-const AuthoredBearer *BearerConfigurator::findDrbDefinitionForQfi(const cModule *ueModule, Qfi qfi) const
+const AuthoredBearer *BearerConfigurator::findDrbDefinitionForQfi(const cModule *ueModule, SessionId session, Qfi qfi) const
 {
     // One walk, the shape findDrbDefinition() uses for packet filters: the definition
     // that maps this QFI specifically wins immediately, in table order; failing that,
@@ -864,7 +864,7 @@ const AuthoredBearer *BearerConfigurator::findDrbDefinitionForQfi(const cModule 
     // catch-all.
     const AuthoredBearer *defaultDef = nullptr;
     for (const AuthoredBearer& ab : authoredBearers_) {
-        if (ab.ueModule != ueModule || ab.desc.coreNetwork != CN_5GC)
+        if (ab.ueModule != ueModule || ab.sessionId != session || ab.desc.coreNetwork != CN_5GC)
             continue;
         if (contains(ab.desc.mappedQfis, qfi))
             return &ab;

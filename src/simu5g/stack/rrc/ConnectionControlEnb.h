@@ -63,7 +63,7 @@ struct HandoverRequest
     std::vector<DrbDesc> drbs;                 // the leg's DRBs as configured at the source, keyed by the leg
     std::vector<std::pair<const BearerConfigurator::AuthoredBearer *, DrbId>> onDemandIds;   // the on-demand definitions materialized for the leg at the source, with their ids
     UeCapabilities capabilities;               // what the leg reported of itself at connection setup
-    SessionType sessionType = IP_V4;           // the type of the UE's session, as the leg requested it at connection setup
+    SessionType requestedSessionType = IP_V4;  // the session type the leg requested at connection setup
 };
 
 /**
@@ -102,7 +102,7 @@ class ConnectionControlEnb : public ConnectionControlBase
         MacNodeId hoPeer = NODEID_NONE;        // the other base station of the leg's handover in progress
         std::vector<SessionResource> sessions; // target role: the session resources the preparation set up for the leg, reported in the PATH SWITCH REQUEST
         UeCapabilities capabilities;           // what the leg reported of itself at connection setup
-        SessionType sessionType = IP_V4;       // the type of the UE's session, as the leg requested it at connection setup
+        SessionType requestedSessionType = IP_V4;   // the session type the leg requested at connection setup
     };
     std::map<MacNodeId, UeContext> ues_;       // by the leg's node id
 
@@ -170,11 +170,12 @@ class ConnectionControlEnb : public ConnectionControlBase
     // This base station's resources of the session, or nullptr
     virtual SessionResource *findSession(const SessionRef& session);
 
-    // The type of the UE's session, as a leg of the UE this base station has a context
-    // of requested it at connection setup; throws if it has none. The core network
-    // establishes the session with that type or rejects it, and a base station not
-    // connected to a core network serves the leg's bearers as the session's anyway.
-    virtual SessionType sessionTypeOf(omnetpp::cModule *ueModule);
+    // The type of the given session of the UE: as this base station has the session's
+    // resources, or else as a leg of the UE this base station has a context of
+    // requested it at connection setup (a base station not connected to a core
+    // network, which establishes no session, serves the leg's bearers as the
+    // session's anyway); throws if it has neither.
+    virtual SessionType sessionTypeOf(omnetpp::cModule *ueModule, SessionId session);
 
     // This base station's resources of the sessions of the UE the leg belongs to
     virtual std::vector<SessionResource> sessionsOf(MacNodeId legId);
@@ -205,7 +206,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // delivered to the RRCs involved (pushDrbToRrcs()), then each bearer established
     // toward the leg's serving node, exactly like packet-triggered establishment, so
     // traffic finds the configured bearers in place
-    virtual void establishStaticDrbs(omnetpp::cModule *ueModule, MacNodeId legId);
+    virtual void establishStaticDrbs(omnetpp::cModule *ueModule, MacNodeId legId, SessionId session);
 
     // ---- DRB identities ----
 
@@ -408,7 +409,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // configuration that replaced them with a non-covering set can get here. D2D and
     // multicast bearers are outside the definition system (see establishD2dBearer()).
     // Returns the established bearer's DRB id.
-    DrbId establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt) override;
+    DrbId establishBearer(const FlowId& flow, SessionId session, const FlowBindingKey& key, const inet::Packet *pkt) override;
 
     // Establish a duplex data radio bearer for the flow: entities for BOTH directions
     // are created at both endpoints at once (DRBs are bidirectional per TS 38.331;
@@ -421,9 +422,9 @@ class ConnectionControlEnb : public ConnectionControlBase
     // of the established bearer is returned.
     DrbId establishBearer(const FlowId& flow, const BearerRequest& req) override;
 
-    // Resolve the DRB an unmapped QFI should use at the given UE, when SDAP's QFI-to-DRB
-    // table missed. The "5gc" definition that maps this QFI specifically wins; failing
-    // that, the UE's default bearer catches it (it carries the QFIs no other bearer
+    // Resolve the DRB an unmapped QFI of a session should use at the given UE, when
+    // SDAP's QFI-to-DRB table missed. The session's "5gc" definition that maps this QFI
+    // specifically wins; failing that, the session's default bearer catches it (it carries the QFIs no other bearer
     // maps). One walk in table order, static definitions before on-demand ones, so an
     // authored default outranks the onDemandDrbs catch-all -- the precedence
     // establishBearer() gives packet filters. Returns the DRB id (materializing an
@@ -431,7 +432,7 @@ class ConnectionControlEnb : public ConnectionControlBase
     // the RRC push), or DRBID_NONE when nothing covers the QFI or the UE is not
     // attached. Repeated calls return the same bearer. This is SDAP's sole
     // bearer-selection authority: SDAP holds no default-DRB fallback of its own.
-    DrbId resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi) override;
+    DrbId resolveDrbForQfi(MacNodeId ueNodeId, SessionId session, Qfi qfi) override;
 
     // A bearer of this node was torn down: its DRB id returns to the pair's pool,
     // unless a static definition owns it for the whole run, and an on-demand

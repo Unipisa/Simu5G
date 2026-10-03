@@ -114,11 +114,15 @@ SessionResource *ConnectionControlEnb::findSession(const SessionRef& session)
     return nullptr;
 }
 
-SessionType ConnectionControlEnb::sessionTypeOf(cModule *ueModule)
+SessionType ConnectionControlEnb::sessionTypeOf(cModule *ueModule, SessionId session)
 {
+    for (const SessionResource& resource : sessions_)
+        if (resource.ref.id == session && (binder_->getNodeModule(resource.ref.lteNodeId) == ueModule
+                || (resource.ref.nrNodeId != NODEID_NONE && binder_->getNodeModule(resource.ref.nrNodeId) == ueModule)))
+            return resource.type;
     for (const auto& [legId, ctx] : ues_)
         if (ctx.ueModule == ueModule)
-            return ctx.sessionType;
+            return ctx.requestedSessionType;
     throw cRuntimeError("ConnectionControlEnb: base station %d has no context of any leg of %s",
             (int)num(nodeId_), ueModule->getFullPath().c_str());
 }
@@ -150,7 +154,7 @@ void ConnectionControlEnb::measurementReport(MacNodeId legId, const MeasurementR
     ctx.hoPeer = target;
     HandoverRequest request{legId, ctx.ueModule, ctx.ueRrc, sessionsOf(legId)};
     request.capabilities = ctx.capabilities;
-    request.sessionType = ctx.sessionType;
+    request.requestedSessionType = ctx.requestedSessionType;
 
     // the leg's bearers: the on-demand definitions materialized within the leg's pair
     // with this node, and the descriptors of those and of the static definitions (a
@@ -179,7 +183,7 @@ void ConnectionControlEnb::handoverRequest(const HandoverRequest& request, Conne
         throw cRuntimeError("ConnectionControlEnb: base station %d is asked to take leg %d over, which it serves already", (int)num(nodeId_), (int)num(legId));
     ctx = UeContext{request.ueModule, request.ueRrc};
     ctx.capabilities = request.capabilities;
-    ctx.sessionType = request.sessionType;
+    ctx.requestedSessionType = request.requestedSessionType;
     ctx.state = UeContext::HO_TARGET_PREPARED;
     ctx.hoPeer = source->getNodeId();
 
@@ -407,7 +411,7 @@ void ConnectionControlEnb::connectionSetupRequest(cModule *ueModule, MacNodeId l
         throw cRuntimeError("ConnectionControlEnb: leg %d requests a connection at base station %d, which serves it already", (int)num(legId), (int)num(nodeId_));
     it->second = UeContext{ueModule, check_and_cast<ConnectionControlUe *>(ueRrc)};
     it->second.capabilities = capabilities;
-    it->second.sessionType = sessionType;
+    it->second.requestedSessionType = sessionType;
     // at initialization the UE's MAC attached itself at the AMC already (LteMacUe)
     if (getSimulation()->getContextType() != CTX_INITIALIZE) {
         attachAtAmc(legId);
@@ -428,7 +432,7 @@ FTeid ConnectionControlEnb::sessionResourceSetup(MacNodeId legId, const SessionR
         controlOf(legId)->setUplinkQfiRules(std::move(ulQfiRules));
 
     if (carriesStaticDrbs(ueModule, legId))
-        establishStaticDrbs(ueModule, legId);
+        establishStaticDrbs(ueModule, legId, session.id);
     return dl;
 }
 
@@ -451,15 +455,15 @@ bool ConnectionControlEnb::carriesStaticDrbs(cModule *ueModule, MacNodeId legId)
     return ueId == legId;
 }
 
-void ConnectionControlEnb::establishStaticDrbs(cModule *ueModule, MacNodeId legId)
+void ConnectionControlEnb::establishStaticDrbs(cModule *ueModule, MacNodeId legId, SessionId session)
 {
-    // the descriptors first, which the establishment consults
+    // the session's static bearers; the descriptors first, which the establishment consults
     for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions())
-        if (!ab.onDemand && ab.ueModule == ueModule)
+        if (!ab.onDemand && ab.ueModule == ueModule && ab.sessionId == session)
             pushDrbToRrcs(ab, ab.desc);
 
     for (const AuthoredBearer& ab : bearerConfigurator_->getBearerDefinitions()) {
-        if (ab.onDemand || ab.ueModule != ueModule)
+        if (ab.onDemand || ab.ueModule != ueModule || ab.sessionId != session)
             continue;
         FlowId flow;
         flow.sourceId = legId;
@@ -626,10 +630,11 @@ void ConnectionControlEnb::pushDrbToRrcs(const AuthoredBearer& ab, const DrbDesc
 
     DrbId drbId = drb.getDrbId();
 
-    // the bearer belongs to the UE's session; ROHC compresses IP headers, so it is on
-    // the bearers of an IP session only
+    // the bearer belongs to the definition's session; ROHC compresses IP headers, so it
+    // is on the bearers of an IP session only
     DrbDesc sessionDrb = drb;
-    sessionDrb.sessionType = sessionTypeOf(ueModule);
+    sessionDrb.sessionId = ab.sessionId;
+    sessionDrb.sessionType = sessionTypeOf(ueModule, ab.sessionId);
     if (!isIpSessionType(sessionDrb.sessionType) && !sessionDrb.rohcProfiles.empty()) {
         if (!ab.rohcByPolicy)
             throw cRuntimeError("ConnectionControlEnb: the definition of DRB %d of %s states \"rohc\", but the UE's session is of type \"%s\" -- "
@@ -675,7 +680,7 @@ DrbId ConnectionControlEnb::establishD2dBearer(const FlowId& flow, const FlowBin
             (int)num(nodeId_), (int)num(flow.sourceId), (int)num(flow.destId));
 }
 
-DrbId ConnectionControlEnb::establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
+DrbId ConnectionControlEnb::establishBearer(const FlowId& flow, SessionId session, const FlowBindingKey& key, const inet::Packet *pkt)
 {
     Enter_Method_Silent("establishBearer");
 
@@ -693,7 +698,7 @@ DrbId ConnectionControlEnb::establishBearer(const FlowId& flow, const FlowBindin
     MacNodeId ueId = getNodeTypeById(flow.sourceId) == UE ? flow.sourceId : flow.destId;
     cModule *ueModule = binder_->getNodeModule(ueId);
     if (ueModule != nullptr)
-        if (const AuthoredBearer *ab = bearerConfigurator_->findDrbDefinition(ueModule, pkt))
+        if (const AuthoredBearer *ab = bearerConfigurator_->findDrbDefinition(ueModule, session, pkt))
             return establishFromDefinition(*ab, flow, key);
 
     // Every on-demand bearer's properties come from a definition entry, never from
@@ -738,14 +743,14 @@ DrbId ConnectionControlEnb::establishFromDefinition(const AuthoredBearer& ab, co
     return establishDataConnection(flow, BearerRequest{ab.desc.rlcMode, ab.desc.lcg, key});
 }
 
-DrbId ConnectionControlEnb::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
+DrbId ConnectionControlEnb::resolveDrbForQfi(MacNodeId ueNodeId, SessionId session, Qfi qfi)
 {
     Enter_Method_Silent("resolveDrbForQfi");
 
     cModule *ueModule = binder_->getNodeModule(ueNodeId);
     if (ueModule == nullptr)
         return DRBID_NONE;
-    if (const AuthoredBearer *ab = bearerConfigurator_->findDrbDefinitionForQfi(ueModule, qfi))
+    if (const AuthoredBearer *ab = bearerConfigurator_->findDrbDefinitionForQfi(ueModule, session, qfi))
         return drbOfDefinition(*ab, ueNodeId);
     return DRBID_NONE;
 }

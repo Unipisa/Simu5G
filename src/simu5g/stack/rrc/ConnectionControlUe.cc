@@ -514,10 +514,10 @@ ConnectionControlEnb *ConnectionControlUe::baseStationFor(const FlowId& flow)
     return baseStationControl(bsId);
 }
 
-DrbId ConnectionControlUe::establishBearer(const FlowId& flow, const FlowBindingKey& key, const inet::Packet *pkt)
+DrbId ConnectionControlUe::establishBearer(const FlowId& flow, SessionId session, const FlowBindingKey& key, const inet::Packet *pkt)
 {
     Enter_Method_Silent("establishBearer");
-    return baseStationFor(flow)->establishBearer(flow, key, pkt);
+    return baseStationFor(flow)->establishBearer(flow, session, key, pkt);
 }
 
 DrbId ConnectionControlUe::establishBearer(const FlowId& flow, const BearerRequest& req)
@@ -526,10 +526,10 @@ DrbId ConnectionControlUe::establishBearer(const FlowId& flow, const BearerReque
     return baseStationFor(flow)->establishBearer(flow, req);
 }
 
-DrbId ConnectionControlUe::resolveDrbForQfi(MacNodeId ueNodeId, Qfi qfi)
+DrbId ConnectionControlUe::resolveDrbForQfi(MacNodeId ueNodeId, SessionId session, Qfi qfi)
 {
     Enter_Method_Silent("resolveDrbForQfi");
-    return baseStationControl(binder_->getServingNode(ueNodeId))->resolveDrbForQfi(ueNodeId, qfi);
+    return baseStationControl(binder_->getServingNode(ueNodeId))->resolveDrbForQfi(ueNodeId, session, qfi);
 }
 
 void ConnectionControlUe::bearerReleased(DrbKey bearer)

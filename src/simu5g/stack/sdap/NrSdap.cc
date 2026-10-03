@@ -208,7 +208,8 @@ void NrSdap::handleUpperPacket(inet::Packet *pkt)
         // default-DRB fallback of its own. It works in UE-id space: on the gNB that is
         // nodeId (the destination), on the UE itself the flow's source.
         MacNodeId ueId = isUe ? pkt->getTag<FlowControlInfo>()->getSourceId() : nodeId;
-        DrbId drbId = connectionControl_->resolveDrbForQfi(ueId, qfi);
+        SessionId session = SessionId(1);   // msession placeholder, until the packet's session reaches SDAP
+        DrbId drbId = connectionControl_->resolveDrbForQfi(ueId, session, qfi);
         if (drbId != DRBID_NONE)
             drb = drbTable_.getDrb(DrbKey(nodeId, drbId));
     }

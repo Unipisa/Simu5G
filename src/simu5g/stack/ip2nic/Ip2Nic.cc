@@ -465,8 +465,13 @@ DrbId Ip2Nic::establishBearerOnDemand(const FlowBindingKey& key, FlowControlInfo
     // The flow key travels with the request: RRC binds the flow to the bearer at both
     // endpoints (see configureFlowBinding), so this node's own binding and the peer's
     // mirrored one are installed by the same establishment. The packet is what the
-    // bearer's properties are authored from: the bearer definition it matches.
-    return connectionControl_->establishBearer(flow, key, pkt);
+    // bearer's properties are authored from: the bearer definition of its session it
+    // matches. A downlink packet at a base station names its session (the tunnel it
+    // arrived on); on the UE, session 1 (msession placeholder, until the UE knows its
+    // sessions).
+    auto sessionTag = pkt->findTag<SessionTag>();
+    SessionId session = sessionTag != nullptr ? sessionTag->getSessionId() : SessionId(1);
+    return connectionControl_->establishBearer(flow, session, key, pkt);
 }
 
 } //namespace
