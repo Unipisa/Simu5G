@@ -11,6 +11,8 @@
 
 #include "simu5g/corenetwork/coreControl/CoreControl.h"
 
+#include <algorithm>
+
 #include <inet/common/ModuleAccess.h>
 
 #include "simu5g/common/InitStages.h"
@@ -44,29 +46,32 @@ void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, Se
 {
     Enter_Method("initialUeMessage");
 
-    // the session: once per UE, at its first leg's registration; the UE's legs request
-    // the type of the UE's one session (the UE's sessionType parameter)
-    auto it = sessionOfNode_.find(legId);
-    if (it == sessionOfNode_.end()) {
-        establishSession(legId, sessionType);
-        it = sessionOfNode_.find(legId);
-        if (it == sessionOfNode_.end())
+    // the sessions: once per UE, at its first leg's registration; the UE's legs request
+    // the same type (the UE's sessionType parameter)
+    auto it = sessionsOfNode_.find(legId);
+    if (it == sessionsOfNode_.end()) {
+        establishSessions(legId, sessionType);
+        it = sessionsOfNode_.find(legId);
+        if (it == sessionsOfNode_.end())
             return;   // the base station is not connected to a core network
     }
-    CoreSession& session = sessions_.at(it->second);
-    ASSERT(session.type == sessionType);
+    std::vector<CoreSessionKey> keys = it->second;
+    ASSERT(requestedTypes_.at(keys.front().first) == sessionType);
 
-    // the RAN resources: at every base station the UE attaches through (the master of
-    // the leg's serving node), once
+    // the RAN resources of each session: at every base station the UE attaches through
+    // (the master of the leg's serving node), once
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
-    if (session.dlTunnels.count(bsId) == 0) {
-        ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
-        // the UE's QoS rules; the one QoS flow of an Unstructured session needs none
-        QfiRuleSet ulQfiRules = session.type != UNSTRUCTURED ? bearerConfigurator_->getUplinkQfiRules(session.ueModule) : QfiRuleSet();
-        FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session), std::move(ulQfiRules));
-        registerRanTunnel(session, bsId, dl);
+    for (const CoreSessionKey& key : keys) {
+        CoreSession& session = sessions_.at(key);
+        if (session.dlTunnels.count(bsId) == 0) {
+            ConnectionControlEnb *ranBs = gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs;
+            // the session's QoS rules; the one QoS flow of an Unstructured session needs none
+            QfiRuleSet ulQfiRules = session.type != UNSTRUCTURED ? bearerConfigurator_->getUplinkQfiRules(session.ueModule, session.ref.id) : QfiRuleSet();
+            FTeid dl = ranBs->sessionResourceSetup(legId, session.ref, session.type, getUplinkTunnels(session), std::move(ulQfiRules));
+            registerRanTunnel(session, bsId, dl);
+        }
+        updateDownlinkPath(session);
     }
-    updateDownlinkPath(session);
 }
 
 void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
@@ -74,24 +79,26 @@ void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long n
     Enter_Method_Silent("receiveSignal");
     MacNodeId id = MacNodeId(nodeId);
     ASSERT(signalID == Binder::nodeUnregisteredSignal_);
-    releaseSession(id);
+    releaseSessions(id);
 }
 
 void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, const std::vector<SessionResource>& sessions)
 {
     Enter_Method("pathSwitchRequest");
-    auto it = sessionOfNode_.find(legId);
-    if (it == sessionOfNode_.end())
+    auto it = sessionsOfNode_.find(legId);
+    if (it == sessionsOfNode_.end())
         return;   // a UE without a session (its base stations have no core network)
-    CoreSession& session = sessions_.at(it->second);
+    std::vector<CoreSessionKey> keys = it->second;
     MacNodeId bsId = binder_->getMasterNodeOrSelf(bs->getNodeId());
 
     // the tunnels the handover preparation set up at the base station: new to this
     // module unless the UE was attached through that base station before
     for (const SessionResource& resource : sessions) {
-        if (resource.ref.id != session.ref.id)
-            throw cRuntimeError("CoreControl: base station %d switches a session of %s that is not the UE's",
-                    (int)num(bsId), session.ueModule->getFullPath().c_str());
+        auto key = std::find_if(keys.begin(), keys.end(), [&](const CoreSessionKey& k) { return k.second == resource.ref.id; });
+        if (key == keys.end())
+            throw cRuntimeError("CoreControl: base station %d switches session %d of %s, which the UE does not have",
+                    (int)num(bsId), (int)num(resource.ref.id), sessions_.at(keys.front()).ueModule->getFullPath().c_str());
+        CoreSession& session = sessions_.at(*key);
         if (resource.type != session.type)
             throw cRuntimeError("CoreControl: base station %d switches the session of %s as one of type \"%s\", but it is of type \"%s\"",
                     (int)num(bsId), session.ueModule->getFullPath().c_str(), sessionTypeToA(resource.type).c_str(), sessionTypeToA(session.type).c_str());
@@ -102,17 +109,21 @@ void CoreControl::pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, c
             throw cRuntimeError("CoreControl: base station %d reports a downlink TEID for the session of %s other than the one it ends it under",
                     (int)num(bsId), session.ueModule->getFullPath().c_str());
     }
-    setUpRanTunnels(session, bsId);   // a base station the preparation gave no tunnels
-    updateDownlinkPath(session);
+    for (const CoreSessionKey& key : keys) {
+        CoreSession& session = sessions_.at(key);
+        setUpRanTunnels(session, bsId);   // a base station the preparation gave no tunnels
+        updateDownlinkPath(session);
+    }
 }
 
 void CoreControl::ueContextReleaseRequest(MacNodeId legId)
 {
     Enter_Method("ueContextReleaseRequest");
-    auto it = sessionOfNode_.find(legId);
-    if (it == sessionOfNode_.end())
+    auto it = sessionsOfNode_.find(legId);
+    if (it == sessionsOfNode_.end())
         return;
-    updateDownlinkPath(sessions_.at(it->second));
+    for (const CoreSessionKey& key : std::vector<CoreSessionKey>(it->second))
+        updateDownlinkPath(sessions_.at(key));
 }
 
 void CoreControl::takeGtpEndpoints()
@@ -183,26 +194,33 @@ MacNodeId CoreControl::findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId
     return NODEID_NONE;
 }
 
-void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
+std::vector<CoreControl::SessionPlan> CoreControl::sessionsToEstablish(cModule *ueModule, SessionType requestedType)
+{
+    // one session, id 1 (the session BearerConfigurator::assignSession() gives every
+    // definition), of the requested type, with every address of the UE
+    SessionPlan plan;
+    plan.id = SessionId(1);
+    plan.type = requestedType;
+    return {plan};
+}
+
+void CoreControl::establishSessions(MacNodeId ueNodeId, SessionType requestedType)
 {
     cModule *ueModule = binder_->getNodeModule(ueNodeId);
     ASSERT(ueModule != nullptr);
 
-    CoreSession session;
-    session.ueModule = ueModule;
-    session.ref.id = SessionId(1);
-    session.type = type;
+    SessionRef ueRef;
     for (const auto& [nodeId, info] : binder_->getNodeInfoMap())
         if (info.moduleRef == ueModule)
-            (isNrUe(nodeId) ? session.ref.nrNodeId : session.ref.lteNodeId) = nodeId;
+            (isNrUe(nodeId) ? ueRef.nrNodeId : ueRef.lteNodeId) = nodeId;
 
     // The LTE id, which every UE has, is the UE's identity: once it is unregistered,
     // the UE is leaving the simulation, and its remaining stack's detachment must not
-    // establish a new session
-    if (session.ref.lteNodeId == NODEID_NONE)
+    // establish new sessions
+    if (ueRef.lteNodeId == NODEID_NONE)
         return;
 
-    MacNodeId dlBaseStation = findDlBaseStation(session.ref.lteNodeId, session.ref.nrNodeId);
+    MacNodeId dlBaseStation = findDlBaseStation(ueRef.lteNodeId, ueRef.nrNodeId);
     if (dlBaseStation == NODEID_NONE)
         return;   // established when the UE attaches
     const GtpEndpoint& bsEndpoint = gtpEndpoints_.at(bsGtpEndpoints_.at(dlBaseStation));
@@ -213,58 +231,81 @@ void CoreControl::establishSession(MacNodeId ueNodeId, SessionType type)
     }
 
     // The anchor is the core network gateway of the base station the UE's downlink
-    // enters the RAN at, and the session gets an uplink tunnel to each MEC host UPF of
+    // enters the RAN at, and each session gets an uplink tunnel to each MEC host UPF of
     // that core network too, i.e. those whose gateway is the anchor
-    session.anchor = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
-    const GtpEndpoint& anchor = gtpEndpoints_[session.anchor];
+    int anchorIndex = findGatewayEndpoint(bsEndpoint.gateway, bsEndpoint);
+    const GtpEndpoint& anchor = gtpEndpoints_[anchorIndex];
 
-    // An EPC carries IP sessions only (the PDN types of TS 23.401); the other session
-    // types are those of a 5G core
-    if (anchor.type == PGW && !isIpSessionType(type))
-        throw cRuntimeError("CoreControl: %s requests a session of type \"%s\", but its anchor %s is a PGW, whose EPC carries "
-                "IP sessions only (see the UE's sessionType parameter)",
-                ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str(), anchor.node->getFullPath().c_str());
+    std::vector<SessionPlan> plans = sessionsToEstablish(ueModule, requestedType);
+    if (plans.empty())
+        throw cRuntimeError("CoreControl: the policy establishes no session for %s", ueModule->getFullPath().c_str());
+    std::set<SessionId> ids;
+    for (const SessionPlan& plan : plans)
+        if (num(plan.id) < 1 || num(plan.id) > 15 || !ids.insert(plan.id).second)
+            throw cRuntimeError("CoreControl: the policy gives %s a session with id %d, which is not in 1..15 or not unique among the UE's sessions",
+                    ueModule->getFullPath().c_str(), (int)num(plan.id));
+    requestedTypes_[ueModule->getId()] = requestedType;
 
-    // An Unstructured session (TS 23.501 5.6.10.3) is a 5G core's, and has one QoS flow,
-    // the default one, whose QoS rule has no packet filter (5.7.1.4): the UE's stack
-    // must have SDAP, and no QoS rule may be authored for the UE. Its N6 address is
-    // allocated here.
-    // An Ethernet session (5.6.10.2) is a 5G core's too, and its QoS rules classify
-    // frames, which have no DSCP field: a dscpAsQfi rule authored for the UE is an error.
-    if (!isIpSessionType(type) && !BearerConfigurator::ueStackHasSdap(ueModule))
-        throw cRuntimeError("CoreControl: %s requests an %s session, but its stack has no SDAP (a 5G core's sessions need it, see the hasSdap parameter of the NIC)",
-                ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str());
-    if (type == ETHERNET && bearerConfigurator_->hasUplinkDscpAsQfiRuleScopedTo(ueModule))
-        throw cRuntimeError("CoreControl: %s requests an Ethernet session, whose frames have no DSCP field, but a dscpAsQfi rule of the ulQfiRules "
-                "parameter of the bearer configurator is scoped to it", ueModule->getFullPath().c_str());
-    if (type == UNSTRUCTURED) {
-        if (bearerConfigurator_->hasUplinkQfiRulesScopedTo(ueModule))
-            throw cRuntimeError("CoreControl: %s requests an Unstructured session, which has one QoS flow and no QoS rules, but the ulQfiRules "
-                    "parameter of the bearer configurator has a rule scoped to it", ueModule->getFullPath().c_str());
-        allocateN6Address(session);
+    for (const SessionPlan& plan : plans) {
+        CoreSession session;
+        session.ueModule = ueModule;
+        session.ref = ueRef;
+        session.ref.id = plan.id;
+        session.type = plan.type;
+        session.addresses = plan.addresses;
+        session.anchor = anchorIndex;
+        SessionType type = plan.type;
+
+        // An EPC carries IP sessions only (the PDN types of TS 23.401); the other session
+        // types are those of a 5G core
+        if (anchor.type == PGW && !isIpSessionType(type))
+            throw cRuntimeError("CoreControl: %s requests a session of type \"%s\", but its anchor %s is a PGW, whose EPC carries "
+                    "IP sessions only (see the UE's sessionType parameter)",
+                    ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str(), anchor.node->getFullPath().c_str());
+
+        // An Unstructured session (TS 23.501 5.6.10.3) is a 5G core's, and has one QoS flow,
+        // the default one, whose QoS rule has no packet filter (5.7.1.4): the UE's stack
+        // must have SDAP, and no QoS rule may be authored for the session. Its N6 address
+        // is allocated here.
+        // An Ethernet session (5.6.10.2) is a 5G core's too, and its QoS rules classify
+        // frames, which have no DSCP field: a dscpAsQfi rule authored for the session is an error.
+        if (!isIpSessionType(type) && !BearerConfigurator::ueStackHasSdap(ueModule))
+            throw cRuntimeError("CoreControl: %s requests an %s session, but its stack has no SDAP (a 5G core's sessions need it, see the hasSdap parameter of the NIC)",
+                    ueModule->getFullPath().c_str(), sessionTypeToA(type).c_str());
+        if (type == ETHERNET && bearerConfigurator_->hasUplinkDscpAsQfiRuleScopedTo(ueModule, plan.id))
+            throw cRuntimeError("CoreControl: %s requests an Ethernet session, whose frames have no DSCP field, but a dscpAsQfi rule of the ulQfiRules "
+                    "parameter of the bearer configurator is scoped to it", ueModule->getFullPath().c_str());
+        if (type == UNSTRUCTURED) {
+            if (bearerConfigurator_->hasUplinkQfiRulesScopedTo(ueModule, plan.id))
+                throw cRuntimeError("CoreControl: %s requests an Unstructured session, which has one QoS flow and no QoS rules, but the ulQfiRules "
+                        "parameter of the bearer configurator has a rule scoped to it", ueModule->getFullPath().c_str());
+            allocateN6Address(session);
+        }
+
+        // The session's uplink tunnels: at the anchor, and at each MEC host UPF of an IP
+        // session (MEC steering goes by the IP destination, which a non-IP payload has none of)
+        session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref, session.type, session.n6Address);
+        for (int i = 0; i < (int)gtpEndpoints_.size() && isIpSessionType(type); i++) {
+            const GtpEndpoint& endpoint = gtpEndpoints_[i];
+            if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchor.node)
+                session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref, session.type, L3Address());
+        }
+
+        CoreSessionKey key(ueModule->getId(), session.ref.id);
+        for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
+            if (nodeId != NODEID_NONE)
+                sessionsOfNode_[nodeId].push_back(key);
+        CoreSession& established = sessions_[key] = session;
+        EV_INFO << "CoreControl: session " << established.ref.id << " (" << sessionTypeToA(established.type) << ") of " << ueModule->getFullPath()
+                << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
+        for (const auto& [index, tunnel] : established.ulMecHosts)
+            EV_INFO << ", to MEC host UPF " << tunnel;
+        if (!established.n6Address.isUnspecified())
+            EV_INFO << ", N6 address " << established.n6Address;
+        for (const AddressPrefix& prefix : established.addresses)
+            EV_INFO << ", UE addresses " << prefix;
+        EV_INFO << endl;
     }
-
-    // The session's uplink tunnels: at the anchor, and at each MEC host UPF of an IP
-    // session (MEC steering goes by the IP destination, which a non-IP payload has none of)
-    session.ulAnchor = anchor.userPlaneNode->establishUserPlaneSession(session.ref, session.type, session.n6Address);
-    for (int i = 0; i < (int)gtpEndpoints_.size() && isIpSessionType(type); i++) {
-        const GtpEndpoint& endpoint = gtpEndpoints_[i];
-        if (endpoint.type == UPF_MEC && findGatewayNode(endpoint.gateway) == anchor.node)
-            session.ulMecHosts[i] = endpoint.userPlaneNode->establishUserPlaneSession(session.ref, session.type, L3Address());
-    }
-
-    CoreSessionKey key(ueModule->getId(), session.ref.id);
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
-        if (nodeId != NODEID_NONE)
-            sessionOfNode_[nodeId] = key;
-    CoreSession& established = sessions_[key] = session;
-    EV_INFO << "CoreControl: session " << established.ref.id << " (" << sessionTypeToA(established.type) << ") of " << ueModule->getFullPath()
-            << " established, anchored at " << anchor.node->getFullPath() << ", uplink F-TEID " << established.ulAnchor;
-    for (const auto& [index, tunnel] : established.ulMecHosts)
-        EV_INFO << ", to MEC host UPF " << tunnel;
-    if (!established.n6Address.isUnspecified())
-        EV_INFO << ", N6 address " << established.n6Address;
-    EV_INFO << endl;
 }
 
 void CoreControl::updateDownlinkPath(CoreSession& session)
@@ -365,13 +406,24 @@ void CoreControl::freeN6Address(const CoreSession& session)
         n6AddressesInUse_[session.anchor].erase(session.n6Suffix);
 }
 
-void CoreControl::releaseSession(MacNodeId ueNodeId)
+void CoreControl::releaseSessions(MacNodeId ueNodeId)
 {
-    auto it = sessionOfNode_.find(ueNodeId);
-    if (it == sessionOfNode_.end())
+    auto it = sessionsOfNode_.find(ueNodeId);
+    if (it == sessionsOfNode_.end())
         return;
-    CoreSessionKey key = it->second;
-    const CoreSession& session = sessions_.at(key);
+    std::vector<CoreSessionKey> keys = it->second;
+    for (const CoreSessionKey& key : keys)
+        releaseSession(sessions_.at(key));
+    const CoreSession& any = sessions_.at(keys.front());
+    for (MacNodeId nodeId : {any.ref.lteNodeId, any.ref.nrNodeId})
+        sessionsOfNode_.erase(nodeId);
+    requestedTypes_.erase(keys.front().first);
+    for (const CoreSessionKey& key : keys)
+        sessions_.erase(key);
+}
+
+void CoreControl::releaseSession(const CoreSession& session)
+{
     EV_INFO << "CoreControl: session " << session.ref.id << " of " << session.ueModule->getFullPath() << " released" << endl;
 
     // the tunnel ends forget the session's tunnels
@@ -382,10 +434,6 @@ void CoreControl::releaseSession(MacNodeId ueNodeId)
         gtpEndpoints_.at(bsGtpEndpoints_.at(bsId)).bs->sessionRelease(session.ref);
 
     freeN6Address(session);
-
-    for (MacNodeId nodeId : {session.ref.lteNodeId, session.ref.nrNodeId})
-        sessionOfNode_.erase(nodeId);
-    sessions_.erase(key);
 }
 
 } //namespace

@@ -39,6 +39,16 @@ class UserPlaneNodeControl;
  */
 class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
 {
+  public:
+    // A session the core network establishes for a UE (see sessionsToEstablish()): its
+    // id (1..15, unique among the UE's sessions), its type, and the UE addresses that
+    // belong to it (empty: every address of the UE)
+    struct SessionPlan {
+        SessionId id = SessionId(0);
+        SessionType type = IP_V4;
+        std::vector<AddressPrefix> addresses;
+    };
+
   protected:
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<BearerConfigurator> bearerConfigurator_;
@@ -59,9 +69,9 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     std::map<MacNodeId, int> bsGtpEndpoints_;     // base station id -> index into gtpEndpoints_
 
     // A UE's session (a PDN connection of an EPC, a PDU session of a 5G core, TS 23.501
-    // 5.6), as the core network keeps it: one per UE, of the type the UE requested,
-    // established when the UE first has a serving node, released when the UE leaves
-    // (see establishSession()). The
+    // 5.6), as the core network keeps it: established when the UE first has a serving
+    // node, as sessionsToEstablish() says, released when the UE leaves (see
+    // establishSessions()). The
     // anchor (the PGW, or the PDU session anchor UPF) is chosen at establishment and
     // kept for the lifetime of the session (SSC mode 1): a handover only moves the
     // downlink end of the tunnel (see updateDownlinkPath()). The tunnel ends are told
@@ -69,7 +79,8 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     struct CoreSession {
         omnetpp::cModule *ueModule = nullptr;
         SessionRef ref;                          // the UE's node ids and the session id
-        SessionType type = IP_V4;                   // the session's type, as the UE requested it
+        SessionType type = IP_V4;                   // the session's type
+        std::vector<AddressPrefix> addresses;       // the UE addresses that belong to the session; empty: every address of the UE
         inet::L3Address n6Address;                  // Unstructured sessions only: the session's address on the anchor's N6 tunnel, allocated from the anchor's prefix
         uint32_t n6Suffix = 0;                      // the host part of n6Address within the prefix (0: none)
         int anchor = -1;                            // the anchor UPF/PGW, index into gtpEndpoints_
@@ -82,7 +93,8 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     };
     typedef std::pair<int, SessionId> CoreSessionKey;     // the UE module's id, and the session id
     std::map<CoreSessionKey, CoreSession> sessions_;
-    std::map<MacNodeId, CoreSessionKey> sessionOfNode_;   // UE node id (either stack) -> the UE's session
+    std::map<MacNodeId, std::vector<CoreSessionKey>> sessionsOfNode_;   // UE node id (either stack) -> the UE's sessions, in establishment order
+    std::map<int, SessionType> requestedTypes_;   // UE module id -> the session type the UE requests
 
     // The host parts of the N6 addresses allocated from each anchor's prefix to the
     // Unstructured sessions it anchors, by index into gtpEndpoints_
@@ -94,7 +106,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     void handleMessage(omnetpp::cMessage *msg) override { throw omnetpp::cRuntimeError("This module does not process messages"); }
 
     /**
-     * Binder::nodeUnregisteredSignal_: a departing UE's session is released.
+     * Binder::nodeUnregisteredSignal_: a departing UE's sessions are released.
      */
     void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
 
@@ -124,14 +136,21 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     // address); NODEID_NONE if the UE is attached nowhere
     virtual MacNodeId findDlBaseStation(MacNodeId lteNodeId, MacNodeId nrNodeId);
 
-    // Establish the session of the UE with the given node id, of the type the UE
-    // requested, anchored at the gateway of its downlink base station: its uplink
-    // tunnels at the anchor and the MEC host UPFs. Does nothing if the UE is attached
-    // nowhere yet, or its base station is not connected to a core network; throws if
-    // the anchor's core network cannot carry a session of the type (an EPC carries the
-    // IP types only). The RAN end of the session is set up separately
-    // (initialUeMessage(), pathSwitchRequest()).
-    virtual void establishSession(MacNodeId ueNodeId, SessionType type);
+    // The policy: the sessions to establish for a UE that requests a session of the
+    // given type. One session per UE, of the requested type, with every address of
+    // the UE: a UE has one session in this model, a deliberate simplification of 3GPP
+    // (where a UE may have several, each with its own type and address). The protocol
+    // modules keep their state per session, so a subclass may return several.
+    virtual std::vector<SessionPlan> sessionsToEstablish(omnetpp::cModule *ueModule, SessionType requestedType);
+
+    // Establish the sessions of the UE with the given node id (see
+    // sessionsToEstablish()), each anchored at the gateway of the UE's downlink base
+    // station: its uplink tunnels at the anchor and the MEC host UPFs. Does nothing if
+    // the UE is attached nowhere yet, or its base station is not connected to a core
+    // network; throws if the anchor's core network cannot carry a session of the
+    // type (an EPC carries the IP types only). The RAN end of the sessions is set up
+    // separately (initialUeMessage(), pathSwitchRequest()).
+    virtual void establishSessions(MacNodeId ueNodeId, SessionType requestedType);
 
     // If the base station the UE's downlink enters the RAN at has changed, the downlink
     // end of the tunnel moves there (the path switch, TS 23.502 4.9.1.2.2), and that
@@ -155,22 +174,25 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     virtual void allocateN6Address(CoreSession& session);
     virtual void freeN6Address(const CoreSession& session);
 
-    // Release the session of the UE with the given node id, if it has one
-    virtual void releaseSession(MacNodeId ueNodeId);
+    // Release the sessions of the UE with the given node id, if it has any
+    virtual void releaseSessions(MacNodeId ueNodeId);
+
+    // Release one session
+    virtual void releaseSession(const CoreSession& session);
 
   public:
     // INITIAL UE MESSAGE (S1AP/NGAP), and the registration and session establishment that
     // follow: a leg of a UE has connected at the given base station, requesting a
     // session of the given type (the NAS message the INITIAL UE MESSAGE carries). The
-    // UE's session is established once, at its first leg's registration; the other
-    // leg of a dual-stack UE requests the same type. The session's RAN resources are
+    // UE's sessions are established once, at its first leg's registration; the other
+    // leg of a dual-stack UE requests the same type. Each session's RAN resources are
     // set up at every base station the UE attaches through, once
-    // (ConnectionControlEnb::sessionResourceSetup()); and the downlink path is
+    // (ConnectionControlEnb::sessionResourceSetup()); and the downlink paths are
     // settled.
     virtual void initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, SessionType sessionType);
 
     // PATH SWITCH REQUEST (S1AP/NGAP), from the base station a leg arrived at by handover: the
-    // UE's session now enters the RAN at that base station (the master of it, under
+    // UE's sessions now enter the RAN at that base station (the master of it, under
     // dual connectivity), with the downlink F-TEIDs the handover preparation set up
     // there (the session resources "to be switched in downlink"); a base station the
     // preparation gave no tunnels (a secondary node's source has none to transfer)
@@ -179,8 +201,8 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     virtual void pathSwitchRequest(MacNodeId legId, ConnectionControlEnb *bs, const std::vector<SessionResource>& sessions);
 
     // UE CONTEXT RELEASE REQUEST (S1AP/NGAP), from the base station a leg left without a
-    // handover: the leg is attached nowhere; the downlink path follows the UE's
-    // remaining attachment, if any. The UE's session stays until the UE leaves the
+    // handover: the leg is attached nowhere; the downlink paths follow the UE's
+    // remaining attachment, if any. The UE's sessions stay until the UE leaves the
     // simulation (nodeUnregistered).
     virtual void ueContextReleaseRequest(MacNodeId legId);
 };

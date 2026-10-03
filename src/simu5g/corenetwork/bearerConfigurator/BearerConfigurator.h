@@ -52,6 +52,7 @@ class BearerConfigurator : public cSimpleModule
     // serving node materializes the definition afresh there.
     struct AuthoredBearer {
         cModule *ueModule = nullptr;
+        SessionId sessionId = SessionId(0);   // the UE's session the bearer belongs to (see assignSession())
         DrbDesc desc;                  // key = (NODEID_NONE, drbId); DRBID_NONE for onDemand
         bool onDemand = false;         // true = onDemandDrbs entry (ids assigned at first match, per pair)
         bool rohcByPolicy = false;     // desc.rohcProfiles come from the rohcForDrbProfiles policy, not from the entry's "rohc" field
@@ -85,6 +86,17 @@ class BearerConfigurator : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override { throw cRuntimeError("This module does not process messages"); }
+
+    // The policy: the session of the UE that a bearer definition belongs to. Every
+    // definition belongs to session 1, the UE's one session under the one-session-per-UE
+    // policy of CoreControl::sessionsToEstablish(); a subclass that establishes several
+    // sessions per UE assigns the definitions among them.
+    virtual SessionId assignSession(const AuthoredBearer& definition) const;
+
+    // The policy: whether an entry of the ulQfiRules table that applies to the UE
+    // belongs to the given session of it. Every entry belongs to session 1 (see
+    // assignSession()).
+    virtual bool isUplinkQfiRuleOfSession(const cValueMap *entry, const cModule *ue, SessionId session) const;
 
     // Parse the data radio bearers described by the staticDrbs and onDemandDrbs
     // parameters (see NED documentation) into authoredBearers_. Nothing is pushed
@@ -160,17 +172,19 @@ class BearerConfigurator : public cSimpleModule
     // installs them into the node over N4; this module delivers nothing itself.
     virtual QfiRuleSet getDownlinkQfiRules(const cModule *node) const;
 
-    // The uplink QFI classification rules of a UE: the ulQfiRules entries scoped to
-    // it, likewise. Read by CoreControl, which delivers them to the UE's classifier as
-    // the QoS rules of session establishment.
-    virtual QfiRuleSet getUplinkQfiRules(const cModule *ue) const;
+    // The uplink QFI classification rules of a session of a UE: the ulQfiRules entries
+    // scoped to the UE, likewise, that belong to the session (see
+    // isUplinkQfiRuleOfSession()). Read by CoreControl, which delivers them to the UE's
+    // classifier as the QoS rules of the session's establishment.
+    virtual QfiRuleSet getUplinkQfiRules(const cModule *ue, SessionId session) const;
 
-    // Whether an entry of the ulQfiRules table names the given UE by its "ue" scope,
-    // i.e. a QoS rule authored for the UE rather than for every UE
-    virtual bool hasUplinkQfiRulesScopedTo(const cModule *ue) const;
+    // Whether an entry of the ulQfiRules table that belongs to the session names the
+    // given UE by its "ue" scope, i.e. a QoS rule authored for the UE rather than for
+    // every UE
+    virtual bool hasUplinkQfiRulesScopedTo(const cModule *ue, SessionId session) const;
 
     // Whether such an entry, scoped to the given UE, is a dscpAsQfi rule
-    virtual bool hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue) const;
+    virtual bool hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue, SessionId session) const;
 };
 
 } //namespace

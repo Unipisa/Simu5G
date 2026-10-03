@@ -54,9 +54,42 @@ struct SessionRef
     SessionId id = SessionId(0);
 };
 
+inline bool operator<(const SessionRef& a, const SessionRef& b)
+{
+    if (a.lteNodeId != b.lteNodeId)
+        return a.lteNodeId < b.lteNodeId;
+    if (a.nrNodeId != b.nrNodeId)
+        return a.nrNodeId < b.nrNodeId;
+    return a.id < b.id;
+}
+
+inline bool operator==(const SessionRef& a, const SessionRef& b)
+{
+    return a.lteNodeId == b.lteNodeId && a.nrNodeId == b.nrNodeId && a.id == b.id;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const SessionRef& session)
 {
     return os << "session " << session.id << " of UE " << session.lteNodeId << "/" << session.nrNodeId;
+}
+
+/**
+ * An address prefix. The UE addresses that belong to a session are given as a list
+ * of these (see CoreControl::SessionPlan); a full-length prefix names one address.
+ */
+struct AddressPrefix
+{
+    inet::L3Address prefix;
+    int length = 0;
+
+    AddressPrefix() {}
+    AddressPrefix(const inet::L3Address& prefix, int length) : prefix(prefix), length(length) {}
+    bool matches(const inet::L3Address& address) const { return address.getType() == prefix.getType() && address.matches(prefix, length); }
+};
+
+inline std::ostream& operator<<(std::ostream& os, const AddressPrefix& p)
+{
+    return os << p.prefix.str() << "/" << p.length;
 }
 
 /**

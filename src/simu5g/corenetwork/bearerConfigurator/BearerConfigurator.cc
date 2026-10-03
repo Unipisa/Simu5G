@@ -17,6 +17,8 @@
 #include "simu5g/common/InitStages.h"
 #include "simu5g/common/QfiRuleSet.h"
 #include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+
+#include <functional>
 #include <algorithm>
 #include "simu5g/corenetwork/userPlaneNodeControl/UserPlaneNodeControl.h"
 #include "simu5g/stack/pdcp/rohc/RohcCompressor.h"
@@ -204,6 +206,19 @@ void BearerConfigurator::configureDrbs()
     parseDrbDefinitions("staticDrbs", false, ueNodeIds, networkPrefix, drbsOfUe);
     parseDrbDefinitions("onDemandDrbs", true, ueNodeIds, networkPrefix, drbsOfUe);
 
+    // Each definition belongs to a session of its UE
+    for (AuthoredBearer& ab : authoredBearers_) {
+        ab.sessionId = assignSession(ab);
+        if (num(ab.sessionId) < 1 || num(ab.sessionId) > 15)
+            throw cRuntimeError("the policy assigns a bearer definition of UE '%s' to session %d, which is not in 1..15",
+                    ab.ueModule->getFullPath().c_str(), (int)num(ab.sessionId));
+    }
+    auto sessionOfStaticDrb = [&](const cModule *ueModule, DrbId drbId) {
+        const AuthoredBearer *ab = findStaticDrbDefinition(ueModule, drbId);
+        ASSERT(ab != nullptr);
+        return ab->sessionId;
+    };
+
     // A QFI is either mapped up front by a static definition or serves as an on-demand
     // selector; both claiming it would leave the on-demand entry permanently dead
     for (const AuthoredBearer& ab : authoredBearers_) {
@@ -214,35 +229,40 @@ void BearerConfigurator::configureDrbs()
             continue;
         for (const auto& [drbId, staticDrb] : uit->second)
             for (Qfi qfi : ab.desc.mappedQfis)
-                if (contains(staticDrb.mappedQfis, qfi))
+                if (contains(staticDrb.mappedQfis, qfi) && sessionOfStaticDrb(ab.ueModule, drbId) == ab.sessionId)
                     throw cRuntimeError("onDemandDrbs: QFI %d of UE '%s' is already mapped to static DRB %d",
                             (int)num(qfi), ab.ueModule->getFullPath().c_str(), (int)num(drbId));
     }
 
-    for (auto& [ueModule, drbs] : drbsOfUe) {
-        // The default DRB is where traffic with no QFI-to-DRB mapping (5gc) or no
-        // matching packet filter (epc) goes. If the configuration marks none in
-        // either table, a UE's single static bearer takes the role; a UE with
-        // several bearers must mark one explicitly -- inferring it from entry
-        // order would hide configuration mistakes.
-        bool onDemandDefault = false;
-        for (const AuthoredBearer& ab : authoredBearers_)
-            if (ab.onDemand && ab.ueModule == ueModule && ab.desc.isDefault)
-                onDemandDefault = true;
-        if (!onDemandDefault && std::none_of(drbs.begin(), drbs.end(), [](const auto& e) { return e.second.isDefault; })) {
-            if (drbs.size() > 1)
-                throw cRuntimeError("no default DRB designated for UE '%s': it has %d static bearers and no "
-                        "entry of either table marks isDefault=true -- with several bearers the choice "
-                        "must be explicit", ueModule->getFullPath().c_str(), (int)drbs.size());
-            drbs.begin()->second.isDefault = true;
+    for (auto& [ueModule, allDrbs] : drbsOfUe) {
+        // The default DRB of each session is where the session's traffic with no
+        // QFI-to-DRB mapping (5gc) or no matching packet filter (epc) goes. If the
+        // configuration marks none in either table, a session's single static bearer
+        // takes the role; a session with several bearers must mark one explicitly --
+        // inferring it from entry order would hide configuration mistakes.
+        std::map<SessionId, std::map<DrbId, DrbDesc *>> drbsOfSession;
+        for (auto& [drbId, drb] : allDrbs)
+            drbsOfSession[sessionOfStaticDrb(ueModule, drbId)][drbId] = &drb;
+        for (auto& [sessionId, drbs] : drbsOfSession) {
+            bool onDemandDefault = false;
+            for (const AuthoredBearer& ab : authoredBearers_)
+                if (ab.onDemand && ab.ueModule == ueModule && ab.sessionId == sessionId && ab.desc.isDefault)
+                    onDemandDefault = true;
+            if (!onDemandDefault && std::none_of(drbs.begin(), drbs.end(), [](const auto& e) { return e.second->isDefault; })) {
+                if (drbs.size() > 1)
+                    throw cRuntimeError("no default DRB designated for UE '%s'%s: it has %d static bearers and no "
+                            "entry of either table marks isDefault=true -- with several bearers the choice "
+                            "must be explicit", ueModule->getFullPath().c_str(),
+                            drbsOfSession.size() > 1 ? (" session " + std::to_string(num(sessionId))).c_str() : "", (int)drbs.size());
+                drbs.begin()->second->isDefault = true;
+            }
         }
 
         // The retained records are what establishment-time matching consults, so the
         // settled default is propagated into them
         for (AuthoredBearer& ab : authoredBearers_)
             if (!ab.onDemand && ab.ueModule == ueModule)
-                ab.desc.isDefault = drbs.at(ab.desc.getDrbId()).isDefault;
-
+                ab.desc.isDefault = allDrbs.at(ab.desc.getDrbId()).isDefault;
     }
 
     // The header decision of the retained records, now that every UE's default bearer
@@ -681,11 +701,13 @@ std::string BearerConfigurator::relativeToNetwork(const cModule *module) const
 // order, so evaluation stays first-match-wins among the site's rules. matched, if
 // given, records the entries the site matched.
 static QfiRuleSet compileQfiRulesFor(const cValueArray *table, const char *paramName, const char *scopeField,
-        const std::string& sitePath, std::vector<bool> *matched)
+        const std::string& sitePath, std::vector<bool> *matched, const std::function<bool(const cValueMap *)>& accept = nullptr)
 {
     QfiRuleSet rules;
     for (int i = 0; i < (int)table->size(); i++) {
         const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
+        if (accept && !accept(entry))
+            continue;
         if (entry->containsKey(scopeField)) {
             inet::PatternMatcher matcher(entry->get(scopeField).stringValue(), true, true, true);
             if (!matcher.matches(sitePath.c_str()))
@@ -705,31 +727,43 @@ QfiRuleSet BearerConfigurator::getDownlinkQfiRules(const cModule *node) const
     return compileQfiRulesFor(table, "dlQfiRules", "node", relativeToNetwork(node), nullptr);
 }
 
-QfiRuleSet BearerConfigurator::getUplinkQfiRules(const cModule *ue) const
+SessionId BearerConfigurator::assignSession(const AuthoredBearer& definition) const
 {
-    const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
-    return compileQfiRulesFor(table, "ulQfiRules", "ue", relativeToNetwork(ue), nullptr);
+    return SessionId(1);
 }
 
-bool BearerConfigurator::hasUplinkQfiRulesScopedTo(const cModule *ue) const
+bool BearerConfigurator::isUplinkQfiRuleOfSession(const cValueMap *entry, const cModule *ue, SessionId session) const
+{
+    return session == SessionId(1);
+}
+
+QfiRuleSet BearerConfigurator::getUplinkQfiRules(const cModule *ue, SessionId session) const
+{
+    const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
+    return compileQfiRulesFor(table, "ulQfiRules", "ue", relativeToNetwork(ue), nullptr,
+            [&](const cValueMap *entry) { return isUplinkQfiRuleOfSession(entry, ue, session); });
+}
+
+bool BearerConfigurator::hasUplinkQfiRulesScopedTo(const cModule *ue, SessionId session) const
 {
     const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
     std::string uePath = relativeToNetwork(ue);
     for (int i = 0; i < (int)table->size(); i++) {
         const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
-        if (entry->containsKey("ue") && inet::PatternMatcher(entry->get("ue").stringValue(), true, true, true).matches(uePath.c_str()))
+        if (entry->containsKey("ue") && isUplinkQfiRuleOfSession(entry, ue, session) && inet::PatternMatcher(entry->get("ue").stringValue(), true, true, true).matches(uePath.c_str()))
             return true;
     }
     return false;
 }
 
-bool BearerConfigurator::hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue) const
+bool BearerConfigurator::hasUplinkDscpAsQfiRuleScopedTo(const cModule *ue, SessionId session) const
 {
     const cValueArray *table = check_and_cast<const cValueArray *>(par("ulQfiRules").objectValue());
     std::string uePath = relativeToNetwork(ue);
     for (int i = 0; i < (int)table->size(); i++) {
         const cValueMap *entry = check_and_cast<const cValueMap *>(table->get(i).objectValue());
         if (entry->containsKey("ue") && entry->containsKey("dscpAsQfi") && entry->get("dscpAsQfi").boolValue()
+                && isUplinkQfiRuleOfSession(entry, ue, session)
                 && inet::PatternMatcher(entry->get("ue").stringValue(), true, true, true).matches(uePath.c_str()))
             return true;
     }
