@@ -245,7 +245,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         if (destUe == NODEID_NONE)
             destUe = binder_->getNrMacNodeId(destAddr);
         attachSessionTag(datagram, getServedSession(destUe));
-        send(datagram, "pppGate");  // to the cellular NIC
+        send(datagram, "lowerLayerOut");  // to the cellular NIC
     }
     else {
         // the packet is ready to be tunneled via GTP to another node in the core network
@@ -366,7 +366,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // the tunnel names the session, and so the UE, the datagram is for
         EV << "GtpUser::handleFromUdp - Datagram of " << session->ref << ", local delivery to the cellular NIC" << endl;
         attachSessionTag(originalPacket, *session);
-        send(originalPacket, "pppGate");
+        send(originalPacket, "lowerLayerOut");
     }
     else if (ownerType_ == UPF_MEC) {
         // a tunnel from a base station names the session the datagram belongs to; a
@@ -447,7 +447,7 @@ void GtpUser::sendToDispatcher(Packet *packet, const Protocol& service)
     auto dispatchProtocolReq = packet->addTagIfAbsent<DispatchProtocolReq>();
     dispatchProtocolReq->setProtocol(&service);
     dispatchProtocolReq->setServicePrimitive(SP_REQUEST);
-    send(packet, "pppGate");
+    send(packet, "lowerLayerOut");
 }
 
 void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
@@ -544,7 +544,7 @@ void GtpUser::handleEndMarker(Teid teid)
     auto endMarker = new Packet("GtpEndMarker");
     attachSessionTag(endMarker, session);
     endMarker->addTag<GtpEndMarkerInd>();
-    send(endMarker, "pppGate");
+    send(endMarker, "lowerLayerOut");
 }
 
 const FTeid *GtpUser::findDownlinkTunnel(MacNodeId ueNodeId)

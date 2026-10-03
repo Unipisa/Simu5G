@@ -28,5 +28,5 @@ include ../../lib/defaults.ini
 %exitcode: 1
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stderr
-Unknown service: protocolId = \d+, protocolName = icmpv6, servicePrimitive = REQUEST, pathStartGate = NrSessionTestNetwork\.upf\.relay\.gtpUser\.pppGate, pathEndGate = NrSessionTestNetwork\.upf\.rd\.in\[\d+\]
+Unknown service: protocolId = \d+, protocolName = icmpv6, servicePrimitive = REQUEST, pathStartGate = NrSessionTestNetwork\.upf\.relay\.gtpUser\.lowerLayerOut, pathEndGate = NrSessionTestNetwork\.upf\.rd\.in\[\d+\]
 %#--------------------------------------------------------------------------------------------------------------

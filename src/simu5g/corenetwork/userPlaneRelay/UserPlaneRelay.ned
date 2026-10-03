@@ -62,5 +62,5 @@ module UserPlaneRelay
 
         lowerLayerIn --> trafficFlowFilter.internetFilterGateIn;
         trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
-        gtpUser.pppGate --> lowerLayerOut;
+        gtpUser.lowerLayerOut --> lowerLayerOut;
 }

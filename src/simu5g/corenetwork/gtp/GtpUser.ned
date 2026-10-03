@@ -19,10 +19,10 @@ package simu5g.corenetwork.gtp;
 // UDP). The destination endpoint is identified by utilizing information from the
 // ~TrafficFlowFilter module. On the other hand, when this module receives GTP packets
 // from a tunnel source endpoint, it decapsulates the included IP datagram and sends it
-// out on pppGate: at a base station into the cellular NIC (a base station does not
+// out on lowerLayerOut: at a base station into the cellular NIC (a base station does not
 // IP-route the UEs' traffic), at a ~Upf or ~PgwStandard onto the data network, unless
 // the destination is a UE of the same core network, whose base station the datagram
-// is then tunneled on to. At a ~Upf or ~PgwStandard, pppGate leads to the node's
+// is then tunneled on to. At a ~Upf or ~PgwStandard, lowerLayerOut leads to the node's
 // message dispatcher, and every packet carries the service it is for (DispatchProtocolReq):
 // ipv4/ipv6 for the data network, ethernetmac for the ~EthernetSessionBridge, and icmpv6
 // for the ~Ipv6NdResponder, which gets the link-local traffic of the UEs' IPv6 sessions,
@@ -56,6 +56,6 @@ simple GtpUser
         input socketIn;
 
         input trafficFlowFilterGate;
-        output pppGate;
+        output lowerLayerOut;  // To the cellular NIC at a base station, to the node's message dispatcher at a UPF or PGW
 }
 
