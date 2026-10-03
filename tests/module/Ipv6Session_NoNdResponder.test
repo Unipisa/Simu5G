@@ -1,0 +1,31 @@
+%description:
+The anchor of an IPv6 PDU session is the router on the session's IP link, and answers
+the UE's Neighbor Discovery with its Neighbor Discovery responder (hasNdResponder). An
+anchor UPF without one stops the simulation at the UE's first link-local packet, before
+it could leak onto the data network.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+
+*.ipv6Configurator.typename = "Ipv6NetworkConfigurator"
+*.ipv6Configurator.config = xml("<config><interface hosts='**' prefix='2001:db8:0:x::/64'/></config>")
+**.ipv6.configurator.networkConfiguratorModule = "ipv6Configurator"
+*.ue[*].hasIpv4 = false
+*.ue[*].hasIpv6 = true
+*.server.hasIpv4 = false
+*.server.hasIpv6 = true
+*.router.hasIpv4 = false
+*.router.hasIpv6 = true
+*.upf.hasNdResponder = false
+*.ue[*].sessionType = "IPv6"
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stderr
+GtpUser: link-local IPv6 traffic \(destination (fe80|ff02)::[0-9a-f:]+\) from a UE arrived, but this node has no Neighbor Discovery responder \(see the hasNdResponder parameter\)
+%#--------------------------------------------------------------------------------------------------------------

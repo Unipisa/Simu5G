@@ -11,6 +11,7 @@
 
 package simu5g.test.moduletest.lib;
 
+import inet.networklayer.configurator.contract.IL3NetworkConfigurator;
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
@@ -44,6 +45,9 @@ network NrSessionTestNetwork
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50,75;is=s");
+        }
+        ipv6Configurator: <default("")> like IL3NetworkConfigurator if typename != "" {
+            @display("p=50,325;is=s");
         }
         binder: Binder {
             @display("p=50,125;is=s");
