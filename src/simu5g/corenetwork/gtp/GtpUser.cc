@@ -397,7 +397,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // the uplink of an Ethernet session goes into the UPF's bridge, with its FCS
         // rebuilt, tagged with its session
         if (session != nullptr && session->type == ETHERNET) {
-            if (!gate("ethernetBridgeOut")->isConnected())
+            if (!gate("ethernetBridgeOut")->isConnected() || !gate("ethernetBridgeOut")->isPathOK())
                 throw cRuntimeError("GtpUser: an uplink frame of the Ethernet %s arrived at %s, which has no Ethernet session bridge (see its hasEthernetBridge parameter)",
                         (std::ostringstream() << session->ref).str().c_str(), getContainingNode(this)->getFullPath().c_str());
             insertDeclaredEthernetFcs(originalPacket);
@@ -414,7 +414,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // The IP link of a UE's IPv6 session ends here: link-local-scope traffic (Neighbor
         // Discovery) is answered at this node and must not leak onto the data network
         if (destAddr.getType() == L3Address::IPv6 && isLinkLocalScope(destAddr.toIpv6())) {
-            if (!gate("ndOut")->isConnected())
+            if (!gate("ndOut")->isConnected() || !gate("ndOut")->isPathOK())
                 throw cRuntimeError("GtpUser: link-local IPv6 traffic (destination %s) from a UE arrived, but this node has no Neighbor Discovery responder (see the hasNdResponder parameter)", destAddr.str().c_str());
             send(originalPacket, "ndOut");
             return;
