@@ -1,0 +1,424 @@
+%description:
+One session per UE is a policy of the configuration code, not a limit of the protocol
+modules: a configurator that establishes two sessions per UE needs no change to any of
+them. The test's own policy classes are that configurator:
+ - TwoSessionCoreControl establishes two IPv6 sessions per UE (ids 1 and 2), and gives
+   each its own address: session 1 the address the IPv6 configurator assigned to the
+   UE's cellular interface, session 2 a second address it adds to the interface (the
+   SMF's address allocation, as far as the test needs it);
+ - TwoSessionBearerConfigurator gives each session its own default bearer: static DRB 1
+   belongs to session 1, static DRB 2 to session 2.
+The UE's SessionProbe sends from each of its two addresses to an echo server, so every
+probe and its echo travel on the session of their UE address, uplink and downlink. The
+UE moves from gnb1 to gnb2 halfway, so both sessions are handed over (path switch,
+End Marker, forwarding). The SessionAuditor watches every PDCP entity of the network
+(at the UE and at the gNBs, in both directions) and checks that each datagram of a UE
+address travels on the DRB of that address's session.
+
+Checks: both sessions are established and have tunnels at both base stations; both
+addresses get echoes before and after the handover; every datagram of each address
+travels on its session's DRB, in both directions, and some do; the run ends normally.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: TwoSessions.ned
+
+
+import inet.applications.contract.IApp;
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+import inet.networklayer.configurator.ipv6.Ipv6NetworkConfigurator;
+import inet.node.ethernet.Eth10G;
+import inet.node.inet.Router;
+import inet.node.inet.StandardHost;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.corenetwork.bearerConfigurator.BearerConfigurator;
+import simu5g.corenetwork.coreControl.CoreControl;
+import simu5g.nodes.NrUe;
+import simu5g.nodes.Upf;
+import simu5g.nodes.gNodeB;
+import simu5g.world.radio.LteChannelControl;
+
+simple TwoSessionCoreControl extends CoreControl
+{
+    @class(TwoSessionCoreControl);
+}
+
+simple TwoSessionBearerConfigurator extends BearerConfigurator
+{
+    @class(TwoSessionBearerConfigurator);
+}
+
+simple SessionAuditor
+{
+    @class(SessionAuditor);
+}
+
+simple SessionProbe like IApp
+{
+    parameters:
+        @class(SessionProbe);
+        string destAddress;
+        int destPort;
+        int localPort;
+        double startTime @unit(s);
+        double sendInterval @unit(s);
+        double phaseBoundary @unit(s);   // probes echoed before it count as "before", after it as "after"
+    gates:
+        input socketIn;
+        output socketOut;
+}
+
+network TwoSessionNetwork
+{
+    parameters:
+        **.cellularNic.hasSdap = default(true);
+    submodules:
+        channelControl: LteChannelControl;
+        configurator: Ipv4NetworkConfigurator;
+        ipv6Configurator: Ipv6NetworkConfigurator;
+        binder: Binder;
+        coreControl: TwoSessionCoreControl;
+        bearerConfigurator: TwoSessionBearerConfigurator;
+        carrierAggregation: CarrierAggregation;
+        sessionAuditor: SessionAuditor;
+        server: StandardHost;
+        router: Router;
+        upf: Upf;
+        gnb1: gNodeB;
+        gnb2: gNodeB;
+        ue: NrUe;
+    connections:
+        server.pppg++ <--> Eth10G <--> router.pppg++;
+        router.pppg++ <--> Eth10G <--> upf.dnPppg;
+        upf.pppg++ <--> Eth10G <--> gnb1.ppp;
+        upf.pppg++ <--> Eth10G <--> gnb2.ppp;
+        gnb1.x2++ <--> Eth10G <--> gnb2.x2++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: TwoSessions.cc
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
+
+#include <inet/common/ModuleAccess.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/networklayer/contract/IInterfaceTable.h>
+#include <inet/networklayer/ipv6/Ipv6InterfaceData.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+#include <inet/common/packet/chunk/ByteCountChunk.h>
+#include <inet/common/socket/SocketTag_m.h>
+#include <inet/networklayer/ipv6/Ipv6Header.h>
+
+#include "simu5g/corenetwork/bearerConfigurator/BearerConfigurator.h"
+#include "simu5g/corenetwork/coreControl/CoreControl.h"
+#include "simu5g/stack/sdap/packet/NrSdapHeader_m.h"
+
+using namespace omnetpp;
+using namespace inet;
+using namespace simu5g;
+
+namespace TwoSessionsPerUe {   // the test's NED namespace (opp_test)
+
+// The UE's global IPv6 addresses on its cellular interface, in ascending order
+static std::vector<Ipv6Address> globalAddressesOf(cModule *ueModule)
+{
+    auto *ift = check_and_cast<IInterfaceTable *>(ueModule->getSubmodule("interfaceTable"));
+    NetworkInterface *cellular = ift->findInterfaceByName("cellular");
+    ASSERT(cellular != nullptr);
+    auto *ipv6 = cellular->getProtocolData<Ipv6InterfaceData>();
+    std::vector<Ipv6Address> addresses;
+    for (int i = 0; i < ipv6->getNumAddresses(); i++)
+        if (ipv6->getAddress(i).isGlobal())
+            addresses.push_back(ipv6->getAddress(i));
+    std::sort(addresses.begin(), addresses.end());
+    return addresses;
+}
+
+class TwoSessionCoreControl : public CoreControl
+{
+  protected:
+    std::vector<SessionPlan> sessionsToEstablish(cModule *ueModule, SessionType requestedType) override
+    {
+        // session 1: the address the configurator assigned; session 2: a second one in
+        // the same /64, added here
+        std::vector<Ipv6Address> addresses = globalAddressesOf(ueModule);
+        if (addresses.size() != 1)
+            throw cRuntimeError("TwoSessionCoreControl: %s has %d global addresses, expected 1",
+                    ueModule->getFullPath().c_str(), (int)addresses.size());
+        Ipv6Address first = addresses[0];
+        const uint32_t *w = first.words();
+        Ipv6Address second(w[0], w[1], w[2], w[3] + 0x1000);
+        auto *ift = check_and_cast<IInterfaceTable *>(ueModule->getSubmodule("interfaceTable"));
+        auto *ipv6 = ift->findInterfaceByName("cellular")->getProtocolDataForUpdate<Ipv6InterfaceData>();
+        ipv6->assignAddress(second, false, SIMTIME_ZERO, SIMTIME_ZERO);
+
+        SessionPlan s1;
+        s1.id = SessionId(1);
+        s1.type = requestedType;
+        s1.addresses.push_back(AddressPrefix(first, 128));
+        SessionPlan s2;
+        s2.id = SessionId(2);
+        s2.type = requestedType;
+        s2.addresses.push_back(AddressPrefix(second, 128));
+        return {s1, s2};
+    }
+
+    using omnetpp::cListener::finish;
+    void finish() override
+    {
+        for (const auto& [key, session] : sessions_)
+            std::cout << "TwoSessionCoreControl: session " << session.ref.id << " of " << session.ueModule->getFullName()
+                      << ": tunnels at " << session.dlTunnels.size() << " base stations" << std::endl;
+    }
+};
+
+Define_Module(TwoSessionCoreControl);
+
+class TwoSessionBearerConfigurator : public BearerConfigurator
+{
+  protected:
+    SessionId assignSession(const AuthoredBearer& definition) const override
+    {
+        // the static DRB with id N belongs to session N
+        if (definition.onDemand)
+            throw cRuntimeError("TwoSessionBearerConfigurator: the test authors static bearers only");
+        return SessionId(num(definition.desc.getDrbId()));
+    }
+};
+
+Define_Module(TwoSessionBearerConfigurator);
+
+// Checks that each datagram of a UE address travels on the DRB of the address's session
+// (address i on DRB i+1, see TwoSessionCoreControl and TwoSessionBearerConfigurator), at
+// every PDCP entity of the network: the UE's and the gNBs', TX and RX
+class SessionAuditor : public cSimpleModule, public cListener
+{
+  protected:
+    simsignal_t txSignal_ = registerSignal("receivedPacketFromUpperLayer");
+    simsignal_t rxSignal_ = registerSignal("sentPacketToUpperLayer");
+    std::map<std::string, int> counts_;   // "uplink/downlink address i on DRB j" -> datagrams seen
+    int mismatches_ = 0;
+
+    void initialize() override
+    {
+        getSystemModule()->subscribe(txSignal_, this);
+        getSystemModule()->subscribe(rxSignal_, this);
+    }
+
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("no messages"); }
+
+    using cListener::finish;
+    void finish() override
+    {
+        for (const auto& [what, count] : counts_)
+            std::cout << "SessionAuditor: " << what << ": " << count << std::endl;
+        std::cout << "SessionAuditor: mismatches: " << mismatches_ << std::endl;
+    }
+
+    void receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, cObject *details) override
+    {
+        auto *pkt = dynamic_cast<Packet *>(obj);
+        if (pkt == nullptr)
+            return;
+        // the datagram behind the SDAP header, if any
+        b offset = b(0);
+        if (pkt->getDataLength() > b(0) && dynamicPtrCast<const NrSdapHeader>(pkt->peekAtFront<Chunk>()) != nullptr)
+            offset = pkt->peekAtFront<NrSdapHeader>()->getChunkLength();
+        if (pkt->getDataLength() <= offset)
+            return;
+        auto ipv6 = dynamicPtrCast<const Ipv6Header>(pkt->peekDataAt<Chunk>(offset));
+        if (ipv6 == nullptr)
+            return;
+
+        // the PDCP entity compound (pdcp-<peer>-<drbId>) of the emitting tx/rx module
+        cModule *entity = check_and_cast<cModule *>(source);
+        while (entity != nullptr && std::string(entity->getName()).rfind("pdcp-", 0) != 0)
+            entity = entity->getParentModule();
+        if (entity == nullptr)
+            return;
+        std::string name = entity->getName();
+        int drbId = std::stoi(name.substr(name.rfind('-') + 1));
+        bool atUe = std::string(getContainingNode(entity)->getName()) == "ue";
+        bool tx = signal == txSignal_;
+        bool uplink = atUe == tx;
+        Ipv6Address ueAddress = uplink ? ipv6->getSrcAddress() : ipv6->getDestAddress();
+        if (!ueAddress.isGlobal())
+            return;   // Neighbor Discovery and the like
+
+        std::vector<Ipv6Address> addresses = globalAddressesOf(getSystemModule()->getSubmodule("ue"));
+        auto it = std::find(addresses.begin(), addresses.end(), ueAddress);
+        if (it == addresses.end())
+            return;
+        int index = it - addresses.begin();
+        counts_[std::string(uplink ? "uplink" : "downlink") + " address " + std::to_string(index) + " on DRB " + std::to_string(drbId)]++;
+        if (drbId != index + 1) {
+            mismatches_++;
+            EV_ERROR << "SessionAuditor: " << (uplink ? "uplink" : "downlink") << " datagram of " << ueAddress
+                     << " (session " << index + 1 << ") on DRB " << drbId << " at " << entity->getFullPath() << endl;
+        }
+    }
+};
+
+Define_Module(SessionAuditor);
+
+class SessionProbe : public cSimpleModule, public UdpSocket::ICallback
+{
+  protected:
+    struct Probe {
+        UdpSocket socket;
+        int echoesBefore = 0;
+        int echoesAfter = 0;
+    };
+    std::vector<Probe> probes_;   // one per UE address, in address order
+    std::map<int, int> probeOfSocket_;
+    L3Address dest_;
+    cMessage *timer_ = nullptr;
+
+    void initialize() override
+    {
+        timer_ = new cMessage("probe");
+        scheduleAt(par("startTime"), timer_);
+    }
+
+    void handleMessage(cMessage *msg) override
+    {
+        if (msg == timer_) {
+            if (probes_.empty())
+                openSockets();
+            for (auto& probe : probes_) {
+                Packet *pk = new Packet("probe", makeShared<ByteCountChunk>(B(100)));
+                probe.socket.sendTo(pk, dest_, par("destPort"));
+            }
+            scheduleAfter(par("sendInterval"), timer_);
+        }
+        else {
+            auto it = probeOfSocket_.find(check_and_cast<Packet *>(msg)->getTag<SocketInd>()->getSocketId());
+            ASSERT(it != probeOfSocket_.end());
+            probes_[it->second].socket.processMessage(msg);
+        }
+    }
+
+    void openSockets()
+    {
+        dest_ = L3AddressResolver().resolve(par("destAddress"));
+        std::vector<Ipv6Address> addresses = globalAddressesOf(getContainingNode(this));
+        probes_.resize(addresses.size());
+        for (int i = 0; i < (int)addresses.size(); i++) {
+            Probe& probe = probes_[i];
+            probe.socket.setOutputGate(gate("socketOut"));
+            probe.socket.setCallback(this);
+            probe.socket.bind(addresses[i], (int)par("localPort") + i);
+            probeOfSocket_[probe.socket.getSocketId()] = i;
+        }
+    }
+
+    void socketDataArrived(UdpSocket *socket, Packet *packet) override
+    {
+        Probe& probe = probes_[probeOfSocket_.at(socket->getSocketId())];
+        (simTime() < par("phaseBoundary") ? probe.echoesBefore : probe.echoesAfter)++;
+        delete packet;
+    }
+
+    void socketErrorArrived(UdpSocket *socket, Indication *indication) override { delete indication; }
+    void socketClosed(UdpSocket *socket) override {}
+
+    void finish() override
+    {
+        for (int i = 0; i < (int)probes_.size(); i++)
+            std::cout << "SessionProbe: address " << i << ": echoes before " << probes_[i].echoesBefore
+                      << ", after " << probes_[i].echoesAfter << std::endl;
+    }
+
+  public:
+    ~SessionProbe() override { cancelAndDelete(timer_); }
+};
+
+Define_Module(SessionProbe);
+
+} // namespace TwoSessionsPerUe
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+include ../../lib/defaults.ini
+
+[Config Test]
+network = TwoSessionNetwork
+sim-time-limit = 4s
+
+# IPv6 data network and UE; the transport network stays IPv4
+*.ipv6Configurator.config = xml("<config><interface hosts='**' prefix='2001:db8:0:x::/64'/></config>")
+**.ipv6.configurator.networkConfiguratorModule = "ipv6Configurator"
+*.ue.hasIpv4 = false
+*.ue.hasIpv6 = true
+*.server.hasIpv4 = false
+*.server.hasIpv6 = true
+*.router.hasIpv4 = false
+*.router.hasIpv6 = true
+*.upf.hasNdResponder = true
+*.ue.sessionType = "IPv6"
+
+# one default bearer per session: DRB 1 of session 1, DRB 2 of session 2
+*.bearerConfigurator.staticDrbs = [{coreNetwork: "5gc", ue: "ue", drbId: 1, isDefault: true, rlcMode: "UM"}, \
+                                   {coreNetwork: "5gc", ue: "ue", drbId: 2, isDefault: true, rlcMode: "UM"}]
+*.bearerConfigurator.onDemandDrbs = []
+
+# the probe and the echo server
+*.ue.numApps = 1
+*.ue.app[0].typename = "SessionProbe"
+*.ue.app[0].destAddress = "server"
+*.ue.app[0].destPort = 7
+*.ue.app[0].localPort = 5000
+*.ue.app[0].startTime = 0.2s
+*.ue.app[0].sendInterval = 50ms
+*.ue.app[0].phaseBoundary = 3s
+*.server.numApps = 1
+*.server.app[0].typename = "UdpEchoApp"
+*.server.app[0].localPort = 7
+
+# two cells, X2 between them, and a UE moving from gnb1 to gnb2
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb*.numX2Apps = 1
+*.gnb*.x2App[*].server.localPort = 5000 + ancestorIndex(1)
+*.gnb1.x2App[0].client.connectAddress = "gnb2%x2ppp0"
+*.gnb2.x2App[0].client.connectAddress = "gnb1%x2ppp0"
+**.sctp.nagleEnabled = false
+**.sctp.enableHeartbeats = false
+*.ue.servingNodeId = 0
+*.ue.nrServingNodeId = 1
+**.dynamicCellAssociation = true
+**.enableHandover = true
+*.ue.mobility.typename = "LinearMobility"
+*.ue.mobility.initialX = 420m
+*.ue.mobility.initialY = 500m
+*.ue.mobility.initialMovementHeading = 0deg
+*.ue.mobility.speed = 60mps
+
+%#--------------------------------------------------------------------------------------------------------------
+%expected-failure: The protocol modules keep part of their session state per UE (multi-session readiness plan, stages 3-9)
+%#--------------------------------------------------------------------------------------------------------------
+%extraargs: -c Test
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+TwoSessionCoreControl: session 1 of ue: tunnels at 2 base stations
+TwoSessionCoreControl: session 2 of ue: tunnels at 2 base stations
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+SessionProbe: address 0: echoes before [1-9][0-9]*, after [1-9][0-9]*
+SessionProbe: address 1: echoes before [1-9][0-9]*, after [1-9][0-9]*
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: stdout
+SessionAuditor: downlink address 0 on DRB 1: [1-9][0-9]*
+SessionAuditor: downlink address 1 on DRB 2: [1-9][0-9]*
+SessionAuditor: mismatches: 0
+SessionAuditor: uplink address 0 on DRB 1: [1-9][0-9]*
+SessionAuditor: uplink address 1 on DRB 2: [1-9][0-9]*
+%#--------------------------------------------------------------------------------------------------------------
+%not-contains: stdout
+undisposed object
+%#--------------------------------------------------------------------------------------------------------------
