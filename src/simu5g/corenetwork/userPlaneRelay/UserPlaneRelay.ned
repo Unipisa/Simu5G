@@ -24,9 +24,9 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 // Packets arriving on lowerLayerIn are classified by the ~TrafficFlowFilter, which picks
 // the tunnel they go into, and are tunneled by the ~GtpUser over UDP (socketOut/socketIn);
 // packets arriving in a tunnel leave on lowerLayerOut, or are tunneled on (see ~GtpUser).
-//
-// The ND and Ethernet bridge gates lead to the node's ~Ipv6NdResponder and
-// ~EthernetSessionBridge, if it has them; they are left unconnected otherwise.
+// At a ~Upf or ~PgwStandard, the lower layer is a message dispatcher, through which the
+// relay reaches the data-network interface, the ~EthernetSessionBridge and the
+// ~Ipv6NdResponder (see ~GtpUser).
 //
 module UserPlaneRelay
 {
@@ -41,10 +41,6 @@ module UserPlaneRelay
         input socketIn;
         input lowerLayerIn;  // From the interface whose traffic is relayed: the cellular NIC at a base station, the N6/SGi interface at an anchor
         output lowerLayerOut;
-        output ndOut @loose;  // To the Neighbor Discovery responder of a UPF or PGW, see ~Ipv6NdResponder
-        input ndIn @loose;
-        output ethernetBridgeOut @loose;  // At a UPF: the uplink frames of the Ethernet sessions, to the ~EthernetSessionBridge
-        input ethernetBridgeIn @loose;  // At a UPF: the downlink frames of the Ethernet sessions, from the ~EthernetSessionBridge
 
     submodules:
         trafficFlowFilter: TrafficFlowFilter {
@@ -67,10 +63,4 @@ module UserPlaneRelay
         lowerLayerIn --> trafficFlowFilter.internetFilterGateIn;
         trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
         gtpUser.pppGate --> lowerLayerOut;
-
-        gtpUser.ndOut --> ndOut;
-        gtpUser.ndIn <-- ndIn;
-
-        gtpUser.ethernetBridgeOut --> ethernetBridgeOut;
-        ethernetBridgeIn --> trafficFlowFilter.ethernetBridgeIn;
 }

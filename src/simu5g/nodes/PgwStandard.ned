@@ -34,6 +34,9 @@ import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 // the core network) neither sees nor uses it, and the address configurator gives it no
 // address.
 //
+// The relay reaches the SGi interface and the ~Ipv6NdResponder (ndResponder) through the
+// rd message dispatcher, by service (see ~GtpUser).
+//
 module PgwStandard extends ApplicationLayerNodeBase
 {
     parameters:
@@ -60,6 +63,14 @@ module PgwStandard extends ApplicationLayerNodeBase
                 @display("p=1200,75");
                 ownerType = parent.nodeType;
         }
+        rd: MessageDispatcher {
+            parameters:
+                @display("p=1475,450;b=380,5,,,,1");
+                serviceMapping = {"ipv4": "dnPpp", "ipv6": "dnPpp"};  // The data network; the optional modules register their services
+                protocolMapping = {"ipv4": "relay", "ipv6": "relay", "ethernetmac": "relay"};
+                forwardServiceRegistration = false;
+                forwardProtocolRegistration = false;
+        }
         nodeControl: UserPlaneNodeControl {
             parameters:
                 @display("p=125,400;is=s");
@@ -75,11 +86,14 @@ module PgwStandard extends ApplicationLayerNodeBase
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
-        dnPpp.upperLayerOut --> relay.lowerLayerIn;
-        dnPpp.upperLayerIn <-- relay.lowerLayerOut;
+        relay.lowerLayerOut --> rd.in++;
+        rd.out++ --> relay.lowerLayerIn;
 
-        relay.ndOut --> ndResponder.in if hasNdResponder;
-        relay.ndIn <-- ndResponder.out if hasNdResponder;
+        rd.out++ --> dnPpp.upperLayerIn;
+        dnPpp.upperLayerOut --> rd.in++;
+
+        rd.out++ --> ndResponder.in if hasNdResponder;
+        ndResponder.out --> rd.in++ if hasNdResponder;
 
         dnPpp.phys <--> dnPppg;
 }

@@ -178,14 +178,14 @@ QosFlowClassifier - ul-plain matches no rule, left unclassified
 QosFlowClassifier - ul-stag81 classified to QFI 16
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stdout
-TrafficFlowFilter::handleEthernetDownlink - dl-vid9 of the session of UE \d+, qfi=22
+TrafficFlowFilter::handleSessionDownlink - dl-vid9 of the session of UE \d+, qfi=22
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stdout
-TrafficFlowFilter::handleEthernetDownlink - dl-vid10 of the session of UE \d+, qfi=21
+TrafficFlowFilter::handleSessionDownlink - dl-vid10 of the session of UE \d+, qfi=21
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stdout
-TrafficFlowFilter::handleEthernetDownlink - dl-plain of the session of UE \d+, qfi=23
+TrafficFlowFilter::handleSessionDownlink - dl-plain of the session of UE \d+, qfi=23
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stdout
-TrafficFlowFilter::handleEthernetDownlink - dl-bcast of the session of UE \d+, qfi=0
+TrafficFlowFilter::handleSessionDownlink - dl-bcast of the session of UE \d+, qfi=0
 %#--------------------------------------------------------------------------------------------------------------

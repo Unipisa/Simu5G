@@ -11,6 +11,7 @@
 
 #include "simu5g/corenetwork/ethernetSessionBridge/EthernetSessionMux.h"
 
+#include <inet/common/IProtocolRegistrationListener.h>
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/ProtocolTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
@@ -69,6 +70,8 @@ void EthernetSessionMux::initialize(int stage)
     if (stage == INITSTAGE_LOCAL) {
         interfaceTable_.reference(this, "interfaceTableModule", true);
         macTable_.reference(this, "macTableModule", true);
+        // the uplink frames of the sessions reach the bridge as the ethernetmac service
+        registerService(Protocol::ethernetMac, gate("sessionIn"), SP_REQUEST);
         WATCH_MAP(portOfGate_);
     }
 }
@@ -146,6 +149,9 @@ void EthernetSessionMux::handleMessage(cMessage *msg)
         ASSERT(it != portOfGate_.end());
         frame->clearTags();
         frame->addTag<PacketProtocolTag>()->setProtocol(&Protocol::ethernetMac);
+        auto dispatch = frame->addTag<DispatchProtocolReq>();
+        dispatch->setProtocol(&Protocol::ethernetMac);
+        dispatch->setServicePrimitive(SP_INDICATION);
         attachSessionTag(frame, ports_.at(it->second).session);
         send(frame, "sessionOut");
     }

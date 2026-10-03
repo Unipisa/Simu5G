@@ -46,10 +46,13 @@ package simu5g.corenetwork.trafficFlowFilter;
 // UDP/IP headers go, and the payload goes into the session's tunnel on the default
 // QoS flow, with no rule evaluated.
 //
-// Ethernet sessions. At a UPF, the downlink frames of the Ethernet sessions come from the
-// node's ~EthernetSessionBridge, each tagged with its session: the frame goes into the session's
-// tunnel on the QFI of the first rule that matches the full frame (a dscpAsQfi rule does
-// not match a frame), else the default QoS flow.
+// Packets that name their session. At a UPF or PGW, a packet tagged with its session (a
+// ~SessionTag) is that session's downlink, and goes into the session's tunnel without being
+// classified by its destination address. The downlink frames of the Ethernet sessions come
+// from the node's ~EthernetSessionBridge: a frame goes on the QFI of the first rule that
+// matches the full frame (a dscpAsQfi rule does not match a frame), else the default QoS
+// flow. The replies of the node's ~Ipv6NdResponder on the links of the IPv6 sessions go on
+// the default QoS flow.
 //
 simple TrafficFlowFilter
 {
@@ -63,6 +66,5 @@ simple TrafficFlowFilter
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;
-        input ethernetBridgeIn @loose;  // At a UPF: the downlink frames of the Ethernet sessions, from the ~EthernetSessionBridge
         output gtpUserGateOut;
 }

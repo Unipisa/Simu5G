@@ -18,6 +18,7 @@
 #include <inet/networklayer/contract/ipv6/Ipv6Address.h>
 #include <inet/networklayer/icmpv6/Icmpv6Header_m.h>
 
+#include "simu5g/common/SessionTag_m.h"
 #include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
@@ -45,9 +46,9 @@ class Ipv6NdResponder : public cSimpleModule
     void initialize() override;
     void handleMessage(cMessage *msg) override;
 
-    virtual void answerRouterSolicitation(const inet::Ipv6Address& ueAddress);
-    virtual void answerNeighbourSolicitation(const inet::Ipv6Address& ueAddress);
-    virtual void sendToUe(const char *name, const inet::Ptr<inet::Icmpv6Header>& icmpMessage, const inet::Ipv6Address& ueAddress);
+    virtual void answerRouterSolicitation(const inet::Ipv6Address& ueAddress, const SessionTag& session);
+    virtual void answerNeighbourSolicitation(const inet::Ipv6Address& ueAddress, const SessionTag& session);
+    virtual void sendToUe(const char *name, const inet::Ptr<inet::Icmpv6Header>& icmpMessage, const inet::Ipv6Address& ueAddress, const SessionTag& session);
     virtual void consume(inet::Packet *pkt, const char *what);   // the protocol wants no answer
     virtual void discard(inet::Packet *pkt, const char *reason); // this module cannot handle it
 };

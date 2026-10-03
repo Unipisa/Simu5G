@@ -11,6 +11,7 @@
 
 #include "simu5g/corenetwork/ndResponder/Ipv6NdResponder.h"
 
+#include <inet/common/IProtocolRegistrationListener.h>
 #include <inet/common/ProtocolTag_m.h>
 #include <inet/networklayer/icmpv6/Icmpv6.h>
 #include <inet/networklayer/icmpv6/Ipv6NdMessage_m.h>
@@ -36,6 +37,9 @@ void Ipv6NdResponder::initialize()
         throw cRuntimeError("curHopLimit: %d is outside the 0..255 range", curHopLimit_);
     checksumMode_ = parseChecksumMode(par("checksumMode"), false);
 
+    // the Neighbor Discovery of the sessions' links reaches this module as the icmpv6 service
+    registerService(Protocol::icmpv6, gate("in"), SP_REQUEST);
+
     WATCH(numRouterAdvertisementsSent_);
     WATCH(numNeighbourAdvertisementsSent_);
     WATCH(numDiscarded_);
@@ -44,6 +48,7 @@ void Ipv6NdResponder::initialize()
 void Ipv6NdResponder::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
+    const auto& session = pkt->getTag<SessionTag>();   // the session whose link the packet came on
     const auto& ipv6Header = pkt->peekAtFront<Ipv6Header>();
     const Ipv6Address& srcAddress = ipv6Header->getSrcAddress();
 
@@ -59,7 +64,7 @@ void Ipv6NdResponder::handleMessage(cMessage *msg)
             discard(pkt, "Router Solicitation without a source address");
         else {
             EV_INFO << "Ipv6NdResponder: Router Solicitation from " << srcAddress << ", answering it" << endl;
-            answerRouterSolicitation(srcAddress);
+            answerRouterSolicitation(srcAddress, *session);
             delete pkt;
         }
     }
@@ -70,7 +75,7 @@ void Ipv6NdResponder::handleMessage(cMessage *msg)
             discard(pkt, "Neighbor Solicitation for an address other than the router's");
         else {
             EV_INFO << "Ipv6NdResponder: Neighbor Solicitation from " << srcAddress << ", answering it" << endl;
-            answerNeighbourSolicitation(srcAddress);
+            answerNeighbourSolicitation(srcAddress, *session);
             delete pkt;
         }
     }
@@ -78,7 +83,7 @@ void Ipv6NdResponder::handleMessage(cMessage *msg)
         discard(pkt, "link-local ICMPv6 message other than a Router or Neighbor Solicitation");
 }
 
-void Ipv6NdResponder::answerRouterSolicitation(const Ipv6Address& ueAddress)
+void Ipv6NdResponder::answerRouterSolicitation(const Ipv6Address& ueAddress, const SessionTag& session)
 {
     auto ra = makeShared<Ipv6RouterAdvertisement>();
     ra->setCurHopLimit(curHopLimit_);
@@ -112,22 +117,22 @@ void Ipv6NdResponder::answerRouterSolicitation(const Ipv6Address& ueAddress)
         ra->getOptionsForUpdate().appendOption(prefixInfo);
         ra->addChunkLength(IPv6ND_PREFIX_INFORMATION_OPTION_LENGTH);
     }
-    sendToUe("RouterAdvertisement", ra, ueAddress);
+    sendToUe("RouterAdvertisement", ra, ueAddress, session);
     numRouterAdvertisementsSent_++;
 }
 
-void Ipv6NdResponder::answerNeighbourSolicitation(const Ipv6Address& ueAddress)
+void Ipv6NdResponder::answerNeighbourSolicitation(const Ipv6Address& ueAddress, const SessionTag& session)
 {
     auto na = makeShared<Ipv6NeighbourAdvertisement>();
     na->setRouterFlag(true);
     na->setSolicitedFlag(true);
     na->setOverrideFlag(false);   // there is no link-layer address to override
     na->setTargetAddress(linkLocalAddress_);
-    sendToUe("NeighbourAdvertisement", na, ueAddress);
+    sendToUe("NeighbourAdvertisement", na, ueAddress, session);
     numNeighbourAdvertisementsSent_++;
 }
 
-void Ipv6NdResponder::sendToUe(const char *name, const Ptr<Icmpv6Header>& icmpMessage, const Ipv6Address& ueAddress)
+void Ipv6NdResponder::sendToUe(const char *name, const Ptr<Icmpv6Header>& icmpMessage, const Ipv6Address& ueAddress, const SessionTag& session)
 {
     auto packet = new Packet(name);
     Icmpv6::insertChecksum(checksumMode_, icmpMessage, packet);
@@ -141,6 +146,10 @@ void Ipv6NdResponder::sendToUe(const char *name, const Ptr<Icmpv6Header>& icmpMe
     ipv6Header->setPayloadLength(packet->getDataLength());
     packet->insertAtFront(ipv6Header);
     packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::ipv6);
+    auto dispatchProtocolReq = packet->addTag<DispatchProtocolReq>();
+    dispatchProtocolReq->setProtocol(&Protocol::ipv6);
+    dispatchProtocolReq->setServicePrimitive(SP_INDICATION);
+    *packet->addTag<SessionTag>() = session;   // the reply goes back on the session's link
     send(packet, "out");
 }
 

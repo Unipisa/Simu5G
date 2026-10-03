@@ -1,8 +1,9 @@
 %description:
 The anchor of an IPv6 PDU session is the router on the session's IP link, and answers
-the UE's Neighbor Discovery with its Neighbor Discovery responder (hasNdResponder). An
-anchor UPF without one stops the simulation at the UE's first link-local packet, before
-it could leak onto the data network.
+the UE's Neighbor Discovery with its Neighbor Discovery responder (hasNdResponder), which
+GtpUser reaches through the node's message dispatcher as the icmpv6 service. An anchor
+UPF without one stops the simulation at the UE's first link-local packet, before it
+could leak onto the data network: the dispatcher knows no icmpv6 service.
 
 %#--------------------------------------------------------------------------------------------------------------
 %inifile: omnetpp.ini
@@ -27,5 +28,5 @@ include ../../lib/defaults.ini
 %exitcode: 1
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: stderr
-GtpUser: link-local IPv6 traffic \(destination (fe80|ff02)::[0-9a-f:]+\) from a UE arrived, but this node has no Neighbor Discovery responder \(see the hasNdResponder parameter\)
+Unknown service: protocolId = \d+, protocolName = icmpv6, servicePrimitive = REQUEST, pathStartGate = NrSessionTestNetwork\.upf\.relay\.gtpUser\.pppGate, pathEndGate = NrSessionTestNetwork\.upf\.rd\.in\[\d+\]
 %#--------------------------------------------------------------------------------------------------------------

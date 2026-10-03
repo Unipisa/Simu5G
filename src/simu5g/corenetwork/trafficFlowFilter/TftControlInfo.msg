@@ -34,4 +34,5 @@ class TftControlInfo extends inet::TagBase
     TftOutcome tft;
     MacNodeId ueNodeId = NODEID_NONE;   // TFT_PDU_SESSION: the destination UE, by one of its node ids
     Qfi qfi;  // QFI derived from IP DSCP (simplified PDR matching)
+    bool sessionNamed = false;  // TFT_PDU_SESSION: the packet named its session (see ~TrafficFlowFilter), so it has no way to its UE other than the session's tunnel
 };

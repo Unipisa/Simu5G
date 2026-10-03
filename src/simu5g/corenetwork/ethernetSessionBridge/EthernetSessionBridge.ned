@@ -57,7 +57,7 @@ module EthernetSessionBridge
         ethernet.*.promiscuous = true;
         ethernet.registerProtocol = true;
     gates:
-        input sessionIn;       // uplink frames of the sessions, from ~GtpUser
+        input sessionIn;       // uplink frames of the sessions, from ~GtpUser (the ethernetmac service, which the session mux registers)
         output sessionOut;     // downlink frames of the sessions, to the ~TrafficFlowFilter
         inout dnEthg @labels(EtherFrame-conn);   // the N6 Ethernet link
     submodules:

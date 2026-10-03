@@ -21,7 +21,9 @@ package simu5g.corenetwork.ndResponder;
 //
 // ~GtpUser hands over every uplink packet whose destination has link-local scope
 // (fe80::/10, or a multicast group of interface-local or link-local scope), so no
-// such packet leaks onto the data network. This module
+// such packet leaks onto the data network: through the node's message dispatcher, as
+// the icmpv6 service, which this module registers, each packet tagged with its session.
+// This module
 //  - answers a Router Solicitation with a Router Advertisement, unicast to the
 //    soliciting UE, which makes this module's link-local address the UE's default
 //    router;
@@ -30,8 +32,8 @@ package simu5g.corenetwork.ndResponder;
 //  - consumes duplicate address detection probes without an answer, meaning the
 //    address is free;
 //  - discards everything else with a warning.
-// The replies go back to ~GtpUser, which tunnels them to the UE's base station
-// like any packet destined to a UE.
+// The replies go back up through the dispatcher, tagged with the session of the
+// solicitation, which names the tunnel they go into (see ~TrafficFlowFilter).
 //
 // Simplifications: the UEs' addresses are configured statically (see
 // ~Ipv6NetworkConfigurator), so the Router Advertisement carries the session's

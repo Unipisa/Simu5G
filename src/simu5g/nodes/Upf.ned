@@ -33,6 +33,9 @@ import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 // of the core network) neither sees nor uses it, and the address configurator gives it no
 // address.
 //
+// The relay reaches the N6 interface, the ~EthernetSessionBridge (ethBridge) and the
+// ~Ipv6NdResponder (ndResponder) through the rd message dispatcher, by service (see ~GtpUser).
+//
 module Upf extends ApplicationLayerNodeBase
 {
     parameters:
@@ -65,6 +68,14 @@ module Upf extends ApplicationLayerNodeBase
                 ownerType = parent.nodeType;
                 gateway = parent.gateway;
         }
+        rd: MessageDispatcher {
+            parameters:
+                @display("p=1475,450;b=380,5,,,,1");
+                serviceMapping = {"ipv4": "dnPpp", "ipv6": "dnPpp"};  // The data network; the optional modules register their services
+                protocolMapping = {"ipv4": "relay", "ipv6": "relay", "ethernetmac": "relay"};
+                forwardServiceRegistration = false;
+                forwardProtocolRegistration = false;
+        }
         nodeControl: UserPlaneNodeControl {
             parameters:
                 @display("p=1200,175");
@@ -85,14 +96,17 @@ module Upf extends ApplicationLayerNodeBase
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
-        dnPpp.upperLayerOut --> relay.lowerLayerIn;
-        dnPpp.upperLayerIn <-- relay.lowerLayerOut;
+        relay.lowerLayerOut --> rd.in++;
+        rd.out++ --> relay.lowerLayerIn;
 
-        relay.ndOut --> ndResponder.in if hasNdResponder;
-        relay.ndIn <-- ndResponder.out if hasNdResponder;
+        rd.out++ --> dnPpp.upperLayerIn;
+        dnPpp.upperLayerOut --> rd.in++;
 
-        relay.ethernetBridgeOut --> ethBridge.sessionIn if hasEthernetBridge;
-        ethBridge.sessionOut --> relay.ethernetBridgeIn if hasEthernetBridge;
+        rd.out++ --> ndResponder.in if hasNdResponder;
+        ndResponder.out --> rd.in++ if hasNdResponder;
+
+        rd.out++ --> ethBridge.sessionIn if hasEthernetBridge;
+        ethBridge.sessionOut --> rd.in++ if hasEthernetBridge;
         ethBridge.dnEthg <--> dnEthg if hasEthernetBridge;
 
         dnPpp.phys <--> dnPppg;

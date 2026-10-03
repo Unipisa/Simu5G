@@ -17,6 +17,7 @@
 #include "simu5g/common/UplinkUeTag_m.h"
 #include <iostream>
 #include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/common/ProtocolTag_m.h>
 #include <inet/common/packet/printer/PacketPrinter.h>
 #include <inet/common/socket/SocketTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
@@ -170,10 +171,6 @@ void GtpUser::handleMessage(cMessage *msg)
 
         handleFromUdp(packet);
     }
-    else if (msg->arrivedOn("ndIn")) {
-        EV << "GtpUser::handleMessage - message from the Neighbor Discovery responder" << endl;
-        handleFromNdResponder(check_and_cast<Packet *>(msg));
-    }
 }
 
 void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
@@ -223,7 +220,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // gateway's to reach (a frame of an Ethernet session bridgeed here has no other
             // way to its UE)
             bool attached = binder_->getServingNodeOrSelf(ueNodeId) != NODEID_NONE;
-            tft = attached && !ethernetFrame ? TFT_EXTERNAL_DESTINATION : TFT_REMOVED_DESTINATION;
+            tft = attached && !tftInfo->getSessionNamed() ? TFT_EXTERNAL_DESTINATION : TFT_REMOVED_DESTINATION;
         }
     }
 
@@ -379,7 +376,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
         // we are on the MEC, local delivery
         EV << "GtpUser::handleFromUdp - Datagram local delivery to the MEC host" << endl;
-        send(originalPacket, "pppGate");
+        sendToDispatcher(originalPacket, *originalPacket->getTag<PacketProtocolTag>()->getProtocol());
     }
     else if (ownerType_ == PGW || ownerType_ == UPF) {
         // a tunnel from a base station names the session the datagram belongs to; a
@@ -397,13 +394,10 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // the uplink of an Ethernet session goes into the UPF's bridge, with its FCS
         // rebuilt, tagged with its session
         if (session != nullptr && session->type == ETHERNET) {
-            if (!gate("ethernetBridgeOut")->isConnected() || !gate("ethernetBridgeOut")->isPathOK())
-                throw cRuntimeError("GtpUser: an uplink frame of the Ethernet %s arrived at %s, which has no Ethernet session bridge (see its hasEthernetBridge parameter)",
-                        (std::ostringstream() << session->ref).str().c_str(), getContainingNode(this)->getFullPath().c_str());
             insertDeclaredEthernetFcs(originalPacket);
             originalPacket->removeTagIfPresent<QfiReq>();
             attachSessionTag(originalPacket, *session);
-            send(originalPacket, "ethernetBridgeOut");
+            sendToDispatcher(originalPacket, Protocol::ethernetMac);
             return;
         }
 
@@ -412,11 +406,14 @@ void GtpUser::handleFromUdp(Packet *pkt)
         L3Address destAddr = peekIpHeader(originalPacket)->getDestinationAddress();
 
         // The IP link of a UE's IPv6 session ends here: link-local-scope traffic (Neighbor
-        // Discovery) is answered at this node and must not leak onto the data network
+        // Discovery) is answered at this node and must not leak onto the data network. It
+        // goes to the node's Neighbor Discovery responder (the icmpv6 service), tagged with
+        // its session, which the reply goes back to.
         if (destAddr.getType() == L3Address::IPv6 && isLinkLocalScope(destAddr.toIpv6())) {
-            if (!gate("ndOut")->isConnected() || !gate("ndOut")->isPathOK())
-                throw cRuntimeError("GtpUser: link-local IPv6 traffic (destination %s) from a UE arrived, but this node has no Neighbor Discovery responder (see the hasNdResponder parameter)", destAddr.str().c_str());
-            send(originalPacket, "ndOut");
+            if (session == nullptr)
+                throw cRuntimeError("GtpUser: link-local IPv6 traffic (destination %s) arrived on a tunnel of no session", destAddr.str().c_str());
+            attachSessionTag(originalPacket, *session);
+            sendToDispatcher(originalPacket, Protocol::icmpv6);
             return;
         }
 
@@ -440,26 +437,17 @@ void GtpUser::handleFromUdp(Packet *pkt)
 
         // destination is outside the radio network
         EV << "GtpUser::handleFromUdp - Sending datagram outside the radio network, destination[" << destAddr.str() << "]" << endl;
-        send(originalPacket, "pppGate");
+        sendToDispatcher(originalPacket, *originalPacket->getTag<PacketProtocolTag>()->getProtocol());
     }
 }
 
-void GtpUser::handleFromNdResponder(Packet *datagram)
+void GtpUser::sendToDispatcher(Packet *packet, const Protocol& service)
 {
-    L3Address destAddr = peekIpHeader(datagram)->getDestinationAddress();
-    MacNodeId destId = binder_->getMacNodeId(destAddr);
-    if (destId == NODEID_NONE)
-        throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, which is no UE's address", destAddr.str().c_str());
-
-    const FTeid *tunnel = findDownlinkTunnel(destId);
-    if (tunnel == nullptr) {
-        if (binder_->getServingNodeOrSelf(destId) != NODEID_NONE)
-            throw cRuntimeError("GtpUser: the Neighbor Discovery responder answered %s, a UE whose session is not served here", destAddr.str().c_str());
-        EV_WARN << "GtpUser::handleFromNdResponder - UE " << destId << " is attached to no base station, reply to " << destAddr << " discarded" << endl;
-        delete datagram;
-        return;
-    }
-    tunnelDownlink(datagram, *tunnel, Qfi(0));  // the default QoS flow
+    ASSERT(!isBaseStation(ownerType_));
+    auto dispatchProtocolReq = packet->addTagIfAbsent<DispatchProtocolReq>();
+    dispatchProtocolReq->setProtocol(&service);
+    dispatchProtocolReq->setServicePrimitive(SP_REQUEST);
+    send(packet, "pppGate");
 }
 
 void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
@@ -521,7 +509,7 @@ void GtpUser::tunnelUplinkOverN6(Packet *payload, const SessionRef& session)
         ipHeader->updateChecksum();
         insertNetworkProtocolHeader(payload, Protocol::ipv4, ipHeader);
     }
-    send(payload, "pppGate");
+    sendToDispatcher(payload, ipProtocol);
 }
 
 const UplinkTunnels& GtpUser::getUplinkTunnels(MacNodeId ueNodeId)
