@@ -12,6 +12,7 @@
 package simu5g.nodes;
 
 import inet.common.MessageDispatcher;
+import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.ppp.PppInterface;
 import inet.node.base.ApplicationLayerNodeBase;
 import inet.transportlayer.udp.Udp;
@@ -33,6 +34,9 @@ import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 // of the core network) neither sees nor uses it, and the address configurator gives it no
 // address.
 //
+// The N6 Ethernet interface (dnEth, on the dnEthg gate, with hasEthernetBridge) is a port of
+// the ~EthernetSessionBridge (ethBridge), registered in the bridge's own interface table.
+//
 // The relay reaches the N6 interface, the ~EthernetSessionBridge (ethBridge) and the
 // ~Ipv6NdResponder (ndResponder) through the rd message dispatcher, by service (see ~GtpUser).
 //
@@ -48,6 +52,7 @@ module Upf extends ApplicationLayerNodeBase
         bool hasEthernetBridge = default(false);  // Anchor Ethernet PDU sessions: the node's Ethernet bridge and N6 Ethernet link (dnEthg), see ~EthernetSessionBridge
         forwarding = default(true);
         multicastForwarding = default(false);
+        dnEth.interfaceTableModule = absPath(".ethBridge.interfaceTable");  // A port of the Ethernet session bridge, not an interface of the node's network layer
 
     gates:
         // This gate is used for the UPF connected to the external data network
@@ -90,6 +95,10 @@ module Upf extends ApplicationLayerNodeBase
             parameters:
                 @display("p=1100,275");
         }
+        dnEth: <default("LayeredEthernetInterface")> like IEthernetInterface if hasEthernetBridge {
+            parameters:
+                @display("p=1575,975");
+        }
 
     connections:
 
@@ -107,7 +116,9 @@ module Upf extends ApplicationLayerNodeBase
 
         rd.out++ --> ethBridge.sessionIn if hasEthernetBridge;
         ethBridge.sessionOut --> rd.in++ if hasEthernetBridge;
-        ethBridge.dnEthg <--> dnEthg if hasEthernetBridge;
+        ethBridge.lowerLayerOut --> dnEth.upperLayerIn if hasEthernetBridge;
+        dnEth.upperLayerOut --> ethBridge.lowerLayerIn if hasEthernetBridge;
+        dnEth.phys <--> dnEthg if hasEthernetBridge;
 
         dnPpp.phys <--> dnPppg;
 }

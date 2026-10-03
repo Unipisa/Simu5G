@@ -12,7 +12,6 @@
 package simu5g.corenetwork.ethernetSessionBridge;
 
 import inet.common.MessageDispatcher;
-import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.IIeee8021qLayer;
 import inet.linklayer.contract.IMacForwardingTable;
 import inet.networklayer.common.InterfaceTable;
@@ -24,7 +23,8 @@ import inet.linklayer.contract.IEthernetLayer;
 // The Ethernet bridge of a ~Upf, which forwards the traffic of its Ethernet PDU sessions
 // "based on detected MAC addresses" (TS 23.501 5.8.2.5.3): one learning bridge per UPF,
 // whose ports are the Ethernet sessions the UPF anchors and one N6 Ethernet interface,
-// dnEth (TS 23.501 5.8.2.5.3, NOTE 2). A session's uplink frames enter the bridge on the
+// the node's dnEth (TS 23.501 5.8.2.5.3, NOTE 2), which is connected to lowerLayerIn/Out:
+// a submodule of the node, but a port of this bridge, registered in its interface table. A session's uplink frames enter the bridge on the
 // session's port; the bridge learns their source addresses, forwards known unicast to
 // the port of the destination (another session: switched locally, not via N6; or dnEth),
 // floods unknown unicast, broadcast and multicast to every port but the ingress, and
@@ -59,7 +59,8 @@ module EthernetSessionBridge
     gates:
         input sessionIn;       // uplink frames of the sessions, from ~GtpUser (the ethernetmac service, which the session mux registers)
         output sessionOut;     // downlink frames of the sessions, to the ~TrafficFlowFilter
-        inout dnEthg @labels(EtherFrame-conn);   // the N6 Ethernet link
+        output lowerLayerOut;  // to the N6 Ethernet interface (the node's dnEth)
+        input lowerLayerIn;    // from the N6 Ethernet interface
     submodules:
         macTable: <default("MacForwardingTable")> like IMacForwardingTable {
             @display("p=100,100;is=s");
@@ -88,9 +89,6 @@ module EthernetSessionBridge
         li: MessageDispatcher {
             @display("p=400,330;b=500,5,,,,1");
         }
-        dnEth: <default("LayeredEthernetInterface")> like IEthernetInterface {
-            @display("p=600,420");
-        }
     connections allowunconnected:
         cb.out++ --> bridging.upperLayerIn;
         bridging.upperLayerOut --> cb.in++;
@@ -106,9 +104,8 @@ module EthernetSessionBridge
         li.out++ --> ethernet.lowerLayerIn;
         ieee8021q.lowerLayerOut --> li.in++;
         li.out++ --> ieee8021q.lowerLayerIn;
-        li.out++ --> dnEth.upperLayerIn;
-        dnEth.upperLayerOut --> li.in++;
-        dnEth.phys <--> dnEthg;
+        li.out++ --> lowerLayerOut;
+        lowerLayerIn --> li.in++;
         sessionIn --> sessionMux.sessionIn;
         sessionMux.sessionOut --> sessionOut;
 }

@@ -280,13 +280,18 @@ module UpfNode
         inout dnEthg;
     submodules:
         bridge: EthernetSessionBridge {
-            dnEth.bitrate = 1Gbps;
             macTable.agingTime = 1s;
+        }
+        dnEth: LayeredEthernetInterface {
+            interfaceTableModule = "^.bridge.interfaceTable";
+            bitrate = 1Gbps;
         }
     connections:
         sessionIn --> bridge.sessionIn;
         bridge.sessionOut --> sessionOut;
-        bridge.dnEthg <--> dnEthg;
+        bridge.lowerLayerOut --> dnEth.upperLayerIn;
+        dnEth.upperLayerOut --> bridge.lowerLayerIn;
+        dnEth.phys <--> dnEthg;
 }
 
 // the data network's end of the bridge's N6 link
