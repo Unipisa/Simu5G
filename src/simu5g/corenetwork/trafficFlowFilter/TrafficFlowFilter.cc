@@ -190,7 +190,7 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     EV << "TrafficFlowFilter::handleMessage - setting tft=" << tft << " ueNodeId=" << ueNodeId << " qfi=" << qfi << endl;
 
     // send the datagram to the GTP-U module
-    send(pkt, "gtpUserGateOut");
+    send(pkt, "out");
 }
 
 void TrafficFlowFilter::handleNonIpUplink(Packet *pkt)
@@ -204,7 +204,7 @@ void TrafficFlowFilter::handleNonIpUplink(Packet *pkt)
     auto qfiInd = pkt->findTag<QfiInd>();
     tftInfo->setQfi(qfiInd != nullptr ? qfiInd->getQfi() : Qfi(0));
     EV << "TrafficFlowFilter::handleNonIpUplink - " << pkt->getName() << " goes to the anchor, qfi=" << tftInfo->getQfi() << endl;
-    send(pkt, "gtpUserGateOut");
+    send(pkt, "out");
 }
 
 void TrafficFlowFilter::handleN6Downlink(Packet *pkt, const N6Session& n6Session)
@@ -229,7 +229,7 @@ void TrafficFlowFilter::handleN6Downlink(Packet *pkt, const N6Session& n6Session
     tftInfo->setTft(TFT_PDU_SESSION);
     tftInfo->setUeNodeId(n6Session.session.lteNodeId);
     tftInfo->setQfi(Qfi(0));
-    send(pkt, "gtpUserGateOut");
+    send(pkt, "out");
 }
 
 void TrafficFlowFilter::handleSessionDownlink(Packet *pkt)
@@ -249,7 +249,7 @@ void TrafficFlowFilter::handleSessionDownlink(Packet *pkt)
     tftInfo->setQfi(qfi);
     tftInfo->setSessionNamed(true);
     EV << "TrafficFlowFilter::handleSessionDownlink - " << pkt->getName() << " of the session of UE " << session->getLteNodeId() << ", qfi=" << qfi << endl;
-    send(pkt, "gtpUserGateOut");
+    send(pkt, "out");
 }
 
 void TrafficFlowFilter::addN6Tunnel(const SessionRef& session, const N6Tunnel& tunnel)

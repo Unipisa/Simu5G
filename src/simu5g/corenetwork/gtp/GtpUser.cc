@@ -157,7 +157,7 @@ CoreNodeType GtpUser::selectOwnerType(const char *type)
 
 void GtpUser::handleMessage(cMessage *msg)
 {
-    if (msg->arrivedOn("trafficFlowFilterGate")) {
+    if (msg->arrivedOn("userDataIn")) {
         EV << "GtpUser::handleMessage - message from trafficFlowFilter" << endl;
 
         // forward the encapsulated IP datagram
@@ -245,7 +245,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         if (destUe == NODEID_NONE)
             destUe = binder_->getNrMacNodeId(destAddr);
         attachSessionTag(datagram, getServedSession(destUe));
-        send(datagram, "lowerLayerOut");  // to the cellular NIC
+        send(datagram, "userDataOut");  // to the cellular NIC
     }
     else {
         // the packet is ready to be tunneled via GTP to another node in the core network
@@ -366,7 +366,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
         // the tunnel names the session, and so the UE, the datagram is for
         EV << "GtpUser::handleFromUdp - Datagram of " << session->ref << ", local delivery to the cellular NIC" << endl;
         attachSessionTag(originalPacket, *session);
-        send(originalPacket, "lowerLayerOut");
+        send(originalPacket, "userDataOut");
     }
     else if (ownerType_ == UPF_MEC) {
         // a tunnel from a base station names the session the datagram belongs to; a
@@ -447,7 +447,7 @@ void GtpUser::sendToDispatcher(Packet *packet, const Protocol& service)
     auto dispatchProtocolReq = packet->addTagIfAbsent<DispatchProtocolReq>();
     dispatchProtocolReq->setProtocol(&service);
     dispatchProtocolReq->setServicePrimitive(SP_REQUEST);
-    send(packet, "lowerLayerOut");
+    send(packet, "userDataOut");
 }
 
 void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
@@ -544,7 +544,7 @@ void GtpUser::handleEndMarker(Teid teid)
     auto endMarker = new Packet("GtpEndMarker");
     attachSessionTag(endMarker, session);
     endMarker->addTag<GtpEndMarkerInd>();
-    send(endMarker, "lowerLayerOut");
+    send(endMarker, "userDataOut");
 }
 
 const FTeid *GtpUser::findDownlinkTunnel(MacNodeId ueNodeId)

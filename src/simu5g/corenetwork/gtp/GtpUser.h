@@ -102,7 +102,7 @@ class GtpUser : public cSimpleModule
     // receive a GTP-U packet from Udp, reads the TEID and decides whether performing label switching or removal
     void handleFromUdp(inet::Packet *gtpMsg);
 
-    // at a UPF/PGW: send a packet to the node's message dispatcher on the relay's lower side,
+    // at a UPF/PGW: send a packet to the node's message dispatcher on the relay's user data side,
     // which delivers it to the module that provides the given service
     void sendToDispatcher(inet::Packet *packet, const inet::Protocol& service);
 

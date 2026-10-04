@@ -65,6 +65,6 @@ simple TrafficFlowFilter
         string mecHost = default("");  // At a base station: the MEC host the base station steers traffic to (see the mecHost parameter of ~eNodeB); empty = none
         bool fastForwarding = default(true);
     gates:
-        input internetFilterGateIn;
-        output gtpUserGateOut;
+        input in;  // The user data entering the tunnels
+        output out;  // The classified user data, to the ~GtpUser
 }

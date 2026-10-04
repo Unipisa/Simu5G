@@ -105,8 +105,8 @@ module Upf extends ApplicationLayerNodeBase
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
-        relay.lowerLayerOut --> rd.in++;
-        rd.out++ --> relay.lowerLayerIn;
+        relay.userDataOut --> rd.in++;
+        rd.out++ --> relay.userDataIn;
 
         rd.out++ --> dnPpp.upperLayerIn;
         dnPpp.upperLayerOut --> rd.in++;

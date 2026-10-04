@@ -21,12 +21,14 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 // tunnels, at a ~Upf or ~PgwStandard between the data network (N6/SGi) and the
 // tunnels toward the base stations or other UPFs.
 //
-// Packets arriving on lowerLayerIn are classified by the ~TrafficFlowFilter, which picks
-// the tunnel they go into, and are tunneled by the ~GtpUser over UDP (socketOut/socketIn);
-// packets arriving in a tunnel leave on lowerLayerOut, or are tunneled on (see ~GtpUser).
-// At a ~Upf or ~PgwStandard, the lower layer is a message dispatcher, through which the
-// relay reaches the data-network interface, the ~EthernetSessionBridge and the
-// ~Ipv6NdResponder (see ~GtpUser).
+// The relay has two sides: the user data (the T-PDUs of TS 29.281: IP datagrams, Ethernet
+// frames, Unstructured payloads) on userDataIn/userDataOut, and the tunnels (G-PDUs, i.e.
+// GTP-U over UDP) on socketOut/socketIn. User data arriving on userDataIn is classified by
+// the ~TrafficFlowFilter, which picks the tunnel it goes into, and tunneled by the
+// ~GtpUser; user data arriving in a tunnel leaves on userDataOut, or is tunneled on (see
+// ~GtpUser). At a ~Upf or ~PgwStandard, the user data side is a message dispatcher,
+// through which the relay reaches the data-network interface, the ~EthernetSessionBridge
+// and the ~Ipv6NdResponder (see ~GtpUser).
 //
 module UserPlaneRelay
 {
@@ -39,8 +41,8 @@ module UserPlaneRelay
     gates:
         output socketOut;  // To the UDP of the node: the tunnels
         input socketIn;
-        input lowerLayerIn;  // From the interface whose traffic is relayed: the cellular NIC at a base station, the N6/SGi interface at an anchor
-        output lowerLayerOut;
+        input userDataIn;  // The user data to tunnel: from the cellular NIC at a base station, from the node's message dispatcher at a UPF or PGW
+        output userDataOut;  // The user data out of the tunnels
 
     submodules:
         trafficFlowFilter: TrafficFlowFilter {
@@ -60,7 +62,7 @@ module UserPlaneRelay
         gtpUser.socketOut --> socketOut;
         gtpUser.socketIn <-- socketIn;
 
-        lowerLayerIn --> trafficFlowFilter.internetFilterGateIn;
-        trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
-        gtpUser.lowerLayerOut --> lowerLayerOut;
+        userDataIn --> trafficFlowFilter.in;
+        trafficFlowFilter.out --> gtpUser.userDataIn;
+        gtpUser.userDataOut --> userDataOut;
 }

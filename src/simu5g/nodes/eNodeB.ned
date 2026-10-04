@@ -261,8 +261,8 @@ module eNodeB
         //# User plane: the cellular NIC is wired to the tunnel endpoint directly, the
         //# base station does not IP-route the UEs' traffic
         //#
-        cellularNic.upperLayerOut --> relay.lowerLayerIn;
-        relay.lowerLayerOut --> cellularNic.upperLayerIn;
+        cellularNic.upperLayerOut --> relay.userDataIn;
+        relay.userDataOut --> cellularNic.upperLayerIn;
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
