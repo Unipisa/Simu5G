@@ -74,6 +74,16 @@ class PathLossModel
             bool tolerateMaxDistViolation);
 
     /*
+     * Set whether the UE end of the link about to be evaluated is inside a
+     * building, and how far inside
+     */
+    virtual void setIndoor(bool insideBuilding, double insideDistance)
+    {
+        inside_building_ = insideBuilding;
+        inside_distance_ = insideDistance;
+    }
+
+    /*
      * Compute the path-loss attenuation according to the selected scenario.
      * A concrete model that needs only one of the two distances ignores the
      * other.

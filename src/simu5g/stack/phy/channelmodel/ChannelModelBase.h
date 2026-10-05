@@ -171,6 +171,13 @@ class ChannelModelBase : public cSimpleModule
     virtual unsigned int getNumBands() const { return numBands_; }
 
     /*
+     * Whether the radio this model belongs to is inside a building, and how
+     * far inside (configured and drawn on the model for now)
+     */
+    virtual bool isInsideBuilding() const { return false; }
+    virtual double getInsideDistance() const { return 0.0; }
+
+    /*
      * Returns the numerology index
      */
     virtual unsigned int getNumerologyIndex() const { return componentCarrier_->getNumerologyIndex(); }

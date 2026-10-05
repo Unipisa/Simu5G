@@ -199,6 +199,9 @@ class StochasticChannelModel : public ChannelModelBase
      */
     double getAttenuation(const RadioLink& link) override;
 
+    bool isInsideBuilding() const override { return inside_building_; }
+    double getInsideDistance() const override { return inside_distance_; }
+
     /*
      * Convenience overload for the cellular callers that still think in
      * (UE, direction, remote coordinate) terms -- the interference helpers and

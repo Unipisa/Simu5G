@@ -48,6 +48,12 @@ class IRadioEndpoint
     /** The endpoint's current position. */
     virtual const inet::Coord& getCoord() const = 0;
 
+    /** Whether the endpoint is inside a building. */
+    virtual bool isInsideBuilding() = 0;
+
+    /** How far inside its building the endpoint is, in m (drawn once per endpoint). */
+    virtual double getInsideDistance() = 0;
+
     /** Whether the antenna radiates omnidirectionally or sectorially. */
     virtual TxDirectionType getTxDirection() = 0;
 
