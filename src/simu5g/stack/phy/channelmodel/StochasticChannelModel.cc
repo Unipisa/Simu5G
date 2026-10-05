@@ -50,8 +50,7 @@ PathLossModel *StochasticChannelModel::createPathLossModel()
         return new Tr36873PathLossModel();
     else if (pathLossType == "Tr38901") {
         auto *model = new Tr38901PathLossModel();
-        if (inside_building_)
-            useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
+        useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
         model->setUseBuildingPenetrationHighLossModel(useBuildingPenetrationHighLossModel_);
         return model;
     }
