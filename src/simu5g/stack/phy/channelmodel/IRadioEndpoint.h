@@ -48,6 +48,9 @@ class IRadioEndpoint
     /** The endpoint's current position. */
     virtual const inet::Coord& getCoord() const = 0;
 
+    /** The endpoint's current speed, in m/s, from its mobility. */
+    virtual double getSpeed() = 0;
+
     /** Whether the endpoint is inside a building. */
     virtual bool isInsideBuilding() = 0;
 

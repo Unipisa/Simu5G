@@ -63,7 +63,7 @@ std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction d
     else
         cInfo->setTxPower(bsTxPower_);
 
-    std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo);
+    std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo, bgUe_.at(bgUeIndex)->getSpeed());
 
     // Free memory
     delete frame;

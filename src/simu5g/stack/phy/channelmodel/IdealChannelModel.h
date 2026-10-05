@@ -82,7 +82,7 @@ class IdealChannelModel : public ChannelModelBase
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
 };
 
 } //namespace

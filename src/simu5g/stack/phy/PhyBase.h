@@ -303,6 +303,10 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
      */
     const inet::Coord& getCoord() const override;
     /*
+     * Returns the current speed of the node, from its mobility (0 without one)
+     */
+    double getSpeed() override;
+    /*
      * Whether the node is inside a building, and how far inside, as its
      * primary channel model is configured
      */

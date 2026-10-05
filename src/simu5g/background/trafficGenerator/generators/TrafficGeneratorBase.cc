@@ -291,6 +291,11 @@ inet::Coord TrafficGeneratorBase::getCoord()
     return pos_;
 }
 
+double TrafficGeneratorBase::getSpeed()
+{
+    return mobility_ != nullptr ? mobility_->getCurrentVelocity().length() : 0.0;
+}
+
 void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal) {

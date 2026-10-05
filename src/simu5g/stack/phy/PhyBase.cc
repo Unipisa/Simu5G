@@ -124,6 +124,11 @@ const inet::Coord& PhyBase::getCoord() const
     return radioPos_;
 }
 
+double PhyBase::getSpeed()
+{
+    return mobility_ != nullptr ? mobility_->getCurrentVelocity().length() : 0.0;
+}
+
 bool PhyBase::isInsideBuilding()
 {
     return primaryChannelModel_ != nullptr && primaryChannelModel_->isInsideBuilding();

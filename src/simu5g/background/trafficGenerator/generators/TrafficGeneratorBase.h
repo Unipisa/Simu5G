@@ -135,6 +135,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // returns the position of this bg UE: its mobility's, at this instant
     virtual inet::Coord getCoord();
 
+    // returns the speed of this bg UE, in m/s: its mobility's, at this instant
+    virtual double getSpeed();
+
     // This module is subscribed to position changes.
     void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 

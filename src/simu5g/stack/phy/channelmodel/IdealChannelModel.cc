@@ -68,7 +68,7 @@ std::vector<double> IdealChannelModel::getRSRP(AirFrame *frame, UserControlInfo 
     return tmp;
 }
 
-std::vector<double> IdealChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> IdealChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed)
 {
     std::vector<double> tmp(numBands_, FAKE_SINR_DB);
     // fake SINR is needed by the handover function to decide if the terminal should trigger the handover

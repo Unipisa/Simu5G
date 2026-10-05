@@ -222,7 +222,7 @@ class ChannelModelBase : public cSimpleModule
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) = 0;
+    virtual std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed) = 0;
 
     /*
      * Compute received useful signal for each band for user nodeId according to path loss, shadowing (optional), and multipath fading

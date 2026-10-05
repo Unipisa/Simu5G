@@ -286,17 +286,17 @@ wait(0.010);
     ul.setDirection(UL);
     ul.setTxPower(23.0);
 
-    bs->getSINR_bgUe(&frame, &dl);
+    bs->getSINR_bgUe(&frame, &dl, 0.0);
     c.check("a background UE's DL CQI draws the fading paths of its link to the base station",
             bsProbe.jakesMap().count(link) == 1);
 
     // what the UL CQI draws, against what an identical evaluation draws at once
     // (the path loss may draw on its own account)
     unsigned long before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getSINR_bgUe(&frame, &ul);
+    bs->getSINR_bgUe(&frame, &ul, 0.0);
     long long ulDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getSINR_bgUe(&frame, &ul);
+    bs->getSINR_bgUe(&frame, &ul, 0.0);
     long long repeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     c.expectValue("...and its UL CQI fades by the same paths, drawing none of its own", ulDraws, repeatDraws);
 }

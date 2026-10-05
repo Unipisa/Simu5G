@@ -688,7 +688,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
     return rsrpVector;
 }
 
-std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed)
 {
     //get tx power
     double recvPower = lteInfo->getTxPower(); // dBm
@@ -705,8 +705,6 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     double antennaGainTx = 0.0;
     double antennaGainRx = 0.0;
     double noiseFigure = 0.0;
-    double speed = 0.0;
-
 
     EV << "------------ GET SINR for background UE ----------------" << endl;
     //===================== PARAMETERS SETUP ============================
@@ -727,6 +725,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
         antennaGainRx = antennaGainEnB_;
         noiseFigure = bsNoiseFigure_;
     }
+    // not yet the caller's speed: still estimated from the position history
     speed = computeSpeed(bgUeId, ueCoord);
 
     CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);

@@ -280,7 +280,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
 
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
