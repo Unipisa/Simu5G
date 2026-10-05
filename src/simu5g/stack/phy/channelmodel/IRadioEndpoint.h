@@ -42,6 +42,9 @@ class IRadioEndpoint
   public:
     virtual ~IRadioEndpoint() = default;
 
+    /** The node id the endpoint is known by on the medium, or NODEID_NONE. */
+    virtual MacNodeId getMacNodeId() = 0;
+
     /** The endpoint's current position. */
     virtual const inet::Coord& getCoord() const = 0;
 

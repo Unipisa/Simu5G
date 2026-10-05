@@ -40,6 +40,7 @@ namespace unittest {
 class StubEndpoint : public IRadioEndpoint
 {
   public:
+    MacNodeId nodeId = NODEID_NONE;
     inet::Coord coord;
     TxDirectionType txDirection = OMNI;
     double txAngle = 0.0;
@@ -50,6 +51,7 @@ class StubEndpoint : public IRadioEndpoint
     CellularReceiver *receiver = nullptr;
     std::map<GHz, ChannelModelBase *> channelModels;  // by carrier frequency
 
+    MacNodeId getMacNodeId() override { return nodeId; }
     const inet::Coord& getCoord() const override { return coord; }
     TxDirectionType getTxDirection() override { return txDirection; }
     double getTxAngle() override { return txAngle; }

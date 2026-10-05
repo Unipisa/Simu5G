@@ -143,6 +143,9 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     // of the two is the UE. The UE is the node whose channel state we track.
     RadioLink link;
     link.dir = dir;
+    // The link is the UE and the local radio. For DL the local radio is the UE
+    // itself, and the base station at 'coord' is not named.
+    link.linkKey = (dir == DL) ? LinkKey(ueId, NODEID_NONE) : LinkKey(ueId, phy_->getMacNodeId());
     // A cellular link: the degenerate key {ueId, ueId} reproduces the historical
     // node-keyed behavior exactly, since a UE has one such link per instance.
     link.stateKey = LinkKey(ueId);
@@ -234,6 +237,12 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
         link.txRadio = radioMedium_->findRadio(ueId);
         link.rxRadio = phy_;
     }
+
+    // The link is the frame's source and the local radio: whatever the direction,
+    // the source is the other end -- the base station of a DL frame or a beacon,
+    // the UE of a UL frame or a CQI report. A beacon and a cell-selection probe
+    // carry no destination, so the local end is named by the local radio.
+    link.linkKey = LinkKey(lteInfo->getSourceId(), phy_->getMacNodeId());
 
     // The UE owns the channel state, and it is always the UE's position that feeds
     // the speed and correlation-distance computation -- which is why the old code's

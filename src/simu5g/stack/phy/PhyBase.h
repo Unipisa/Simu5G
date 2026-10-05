@@ -302,7 +302,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     /*
      * Returns the MAC Node Id
      */
-    MacNodeId getMacNodeId() { return nodeId_; }
+    MacNodeId getMacNodeId() override { return nodeId_; }
 };
 
 } //namespace
