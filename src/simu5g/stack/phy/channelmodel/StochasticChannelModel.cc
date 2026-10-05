@@ -284,6 +284,12 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo)
 
 double StochasticChannelModel::getAttenuation(const RadioLink& link)
 {
+    // a building's penetration loss is the UE end's: the transmitter of an
+    // uplink, otherwise the receiver (the UE, or a D2D link's receiver); a
+    // background UE is outdoors
+    IRadioEndpoint *ueEnd = link.dir == UL ? link.txRadio : link.rxRadio;
+    pathLoss_->setIndoor(ueEnd != nullptr && ueEnd->isInsideBuilding(), ueEnd != nullptr ? ueEnd->getInsideDistance() : 0.0);
+
     // COMPUTE 3D and 2D DISTANCE between the two endpoints
     double threeDimDistance = link.txCoord.distance(link.rxCoord);
     double twoDimDistance = getTwoDimDistance(link.txCoord, link.rxCoord);
