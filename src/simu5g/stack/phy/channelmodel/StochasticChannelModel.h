@@ -450,21 +450,6 @@ class StochasticChannelModel : public ChannelModelBase
     virtual double getTwoDimDistance(inet::Coord a, inet::Coord b);
 
     /*
-     * Compute speed (m/s) for a given node
-     * @param nodeid mac node id of UE
-     * @return the speed in m/s
-     */
-    virtual double computeSpeed(const MacNodeId nodeId, const inet::Coord coord);
-
-
-
-    /*
-     * Updates position for a given node
-     * @param nodeid mac node id of UE
-     */
-    virtual void updatePositionHistory(const MacNodeId nodeId, const inet::Coord coord);
-
-    /*
      * One interfering uplink transmitter: a real UE (with a PHY) or a
      * background UE (with a traffic generator).
      */

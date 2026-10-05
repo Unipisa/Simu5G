@@ -54,7 +54,6 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     // The node whose position history defines the speed is the transmitter.
     link.linkKey = LinkKey(link.txId, link.rxId);
     link.stateNodeId = srcId;
-    link.stateCoord = srcCoord;
 
     return link;
 }

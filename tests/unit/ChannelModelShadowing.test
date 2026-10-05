@@ -76,7 +76,6 @@ static RadioLink linkTo(MacNodeId node, const inet::Coord& bs, const inet::Coord
     link.rxCoord = ueCoord;
     link.linkKey = LinkKey(MacNodeId(1), node);
     link.stateNodeId = node;
-    link.stateCoord = ueCoord;
     link.txIsBaseStation = true;
     return link;
 }
@@ -92,7 +91,6 @@ static RadioLink d2dLinkBetween(MacNodeId tx, const inet::Coord& txCoord, MacNod
     link.rxCoord = rxCoord;
     link.linkKey = LinkKey(tx, rx);
     link.stateNodeId = tx;
-    link.stateCoord = txCoord;
     link.txIsBaseStation = false;
     return link;
 }

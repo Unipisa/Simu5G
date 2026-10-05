@@ -16,13 +16,12 @@ names the receiving UE of a beacon, a frame with no destination.
 linkFor() is checked for the four cases it distinguishes: downlink data, which
 the UE decodes; uplink data, which the base station decodes; and the feedback
 variants, which the base station evaluates for a CQI. In each: the endpoints,
-the geometry, and the UE whose position history the evaluation feeds and the
-position it is fed.
+the geometry, and the link's mobile end, the UE.
 
 The property that matters most is stated on its own. The link a downlink CQI
 is computed on, at the base station, and the link the UE decodes downlink data
 on are the same physical link evaluated from its two ends: same endpoints,
-positions and position history. The two ends see the same link, whose state
+positions and mobile end. The two ends see the same link, whose state
 the radio medium keeps once. That is the geometric half of what the Jakes and shadowing
 tests assert about the state itself.
 
@@ -52,7 +51,7 @@ static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeI
 static bool sameLink(const RadioLink& a, const RadioLink& b)
 {
     return a.linkKey == b.linkKey && a.txId == b.txId && a.rxId == b.rxId && a.txCoord == b.txCoord && a.rxCoord == b.rxCoord
-           && a.stateNodeId == b.stateNodeId && a.stateCoord == b.stateCoord
+           && a.stateNodeId == b.stateNodeId
            && a.txIsBaseStation == b.txIsBaseStation
            && a.cellId == b.cellId && a.dir == b.dir;
 }
@@ -114,8 +113,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("DL data: the base station transmits to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
-    c.check("...and the UE's position history, fed by the UE's own position",
-            l.stateNodeId == ueId && l.stateCoord == uePos);
+    c.check("...and the UE is the mobile end",
+            l.stateNodeId == ueId);
     c.check("...and the link is the base station and the UE, by their node ids", l.linkKey == LinkKey(enbId, ueId));
 }
 {
@@ -125,8 +124,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("UL data: the UE transmits to the base station",
             l.txId == ueId && l.rxId == enbId && !l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
-    c.check("...and the UE's position history -- always the UE's, fed by the UE's position",
-            l.stateNodeId == ueId && l.stateCoord == uePos);
+    c.check("...and the mobile end is always the UE",
+            l.stateNodeId == ueId);
     c.check("...the same link, named from the other end", l.linkKey == LinkKey(enbId, ueId));
 }
 {
@@ -137,7 +136,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("DL CQI: still the downlink, the base station transmitting to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
     c.check("...evaluated where the report arrived, from the UE's reported position",
-            l.txCoord == enbPos && l.rxCoord == uePos && l.stateCoord == uePos);
+            l.txCoord == enbPos && l.rxCoord == uePos);
     c.check("...on the same link", l.linkKey == LinkKey(enbId, ueId));
 }
 {
@@ -146,18 +145,18 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     UserControlInfo data = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
     RadioLink uplinkData = atEnb.linkFor(&data);
     RadioLink l = atEnb.linkFor(&info);
-    c.check("UL CQI: the same link as the uplink data it describes, position history included",
+    c.check("UL CQI: the same link as the uplink data it describes, mobile end included",
             sameLink(l, uplinkData));
 }
 {
     // A beacon names no destination: the link is its sender and the radio
-    // that received it. The position history is still kept under the UE the
-    // frame names, which is none.
+    // that received it. The mobile end is still the UE the frame names,
+    // which is none.
     UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE, enbPos);
     RadioLink l = atUe.linkFor(&info);
     c.check("a beacon: the link is its sender and the receiving radio",
             l.txId == enbId && l.rxId == ueId && l.linkKey == LinkKey(enbId, ueId));
-    c.check("...while the position history is kept under the missing destination", l.stateNodeId == NODEID_NONE);
+    c.check("...while the mobile end is the missing destination", l.stateNodeId == NODEID_NONE);
 }
 {
     // The two ends see the same link, at the level of the link itself.
@@ -176,14 +175,14 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     RadioLink dl = atUe.cellularLink(ueId, DL, enbPos);
     c.check("cellularLink, DL: the other end transmits, the local end is the UE",
             dl.txIsBaseStation && dl.txCoord == enbPos && dl.rxCoord == uePos && dl.rxId == ueId);
-    c.check("...and the UE's position history is fed by the local position",
-            dl.stateNodeId == ueId && dl.stateCoord == uePos);
+    c.check("...and the UE is the mobile end",
+            dl.stateNodeId == ueId);
     c.check("...and the link is the UE and an unnamed base station", dl.linkKey == LinkKey(ueId, NODEID_NONE));
 
     RadioLink ul = atEnb.cellularLink(ueId, UL, uePos);
     c.check("cellularLink, UL: the UE at the given position transmits to the local base station",
             !ul.txIsBaseStation && ul.txCoord == uePos && ul.rxCoord == enbPos && ul.txId == ueId);
-    c.check("...and the UE's position history is fed by the given position", ul.stateCoord == uePos);
+    c.check("...and the UE is the mobile end", ul.stateNodeId == ueId);
     c.check("...and the link is the UE and the local base station, named by its own radio",
             ul.rxId == enbId && ul.linkKey == LinkKey(ueId, enbId));
 }

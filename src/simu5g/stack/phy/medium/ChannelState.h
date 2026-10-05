@@ -112,7 +112,6 @@ struct ChannelState
     };
     typedef std::map<LinkKey, ShadowingSample> ShadowFadingMap;
 
-    std::map<MacNodeId, std::queue<Position>> positionHistory;   // per node: its last two positions
 };
 
 } // namespace simu5g

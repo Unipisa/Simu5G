@@ -163,8 +163,6 @@ class ChannelModelProbe
 
         static auto linkForPtr() { return &Access::linkFor; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
-        static auto computeSpeedPtr() { return &Access::computeSpeed; }
-        static auto updatePositionHistoryPtr() { return &Access::updatePositionHistory; }
         static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
     };
 
@@ -177,7 +175,6 @@ class ChannelModelProbe
 
     // state: the model's channel state, which the radio medium keeps
     ChannelState& channelState() { return (model_->*Access::channelStatePtr())(); }
-    auto& positionHistory() { return channelState().positionHistory; }
     // the LOS state of the links on the model's carrier, which the radio medium keeps once per link
     ChannelState::LosMap& losMap() { return (model_->*Access::losMapPtr())(); }
     // the shadowing of the links on the model's carrier, which the radio medium keeps once per link
@@ -194,8 +191,6 @@ class ChannelModelProbe
     {
         return (model_->*Access::cellularLinkPtr())(ueId, dir, coord);
     }
-    double computeSpeed(MacNodeId id, inet::Coord coord) { return (model_->*Access::computeSpeedPtr())(id, coord); }
-    void updatePositionHistory(MacNodeId id, inet::Coord coord) { (model_->*Access::updatePositionHistoryPtr())(id, coord); }
     void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
     {
         (model_->*Access::emitRcvdSinrPtr())(dir, ueId, carrierFrequency, sinr);

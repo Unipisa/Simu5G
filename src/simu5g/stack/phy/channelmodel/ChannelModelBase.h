@@ -66,12 +66,9 @@ struct RadioLink
     // and its Jakes fading paths.
     LinkKey linkKey;
 
-    // stateNodeId is the *node* the state belongs to -- the UE. It indexes the
-    // position history, which is genuinely a node property because it defines
-    // the node's speed, and it distinguishes background UEs.
+    // stateNodeId is the link's mobile end -- the UE, or a D2D link's
+    // transmitter. It keys the Rayleigh fading and distinguishes background UEs.
     MacNodeId stateNodeId = NODEID_NONE;
-
-    inet::Coord stateCoord;      // position feeding computeSpeed
 
     // ---- radios ----
     // The link budget is not part of the link: the antenna gains, the cable loss
