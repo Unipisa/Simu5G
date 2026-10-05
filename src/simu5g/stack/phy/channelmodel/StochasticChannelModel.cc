@@ -600,11 +600,8 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
     EV << "\t using parameters - antennaGainTx=" << txAntennaGain << " - antennaGainRx=" << rxAntennaGain
        << " - txPwr=" << txPower << " - for link=" << link.linkKey << endl;
 
-    // Speed must be read BEFORE getAttenuation(), which appends to the position
-    // history: computeSpeed() derives from that history, so evaluating it
-    // afterwards would yield a different value and hence different fading.
-    // Load-bearing ordering.
-    double speed = computeSpeed(link.stateNodeId, link.stateCoord);
+    // the speed of the link's mobile end: the UE, or a D2D link's transmitter
+    double speed = (link.txIsBaseStation ? link.rxRadio : link.txRadio)->getSpeed();
 
     // attenuation for the desired signal
     double attenuation = getAttenuation(link); // dB
@@ -725,9 +722,6 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
         antennaGainRx = antennaGainEnB_;
         noiseFigure = bsNoiseFigure_;
     }
-    // not yet the caller's speed: still estimated from the position history
-    speed = computeSpeed(bgUeId, ueCoord);
-
     CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
     const char *eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
