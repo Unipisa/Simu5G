@@ -204,7 +204,11 @@ void PhyEnb::handleAirFrame(cMessage *msg)
         return; // If frame contains a control packet no further action is needed
 
     // DAS removed - single antenna only
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    bool result;
+    {
+        ChannelModelBase::EvaluatedAt at(channelModel, this);
+        result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    }
     if (result)
         numAirFrameReceived_++;
     else
@@ -238,6 +242,9 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
 
     // select the correct channel model according to the carrier frequency
     ChannelModelBase *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
+    if (channelModel == nullptr)
+        throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
+    ChannelModelBase::EvaluatedAt at(channelModel, this);
 
     //get UE Position
     Coord sendersPos = lteinfo->getCoord();

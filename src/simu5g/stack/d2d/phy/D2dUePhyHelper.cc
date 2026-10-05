@@ -55,6 +55,7 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
 
         double sum = 0.0;
         unsigned int allocatedRbs = 0;
+        ChannelModelBase::EvaluatedAt at(channelModel, phy_);
         rsrpVector = check_and_cast<ID2dChannelModel *>(channelModel)->getRSRP_D2D(newFrame, newInfo, phy_->getMacNodeId(), myCoord);
 
         // Get the average RSRP on the RBs allocated for the transmission
@@ -141,7 +142,11 @@ void D2dUePhyHelper::decodeAirFrame(AirFrame *frame, UserControlInfo *lteInfo)
     // Apply decider to received packet. D2D and D2D_MULTI no longer need their own
     // entry point: the core reception decision handles every direction, and
     // bestRsrpVector_ carries the capture-effect RSRP for the one-to-many case.
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo, bestRsrpVector_);
+    bool result;
+    {
+        ChannelModelBase::EvaluatedAt at(channelModel, phy_);
+        result = channelModel->isReceptionSuccessful(frame, lteInfo, bestRsrpVector_);
+    }
 
     EV << "Handled LteAirframe with ID " << frame->getId() << " with result "
        << (result ? "RECEIVED" : "NOT RECEIVED") << endl;

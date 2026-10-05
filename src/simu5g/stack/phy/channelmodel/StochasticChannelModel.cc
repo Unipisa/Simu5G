@@ -1098,8 +1098,12 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
 
         double txPwr = powerTowardsUe(id, *transmission);
 
-        // compute attenuation using data structures within the cell
-        double att = interfChanModel->getAttenuation(ueId, UL, coord);
+        // the attenuation, evaluated at the interfering cell with its channel model
+        double att;
+        {
+            EvaluatedAt at(interfChanModel, cell);
+            att = interfChanModel->getAttenuation(ueId, UL, coord);
+        }
         EV << "EnbId [" << id << "] - attenuation [" << att << "]" << endl;
 
         for (unsigned int i : bands) {

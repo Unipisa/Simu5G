@@ -181,6 +181,26 @@ class ChannelModelBase : public cSimpleModule
 
     virtual void setPhy(IRadioEndpoint *phy) { phy_ = phy; }
 
+    /**
+     * Names the radio the model evaluates at -- the receiver of a frame, or
+     * the base station computing a CQI -- for the lifetime of the object, and
+     * restores the previous one after it, so evaluations can nest (an
+     * interfering cell's link evaluated at that cell, in the middle of a
+     * reception at another radio).
+     */
+    class EvaluatedAt
+    {
+      private:
+        ChannelModelBase *model_;
+        IRadioEndpoint *previous_;
+
+      public:
+        EvaluatedAt(ChannelModelBase *model, IRadioEndpoint *radio) : model_(model), previous_(model->phy_) { model_->phy_ = radio; }
+        ~EvaluatedAt() { model_->phy_ = previous_; }
+        EvaluatedAt(const EvaluatedAt&) = delete;
+        EvaluatedAt& operator=(const EvaluatedAt&) = delete;
+    };
+
     /*
      * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
      * After that, it generates a random number to check if this packet will be corrupted or not

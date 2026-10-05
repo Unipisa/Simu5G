@@ -102,7 +102,11 @@ void PhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandida
         cInfo->setDirection(DL);
         // get RSSI from the BS
         double rssi = 0;
-        std::vector<double> rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
+        std::vector<double> rssiV;
+        {
+            ChannelModelBase::EvaluatedAt at(primaryChannelModel_, this);
+            rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
+        }
         for (auto value : rssiV)
             rssi += value;
         rssi /= rssiV.size(); // compute the mean over all RBs
@@ -148,6 +152,7 @@ void PhyUe::changeServingNode(MacNodeId servingNodeId)
 
 double PhyUe::computeReceivedBeaconPacketRssi(AirFrame *frame, UserControlInfo *lteInfo)
 {
+    ChannelModelBase::EvaluatedAt at(primaryChannelModel_, this);
     std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, lteInfo);
     double rssi = 0;
     for (auto value : rssiV)
@@ -270,7 +275,11 @@ void PhyUe::handleAirFrame(cMessage *msg)
         }
     }
 
-    bool result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    bool result;
+    {
+        ChannelModelBase::EvaluatedAt at(channelModel, this);
+        result = channelModel->isReceptionSuccessful(frame, lteInfo);
+    }
 
     // Update statistics
     if (result)
