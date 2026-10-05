@@ -69,6 +69,9 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     /** channel models to use.*/
     std::map<GHz, opp_component_ptr<ChannelModelBase>> channelModel_;
     inet::ModuleRefByPar<ChannelModelBase> primaryChannelModel_;
+    /// whether the node is inside a building, and how far from its wall
+    bool insideBuilding_ = false;
+    double insideDistance_ = 0.0;
 
     /** The id of the in-data gate from the Stack */
     int upperGateIn_ = -1;
@@ -307,8 +310,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
      */
     double getSpeed() override;
     /*
-     * Whether the node is inside a building, and how far inside, as its
-     * primary channel model is configured
+     * Whether the node is inside a building, and how far inside
      */
     bool isInsideBuilding() override;
     double getInsideDistance() override;

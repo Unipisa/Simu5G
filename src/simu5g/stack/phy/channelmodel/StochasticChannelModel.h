@@ -91,13 +91,6 @@ class StochasticChannelModel : public ChannelModelBase
     // average Building Heights
     double hBuilding_;
 
-    // true if the UE is inside a building
-    bool inside_building_;
-
-    // distance from the building wall: one per radio, the same for each of
-    // its carriers' channel models
-    double inside_distance_;
-
     // flag for using high-loss or low-loss model for building penetration
     // see table 7.4.3-2 in TR 38.901
     bool useBuildingPenetrationHighLossModel_;
@@ -195,8 +188,6 @@ class StochasticChannelModel : public ChannelModelBase
      */
     double getAttenuation(const RadioLink& link) override;
 
-    bool isInsideBuilding() const override { return inside_building_; }
-    double getInsideDistance() const override { return inside_distance_; }
 
     /*
      * Convenience overload for the cellular callers that still think in

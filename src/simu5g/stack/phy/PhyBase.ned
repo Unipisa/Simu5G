@@ -35,6 +35,7 @@ simple PhyBase like IPhy
 
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium"); // The network's radio medium
+        bool insideBuilding = default(false); // Whether the node is inside a building; its distance from the wall is drawn once, uniformly in [0, 25] m
         string channelModelModule = default("^.channelModel[0]"); // Set to "^.nrChannelModel[0]" on an NR leg, see ~NrNicUe
         string radioModule = default("^.radio"); // This leg's radio; set to "^.nrRadio" on an NR leg, see ~NrNicUe
 

@@ -54,9 +54,7 @@ simple StochasticChannelModel extends ChannelModelBase
         double nodebHeight @unit(m) = default(25m);
         // Building height
         double buildingHeight @unit(m) = default(20m);
-        // Determines if the UE is inside a building
-        bool insideBuilding = default(false);
-        // Enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901); only used with pathLossType="Tr38901"
+        // Enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901) for a UE inside a building (see ~PhyBase); only used with pathLossType="Tr38901"
         bool useBuildingPenetrationHighLossModel = default(false);
 
         double streetWidth @unit(m) = default(20m);

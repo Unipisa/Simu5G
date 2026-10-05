@@ -82,6 +82,9 @@ void PhyBase::initialize(int stage)
         eNodeBtxPower_ = par("eNodeBTxPower");
         microTxPower_ = par("microTxPower");
         isNr_ = par("isNr");
+        insideBuilding_ = par("insideBuilding");
+        if (insideBuilding_)
+            insideDistance_ = uniform(0.0, 25.0);
 
         WATCH(numAirFrameReceived_);
         WATCH(numAirFrameNotReceived_);
@@ -131,12 +134,12 @@ double PhyBase::getSpeed()
 
 bool PhyBase::isInsideBuilding()
 {
-    return primaryChannelModel_ != nullptr && primaryChannelModel_->isInsideBuilding();
+    return insideBuilding_;
 }
 
 double PhyBase::getInsideDistance()
 {
-    return primaryChannelModel_ != nullptr ? primaryChannelModel_->getInsideDistance() : 0.0;
+    return insideDistance_;
 }
 
 void PhyBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
