@@ -59,6 +59,9 @@ class D2dEnbMacHelper
 
   public:
     D2dEnbMacHelper(LteMacEnb *mac) : mac_(mac) {}
+    D2dEnbMacHelper(const D2dEnbMacHelper&) = delete;
+    D2dEnbMacHelper& operator=(const D2dEnbMacHelper&) = delete;
+    ~D2dEnbMacHelper();
 
     // mirror H-ARQ buffers
     std::map<GHz, HarqBuffersMirrorD2D>& getHarqBuffersMirrorD2DMap() { return harqBuffersMirrorD2D_; }

@@ -24,6 +24,12 @@ LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned ch
         processes_[i] = new LteHarqProcessMirrorD2D(MAX_CODEWORDS, maxHarqRtx_, macOwner);
 }
 
+LteHarqBufferMirrorD2D::~LteHarqBufferMirrorD2D()
+{
+    for (auto process : processes_)
+        delete process;
+}
+
 void LteHarqBufferMirrorD2D::receiveHarqFeedback(inet::Packet *pkt)
 {
     EV << "LteHarqBufferMirrorD2D::receiveHarqFeedback - start" << endl;
