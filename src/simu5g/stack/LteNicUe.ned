@@ -52,7 +52,7 @@ module LteNicUe extends LteNicBase
         }
         // the NIC's top in Ethernet mode, an Ethernet port of the UE's link layer
         ethernetPortal: EthernetPortal if sessionType == "Ethernet" {
-            @display("p=440,20;is=s");
+            @display("p=310,50;is=s");
         }
 
     connections allowunconnected:

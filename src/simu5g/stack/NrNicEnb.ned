@@ -41,7 +41,7 @@ module NrNicEnb extends LteNicEnb
 
     submodules:
         sdap: <default("NrSdap")> like INrSdap if hasSdap {
-            @display("p=230,155");
+            @display("p=310,270");
         }
 
     connections:

@@ -39,7 +39,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:
         @class(NonlayoutingNetworkInterface);
-        @display("i=block/ifcard;bgb=800,650;bgl=3");
+        @display("i=block/ifcard;bgb=800,810;bgl=3");
         bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
@@ -75,12 +75,12 @@ module LteNicBase extends NetworkInterface like ICellularNic
     submodules:
         // handover helper, performs packet holding / forwarding
         handoverPacketHolder: <> like IHandoverPacketHolder {
-            @display("p=440,50;is=s");
+            @display("p=440,100;is=s");
         }
         // bridge between radio nic and network layer
         ip2nic: <default("Ip2Nic")> like INetworkLayer2CellularNic {
             nodeType = parent.nodeType;
-            @display("p=310,120");
+            @display("p=310,200;is=s");
         }
         // RRC Layer
         rrc: <default("Rrc")> like IRrc {
@@ -88,19 +88,19 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // PDCP submodules (flattened from former PdcpLayer compound)
         pdcpMux: <default("PdcpMux")> like IPdcpMux {
-            @display("p=310,190;is=s");
+            @display("p=310,340;is=s");
         }
         // RLC submodules (flattened from former LteRlc compound)
         rlcMux: <default("RlcMux")> like IRlcMux {
-            @display("p=310,430;is=s");
+            @display("p=310,580;is=s");
         }
         // MAC Layer
         mac: <> like ILteMac {
-            @display("p=310,510");
+            @display("p=310,660");
         }
         // PHY submodule
         phy: <> like IPhy {
-            @display("p=310,600");
+            @display("p=310,750");
         }
 
         channelModel[numCarriers]: <channelModelType> like IChannelModel {

@@ -75,25 +75,25 @@ module NrNicUe extends LteNicUe
         // uplink QoS-flow classification (the TrafficFlowFilter's uplink counterpart),
         // where uplink traffic enters the stack
         qosFlowClassifier: <default("QosFlowClassifier")> like IQosFlowClassifier if hasSdap {
-            @display("p=440,120;is=s");
+            @display("p=440,150;is=s");
         }
         sdap: <default("NrSdap")> like INrSdap if hasSdap {
-            @display("p=230,155");
+            @display("p=310,270");
         }
         reflectiveQosTable: <default("ReflectiveQosTable")> like IReflectiveQosTable if useReflectiveQos && hasSdap {
             @display("p=80,60,col;g=left");
         }
         // NR RLC submodules (flattened from former LteRlc compound)
         nrRlcMux: <default("RlcMux")> like IRlcMux {
-            @display("p=570,430;is=s");
+            @display("p=570,580;is=s");
         }
         // MAC Layer
         nrMac: <default("NrMacUe")> like ILteMac {
-            @display("p=570,510");
+            @display("p=570,660");
         }
         // PHY Layer
         nrPhy: <default("PhyUe")> like IPhy {
-            @display("p=570,600");
+            @display("p=570,750");
         }
         // NR Channel Model
         nrChannelModel[numNrCarriers]: <nrChannelModelType> like IChannelModel {
