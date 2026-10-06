@@ -469,7 +469,10 @@ class Binder : public cSimpleModule
 
     virtual inet::L3Address getX2PeerAddress(X2NodeId srcId, X2NodeId destId)
     {
-        return x2PeerAddress_[srcId][destId];
+        auto it = x2PeerAddress_.find(srcId);
+        if (it == x2PeerAddress_.end() || it->second.find(destId) == it->second.end())
+            throw omnetpp::cRuntimeError("Binder::getX2PeerAddress(): base station %hu has no X2 link to %hu", num(srcId), num(destId));
+        return it->second.at(destId);
     }
 
     /**
