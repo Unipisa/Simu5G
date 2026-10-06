@@ -47,6 +47,7 @@ class Registration : public cSimpleModule, public cListener
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
     void finish() override;
+    using cListener::finish;
 
     virtual void registerInterface();
     virtual void registerMulticastGroups();
