@@ -94,6 +94,7 @@ struct ChannelState
         inet::Coord positionA; // where LinkKey::a was
         inet::Coord positionB; // where LinkKey::b was
         bool los = false;
+        double environmentHeight = 1.0; // the UMa h_E of the link, drawn with its LOS state
     };
     typedef std::map<LinkKey, LosSample> LosMap;
 

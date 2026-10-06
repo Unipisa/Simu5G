@@ -48,6 +48,7 @@ class PathLossModel
     double carrierFrequencyGHz_ = 0;
     double log10CarrierFrequencyGHz_ = 0;
     bool tolerateMaxDistViolation_ = false;
+    double environmentHeight_ = 1.0;    // h_E of the link being evaluated, see setEnvironmentHeight()
 
     /*
      * Propagation velocity in free space, as the breakpoint-distance notes of
@@ -82,6 +83,19 @@ class PathLossModel
         inside_building_ = insideBuilding;
         inside_distance_ = insideDistance;
     }
+
+    /*
+     * Draw the effective environment height h_E of a link between a base
+     * station site and a UE (TR 38.901 Table 7.4.1-1 NOTE 1, TR 36.873 7.2.1
+     * NOTE 4), at the given 2D distance. 1 m, without a draw, where the study
+     * and scenario have no other value or the probability of 1 m is 1.
+     */
+    virtual double drawEnvironmentHeight(double d2D) { return 1.0; }
+
+    /*
+     * Set the h_E of the link about to be evaluated
+     */
+    virtual void setEnvironmentHeight(double environmentHeight) { environmentHeight_ = environmentHeight; }
 
     /*
      * Compute the path-loss attenuation according to the selected scenario.

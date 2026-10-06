@@ -41,6 +41,7 @@ class Tr38901PathLossModel : public Tr36873PathLossModel
     double computePathLoss(double d3D, double d2D, bool los) override;
     double computeLosProbability(double d3D, double d2D) override;
     double getShadowingStdDev(double d3D, double d2D, bool losState) override;
+    double drawEnvironmentHeight(double d2D) override;
 
     /*
      * Select the low-loss (default) or high-loss building-penetration model

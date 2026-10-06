@@ -152,6 +152,24 @@ double Tr38901PathLossModel::computePenetrationLoss(double threeDimDistance)
     return pLoss_tw + pLoss_in;
 }
 
+double Tr38901PathLossModel::drawEnvironmentHeight(double d2D)
+{
+    if (scenario_ != URBAN_MACROCELL)
+        return 1.0;
+    double G_2d = (d2D < 18.0) ? 0 : (5.0 / 4.0) * pow(d2D / 100.0, 3) * exp(-d2D / 150);
+    double C = (hUe_ < 13.0) ? 0 : pow(((hUe_ - 13.0) / 10.0), 1.5) * G_2d;
+    double prob = 1.0 / (1.0 + C);
+    // drawn only when it can come out otherwise
+    if (prob >= 1.0 || owner_->uniform(0.0, 1.0) < prob)
+        return 1.0;
+    double bound = hUe_ - 1.5;
+    std::vector<double> hVec;
+    for (double h = 12; h < bound; h += 3)
+        hVec.push_back(h);
+    hVec.push_back(bound);
+    return hVec.at(owner_->intuniform(0, hVec.size() - 1));
+}
+
 double Tr38901PathLossModel::computeUrbanMacro3D(double threeDimDistance, double twoDimDistance, bool los)
 {
     if (twoDimDistance < 10)
@@ -169,21 +187,7 @@ double Tr38901PathLossModel::computeUrbanMacro3D(double threeDimDistance, double
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
     // Compute break-point distance
-    double hEnvir = 0.0;
-    double G_2d = (twoDimDistance < 18.0) ? 0 : (5.0 / 4.0) * pow(twoDimDistance / 100.0, 3) * exp(-twoDimDistance / 150);
-    double C = (hUe_ < 13.0) ? 0 : pow(((hUe_ - 13.0) / 10.0), 1.5) * G_2d;
-    double prob = 1.0 / (1.0 + C);
-    // drawn only when it can come out otherwise
-    if (prob >= 1.0 || owner_->uniform(0.0, 1.0) < prob)
-        hEnvir = 1.0;
-    else {
-        double bound = hUe_ - 1.5;
-        std::vector<double> hVec;
-        for (double h = 12; h < bound; h += 3)
-            hVec.push_back(h);
-        hVec.push_back(bound);
-        hEnvir = hVec.at(owner_->intuniform(0, hVec.size() - 1));
-    }
+    double hEnvir = drawEnvironmentHeight(twoDimDistance);
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
     double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_  / PROPAGATION_VELOCITY);

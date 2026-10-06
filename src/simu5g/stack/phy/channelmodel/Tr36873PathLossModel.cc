@@ -166,6 +166,24 @@ double Tr36873PathLossModel::computeUrbanMicro3D(double threeDimDistance, double
     return (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
 }
 
+double Tr36873PathLossModel::drawEnvironmentHeight(double d2D)
+{
+    if (scenario_ != URBAN_MACROCELL)
+        return 1.0;
+    double C = (hUe_ <= 13.0) ? 0 : pow(((hUe_ - 13.0) / 10.0), 1.5);
+    double prob = 1.0 / (1.0 + C);
+    // drawn only when it can come out otherwise
+    if (prob >= 1.0 || owner_->uniform(0.0, 1.0) < prob)
+        return 1.0;
+    double bound = hUe_ - 1.5;
+    std::vector<double> hVec;
+    for (double h = 12; h < bound; h += 3)
+        hVec.push_back(h);
+    hVec.push_back(bound);
+    int index = owner_->intuniform(0, hVec.size() - 1);
+    return hVec.at(index);
+}
+
 double Tr36873PathLossModel::computeUrbanMacro3D(double threeDimDistance, double twoDimDistance, bool los)
 {
     if (twoDimDistance < 10)
@@ -190,21 +208,7 @@ double Tr36873PathLossModel::computeUrbanMacro3D(double threeDimDistance, double
     }
 
     // compute break-point distance
-    double hEnvir = 0.0;
-    double C = (hUe_ <= 13.0) ? 0 : pow(((hUe_ - 13.0) / 10.0), 1.5);
-    double prob = 1.0 / (1.0 + C);
-    // drawn only when it can come out otherwise
-    if (prob >= 1.0 || owner_->uniform(0.0, 1.0) < prob)
-        hEnvir = 1.0;
-    else {
-        double bound = hUe_ - 1.5;
-        std::vector<double> hVec;
-        for (double h = 12; h < bound; h += 3)
-            hVec.push_back(h);
-        hVec.push_back(bound);
-        int index = owner_->intuniform(0, hVec.size() - 1);
-        hEnvir = hVec.at(index);
-    }
+    double hEnvir = drawEnvironmentHeight(twoDimDistance);
 
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
