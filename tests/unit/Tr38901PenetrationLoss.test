@@ -13,9 +13,10 @@ be evaluated at.
 For UMa below 6 GHz Table 7.4.3-3 applies, the single-frequency model kept for
 backwards compatibility with TR 36.873: the through-wall term is a constant
 20 dB whose sigma_P is 0, so the whole O2I loss is deterministic. Above 6 GHz
-Table 7.4.3-2 applies, a frequency-dependent median plus a zero-mean normal
-variate, so only its mean over many draws is checked, against a tolerance wide
-enough for the sampling error of that many draws.
+Table 7.4.3-2 applies, a frequency-dependent median plus sigma_P times a
+standard-normal variate. The variate is the UE's, drawn once (TR 38.901
+7.4.3.1: "UT-specifically generated") and given to the model, so each case is
+exact: the median at a deviate of 0, and the median plus sigma_P at 1.
 
 Which of the two tables applies is a function of the scenario as well as the
 frequency: only UMa and UMi are offered the sub-6 GHz model, and RMa keeps the
@@ -75,9 +76,7 @@ probe.record("t901_o2i_sub6", indoor, { { "dIn", 20 } },
         m.computePathLoss(20, 18, true) - umaShort);
 
 // --- fc > 6 GHz: the material-based model of table 7.4.3-2 ------------
-// Its through-wall term carries a zero-mean normal variate, so each case is
-// the mean of the loss over many draws.
-const int numSamples = 20000;
+// Its through-wall term is sigma_P times the UE's standard-normal deviate.
 
 outdoor = ScenarioParams();
 outdoor.scenario = URBAN_MACROCELL;
@@ -91,21 +90,19 @@ indoor = outdoor;
 indoor.insideBuilding = true;
 indoor.insideDistance = 10;
 
-indoor.apply(m, this);
-m.setUseBuildingPenetrationHighLossModel(false);
-double sum = 0;
-for (int i = 0; i < numSamples; i++)
-    sum += m.computePathLoss(102.7, 100, true) - mmWaveOutdoor;
-probe.record("t901_o2i_lowloss_mean", indoor, { { "dIn", 10 } },
-        sum / numSamples, 0.2);
+for (double z : { 0.0, 1.0 }) {
+    indoor.penetrationDeviate = z;
+    indoor.apply(m, this);
+    m.setUseBuildingPenetrationHighLossModel(false);
+    probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", z } },
+            m.computePathLoss(102.7, 100, true) - mmWaveOutdoor);
 
-indoor.apply(m, this);
-m.setUseBuildingPenetrationHighLossModel(true);
-sum = 0;
-for (int i = 0; i < numSamples; i++)
-    sum += m.computePathLoss(102.7, 100, true) - mmWaveOutdoor;
-probe.record("t901_o2i_highloss_mean", indoor, { { "dIn", 10 } },
-        sum / numSamples, 0.3);
+    indoor.apply(m, this);
+    m.setUseBuildingPenetrationHighLossModel(true);
+    probe.record("t901_o2i_highloss", indoor, { { "dIn", 10 }, { "z", z } },
+            m.computePathLoss(102.7, 100, true) - mmWaveOutdoor);
+}
+indoor.penetrationDeviate = 0;
 
 // --- RMa: the low-loss model of table 7.4.3-2 at every frequency ------
 outdoor = ScenarioParams();
@@ -122,27 +119,25 @@ outdoor.apply(m, this);
 double rmaOutdoor = m.computePathLoss(501.1, 500, true);
 
 indoor.carrierFrequencyGHz = 2.0;
+indoor.penetrationDeviate = 1.0;
 indoor.apply(m, this);
-sum = 0;
-for (int i = 0; i < numSamples; i++)
-    sum += m.computePathLoss(501.1, 500, true) - rmaOutdoor;
-probe.record("t901_o2i_lowloss_mean", indoor, { { "dIn", 10 } }, sum / numSamples, 0.2);
+probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", 1.0 } },
+        m.computePathLoss(501.1, 500, true) - rmaOutdoor);
 
 outdoor.carrierFrequencyGHz = 0.8;
 outdoor.apply(m, this);
 rmaOutdoor = m.computePathLoss(501.1, 500, true);
 
 indoor.carrierFrequencyGHz = 0.8;
+indoor.penetrationDeviate = -1.0;
 indoor.apply(m, this);
-sum = 0;
-for (int i = 0; i < numSamples; i++)
-    sum += m.computePathLoss(501.1, 500, true) - rmaOutdoor;
-probe.record("t901_o2i_lowloss_mean", indoor, { { "dIn", 10 } }, sum / numSamples, 0.2);
+probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", -1.0 } },
+        m.computePathLoss(501.1, 500, true) - rmaOutdoor);
 
 %postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
 
 %contains: verdict.txt
-graded=8 failures=0
+graded=10 failures=0
 
 %not-contains: verdict.txt
 FAILED

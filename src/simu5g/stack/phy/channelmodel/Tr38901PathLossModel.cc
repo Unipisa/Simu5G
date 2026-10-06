@@ -143,11 +143,11 @@ double Tr38901PathLossModel::computePenetrationLoss(double threeDimDistance)
     double pLoss_tw = 0.0;
     if (useBuildingPenetrationHighLossModel_ && scenario_ != RURAL_MACROCELL) {
         double LiirGlass = 23 + 0.3 * carrierFrequencyGHz_;
-        pLoss_tw = 5 - 10 * log10(0.7 * pow(10, (-LiirGlass / 10)) + 0.3 * pow(10, (-Lconcrete / 10))) + owner_->normal(0.0, 6.5);
+        pLoss_tw = 5 - 10 * log10(0.7 * pow(10, (-LiirGlass / 10)) + 0.3 * pow(10, (-Lconcrete / 10))) + 6.5 * penetrationDeviate_;
     }
     else {
         double Lglass = 2 + 0.2 * carrierFrequencyGHz_;
-        pLoss_tw = 5 - 10 * log10(0.3 * pow(10, (-Lglass / 10)) + 0.7 * pow(10, (-Lconcrete / 10))) + owner_->normal(0.0, 4.4);
+        pLoss_tw = 5 - 10 * log10(0.3 * pow(10, (-Lglass / 10)) + 0.7 * pow(10, (-Lconcrete / 10))) + 4.4 * penetrationDeviate_;
     }
     return pLoss_tw + pLoss_in;
 }

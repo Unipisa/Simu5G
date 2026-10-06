@@ -85,8 +85,10 @@ void PhyBase::initialize(int stage)
         microTxPower_ = par("microTxPower");
         isNr_ = par("isNr");
         insideBuilding_ = par("insideBuilding");
-        if (insideBuilding_)
+        if (insideBuilding_) {
             insideDistance_ = uniform(0.0, 25.0);
+            penetrationLossDeviate_ = normal(0.0, 1.0);
+        }
 
         WATCH(numAirFrameReceived_);
         WATCH(numAirFrameNotReceived_);

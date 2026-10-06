@@ -45,6 +45,7 @@ struct ScenarioParams
     double wStreet = 20;                // average street width [m]
     bool insideBuilding = false;        // whether the UE is indoor
     double insideDistance = 0;          // indoor part of the link length [m]
+    double penetrationDeviate = 0;      // the UE's standard-normal penetration-loss deviate
     double carrierFrequencyGHz = 2.0;   // carrier frequency [GHz]
     bool tolerateMaxDistViolation = false;
 
@@ -54,6 +55,7 @@ struct ScenarioParams
                 insideBuilding, insideDistance,
                 carrierFrequencyGHz * 1e9, carrierFrequencyGHz, std::log10(carrierFrequencyGHz),
                 tolerateMaxDistViolation);
+        model.setIndoor(insideBuilding, insideDistance, penetrationDeviate);
     }
 };
 

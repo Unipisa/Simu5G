@@ -530,6 +530,16 @@ def t901_o2i_highloss_mean(fc, dIn):
     return 5 - 10 * log10(0.7 * 10 ** (-l_iirglass / 10) + 0.3 * 10 ** (-l_concrete / 10)) + 0.5 * dIn
 
 
+def t901_o2i_lowloss(fc, dIn, z):
+    # the low-loss median plus sigma_P = 4.4 dB times the UE's standard-normal deviate z
+    return t901_o2i_lowloss_mean(fc, dIn) + 4.4 * z
+
+
+def t901_o2i_highloss(fc, dIn, z):
+    # the high-loss median plus sigma_P = 6.5 dB times the UE's standard-normal deviate z
+    return t901_o2i_highloss_mean(fc, dIn) + 6.5 * z
+
+
 # ================================================================= grading
 FORMULAS = {name: fn for name, fn in sorted(globals().items())
             if inspect.isfunction(fn) and re.match(r"t\d{3}_", name)}
