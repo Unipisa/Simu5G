@@ -32,6 +32,12 @@ import simu5g.stack.ICellularNic;
 // Its Ethernet interfaces (eth[]) are utilized in real-time emulation mode to connect
 // the UE to the real network (outside the simulator) via a virtual Ethernet interface.
 //
+// The cellular interface comes after lo0 and the eth[] interfaces in the interface
+// table. An address given as the UE's name (e.g. "ue[0]") resolves to the first
+// non-loopback interface that has an address, so to an eth[] interface's address
+// if one has an IP address; to get the address of the cellular interface, name it:
+// "ue[0]%cellular".
+//
 // The UE has one session, whose type it requests when it registers with the core
 // network (the PDU session type of the PDU Session Establishment Request in a 5G
 // core, the PDN type in an EPC): the sessionType parameter. The network establishes
