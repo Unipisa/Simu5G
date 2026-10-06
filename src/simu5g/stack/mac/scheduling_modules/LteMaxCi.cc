@@ -147,7 +147,7 @@ void LteMaxCi::prepareSchedule()
         if (!active) {
             EV << NOW << "LteMaxCI::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
 
-            if (num(current.x_.getNodeId()) <= BGUE_MIN_ID) {
+            if (num(current.x_.getNodeId()) < BGUE_MIN_ID) {
                 carrierActiveConnectionSet_.erase(current.x_);
                 activeConnectionTempSet_.erase(current.x_);
             }
