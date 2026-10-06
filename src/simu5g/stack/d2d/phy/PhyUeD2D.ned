@@ -27,6 +27,7 @@ simple PhyUeD2D extends PhyUe
 {
     parameters:
         @class("PhyUeD2D");
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
         double d2dTxPower @unit(dBm) = default(26dBm);
         bool d2dMulticastCaptureEffect = default(true);
         string d2dMulticastCaptureEffectFactor = default("RSRP");  // "RSRP", otherwise distance-based

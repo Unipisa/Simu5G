@@ -29,6 +29,7 @@ void D2dModeSelectionBase::initialize(int stage)
         // get reference to the binder
         binder_.reference(this, "binderModule", true);
         connectionControl_.reference(this, "connectionControlModule", true);
+        d2dBinder_.reference(this, "d2dBinderModule", true);
 
         // get mode selection period
         modeSelectionPeriod_ = par("modeSelectionPeriod").doubleValue();
@@ -39,10 +40,6 @@ void D2dModeSelectionBase::initialize(int stage)
         modeSelectionTick_ = new cMessage("modeSelectionTick");
         modeSelectionTick_->setSchedulingPriority(1);  // do mode selection after the (possible) reception of data from the upper layers
         scheduleAt(NOW + 0.05, modeSelectionTick_);
-    }
-    else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-        // get the reference to the global D2D state (holds the peering/mode map)
-        d2dBinder_ = D2dBinder::getInstance(this);
     }
 }
 

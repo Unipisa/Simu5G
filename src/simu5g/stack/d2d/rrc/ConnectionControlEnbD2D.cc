@@ -30,8 +30,10 @@ ConnectionControlEnbD2D::~ConnectionControlEnbD2D()
 void ConnectionControlEnbD2D::initialize(int stage)
 {
     ConnectionControlEnb::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
+    if (stage == inet::INITSTAGE_LOCAL) {
         d2dModeSelection_.reference(this, "d2dModeSelectionModule", false);
+        d2dBinder_.reference(this, "d2dBinderModule", true);
+    }
 }
 
 void ConnectionControlEnbD2D::handleMessage(cMessage *msg)
@@ -86,14 +88,9 @@ void ConnectionControlEnbD2D::legLeft(MacNodeId legId, const UeContext& ctx)
         EV_WARN << "ConnectionControlEnbD2D: the AMC of base station " << nodeId_ << " is not D2D-capable - skipping D2D AMC detach" << endl;
 }
 
-D2dBinder *ConnectionControlEnbD2D::d2dBinder()
-{
-    return D2dBinder::getInstance(this);
-}
-
 std::set<DrbId>& ConnectionControlEnbD2D::foreignPairPool(const std::pair<MacNodeId, MacNodeId>& pair)
 {
-    return d2dBinder()->sidelinkDrbIdPool(pair);
+    return d2dBinder_->sidelinkDrbIdPool(pair);
 }
 
 DrbId ConnectionControlEnbD2D::establishD2dBearer(const FlowId& flow, const FlowBindingKey& key)
@@ -108,7 +105,7 @@ void ConnectionControlEnbD2D::createMulticastConnection(const FlowId& flow, cons
 
     // Remember the flow so that nodes joining this group later still get an RX leg; the
     // loop below can only reach the members that already exist. See multicastGroupJoined().
-    d2dBinder()->rememberMulticastFlow(groupId, sourceId, flow, req, withPdcp);
+    d2dBinder_->rememberMulticastFlow(groupId, sourceId, flow, req, withPdcp);
 
     // Multicast bearers stay unidirectional: TX at the sender, RX at the members
     for (auto& [nodeId,_] : binder_->getNodeInfoMap())  //TODO use lte ones if LTE in DC setup, and NR ones if NR in DC setup
@@ -120,7 +117,7 @@ void ConnectionControlEnbD2D::multicastGroupJoined(MacNodeId nodeId, MacNodeId g
 {
     Enter_Method("multicastGroupJoined(%hu, %hu)", (unsigned short)nodeId, (unsigned short)groupId);
 
-    for (auto& [key, mf] : d2dBinder()->getMulticastFlows()) {
+    for (auto& [key, mf] : d2dBinder_->getMulticastFlows()) {
         auto& [flowGroupId, senderId] = key;
         if (flowGroupId != groupId || senderId == nodeId)
             continue;

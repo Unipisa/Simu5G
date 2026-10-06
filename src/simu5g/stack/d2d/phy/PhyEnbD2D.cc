@@ -27,7 +27,7 @@ void PhyEnbD2D::initialize(int stage)
     PhyEnb::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
         enableD2DCqiReporting_ = par("enableD2DCqiReporting");
-        d2dBinder_ = D2dBinder::getInstance(this);
+        d2dBinder_.reference(this, "d2dBinderModule", true);
     }
 }
 

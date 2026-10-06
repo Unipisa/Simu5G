@@ -17,8 +17,10 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-void D2dAmcHelper::initD2D()
+void D2dAmcHelper::initD2D(D2dBinder *d2dBinder)
 {
+    d2dBinder_ = d2dBinder;
+
     // Get deployed UEs from the binder (the same set the base uses for DL/UL)
     for (MacNodeId ueId : amc_->getBinder()->getDeployedUes(amc_->getMacNodeId()))
         d2dConnectedUe_[ueId] = true;
@@ -109,8 +111,6 @@ const LteSummaryFeedback& D2dAmcHelper::getFeedbackD2D(MacNodeId id, Remote ante
             if (!amc_->getBinder()->nodeExists(histNodeId))
                 continue;
 
-            if (d2dBinder_ == nullptr)
-                d2dBinder_ = D2dBinder::getInstance(amc_->getBinder());
             if (d2dBinder_->getD2DCapability(id, histNodeId)) {
                 peerId = histNodeId;
                 break;

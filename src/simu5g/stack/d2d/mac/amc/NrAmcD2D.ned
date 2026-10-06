@@ -22,4 +22,5 @@ simple NrAmcD2D extends NrAmc
 {
     parameters:
         @class(NrAmcD2D);
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
 }

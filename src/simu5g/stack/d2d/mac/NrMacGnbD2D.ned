@@ -24,6 +24,7 @@ module NrMacGnbD2D extends NrMacGnb
 {
     parameters:
         @class("NrMacGnbD2D");
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
         string connectionControlModule = default("^.rrc.connectionControl");  // The node's control-plane entry point, which knows the UEs handing over
 
         // Use the D2D-capable AMC leaf

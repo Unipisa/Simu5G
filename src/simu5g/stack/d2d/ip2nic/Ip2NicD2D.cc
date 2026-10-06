@@ -24,8 +24,8 @@ Define_Module(Ip2NicD2D);
 void Ip2NicD2D::initialize(int stage)
 {
     Ip2Nic::initialize(stage);
-    if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS)
-        d2dBinder_ = D2dBinder::getInstance(this);
+    if (stage == inet::INITSTAGE_LOCAL)
+        d2dBinder_.reference(this, "d2dBinderModule", true);
 }
 
 MacNodeId Ip2NicD2D::getNextHopNodeId(const L3Address& destAddr, MacNodeId sourceId)

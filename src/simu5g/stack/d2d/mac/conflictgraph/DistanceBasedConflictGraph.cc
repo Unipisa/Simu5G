@@ -24,8 +24,8 @@ using namespace omnetpp;
  * \memberof DistanceBasedConflictGraph
  * \brief class constructor;
  */
-DistanceBasedConflictGraph::DistanceBasedConflictGraph(Binder *binder, LteMacEnb *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh)
-    : ConflictGraph(binder, macEnb, reuseD2D, reuseD2DMulti),
+DistanceBasedConflictGraph::DistanceBasedConflictGraph(Binder *binder, D2dBinder *d2dBinder, LteMacEnb *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh)
+    : ConflictGraph(binder, macEnb, reuseD2D, reuseD2DMulti), d2dBinder_(d2dBinder),
     d2dDbmThreshold_(dbmThresh), d2dMultiTxDbmThreshold_(dbmThresh), d2dMultiInterfDbmThreshold_(dbmThresh)
 {
 
@@ -60,9 +60,7 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
 {
     if (reuseD2D_) { // get point-to-point links
         // get the list of point-to-point D2D connections
-        D2dBinder *d2dBinder = D2dBinder::getInstance(binder_);
-
-        for (const auto& [sourceNodeId, targetMap] : d2dBinder->getD2DPeeringModeMap()) {
+        for (const auto& [sourceNodeId, targetMap] : d2dBinder_->getD2DPeeringModeMap()) {
             for (const auto& [targetNodeId, mode] : targetMap) {
                 CGVertex v(sourceNodeId, targetNodeId);
                 vertices.push_back(v);
@@ -71,8 +69,7 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
     }
 
     if (reuseD2DMulti_) { // get point-to-multipoint transmitters
-        D2dBinder *d2dBinder = D2dBinder::getInstance(binder_);
-        std::set<MacNodeId>& multicastTransmitterSet = d2dBinder->getD2DMulticastTransmitters();
+        std::set<MacNodeId>& multicastTransmitterSet = d2dBinder_->getD2DMulticastTransmitters();
         for (const auto& transmitterId : multicastTransmitterSet) {
             CGVertex v(transmitterId, NODEID_NONE);   // create a "fake" link
             vertices.push_back(v);

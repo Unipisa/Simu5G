@@ -15,7 +15,10 @@
 
 #include <cstring>
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/stack/d2d/mac/ID2dAmc.h"
 #include "simu5g/stack/d2d/mac/amc/AmcPilotD2D.h"
 #include "simu5g/stack/d2d/mac/amc/D2dAmcHelper.h"
@@ -44,11 +47,16 @@ class D2dAmc : public Base, public ID2dAmc, public cListener
     // holds the D2D-specific AMC state and logic
     D2dAmcHelper d2dHelper_;
 
+    // holder of the global D2D state
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
+
     void initialize(int stage) override
     {
         Base::initialize(stage);
-        if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-            d2dHelper_.initD2D();
+        if (stage == inet::INITSTAGE_LOCAL)
+            d2dBinder_.reference(this, "d2dBinderModule", true);
+        else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
+            d2dHelper_.initD2D(d2dBinder_.get());
             // A departing UE outlives itself in the AMCs of cells it never attached to, as a
             // D2D feedback peer, which detachUser() at its own serving cell cannot reach. The
             // Binder's notification reaches every D2D AMC in the network, so it does.

@@ -17,8 +17,13 @@
 
 namespace simu5g {
 
+class D2dBinder;
+
 class DistanceBasedConflictGraph : public ConflictGraph
 {
+    // the network-wide D2D state: the D2D links and one-to-many transmitters
+    D2dBinder *d2dBinder_;
+
     // path loss-based thresholds (used by default)
     double d2dDbmThreshold_;
     double d2dMultiTxDbmThreshold_;
@@ -37,7 +42,7 @@ class DistanceBasedConflictGraph : public ConflictGraph
     void findEdges(const std::vector<CGVertex>& vertices) override;
 
   public:
-    DistanceBasedConflictGraph(Binder *binder, LteMacEnb *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh);
+    DistanceBasedConflictGraph(Binder *binder, D2dBinder *d2dBinder, LteMacEnb *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh);
 
     // set distance thresholds
     virtual void setThresholds(double d2dInterferenceRadius = -1.0, double d2dMultiTransmissionRadius = -1.0, double d2dMultiInterferenceRadius = -1.0);

@@ -25,4 +25,5 @@ simple Ip2NicD2D extends Ip2Nic
 {
     parameters:
         @class("Ip2NicD2D");
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
 }

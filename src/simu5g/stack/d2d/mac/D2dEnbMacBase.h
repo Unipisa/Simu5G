@@ -17,6 +17,7 @@
 #include "simu5g/stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "simu5g/stack/d2d/mac/harq/LteHarqBufferMirrorD2D.h"
 #include "simu5g/stack/d2d/mac/harq/LteHarqBufferRxD2D.h"
+#include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/stack/d2d/mac/amc/AmcPilotD2D.h"
 #include "simu5g/stack/d2d/mac/conflictgraph/ConflictGraph.h"
 #include "simu5g/stack/d2d/mac/ID2dAmc.h"
@@ -75,6 +76,9 @@ class D2dEnbMacBase : public Base, public ID2dMacEnb
     // the node's control-plane entry point, which knows the UEs handing over
     inet::ModuleRefByPar<ConnectionControlEnb> connectionControl_;
 
+    // the network-wide D2D state, which the conflict graph is built from
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
+
   public:
     D2dEnbMacBase() : d2dEnbHelper_(this)
     {
@@ -131,8 +135,10 @@ template<class Base>
 void D2dEnbMacBase<Base>::initialize(int stage)
 {
     Base::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
+    if (stage == inet::INITSTAGE_LOCAL) {
         connectionControl_.reference(this, "connectionControlModule", true);
+        d2dBinder_.reference(this, "d2dBinderModule", true);
+    }
     // (the AMC pilot/mode-switch parameter setup historically also ran at
     // INITSTAGE_PHYSICAL_ENVIRONMENT -- an identical, idempotent copy of the
     // INITSTAGE_SIMU5G_AMC_SETUP block below; the early copy is gone)
@@ -143,7 +149,7 @@ void D2dEnbMacBase<Base>::initialize(int stage)
         if (d2dEnbHelper_.getReuseD2D() || d2dEnbHelper_.getReuseD2DMulti()) {
             d2dEnbHelper_.setConflictGraphUpdatePeriod(this->par("conflictGraphUpdatePeriod"));
 
-            d2dEnbHelper_.createDistanceBasedConflictGraph(this->binder_, this->par("conflictGraphThreshold"),
+            d2dEnbHelper_.createDistanceBasedConflictGraph(this->binder_, d2dBinder_.get(), this->par("conflictGraphThreshold"),
                     this->par("conflictGraphD2DInterferenceRadius"), this->par("conflictGraphD2DMultiTxRadius"), this->par("conflictGraphD2DMultiInterferenceRadius"));
 
             this->scheduleAt(NOW + 0.05, new cMessage("updateConflictGraph"));

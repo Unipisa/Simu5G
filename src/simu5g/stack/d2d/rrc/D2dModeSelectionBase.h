@@ -44,9 +44,8 @@ class D2dModeSelectionBase : public cSimpleModule
     SwitchList switchList_;  // a list of pairs of nodeIds, where the first node represents the transmitter
                              // of the flow, whereas the second node represents the receiver
 
-    // holder of the global D2D state (incl. the per-UE peering/mode map),
-    // resolved (find-or-create) at initialization
-    D2dBinder *d2dBinder_ = nullptr;
+    // holder of the global D2D state (incl. the per-UE peering/mode map)
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
 
     // reference to the MAC layer
     inet::ModuleRefByPar<LteMacEnb> mac_;

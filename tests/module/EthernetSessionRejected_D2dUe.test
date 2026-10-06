@@ -10,8 +10,7 @@ network = simu5g.test.moduletest.lib.NrSessionTestNetwork
 *.upf.hasEthernetBridge = true
 *.ue[*].sessionType = "Ethernet"
 *.ue[*].hasIpv4 = false
-*.ue[*].hasD2D = true
-*.gnb.hasD2D = true
+**.hasD2D = true
 
 include ../../lib/defaults.ini
 

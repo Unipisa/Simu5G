@@ -23,6 +23,13 @@ using namespace omnetpp;
 
 Define_Module(ConnectionControlUeD2D);
 
+void ConnectionControlUeD2D::initialize(int stage)
+{
+    ConnectionControlUe::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+        d2dBinder_.reference(this, "d2dBinderModule", true);
+}
+
 UeCapabilities ConnectionControlUeD2D::getCapabilities() const
 {
     UeCapabilities capabilities;
@@ -38,13 +45,12 @@ void ConnectionControlUeD2D::bearerReleased(DrbKey bearer)
 
     // A dual-stack UE may have established the bearer under either of its own ids, so
     // offer it back to both pools -- releasing an id that is not in use there is a no-op
-    D2dBinder *d2dBinder = D2dBinder::getInstance(this);
     MacNodeId otherId = hasOtherLeg() ? otherConnectionControl_->getNodeId() : NODEID_NONE;
     for (MacNodeId ownId : {nodeId_, otherId}) {
         if (ownId == NODEID_NONE)
             continue;
         auto pair = std::minmax(ownId, bearer.getNodeId());
-        if (d2dBinder->sidelinkDrbIdPool({pair.first, pair.second}).erase(bearer.getDrbId()) != 0)
+        if (d2dBinder_->sidelinkDrbIdPool({pair.first, pair.second}).erase(bearer.getDrbId()) != 0)
             EV << "ConnectionControlUeD2D::bearerReleased - DRB " << bearer.getDrbId() << " of the sidelink node pair ("
                << pair.first << ", " << pair.second << ") is free again" << endl;
     }

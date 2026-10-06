@@ -34,16 +34,12 @@ class PhyBase;
  * Direct Mode or Infrastructure Mode) and the set of D2D one-to-many
  * transmitters, and answers the D2D capability/mode queries derived from them.
  *
- * There is a single instance per network. It is created lazily and dynamically
- * under the network module the first time any D2D code needs it (see
- * getInstance()), so that non-D2D networks pay nothing and existing network NED
- * files need no explicit 'd2dBinder' submodule.
+ * Networks with D2D-capable nodes declare one instance next to the Binder; the
+ * D2D modules reach it through their d2dBinderModule parameter.
  *
  * This module has no events, no emitted signals and no statistics: it is a
- * passive state container. That keeps it inert with respect to simulation
- * fingerprints even though it is created on the fly. It does listen to the
- * Binder's node-unregistered notification, to drop the state of nodes that
- * leave mid-simulation.
+ * passive state container. It does listen to the Binder's node-unregistered
+ * notification, to drop the state of nodes that leave mid-simulation.
  */
 class D2dBinder : public cSimpleModule, public cListener
 {
@@ -106,13 +102,6 @@ class D2dBinder : public cSimpleModule, public cListener
     void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
 
   public:
-    /**
-     * Returns the single D2dBinder instance for the network the given context
-     * module belongs to, creating it dynamically under the network module on
-     * first use (find-or-create).
-     */
-    static D2dBinder *getInstance(cModule *contextModule);
-
     /**
      * Registers a D2D-capable UE PHY under its node id. Called by the PHY at
      * INITSTAGE_SIMU5G_BINDER_ACCESS, so that the one-to-many transmit path can

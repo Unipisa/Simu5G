@@ -24,6 +24,7 @@ import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.BackgroundCell;
+import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.LteChannelControl;
 
 
@@ -58,6 +59,9 @@ network SingleCell_Standalone_D2D
         }
         binder: Binder {
             @display("p=50,175;is=s");
+        }
+        d2dBinder: D2dBinder {
+            @display("p=50,425;is=s");
         }
         coreControl: CoreControl {
             @display("p=50,375;is=s");

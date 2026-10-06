@@ -37,5 +37,6 @@ simple ConnectionControlEnbD2D extends ConnectionControlEnb
 {
     parameters:
         @class(ConnectionControlEnbD2D);
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
         string d2dModeSelectionModule = default("^.d2dModeSelection");  // The node's D2D mode selection; none if the module does not exist
 }

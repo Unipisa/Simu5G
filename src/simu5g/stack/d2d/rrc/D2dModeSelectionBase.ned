@@ -25,6 +25,7 @@ simple D2dModeSelectionBase like ID2DModeSelection
     parameters:
         double modeSelectionPeriod @unit(s) = default(1s);
         string binderModule = default("binder");
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
         string macModule = default("^.^.mac");
         string connectionControlModule = default("^.connectionControl");  // The node's control-plane entry point, which knows the UEs handing over
 }

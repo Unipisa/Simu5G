@@ -25,4 +25,5 @@ simple ConnectionControlUeD2D extends ConnectionControlUe
 {
     parameters:
         @class(ConnectionControlUeD2D);
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
 }

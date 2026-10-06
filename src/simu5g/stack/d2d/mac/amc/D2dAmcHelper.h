@@ -49,14 +49,14 @@ class D2dAmcHelper
     simtime_t lb_;
     simtime_t ub_;
 
-    // holder of the global D2D state, resolved (find-or-create) on first D2D use
+    // holder of the global D2D state, set at initD2D()
     D2dBinder *d2dBinder_ = nullptr;
 
   public:
     D2dAmcHelper(LteAmc *amc) : amc_(amc) {}
 
     // one-time D2D structure setup; call from the D2D AMC initialize() after LteAmc::initialize()
-    void initD2D();
+    void initD2D(D2dBinder *d2dBinder);
 
     // feedback management (ID2dAmc surface)
     void pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, GHz carrierFrequency);

@@ -24,5 +24,6 @@ simple PhyEnbD2D extends PhyEnb
 {
     parameters:
         @class("PhyEnbD2D");
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
         bool enableD2DCqiReporting = default(true);
 }

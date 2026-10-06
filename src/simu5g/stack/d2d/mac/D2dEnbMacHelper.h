@@ -20,6 +20,7 @@ namespace simu5g {
 
 class LteMacEnb;
 class Binder;
+class D2dBinder;
 class ConflictGraph;
 
 /*
@@ -79,7 +80,7 @@ class D2dEnbMacHelper
     ConflictGraph *getConflictGraph() const { return conflictGraph_; }
 
     // build the distance-based conflict graph (uses the current reuse flags)
-    void createDistanceBasedConflictGraph(Binder *binder, double threshold,
+    void createDistanceBasedConflictGraph(Binder *binder, D2dBinder *d2dBinder, double threshold,
             double d2dInterferenceRadius, double d2dMultiTxRadius, double d2dMultiInterferenceRadius);
     // recompute the conflict graph (called from the leaf's periodic timer handler)
     void computeConflictGraph();

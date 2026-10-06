@@ -59,7 +59,7 @@ class D2dUePhy : public Base
 
     // the global D2D directory; this PHY registers itself in it so that peers can
     // resolve it by node id on the one-to-many transmit path
-    D2dBinder *d2dBinder_ = nullptr;
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
 
     void initialize(int stage) override;
     void handleSelfMessage(cMessage *msg) override;
@@ -171,14 +171,11 @@ void D2dUePhy<Base>::initialize(int stage)
         d2dHelper_.setMulticastEnableCaptureEffect(this->par("d2dMulticastCaptureEffect"));
         d2dHelper_.setMulticastD2DRangeCheckEnabled(this->par("enableMulticastD2DRangeCheck"));
         d2dHelper_.setMulticastD2DRange(this->par("multicastD2DRange"));
+        d2dBinder_.reference(this, "d2dBinderModule", true);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // Publish this PHY under its node id, so that a peer's one-to-many transmit
-        // path can reach it without knowing the NIC's submodule names. Deliberately
-        // not INITSTAGE_LOCAL: the D2dBinder is created on first use, and the eNB D2D
-        // PHY already creates it at INITSTAGE_LOCAL, so asking for it here cannot move
-        // its creation point (and with it the dynamic component-id ordering).
-        d2dBinder_ = D2dBinder::getInstance(this);
+        // path can reach it without knowing the NIC's submodule names
         d2dBinder_->registerD2dPhy(this->nodeId_, this);
     }
 }

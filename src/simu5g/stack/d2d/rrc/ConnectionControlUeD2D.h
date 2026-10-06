@@ -18,6 +18,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class D2dBinder;
+
 //
 // D2D-capable variant of the ConnectionControlUe: reports the leg's D2D capability,
 // and returns a torn-down sidelink bearer's identity to the sidelink pool. See
@@ -25,6 +27,13 @@ using namespace omnetpp;
 //
 class ConnectionControlUeD2D : public ConnectionControlUe
 {
+  protected:
+    // the network-wide sidelink state
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
+
+  protected:
+    void initialize(int stage) override;
+
   public:
     /// The leg is D2D-capable if its PHY is
     UeCapabilities getCapabilities() const override;

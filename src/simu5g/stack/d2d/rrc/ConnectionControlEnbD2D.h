@@ -31,15 +31,15 @@ class ConnectionControlEnbD2D : public ConnectionControlEnb
     // the node's D2D mode selection, if it has one
     inet::ModuleRefByPar<D2dModeSelectionBase> d2dModeSelection_;
 
+    // the network-wide sidelink state
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
+
     // the post-handover D2D mode re-selections pending, by the leg they are for
     std::map<omnetpp::cMessage *, MacNodeId> modeSwitchTimers_;
 
   protected:
     void initialize(int stage) override;
     void handleMessage(omnetpp::cMessage *msg) override;
-
-    // the network-wide sidelink state, created on first use
-    virtual D2dBinder *d2dBinder();
 
     // Ask the node's D2D mode selection to switch the leg's D2D flows: to
     // infrastructure mode before a handover, or (back) to direct mode after one

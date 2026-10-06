@@ -34,8 +34,8 @@ class PhyEnbD2D : public PhyEnb
 {
     bool enableD2DCqiReporting_;
 
-    // holder of the global D2D state, resolved (find-or-create) at init
-    D2dBinder *d2dBinder_ = nullptr;
+    // holder of the global D2D state
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
 
   protected:
     void initialize(int stage) override;

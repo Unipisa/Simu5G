@@ -33,8 +33,8 @@ class D2dBinder;
 class Ip2NicD2D : public Ip2Nic
 {
   protected:
-    // holder of the global D2D state, resolved (find-or-create) at init
-    D2dBinder *d2dBinder_ = nullptr;
+    // holder of the global D2D state
+    inet::ModuleRefByPar<D2dBinder> d2dBinder_;
 
     void initialize(int stage) override;
     /// D2D classification: multicast group, peer bookkeeping, DM/IM direction

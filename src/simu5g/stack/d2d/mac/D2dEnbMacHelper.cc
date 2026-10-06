@@ -79,10 +79,10 @@ void D2dEnbMacHelper::deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxP
     }
 }
 
-void D2dEnbMacHelper::createDistanceBasedConflictGraph(Binder *binder, double threshold,
+void D2dEnbMacHelper::createDistanceBasedConflictGraph(Binder *binder, D2dBinder *d2dBinder, double threshold,
         double d2dInterferenceRadius, double d2dMultiTxRadius, double d2dMultiInterferenceRadius)
 {
-    auto cg = new DistanceBasedConflictGraph(binder, mac_, reuseD2D_, reuseD2DMulti_, threshold);
+    auto cg = new DistanceBasedConflictGraph(binder, d2dBinder, mac_, reuseD2D_, reuseD2DMulti_, threshold);
     cg->setThresholds(d2dInterferenceRadius, d2dMultiTxRadius, d2dMultiInterferenceRadius);
     conflictGraph_ = cg;
 }

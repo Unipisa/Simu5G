@@ -26,17 +26,20 @@ import simu5g.nodes.PgwStandard;
 import simu5g.nodes.Upf;
 import simu5g.nodes.eNodeB;
 import simu5g.nodes.gNodeB;
+import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.LteChannelControl;
 
 //
 // A 5G core network for the tests of PDU sessions: one ~gNodeB, whose ~Upf anchors the
 // sessions and faces the data network (a router and a server), and numUe ~NrUe
 // terminals. The UPF's Ethernet N6 link (with hasEthernetBridge) is left unconnected.
+// With hasD2D, the network holds the ~D2dBinder that D2D-capable nodes need.
 //
 network NrSessionTestNetwork
 {
     parameters:
         int numUe = default(1);
+        bool hasD2D = default(false);  // Whether the network hosts D2D-capable nodes
         **.cellularNic.hasSdap = default(true);
         @display("bgb=700,500");
     submodules:
@@ -51,6 +54,9 @@ network NrSessionTestNetwork
         }
         binder: Binder {
             @display("p=50,125;is=s");
+        }
+        d2dBinder: D2dBinder if hasD2D {
+            @display("p=50,375;is=s");
         }
         coreControl: CoreControl {
             @display("p=50,175;is=s");

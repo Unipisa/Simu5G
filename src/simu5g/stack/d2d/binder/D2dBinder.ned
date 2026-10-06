@@ -19,10 +19,10 @@ package simu5g.stack.d2d.binder;
 // Direct or Infrastructure Mode) and the set of D2D one-to-many transmitters,
 // and answers the D2D capability/mode queries derived from them.
 //
-// A single instance exists per network. It is not placed in network NED files:
-// the first D2D module that needs it creates it dynamically under the network
-// module (see D2dBinder::getInstance()). The module is a passive state
-// container with no events, signals or statistics.
+// Every network with D2D-capable nodes declares one instance, normally named
+// 'd2dBinder' next to the ~Binder; the D2D modules reach it through their
+// d2dBinderModule parameter. The module is a passive state container with no
+// events, signals or statistics.
 //
 simple D2dBinder
 {

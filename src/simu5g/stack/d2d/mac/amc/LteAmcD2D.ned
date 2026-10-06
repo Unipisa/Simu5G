@@ -22,4 +22,5 @@ simple LteAmcD2D extends LteAmc
 {
     parameters:
         @class(LteAmcD2D);
+        string d2dBinderModule = default("d2dBinder");  // The network's ~D2dBinder, which holds the D2D state
 }

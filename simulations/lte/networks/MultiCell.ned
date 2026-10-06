@@ -24,18 +24,22 @@ import simu5g.nodes.ExtCell;
 import simu5g.nodes.PgwStandard;
 import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
+import simu5g.stack.d2d.binder.D2dBinder;
 import simu5g.world.radio.LteChannelControl;
 
 
 //
 // Two ~eNodeB cells on a shared EPC ~PgwStandard, joined by an X2 link, with a
 // router and a server behind the core. Four ~LteUe terminals are placed two per
-// cell, and numExtCells ~ExtCell cells can be added as interferers.
+// cell, and numExtCells ~ExtCell cells can be added as interferers. With hasD2D,
+// the network holds the ~D2dBinder that D2D-capable nodes need, so that
+// '**.hasD2D = true' turns D2D on in the network and in all its nodes.
 //
 network MultiCell
 {
     parameters:
         int numExtCells = default(0);
+        bool hasD2D = default(false);  // Whether the network hosts D2D-capable nodes
         @display("i=block/network2;bgb=991,558;bgi=background/budapest");
     submodules:
         channelControl: LteChannelControl {
@@ -49,6 +53,9 @@ network MultiCell
         }
         binder: Binder {
             @display("p=50,175;is=s");
+        }
+        d2dBinder: D2dBinder if hasD2D {
+            @display("p=50,425;is=s");
         }
         coreControl: CoreControl {
             @display("p=50,375;is=s");

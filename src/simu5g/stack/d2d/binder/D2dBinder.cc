@@ -25,20 +25,6 @@ using namespace inet;
 
 Define_Module(D2dBinder);
 
-D2dBinder *D2dBinder::getInstance(cModule *contextModule)
-{
-    cModule *network = contextModule->getSimulation()->getSystemModule();
-    cModule *mod = network->getSubmodule("d2dBinder");
-    if (mod == nullptr) {
-        // Find-or-create: the network NED declares no 'd2dBinder' submodule, so
-        // create it dynamically now. The module is event-less, so initializing
-        // it immediately (even during another module's init) is fingerprint-inert.
-        cModuleType *type = cModuleType::get("simu5g.stack.d2d.binder.D2dBinder");
-        mod = type->createScheduleInit("d2dBinder", network);
-    }
-    return check_and_cast<D2dBinder *>(mod);
-}
-
 void D2dBinder::initialize()
 {
     binder_.reference(this, "binderModule", true);
