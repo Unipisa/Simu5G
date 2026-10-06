@@ -272,7 +272,8 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     // uplink, otherwise the receiver (the UE, or a D2D link's receiver); a
     // background UE is outdoors
     IRadioEndpoint *ueEnd = link.dir == UL ? link.txRadio : link.rxRadio;
-    pathLoss_->setIndoor(ueEnd != nullptr && ueEnd->isInsideBuilding(), ueEnd != nullptr ? ueEnd->getInsideDistance() : 0.0);
+    pathLoss_->setIndoor(ueEnd != nullptr && ueEnd->isInsideBuilding(), ueEnd != nullptr ? ueEnd->getInsideDistance() : 0.0,
+            ueEnd != nullptr ? ueEnd->getPenetrationLossDeviate() : 0.0);
 
     // COMPUTE 3D and 2D DISTANCE between the two endpoints
     double threeDimDistance = link.txCoord.distance(link.rxCoord);
@@ -968,7 +969,8 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     const Coord& c = transmission.startPosition;
 
     // the UE end: the receiving UE of a cell's downlink; a background UE is outdoors
-    pathLoss_->setIndoor(ue != nullptr && ue->isInsideBuilding(), ue != nullptr ? ue->getInsideDistance() : 0.0);
+    pathLoss_->setIndoor(ue != nullptr && ue->isInsideBuilding(), ue != nullptr ? ue->getInsideDistance() : 0.0,
+            ue != nullptr ? ue->getPenetrationLossDeviate() : 0.0);
 
     // compute attenuation according to some path loss model
     double att = computePhantomPathLoss(position.distance(c), getTwoDimDistance(c, position), link);

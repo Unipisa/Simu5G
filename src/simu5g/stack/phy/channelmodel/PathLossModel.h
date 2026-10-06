@@ -49,6 +49,7 @@ class PathLossModel
     double log10CarrierFrequencyGHz_ = 0;
     bool tolerateMaxDistViolation_ = false;
     double environmentHeight_ = 1.0;    // h_E of the link being evaluated, see setEnvironmentHeight()
+    double penetrationDeviate_ = 0.0;   // the UE's standard-normal penetration-loss deviate, see setIndoor()
 
     /*
      * Propagation velocity in free space, as the breakpoint-distance notes of
@@ -76,12 +77,14 @@ class PathLossModel
 
     /*
      * Set whether the UE end of the link about to be evaluated is inside a
-     * building, and how far inside
+     * building, how far inside, and the standard-normal deviate of its
+     * building penetration loss (the UE's, TR 38.901 7.4.3.1)
      */
-    virtual void setIndoor(bool insideBuilding, double insideDistance)
+    virtual void setIndoor(bool insideBuilding, double insideDistance, double penetrationDeviate)
     {
         inside_building_ = insideBuilding;
         inside_distance_ = insideDistance;
+        penetrationDeviate_ = penetrationDeviate;
     }
 
     /*

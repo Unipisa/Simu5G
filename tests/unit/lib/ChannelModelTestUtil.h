@@ -45,6 +45,7 @@ class StubEndpoint : public IRadioEndpoint
     double speed = 0.0;
     bool insideBuilding = false;
     double insideDistance = 0.0;
+    double penetrationLossDeviate = 0.0;
     TxDirectionType txDirection = OMNI;
     double txAngle = 0.0;
     double txPower = 0.0;
@@ -59,6 +60,7 @@ class StubEndpoint : public IRadioEndpoint
     double getSpeed() override { return speed; }
     bool isInsideBuilding() override { return insideBuilding; }
     double getInsideDistance() override { return insideDistance; }
+    double getPenetrationLossDeviate() override { return penetrationLossDeviate; }
     TxDirectionType getTxDirection() override { return txDirection; }
     double getTxAngle() override { return txAngle; }
     double getTxPwr(Direction dir = UNKNOWN_DIRECTION) override { return txPower; }

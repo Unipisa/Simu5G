@@ -57,6 +57,9 @@ class IRadioEndpoint
     /** How far inside its building the endpoint is, in m (drawn once per endpoint). */
     virtual double getInsideDistance() = 0;
 
+    /** The standard-normal deviate of its building penetration loss (drawn once per endpoint). */
+    virtual double getPenetrationLossDeviate() = 0;
+
     /** Whether the antenna radiates omnidirectionally or sectorially. */
     virtual TxDirectionType getTxDirection() = 0;
 
