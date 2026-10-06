@@ -1,5 +1,499 @@
 # What's New in Simu5G
 
+## v1.8.0 (unreleased)
+
+The most significant change in this release is the support for IPv6,
+Ethernet and Unstructured PDU sessions. A UE now requests its session type
+with the new `sessionType` parameter, and the session is carried end to
+end, from the UE's applications through the RAN and the anchor UPF to the
+data network. A UE has one session, a deliberate simplification of 3GPP
+that keeps configuration simple. Non-IP sessions carry no address that
+identifies the UE, so sessions are now represented explicitly, and GTP-U
+tunnels carry per-session TEIDs, allocated by their receiving ends, instead
+of TEID 0. The tunnels of a 5G core also carry the QFI in a PDU Session
+Container, and a path switch closes the old path with an End Marker. Keeping
+the sessions' tunnels current across handovers is run-time state that has no
+place in the declarative `BearerConfigurator`. The control plane was
+therefore given modules of its own, each responsibility lying with the node
+that has it in 3GPP. The core network's control plane is now a separate
+module (`CoreControl`), every base station, UE and user plane node has a
+control-plane entry point, and the handover decision is now made by the
+serving base station. Attach, handover and radio link failure run between
+the entry points as direct calls named after the RRC, Xn, S1AP/NGAP and
+PFCP/GTP-C messages; the signaling messages themselves are not modeled.
+Header compression is now configured
+per bearer, with a model of ROHC's profiles, contexts and states, and is on
+by default for voice bearers. The UE is now an INET `StandardHost`. Simu5G
+now builds on OMNeT++ 6.4 and INET 4.7. Changes were validated using
+fingerprint, module and unit tests (details at the end of this entry). This
+release, like all releases since v1.3.1, was developed by Andras Varga and
+the OMNeT++ core team.
+
+Tested with INET-4.7.0 and OMNeT++ 6.4.0.
+
+### Session types: the UE's sessionType parameter
+
+The session type is the UE's request, as in 3GPP: the PDU session type of
+the PDU Session Establishment Request in a 5G core, or the PDN type in an
+EPC. The new `LteUe` parameter `sessionType` takes `"IPv4"` (the default),
+`"IPv6"`, `"IPv4v6"`, `"Ethernet"` or `"Unstructured"`. The request travels
+with the UE's attach to `CoreControl`, which establishes the session with
+that type. Every node that ends one of the session's tunnels keeps the type,
+so the user plane dispatches on the type instead of parsing packets. An EPC
+(a `PgwStandard` anchor) carries the IP types only, and a non-IP session
+anchored at a PGW is an error.
+
+**One session per UE.** In 3GPP a UE may have several PDU sessions at once,
+e.g. an IPv4 session to the Internet and an Ethernet session to an
+industrial LAN, each with its own type, anchor and bearers. In Simu5G a UE
+has exactly one, whose type is selected by its `sessionType` parameter. This
+is a deliberate simplification that keeps configuration simple: one
+parameter per UE, and no session reference in the bearer definitions. The
+limitation lies in the configuration code, not in the protocol modules,
+which identify sessions by session ID throughout (TEIDs resolve to sessions,
+and packets carry their session inside the node). It can therefore be
+lifted by a more sophisticated configurator.
+[DRAFT: NOT YET TRUE -- several modules still keep per-UE session state;
+see the multi-session readiness work item. Make true or reword before the
+release.]
+
+Bearers are typed by the session of their UE, so the bearer definitions no
+longer carry a type. The `pduSessionType` and `upperProtocol` fields of
+`staticDrbs`, `onDemandDrbs` and `drbProfiles` are gone. A definition that
+still has one is an error that names the UE parameter. In v1.7.0 only the
+default `"IPv4"` worked, so in practice the fields can simply be deleted.
+
+### IPv6 and IPv4v6 sessions
+
+- The user plane is address-family neutral. The `Binder` maps `L3Address`es
+  to node ids. A UE's addresses are registered by the UE's `Registration`
+  module, which follows the cellular interface's configuration as it
+  changes during the run: link-local and autoconfigured IPv6 addresses
+  appear only after initialization. On an IPv4v6 session, IPv4 and IPv6
+  datagrams share the session's bearers, and each goes up as its own
+  protocol.
+
+- **Neighbor Discovery at the anchor**: in a 5G core, the IP link of an IPv6
+  session runs between the UE and its anchor UPF (TS 23.502). The new
+  `Ipv6NdResponder` module, present in `Upf` and `PgwStandard` when
+  `hasNdResponder = true` (default false), answers the UE's Router
+  Solicitations with a Router Advertisement that makes it the UE's default
+  router (`fe80::1` by default). It also answers reachability probes and
+  consumes duplicate address detection. A UPF without a responder throws when
+  a UE's link-local IPv6 traffic arrives, instead of leaking it onto the
+  data network.
+
+- QFI rule filter expressions are evaluated on every packet of their site.
+  For an IPv6 UE this includes its Neighbor Discovery traffic, so the
+  examples in the `BearerConfigurator` and `QfiRuleSet` documentation now
+  guard their expressions with `has(udp)`. For `dscpAsQfi` rules, the DSCP is
+  also read from the IPv6 Traffic Class field.
+
+- D2D groupcast remains IPv4-only. An IPv6 multicast packet of a D2D-capable
+  UE goes up the session like that of any other UE.
+
+- Examples: `VoIP-DL-IPv6`, `VoIP-UL-IPv6`, `VoIP-DL-IPv6-Rohc`,
+  `VoIP-DL-IPv4v6` and `VoIP-UL-IPv4v6` in `nr/standalone`;
+  `VoIP-DL-MultiQfi-IPv6` and `VoIP-UL-FilterRules-IPv6` in
+  `nr/standalone_drb`; `CBR-DL-IPv6` in `nr/standalone_multicell`, which
+  includes handovers; `NeDualConn-VoIP-DL-IPv6` in `nr/dualConnectivity`; and
+  `SinglePair-UDP-D2D-IPv6` in `lte/d2d`. In these examples the UEs, the
+  server and the router are IPv6-only, while the transport network (N3, S1-U,
+  X2) stays IPv4.
+
+### Ethernet sessions
+
+A UE whose `sessionType` is `"Ethernet"` (TS 23.501 5.6.10.2) gets the link
+layer of an INET Ethernet node, with the cellular NIC as one of its Ethernet
+ports. The UPF switches the session's frames in an Ethernet bridge, among
+its Ethernet sessions and its N6 Ethernet LAN.
+
+- **UE**: the new `ethernetMode` parameter selects what the UE is on that
+  link layer. With `"host"` (the default), the UE is an Ethernet host whose
+  raw Ethernet applications (e.g. INET's `EthernetSourceApp` and
+  `EthernetSinkApp`) use the NIC's MAC address. With `"bridge"`, the UE
+  bridges between the cellular NIC and its `eth[]` interfaces, behind which
+  further devices can be connected. The 5GS does not carry the FCS: it is
+  removed on entry and rebuilt on exit.
+
+- **QoS rules** classify a frame by its headers. Their filter expressions
+  can read the Ethernet MAC header and the 802.1Q C-TAG and S-TAG (PCP, DEI,
+  VID); a module test documents the accessible fields. A `dscpAsQfi` rule
+  does not match a frame, and a `dscpAsQfi` rule scoped to an Ethernet UE is
+  an error.
+
+- **UPF**: the new `EthernetSessionBridge` (submodule `ethBridge`, present
+  with `hasEthernetBridge = true`; the N6 Ethernet link connects to the
+  `dnEthg` gate) is built on INET's `BridgingLayer`. It has one port per
+  session, which is created when the session is established and removed,
+  along with its learned addresses, when the session is released. Traffic
+  between two UEs is switched at the UPF without passing through N6.
+
+- **Not modeled** (listed in `EthernetSessionBridge`'s documentation):
+  VLAN-scoped flooding, ARP/ND proxying, allowed VLAN and MAC lists, S-TAG
+  and C-TAG handling, reporting learned MAC addresses to the SMF, PSA
+  relocation, and 5G VN groups. IP over an Ethernet session is not
+  configured automatically.
+
+- **Restrictions**, each an error: an Ethernet session needs a 5G core and an
+  anchor UPF with an Ethernet bridge, and it is not supported on a
+  D2D-capable UE or together with ROHC.
+
+- Examples: `simulations/nr/ethernet`, with configs `Ethernet-Hosts`,
+  `Ethernet-Bridge` (VLAN 42 frames, with PCP 5 mapped to a second QoS flow
+  and DRB), `Ethernet-Handover` and `Ethernet-Mixed` (Ethernet, IPv4 and
+  Unstructured UEs at one UPF).
+
+### Unstructured sessions
+
+A UE whose `sessionType` is `"Unstructured"` (TS 23.501 5.6.10.3) sends
+opaque payload. The anchor UPF carries it to an application server over the
+session's N6 point-to-point tunnel, in UDP/IP datagrams (TS 29.561 9.2).
+
+- **UE**: the new `UnstructuredApp` (and its send-only and receive-only
+  variants, `UnstructuredSourceApp` and `UnstructuredSinkApp`) attaches to the
+  cellular NIC directly, as no network layer is involved. A UE has at most
+  one, in the new `unstructuredApp[]` submodule vector
+  (`numUnstructuredApps`, default 0).
+
+- **UPF**: the N6 side is configured on the UPF's `nodeControl` module with
+  the `unstructuredPrefix`, `unstructuredServer`, `unstructuredServerPort`
+  and `unstructuredPort` parameters. TS 29.561 defines no UDP port for the
+  tunnel, so the two port parameters have no default. `CoreControl` allocates
+  an N6 address to each session from the prefix.
+
+- **Restrictions**, each an error: an Unstructured session needs a 5G core
+  and a UE stack with SDAP, and it has a single QoS flow on the default
+  bearer. A second bearer, a QoS rule scoped to the UE, reflective QoS, ROHC
+  and a D2D-capable UE are rejected. MEC steering does not apply, as it goes
+  by the IP destination.
+
+- Examples: `simulations/nr/unstructured`, with configs `Unstructured`
+  (with an IPv6 data network, the variant TS 29.561 describes),
+  `Unstructured-Ipv4N6`, `Unstructured-Handover` and `Unstructured-Mixed`.
+
+### Control plane: CoreControl and the nodes' control-plane entry points
+
+The configuration and signaling that v1.7.0 performed from the
+`BearerConfigurator`, the `Binder` and the UE now run between modules that
+correspond to the 3GPP entities, as calls named after the messages they
+stand for:
+
+- **`CoreControl`** is a new network-level module, next to the `Binder` and
+  the `BearerConfigurator`. It is the MME and the gateways' control plane of
+  an EPC, or the AMF and SMF of a 5G core. It establishes and releases the
+  UEs' sessions and programs the nodes that end their tunnels. It also
+  delivers the authored QFI rules to their evaluation sites.
+
+- **`ConnectionControlEnb`** is the base station's entry point (submodule
+  `rrc.connectionControl`). It owns the node's TEID space and its UEs' DRB
+  identities, establishes their bearers, and runs the network side of
+  attach, handover and radio link failure. Its D2D variant,
+  `ConnectionControlEnbD2D`, also establishes the sidelink and multicast
+  bearers.
+
+- **`ConnectionControlUe`** is the UE's entry point. It is the former
+  `HandoverController`, which is renamed because it now does more than
+  handovers: measurements and reports, the execution of a commanded
+  handover, and attachment and detachment.
+
+- **`UserPlaneNodeControl`** (submodule `nodeControl` of `Upf` and
+  `PgwStandard`, and so of the MEC host's UPF) is a user plane node's entry
+  point, the end of N4/S11 at which its sessions are established, modified
+  and deleted.
+
+- The **`BearerConfigurator`** is now read-only: it holds the bearer
+  definitions and the QoS rule tables, which are read by the base stations
+  and by `CoreControl`. The bearer definition schema is unchanged, apart
+  from the removed `pduSessionType`/`upperProtocol` fields and the new
+  `rohc` field.
+
+- **Attach**: a UE leg requests an RRC connection from its serving base
+  station, which registers the UE with the core network (INITIAL UE
+  MESSAGE). The core network establishes the session and asks the base
+  station to set up the session's resources: the tunnels, the UE's uplink
+  QoS rules, and its static bearers. As a consequence, static bearers are
+  now established UE by UE rather than table entry by table entry. In
+  networks where several UEs have several static bearers each, this changes
+  module ids and the order in which results are recorded, but not their
+  values.
+
+- **Handover**: the UE leg sends its serving base station a
+  MeasurementReport with the serving and the best cell. The base station
+  decides through `selectHandoverTarget()`, an overridable policy hook whose
+  default takes the reported cell, so handovers happen where and when they
+  did before. The source and the target prepare the handover over Xn
+  (HANDOVER REQUEST/ACKNOWLEDGE), carrying the leg's context, including its
+  bearer configuration. The source then commands the UE. When the UE
+  arrives, the target asks the core network to switch the path (PATH SWITCH
+  REQUEST) and releases the source (UE CONTEXT RELEASE). The two X2 control
+  messages that announced a handover and stopped the forwarding are no
+  longer sent, so the X2 transport's results (SCTP, PPP) change in every
+  network with handovers.
+
+- **Radio link failure**: the node that detects it informs the peer through
+  the peer's control-plane entry point, instead of reaching into the peer's
+  `BearerManagement`.
+
+The signaling is modeled as direct calls: no RRC, NAS, S1AP/NGAP or PFCP
+messages are transmitted, a procedure takes no time, and procedures have no
+explicit state machines, timers or failure cases.
+
+Networks and configurations written for v1.7.0 need these updates:
+
+- **Declare `CoreControl`**: every network with base stations needs a
+  `coreControl: CoreControl` submodule next to `binder` and
+  `bearerConfigurator`. The base stations require it, and initialization
+  fails without it.
+
+- **Renamed modules**: `HandoverController` is now `ConnectionControlUe`,
+  `HandoverControllerD2D` is now `ConnectionControlUeD2D`, and
+  `IHandoverController` is replaced by `IConnectionControl`. In the `Rrc`
+  compound, `handoverController` and `nrHandoverController` are now
+  `connectionControl` and `nrConnectionControl`, and their conditions
+  `hasHandoverController` and `hasNrHandoverController` are now
+  `hasConnectionControl` and `hasNrConnectionControl`. Ini keys of the form
+  `**.rrc.handoverController.<param>` must be updated accordingly.
+
+- **Renamed and removed parameters**: `PhyUe`'s `handoverControllerModule`
+  and `otherHandoverControllerModule` are now `connectionControlModule` and
+  `otherConnectionControlModule`. The `bearerConfiguratorModule` parameter of
+  `BearerManagement`, `Ip2Nic`, `NrSdap` and `Registration` is replaced by
+  `connectionControlModule`, and `TrafficFlowFilter` no longer has one. Also
+  removed are `GtpUser`'s `ipOutInterface` and `interfaceTableModule`,
+  `DcMux`'s `binderModule`, `HandoverPacketHolderEnb`'s
+  `handoverX2ForwarderModule` and `HandoverX2Forwarder`'s
+  `handoverPacketHolderModule`. All of these have defaults, so only
+  configurations that override them are affected.
+
+- **C++ API**: the X2 handover control message (`X2HandoverControlMsg`,
+  `X2HandoverCommandIE`) and the `LteProtocol::ipv4uu` dispatch label are
+  gone, the `Binder`'s address maps take `L3Address`, and the `Binder` no
+  longer keeps handover state.
+
+### GTP-U: session tunnels with TEIDs, PDU Session Container, End Marker
+
+In v1.7.0 every GTP-U tunnel carried TEID 0, and each node found the UE of a
+datagram from its inner IP address. Now:
+
+- Each UE has a session (session ID 1), anchored at the UPF or PGW where it
+  was established, for its whole lifetime (SSC mode 1). Each tunnel's TEID
+  is allocated by its receiving end. Base stations and UPFs identify the
+  session from the TEID, which also works for non-IP sessions and for IPv6
+  packets with the unspecified source address.
+
+- The GTP-U header follows TS 29.281. The N3 tunnels of a 5G core carry a
+  PDU Session Container extension header (TS 38.415) with the QFI, which
+  makes the header 16 bytes instead of 8. **This changes the results of
+  every network with N3 traffic towards a UPF.** The header is serialized in
+  the real format, so the QFI is visible in PCAP recordings and survives
+  emulation.
+
+- Downlink forwarded over X2 during a handover travels on the target's TEID.
+  Dual connectivity bearers have per-bearer X2-U tunnels with their own
+  TEIDs, so PDCP PDUs relayed between the master and the secondary no longer
+  carry simulation-only metadata across X2.
+
+- At the path switch, the anchor ends the old downlink path with a GTP-U End
+  Marker (TS 29.281 7.3.2). The source relays it after the downlink it
+  forwards, and the target holds back the downlink of the new path until the
+  End Marker arrives (TS 23.502 4.9.1.2.2). Downlink is therefore no longer
+  reordered at a handover. **This changes the results of every network with
+  handovers.**
+
+- The base station's user plane is wired directly, as in 3GPP: the cellular
+  NIC connects to `TrafficFlowFilter` and `GtpUser`, not to the base
+  station's own IP layer. Traffic between two UEs of the same base station
+  is handed straight back to the NIC.
+
+### Header compression (ROHC) configured per bearer
+
+In v1.7.0, header compression was a per-node parameter,
+`headerCompressedSize`, which enabled compression on every bearer of the
+node and also set the compressed size. In 3GPP it is a per-DRB setting
+(TS 38.331 PDCP-Config), normally used only on voice bearers.
+
+- Bearer definitions (`staticDrbs`, `onDemandDrbs`, `drbProfiles`) have a new
+  `rohc` field: `true` (every modeled profile), `false` (the default), or
+  `{profiles: [...]}`, which restricts compression to some of the profiles
+  `"rtp"`, `"udp"`, `"tcp"` and `"ip"`. Each packet is compressed with the
+  most specific configured profile that fits it, and a packet that no
+  profile fits is sent uncompressed. IPv6 datagrams are supported.
+
+- **Unidirectional mode (U-mode, RFC 3095)**: each flow has a context. A
+  bearer has up to 16 contexts (CIDs 0..15), and when they are all taken,
+  the least recently used one is taken over. A context starts in the IR
+  state, moves to FO and then to SO, and is periodically refreshed. Header
+  sizes and transition counts are parameters of the PDCP TX entity
+  (`rohcSoHeaderSizes`, `rohcFoHeaderSizes`, `rohcIrOverhead`,
+  `rohcIrPackets`, `rohcFoPackets`, `rohcIrRefresh`, `rohcFoRefresh`), with
+  defaults taken from the open-source ROHC library. Contexts restart at a
+  handover. Context damage after losses, O-mode and R-mode, and ROHCv2 are
+  not modeled.
+
+- **On by default for voice**: the new `BearerConfigurator` parameter
+  `rohcForDrbProfiles` names the QoS profiles that get ROHC when their
+  definition does not state `rohc`. Its default, `["5qi-1", "qci-1"]`, turns
+  compression on for bearers whose definition names the conversational
+  voice profile. **This changes results for such configurations.** In the
+  `VoIP-UL-CrossLcg` example, for instance, the mean frame delay drops from
+  19.46 to 17.54 ms. Bearers that carry voice without naming one of these
+  profiles are not affected. To restore the previous behavior, set
+  `rohc: false` on the definition or `rohcForDrbProfiles = []`.
+
+- ROHC applies to IP sessions only. On other session types the policy is
+  skipped, and an explicitly stated `rohc` is an error.
+
+- **Migration**: setting `headerCompressedSize` is now an error. Use the
+  `rohc` field instead, and set `rohcSoHeaderSizes` if you need a specific
+  steady-state size. Unlike v1.7.0, each flow's first packets now carry the
+  larger IR and FO headers. The unused `LteRohcPdu` message class is
+  removed; the compressed header is represented by `RohcHeader`.
+
+### The UE is an INET StandardHost
+
+`LteUe`, and with it `NrUe`, `LteCar` and `NrCar`, now extends INET's
+`StandardHost`, with the cellular NIC as one more network interface of the
+link layer, next to `lo` and the `eth[]` interfaces. The UE used to repeat the
+structure of INET's node base modules by hand; it now inherits it, together
+with `StandardHost`'s configuration options, and `StandardHost`'s optional
+submodules (e.g. `clock`) become available in the UE.
+Simulated traffic is unchanged: in the fingerprints, `tplx` and `~tNl` are
+identical, while `tilx` (module ids) and `sz` (the scalars of the removed
+`encap` module) change.
+
+Configurations written for v1.7.0 may need these updates:
+
+- **IP forwarding**: `*.ue.ipv4.forwarding = true` must become
+  `*.ue.forwarding = true`. `StandardHost` sets its network layers'
+  `forwarding` from its own parameter, so the old key is silently ignored
+  rather than rejected. The emulation examples are updated.
+
+- **Radio input gate**: the UE's `radioIn` gate is renamed `lteRadioIn`,
+  because `StandardHost` already has a `radioIn[]` gate vector (for its
+  wireless LAN interfaces). The gate receives the air frames by direct
+  sending and is not connected in networks, so only code that refers to it
+  by name is affected.
+
+- **`encap` renamed `ethernet`**: the Ethernet encapsulation of the `eth[]`
+  interfaces (emulation mode) is now `StandardHost`'s `ethernet` submodule,
+  and it exists only when the UE has `eth[]` interfaces. Parameter settings on
+  `ue.encap` must address `ue.ethernet` instead.
+
+- **`ethg[]` gates**: the UE now has `ethg[]` gates for its `eth[]`
+  interfaces, as every INET node does. A network containing a UE with
+  `eth[]` interfaces whose `ethg[]` gates stay unconnected (e.g. emulation)
+  must declare `connections allowunconnected`, as INET requires for
+  `StandardHost`; all emulation examples already do.
+
+- **Interface order and name resolution**: the UE's interfaces are now
+  registered as `lo0`, the `eth[]` interfaces, then `cellular` (previously
+  `cellular` came before the `eth[]` interfaces). An address given as the
+  UE's name, e.g. `destAddress = "ue[0]"`, resolves to the first
+  non-loopback interface that has an address; for a UE whose `eth[]`
+  interfaces have IP addresses (emulation), that is now an `eth[]` address,
+  which the core network cannot deliver to, and the traffic is lost without
+  an error. Name the cellular interface explicitly in such configurations:
+  `"ue[0]%cellular"`. UEs without addressed `eth[]` interfaces, which
+  includes all simulation examples, are unaffected.
+
+### Core network nodes: the N6 interface, and IPv6 on the nodes themselves
+
+- The data-network interface of `Upf` and `PgwStandard` (`dnPpp`) is no
+  longer in the node's interface table. It belongs to the user plane, which
+  is wired around the node's network layer, and when the node's own IP stack
+  routed over it, the result was a crash: at the first IPv6 Neighbor
+  Discovery message with `hasIpv6 = true`, or at a UPF's own IPv4 traffic
+  towards the data network. The address configurator no longer assigns
+  `dnPpp` a subnet, so automatically assigned addresses elsewhere in the
+  network may be numbered differently. In the examples this affects
+  `nr/mec/requestResponseApp`, whose results change.
+
+- A base station with `hasIpv6 = true` no longer crashes. Its network layer
+  sends Neighbor Discovery to the cellular NIC, which is wired to the user
+  plane rather than to the network layer. As a workaround, the new
+  `cellularNdSink` (`CellularNicNdSink`) discards these packets.
+
+### Other
+
+- **OMNeT++ 6.4 and INET 4.7**: CI builds against OMNeT++ 6.4.0 and
+  INET-4.7.0 (previously 6.3.0 and 4.5.4), and the fingerprint baselines are
+  re-recorded for them. `~tNl` did not move in any configuration, so the
+  traffic between network nodes is unaffected by the upgrade.
+
+- **Bug fixes**:
+  - Header compression on a 5G core bearer with a suppressed SDAP header
+    aborted the simulation at the first packet.
+  - A handover target built a static bearer without its configuration, so
+    the bearer lost header compression (causing an abort at the first
+    downlink packet), its QoS profile and its SDAP QFI mapping. In addition,
+    an on-demand bearer at the target could take the static bearer's DRB
+    id. The bearer configuration now travels with the handover context.
+    On-demand bearers keep their DRB ids across a handover, which swaps
+    bearer entity names in some results.
+  - Downlink that the handover source forwarded after the handover had
+    completed was held at the target indefinitely, i.e. lost.
+  - UE-to-UE traffic through the core network towards a UE attached
+    nowhere aborted the simulation; it is now dropped. For an NE-DC
+    destination UE, such traffic was tunneled to the secondary instead of
+    the master.
+  - The QoS-aware scheduler of a base station whose first QoS profiles
+    arrived after the scheduler's creation never saw any profiles.
+  - `CbrSender`, `BurstSender` and `VoipSender` waited forever, sending
+    nothing, when `destAddress` was a literal address, or of the forms
+    `host(ipv6)` or `host%interface`.
+  - ROHC treated the payload of a non-first IPv4 fragment as a transport
+    header.
+  - X2 handover data was routed to X2 gate 0 by default, which is the CoMP
+    manager's gate when CoMP is enabled.
+  - The master eNodeB of the dual-connectivity examples (dualConnectivity,
+    dualConnectivity_multicell, test_numerology, test_tdd) ran a D2D stack,
+    although none of their UEs is D2D-capable.
+
+- **D2dBinder declared in the network**: a network with D2D-capable nodes
+  (`hasD2D = true`) must now declare a `d2dBinder: D2dBinder` submodule next
+  to `binder`. It is no longer created on the fly by the first D2D module that
+  needs it, and initialization fails without it. The D2D example networks
+  declare it.
+
+- **Documentation**: the NED documentation was revised throughout. All
+  parameter and gate comments were reworded where they were unclear, and
+  wrong ones were fixed (e.g. swapped address and port comments in two MEC
+  apps). Every example network now describes its topology, and incorrect
+  3GPP deployment-option claims were removed. The index page now has
+  starting points for browsing. README, INSTALL and the website were
+  brought up to date (opp_env as the recommended installation method, the
+  development history since v1.3), and the website now serves the NED
+  documentation of the latest release instead of that of v1.3.0.
+
+- **Node layouts**: `LteUe`, `NrUe`, `Upf` and `PgwStandard` are laid out on
+  INET's node-base grid. The UPF and the PGW are drawn as two stacks: the
+  core network node's own stack, and the user plane relay with its
+  data-network interfaces.
+
+### Validation
+
+- **Fingerprint tests**: every change was checked against the fingerprint
+  suite in release and debug mode. The suite grew from 202 to 222
+  configurations with the IPv6, IPv4v6, ROHC, Ethernet and Unstructured
+  examples, and with a static bearer that hands over with header
+  compression. Changes meant to preserve behavior had to leave the
+  fingerprints unchanged, or, where module ids or the order of
+  same-instant events moved, to leave `~tNl` and the recorded results'
+  values unchanged.
+
+- **Module tests**: the new `tests/module` suite, modeled on INET's, runs
+  small simulations and checks their outcome (`make moduletests`). It covers
+  the configurations a session cannot have, checking both the exit code and
+  the error message, the frame fields that an Ethernet session's QoS rules
+  can read, and core networks whose nodes run IPv6.
+
+- **Unit tests**: `RohcCompression` covers profile selection, state
+  transitions, refreshes and CID allocation. `EthernetSessionBridging`
+  checks the UPF's bridge against TS 23.501 5.8.2.5.3, one case per sentence
+  of the spec. VLAN-scoped flooding, which is not modeled, is a recorded
+  expected failure.
+
 ## v1.7.0 (2026-09-14)
 
 The most significant change in this release is bearer and QoS management, which
