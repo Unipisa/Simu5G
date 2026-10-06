@@ -37,7 +37,7 @@ module NrUe extends LteUe
     submodules:
         //# UeStatsCollector - for MEC
         nrUeCollector: NrUeStatsCollector if hasRniSupport {
-            @display("p=127,506;is=s");
+            @display("p=125,1040;is=s");
         }
 
     connections allowunconnected:

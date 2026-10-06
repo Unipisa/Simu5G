@@ -220,7 +220,7 @@ modules to allow the communication with the real world is:
    *.ue.eth[0].typename = "ExtLowerEthernetInterface"
    *.ue.eth[0].device = "veth2"
    *.ue.extHostAddress = "192.168.3.2"
-   *.ue.ipv4.forwarding = true
+   *.ue.forwarding = true
 
 Configuring the OS environment
 Once the Simu5G environment is configured, the OS of the host

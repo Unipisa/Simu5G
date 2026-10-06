@@ -281,7 +281,7 @@ messages feature offered by the OMNeT++ platform.
    *.ue.eth[0].typename = "ExtLowerEthernetInterface"
    *.ue.eth[0].device = "sim-veth2"
    *.ue.extHostAddress = "192.168.3.2"
-   *.ue.ipv4.forwarding = true
+   *.ue.forwarding = true
 
 As far as the MEC system is concerned, to allow the
 instantation of a real MEC app in the appDescriptor file
