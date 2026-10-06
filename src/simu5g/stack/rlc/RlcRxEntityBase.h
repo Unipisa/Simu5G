@@ -32,6 +32,8 @@ class RlcRxEntityBase : public omnetpp::cSimpleModule
 
     void handleMessage(omnetpp::cMessage *msg) override;
 
+    ~RlcRxEntityBase() override { delete flowControlInfo_; }
+
   public:
     virtual void setFlowControlInfo(FlowControlInfo *info);
     FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }

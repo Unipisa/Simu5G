@@ -21,6 +21,7 @@ void RlcRxEntityBase::handleMessage(cMessage *msg)
 
 void RlcRxEntityBase::setFlowControlInfo(FlowControlInfo *info)
 {
+    delete flowControlInfo_;
     flowControlInfo_ = info->dup();
 }
 
