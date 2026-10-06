@@ -666,7 +666,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 
             unsigned int bandAvailableBytes = 0;
             unsigned int bandAvailableBlocks = 0;
-            allocatedRbMapEntry[i] = 0;
+            allocatedRbMapEntry[b] = 0;
 
             // If there is a previous blocks allocation on the first codeword, blocks allocation is already available
             if (allocatedCws != 0) {
@@ -718,7 +718,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
                 totalAllocatedBlocks += uBlocks;
                 cwAllocatedBytes += uBytes;
 
-                allocatedRbMapEntry[i] += uBlocks;
+                allocatedRbMapEntry[b] += uBlocks;
             }
 
             // Update limit
@@ -1297,13 +1297,11 @@ unsigned int LteSchedulerEnb::scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequen
             unsigned int size = assignedBlocks.size();
             unsigned int allocatedBytes = 0;
             for (unsigned int i = 0; i < size; ++i) {
-                allocatedRbMapEntry[i] = 0;
-
                 // For each LB for which blocks have been allocated
                 Band b = bandLim->at(i).band_;
 
                 allocatedBytes += assignedBytes.at(i);
-                allocatedRbMapEntry[i] += assignedBlocks.at(i);
+                allocatedRbMapEntry[b] = assignedBlocks.at(i);
 
                 EV << "\t Cw->" << allocatedCw << "/" << MAX_CODEWORDS << endl;
                 //! handle multi-codeword allocation
