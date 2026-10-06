@@ -137,7 +137,7 @@ class Binder : public cSimpleModule
      * Multicast destination ID support
      */
     // Counter for allocating new multicast destination IDs
-    int16_t multicastDestIdCounter_ = MULTICAST_DEST_MIN_ID;
+    uint16_t multicastDestIdCounter_ = MULTICAST_DEST_MIN_ID;
     // the node id the next background traffic manager's UEs start at
     unsigned int nextBackgroundUeId_ = BGUE_MIN_ID;
     // the node ids reserved for base stations that are no nodes (external and background cells)
