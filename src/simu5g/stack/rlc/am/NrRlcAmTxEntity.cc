@@ -271,6 +271,8 @@ void NrRlcAmTxEntity::sendPdus(int pduSize)
 
         txBuffer_->addSdu(sduLength, bufferedSdu);
         sduBuffer_.pop_front();
+        si->sdu = nullptr;  // owned by txBuffer_ from now on
+        delete si;
         segment = txBuffer_->getSegmentForGrant(newDataSize);
     }
 
