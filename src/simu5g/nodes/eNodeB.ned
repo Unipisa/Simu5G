@@ -48,15 +48,17 @@ module eNodeB
     parameters:
         @networkNode;
         @labels(node,ethernet-node,wireless-node);
-        @display("i=device/antennatower;bgb=1260,600");
-        @figure[applicationLayer](type=rectangle; pos=250,6; size=1000,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
-        @figure[applicationLayer.title](type=text; pos=1245,11; anchor=ne; text="application layer");
-        @figure[transportLayer](type=rectangle; pos=250,156; size=1000,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
-        @figure[transportLayer.title](type=text; pos=1245,161; anchor=ne; text="transport layer");
-        @figure[networkLayer](type=rectangle; pos=250,306; size=1000,130; fillColor=#00ff00; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
-        @figure[networkLayer.title](type=text; pos=1245,311; anchor=ne; text="network layer");
-        @figure[linkLayer](type=rectangle; pos=250,456; size=1000,130; fillColor=#0000ff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
-        @figure[linkLayer.title](type=text; pos=1245,461; anchor=ne; text="link layer");
+        @display("i=device/antennatower;bgb=1500,600");
+        @figure[applicationLayer](type=rectangle; pos=250,6; size=800,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
+        @figure[applicationLayer.title](type=text; pos=1045,11; anchor=ne; text="application layer");
+        @figure[transportLayer](type=rectangle; pos=250,156; size=800,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[transportLayer.title](type=text; pos=1045,161; anchor=ne; text="transport layer");
+        @figure[networkLayer](type=rectangle; pos=250,306; size=800,130; fillColor=#00ff00; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[networkLayer.title](type=text; pos=1045,311; anchor=ne; text="network layer");
+        @figure[linkLayer](type=rectangle; pos=250,456; size=800,130; fillColor=#0000ff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[linkLayer.title](type=text; pos=1045,461; anchor=ne; text="link layer");
+        @figure[radioInterface](type=rectangle; pos=1075,456; size=400,130; fillColor=#00ffff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[radioInterface.title](type=text; pos=1470,461; anchor=ne; text="radio interface");
         @figure[submodules];
         @statistic[posX](source="xCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
         @statistic[posY](source="yCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
@@ -135,26 +137,26 @@ module eNodeB
         //#
         cellularNic: <default(hasD2D ? "LteNicEnbD2D" : "LteNicEnb")> like ICellularNic {
             parameters:
-                @display("p=433,520");
+                @display("p=1275,520");
                 nodeType = parent.nodeType;
                 rrc.connectionControl.gateway = parent.gateway;
         }
 
         pppIf: PppInterface {
             parameters:
-                @display("p=824,519");
+                @display("p=700,520");
         }
 
         x2ppp[sizeof(x2)]: PppInterface {
             parameters:
-                @display("p=980,519");
+                @display("p=850,520,row,100");
         }
 
         //#
         //# Mec interface
         //#
         pppMEHostIf: PppInterface {
-            @display("p=657,519");
+            @display("p=550,520");
         }
 
         //#
@@ -162,11 +164,11 @@ module eNodeB
         //#
         ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
             parameters:
-                @display("p=494,372;q=queue");
+                @display("p=525,371;q=queue");
         }
         ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
             parameters:
-                @display("p=657,374;q=queue");
+                @display("p=775,371;q=queue");
         }
 
         //#
@@ -175,47 +177,47 @@ module eNodeB
 		// =============== Udp ============== //
         app[numApps]: <> like IApp {
             parameters:
-                @display("p=748,75,row,140");
+                @display("p=325,95,row,150");
         }
         udp: Udp {
             parameters:
-                @display("p=682,212");
+                @display("p=650,221");
         }
         tcp: Tcp if hasTcp {
             parameters:
-                @display("p=963,212");
+                @display("p=900,221");
         }
 
 	    // =============== X2AP ============== //
         x2App[numX2Apps]: LteX2App {
             parameters:
-                @display("p=371,75,row");
+                @display("p=325,68,row,150");
         }
         sctp: Sctp {
             parameters:
-                @display("p=494,211");
+                @display("p=400,221");
         }
 
 	    // message dispatcher for SAP between application and transport layer
         at: MessageDispatcher {
             parameters:
-                @display("p=750,146;b=1000,5,,,,1");
+                @display("p=650,146;b=800,5,,,,1");
         }
         // message dispatcher for SAP between transport and network layer
         tn: MessageDispatcher {
             parameters:
-                @display("p=750,300;b=1000,5,,,,1");
+                @display("p=650,296;b=800,5,,,,1");
         }
         // message dispatcher for SAP to link layer
         nl: MessageDispatcher {
             parameters:
                 interfaceMapping = parent.hasIpv6 ? {"cellular": "cellularNdSink"} : {};  // WORKAROUND, see ~CellularNicNdSink
-                @display("p=750,446;b=1000,5,,,,1");
+                @display("p=650,446;b=800,5,,,,1");
         }
         // WORKAROUND: takes the IPv6 Neighbor Discovery the network layer sends to the cellular NIC
         cellularNdSink: CellularNicNdSink if hasIpv6 {
             parameters:
-                @display("p=600,520");
+                @display("p=400,520");
         }
 
         //#
@@ -223,7 +225,7 @@ module eNodeB
         //#
         relay: UserPlaneRelay {
             parameters:
-                @display("p=1041,80");
+                @display("p=975,95");
                 ownerType = parent.nodeType;
                 gateway = parent.gateway;
                 mecHost = parent.mecHost;
@@ -231,7 +233,7 @@ module eNodeB
 
         gtpUserX2: GtpUserX2 {
             parameters:
-                @display("p=900,80");
+                @display("p=850,40");
         }
 
     connections allowunconnected:
@@ -261,14 +263,14 @@ module eNodeB
         //# User plane: the cellular NIC is wired to the tunnel endpoint directly, the
         //# base station does not IP-route the UEs' traffic
         //#
-        cellularNic.upperLayerOut --> relay.userDataIn;
-        relay.userDataOut --> cellularNic.upperLayerIn;
+        cellularNic.upperLayerOut --> { @display("m=v,h"); } --> relay.userDataIn;
+        relay.userDataOut --> { @display("m=h,v"); } --> cellularNic.upperLayerIn;
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
 	    //# GTPUserX2 connections
-        gtpUserX2.lteStackOut --> cellularNic.x2$i++;
-        gtpUserX2.lteStackIn <-- cellularNic.x2$o++;
+        gtpUserX2.lteStackOut --> { @display("m=h,v"); } --> cellularNic.x2$i++;
+        cellularNic.x2$o++ --> { @display("m=v,h"); } --> gtpUserX2.lteStackIn;
         gtpUserX2.socketOut --> at.in++;
         gtpUserX2.socketIn <-- at.out++;
 
@@ -278,8 +280,8 @@ module eNodeB
             x2App[i].sctpIn[0] <-- at.out++;
             x2App[i].sctpOut[1] --> at.in++;
             x2App[i].sctpIn[1] <-- at.out++;
-            x2App[i].x2ManagerIn <-- cellularNic.x2$o++;
-            x2App[i].x2ManagerOut --> cellularNic.x2$i++;
+            cellularNic.x2$o++ --> { @display("m=v,h"); } --> x2App[i].x2ManagerIn;
+            x2App[i].x2ManagerOut --> { @display("m=h,v"); } --> cellularNic.x2$i++;
         }
 
 		//#

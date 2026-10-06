@@ -25,7 +25,7 @@ module gNodeB extends eNodeB
 {
     parameters:
         @networkNode();
-        @display("i=device/antennatower;bgb=1260,600");
+        @display("i=device/antennatower;bgb=1500,600");
         collector.typename = default("GNodeBStatsCollector");
         gateway = default("upf"); // Change this path if the gateway node is inside a compound module
         nodeType = "GNODEB";        // DO NOT CHANGE
