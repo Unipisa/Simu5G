@@ -30,10 +30,10 @@ CellularTransmission *CellularTransmitter::createTransmission(const RadioTransmi
     transmission->frameType = (LtePhyFrameType)info.getFrameType();
     transmission->carrierFrequency = info.getCarrierFrequency();
     transmission->grantedBlocks = info.getGrantedBlocks();
-    // a one-to-one D2D frame is sent at the UE's D2D power, which its control info carries besides the cellular one.
-    // NOTE: a one-to-many D2D frame is recorded at the cellular power, the power other receivers' interference
-    // takes it at, although its own receivers take the D2D power
-    transmission->txPower = transmission->direction == D2D ? info.getD2dTxPower() : info.getTxPower();
+    // a D2D frame, one-to-one or one-to-many, is sent at the UE's D2D power, which its control info carries
+    // besides the cellular one
+    bool d2d = transmission->direction == D2D || transmission->direction == D2D_MULTI;
+    transmission->txPower = d2d ? info.getD2dTxPower() : info.getTxPower();
     transmission->startPosition = request.sender->getCoord();
     transmission->txDirection = request.sender->getTxDirection();
     transmission->txAngle = request.sender->getTxAngle();

@@ -157,7 +157,7 @@ class D2dUePhy : public Base
   public:
     double getTxPwr(Direction dir = UNKNOWN_DIRECTION) override
     {
-        if (dir == D2D)
+        if (dir == D2D || dir == D2D_MULTI)
             return d2dHelper_.getD2dTxPower();
         return this->txPower_;
     }
