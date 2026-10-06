@@ -47,22 +47,22 @@ module UserPlaneRelay
     submodules:
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
-                @display("p=200,175");
+                @display("p=225,75");
                 ownerType = parent.ownerType;
                 gateway = parent.gateway;
                 mecHost = parent.mecHost;
         }
         gtpUser: GtpUser {
             parameters:
-                @display("p=100,75");
+                @display("p=75,175");
                 gateway = parent.gateway;
         }
 
     connections:
-        gtpUser.socketOut --> socketOut;
-        gtpUser.socketIn <-- socketIn;
+        gtpUser.socketOut --> { @display("m=s"); } --> socketOut;
+        gtpUser.socketIn <-- { @display("m=s"); } <-- socketIn;
 
-        userDataIn --> trafficFlowFilter.in;
+        userDataIn --> { @display("m=e"); } --> trafficFlowFilter.in;
         trafficFlowFilter.out --> gtpUser.userDataIn;
-        gtpUser.userDataOut --> userDataOut;
+        gtpUser.userDataOut --> { @display("m=e"); } --> userDataOut;
 }

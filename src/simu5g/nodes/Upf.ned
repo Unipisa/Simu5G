@@ -43,7 +43,11 @@ import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 module Upf extends ApplicationLayerNodeBase
 {
     parameters:
-        @display("i=abstract/switch");
+        @display("i=abstract/switch;bgb=1700,1125");
+        @figure[userPlane](type=rectangle; pos=1275,5; size=400,437; fillColor=#ff8000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[userPlane.title](type=text; pos=1670,10; anchor=ne; text="user plane");
+        @figure[n6Interfaces](type=rectangle; pos=1275,458; size=400,660; fillColor=#00ffff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[n6Interfaces.title](type=text; pos=1670,463; anchor=ne; text="N6 interfaces");
         @figure[submodules];
 
         string nodeType = default("UPF");   // Do NOT change!
@@ -65,11 +69,12 @@ module Upf extends ApplicationLayerNodeBase
         dnPpp: PppInterface {
             parameters:
                 interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's N6 end
-                @display("p=1100,975");
+                displayStringTextFormat = "";
+                @display("p=1375,975");
         }
         relay: UserPlaneRelay {
             parameters:
-                @display("p=1200,75");
+                @display("p=1125,75");
                 ownerType = parent.nodeType;
                 gateway = parent.gateway;
         }
@@ -83,17 +88,17 @@ module Upf extends ApplicationLayerNodeBase
         }
         nodeControl: UserPlaneNodeControl {
             parameters:
-                @display("p=1200,175");
+                @display("p=125,400;is=s");
                 nodeType = parent.nodeType;
                 gateway = parent.gateway;
         }
         ndResponder: Ipv6NdResponder if hasNdResponder {
             parameters:
-                @display("p=1000,175");
+                @display("p=1550,225");
         }
         ethBridge: EthernetSessionBridge if hasEthernetBridge {
             parameters:
-                @display("p=1100,275");
+                @display("p=1575,700");
         }
         dnEth: <default("LayeredEthernetInterface")> like IEthernetInterface if hasEthernetBridge {
             parameters:
@@ -105,8 +110,8 @@ module Upf extends ApplicationLayerNodeBase
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
-        relay.userDataOut --> rd.in++;
-        rd.out++ --> relay.userDataIn;
+        relay.userDataOut --> { @display("m=h,v"); } --> rd.in++;
+        rd.out++ --> { @display("m=v,h"); } --> relay.userDataIn;
 
         rd.out++ --> dnPpp.upperLayerIn;
         dnPpp.upperLayerOut --> rd.in++;
@@ -118,7 +123,7 @@ module Upf extends ApplicationLayerNodeBase
         ethBridge.sessionOut --> rd.in++ if hasEthernetBridge;
         ethBridge.lowerLayerOut --> dnEth.upperLayerIn if hasEthernetBridge;
         dnEth.upperLayerOut --> ethBridge.lowerLayerIn if hasEthernetBridge;
-        dnEth.phys <--> dnEthg if hasEthernetBridge;
+        dnEth.phys <--> { @display("m=s"); } <--> dnEthg if hasEthernetBridge;
 
-        dnPpp.phys <--> dnPppg;
+        dnPpp.phys <--> { @display("m=s"); } <--> dnPppg;
 }

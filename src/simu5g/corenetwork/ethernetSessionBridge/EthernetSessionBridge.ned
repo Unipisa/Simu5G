@@ -50,7 +50,7 @@ import inet.linklayer.contract.IEthernetLayer;
 module EthernetSessionBridge
 {
     parameters:
-        @display("i=block/switch;bgb=700,500");
+        @display("i=block/switch;bgb=700,600");
         **.interfaceTableModule = default(absPath(".interfaceTable"));
         **.macTableModule = default(absPath(".macTable"));
         *.fcsMode = "declared";
@@ -69,16 +69,17 @@ module EthernetSessionBridge
             @display("p=100,200;is=s");
         }
         sessionMux: EthernetSessionMux {
-            @display("p=100,400");
+            portDisplayString = default("p=500,420,row,100;g=sessionPorts");
+            @display("p=600,520");
         }
         cb: MessageDispatcher {
-            @display("p=400,50;b=500,5,,,,1");
+            @display("p=400,50;b=700,5,,,,1");
         }
         bridging: <default("BridgingLayer")> like IProtocolLayer {
             @display("p=400,120");
         }
         bl: MessageDispatcher {
-            @display("p=400,190;b=500,5,,,,1");
+            @display("p=400,190;b=700,5,,,,1");
         }
         ethernet: <default("EthernetLayer")> like IEthernetLayer {
             @display("p=300,260");
@@ -87,7 +88,7 @@ module EthernetSessionBridge
             @display("p=500,260");
         }
         li: MessageDispatcher {
-            @display("p=400,330;b=500,5,,,,1");
+            @display("p=400,330;b=700,5,,,,1");
         }
     connections allowunconnected:
         cb.out++ --> bridging.upperLayerIn;
@@ -104,8 +105,8 @@ module EthernetSessionBridge
         li.out++ --> ethernet.lowerLayerIn;
         ieee8021q.lowerLayerOut --> li.in++;
         li.out++ --> ieee8021q.lowerLayerIn;
-        li.out++ --> lowerLayerOut;
-        lowerLayerIn --> li.in++;
+        li.out++ --> { @display("m=s"); } --> lowerLayerOut;
+        lowerLayerIn --> { @display("m=s"); } --> li.in++;
         sessionIn --> sessionMux.sessionIn;
         sessionMux.sessionOut --> sessionOut;
 }
@@ -166,6 +167,7 @@ simple EthernetSessionMux
         string interfaceTableModule;  // The bridge's interface table, which the session ports are registered in
         string macTableModule;  // The bridge's MAC table, flushed of a released session's port
         string portModuleType = default("simu5g.corenetwork.ethernetSessionBridge.EthernetSessionPort");  // The module type of the session ports
+        string portDisplayString = default("");  // Display string of the session ports (their place in the bridge's layout)
         @display("i=block/join");
     gates:
         input sessionIn;  // Uplink frames of the sessions, each with its SessionTag

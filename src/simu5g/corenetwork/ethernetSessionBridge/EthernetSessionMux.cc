@@ -92,6 +92,7 @@ void EthernetSessionMux::addSessionPort(const SessionRef& session)
     module->par("interfaceTableModule") = check_and_cast<cModule *>(interfaceTable_.get())->getFullPath().c_str();
     module->finalizeParameters();
     module->buildInside();
+    module->getDisplayString().updateWith(par("portDisplayString").stringValue());
     cModule *li = bridge->getSubmodule("li");
     li->getOrCreateFirstUnconnectedGate("out", 0, false, true)->connectTo(module->gate("upperLayerIn"));
     module->gate("upperLayerOut")->connectTo(li->getOrCreateFirstUnconnectedGate("in", 0, false, true));

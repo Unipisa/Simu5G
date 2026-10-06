@@ -40,7 +40,11 @@ import simu5g.corenetwork.userPlaneRelay.UserPlaneRelay;
 module PgwStandard extends ApplicationLayerNodeBase
 {
     parameters:
-        @display("i=device/mainframe");
+        @display("i=device/mainframe;bgb=1700,1125");
+        @figure[userPlane](type=rectangle; pos=1275,5; size=400,437; fillColor=#ff8000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[userPlane.title](type=text; pos=1670,10; anchor=ne; text="user plane");
+        @figure[sgiInterfaces](type=rectangle; pos=1275,458; size=400,660; fillColor=#00ffff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
+        @figure[sgiInterfaces.title](type=text; pos=1670,463; anchor=ne; text="SGi interfaces");
         @figure[submodules];
 
         string nodeType = "PGW";
@@ -56,11 +60,12 @@ module PgwStandard extends ApplicationLayerNodeBase
         dnPpp: PppInterface {
             parameters:
                 interfaceTableModule = "";  // Not an interface of the node's network layer: the user plane's SGi end
-                @display("p=1100,975");
+                displayStringTextFormat = "";
+                @display("p=1375,975");
         }
         relay: UserPlaneRelay {
             parameters:
-                @display("p=1200,75");
+                @display("p=1125,75");
                 ownerType = parent.nodeType;
         }
         rd: MessageDispatcher {
@@ -78,7 +83,7 @@ module PgwStandard extends ApplicationLayerNodeBase
         }
         ndResponder: Ipv6NdResponder if hasNdResponder {
             parameters:
-                @display("p=1000,175");
+                @display("p=1550,225");
         }
 
     connections:
@@ -86,8 +91,8 @@ module PgwStandard extends ApplicationLayerNodeBase
         relay.socketOut --> at.in++;
         relay.socketIn <-- at.out++;
 
-        relay.userDataOut --> rd.in++;
-        rd.out++ --> relay.userDataIn;
+        relay.userDataOut --> { @display("m=h,v"); } --> rd.in++;
+        rd.out++ --> { @display("m=v,h"); } --> relay.userDataIn;
 
         rd.out++ --> dnPpp.upperLayerIn;
         dnPpp.upperLayerOut --> rd.in++;
@@ -95,6 +100,6 @@ module PgwStandard extends ApplicationLayerNodeBase
         rd.out++ --> ndResponder.in if hasNdResponder;
         ndResponder.out --> rd.in++ if hasNdResponder;
 
-        dnPpp.phys <--> dnPppg;
+        dnPpp.phys <--> { @display("m=s"); } <--> dnPppg;
 }
 
