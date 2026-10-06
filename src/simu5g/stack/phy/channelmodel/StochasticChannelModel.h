@@ -315,7 +315,7 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * Decide whether the link is in line of sight -- drawn against the LOS
      * probability, or fixedLos if dynamicLos is off -- and record it in losMap(),
-     * with where the link's ends are
+     * with where the link's ends are and the link's UMa environment height
      *
      * @param d3D 3D distance between UE and eNodeB
      * @param d2D 2D distance between UE and eNodeB

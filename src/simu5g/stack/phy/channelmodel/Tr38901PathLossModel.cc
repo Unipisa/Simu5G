@@ -187,7 +187,7 @@ double Tr38901PathLossModel::computeUrbanMacro3D(double threeDimDistance, double
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
     // Compute break-point distance
-    double hEnvir = drawEnvironmentHeight(twoDimDistance);
+    double hEnvir = environmentHeight_;
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
     double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_  / PROPAGATION_VELOCITY);

@@ -290,7 +290,9 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     }
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
-    bool los = losMap()[link.linkKey].los;
+    const ChannelState::LosSample& sample = losMap()[link.linkKey];
+    bool los = sample.los;
+    pathLoss_->setEnvironmentHeight(sample.environmentHeight);
     double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
 
     //    Applying shadowing only if it is enabled by configuration
@@ -939,12 +941,14 @@ void StochasticChannelModel::computeLosProbability(double d3D, double d2D,
     ChannelState::LosSample& sample = losMap()[link.linkKey];
     sample.positionA = link.positionA();
     sample.positionB = link.positionB();
-    if (!dynamicLos_) {
+    if (!dynamicLos_)
         sample.los = fixedLos_;
-        return;
+    else {
+        double p = pathLoss_->computeLosProbability(d3D, d2D);
+        sample.los = (uniform(0.0, 1.0) <= p);
     }
-    double p = pathLoss_->computeLosProbability(d3D, d2D);
-    sample.los = (uniform(0.0, 1.0) <= p);
+    // the link's UMa environment height is drawn with its LOS state
+    sample.environmentHeight = pathLoss_->drawEnvironmentHeight(d2D);
 }
 
 double StochasticChannelModel::computePathLoss(double distance, double dbp, bool los)
@@ -996,7 +1000,9 @@ double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, co
 {
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
-    bool los = losMap()[key].los;
+    const ChannelState::LosSample& sample = losMap()[key];
+    bool los = sample.los;
+    pathLoss_->setEnvironmentHeight(sample.environmentHeight);
 
     if (!enable_extCell_los_)
         los = false;
