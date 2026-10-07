@@ -97,15 +97,27 @@ Main Features
 | **Bearers and QoS:**  | **RRC:**               | **Dual Connectivity:**    |
 |                       |                        |                           |
 | Data radio bearers    | Bearer management;     | EN-DC and NE-DC           |
-| configured centrally, | handover; radio link   | deployments; split        |
-| established up front  | failure and RRC        | bearers with configurable |
-| or on demand;         | re-establishment. RRC  | uplink split and leg      |
-| EPC-style packet      | functionality is       | selection; MCG and SCG    |
-| filters and 5GC QoS   | modeled, RRC signaling | bearers                   |
-| flows; SDAP with QoS  | is not simulated.      |                           |
-| flow classification   |                        |                           |
-| and reflective QoS;   |                        |                           |
-| QCI/5QI QoS profiles  |                        |                           |
+| configured centrally, | handover decided by    | deployments; split        |
+| established up front  | the serving base       | bearers with configurable |
+| or on demand;         | station and prepared   | uplink split and leg      |
+| EPC-style packet      | over Xn; radio link    | selection; MCG and SCG    |
+| filters and 5GC QoS   | failure and RRC        | bearers                   |
+| flows; SDAP with QoS  | re-establishment. RRC  |                           |
+| flow classification   | functionality is       |                           |
+| and reflective QoS;   | modeled, RRC signaling |                           |
+| QCI/5QI QoS profiles  | is not simulated.      |                           |
++-----------------------+------------------------+---------------------------+
+| **PDU sessions:**     | **Core network:**      | **PDCP:**                 |
+|                       |                        |                           |
+| IPv4, IPv6, IPv4v6,   | EPC and 5G core; GTP-U | Per-bearer entities;      |
+| Ethernet and          | tunnels with           | header compression        |
+| Unstructured          | per-session TEIDs, the | modeled as ROHC,          |
+| sessions; Ethernet    | QFI in a PDU Session   | configured per bearer;    |
+| bridging at the UPF;  | Container, and an End  | split bearers for dual    |
+| IPv6 Neighbor         | Marker at the path     | connectivity              |
+| Discovery at the      | switch; control plane  |                           |
+| session anchor        | modeled after the 3GPP |                           |
+|                       | entities               |                           |
 +-----------------------+------------------------+---------------------------+
 | **RLC:**              | **MAC:**               | **PHY:**                  |
 |                       |                        |                           |
@@ -165,6 +177,11 @@ results, the release notes say so and explain why. The main milestones so far:
   NE-DC and SCG bearers; buffer status reporting and uplink scheduling per
   logical channel group; D2D factored out into a separate, optional package;
   the 3GPP propagation formulas audited, fixed and covered by unit tests.
+
+- **v1.8.0**: IPv6, IPv4v6, Ethernet and Unstructured PDU sessions; a control
+  plane modeled after the 3GPP entities, with a core network control module
+  and control-plane entry points in the nodes; GTP-U tunnels with per-session
+  TEIDs; header compression modeled as ROHC, configured per bearer.
 
 Many of these releases require changes to existing ini files, or to code that
 extends Simu5G. The `release notes

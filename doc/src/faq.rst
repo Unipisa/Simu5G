@@ -52,8 +52,10 @@ Frequently Asked Questions
    Features that set Simu5G apart include:
 
    -  a detailed, standards-based representation of the protocol layers above
-      the MAC: SDAP with QoS flows, PDCP, RLC per TS 38.322 (NR) and TS 36.322
-      (LTE), and GTP-U tunneling in the core network;
+      the MAC: SDAP with QoS flows, PDCP with ROHC header compression, RLC per
+      TS 38.322 (NR) and TS 36.322 (LTE), and GTP-U tunneling in the core
+      network;
+   -  IPv4, IPv6, IPv4v6, Ethernet and Unstructured PDU sessions;
    -  network-controlled device-to-device communications;
    -  Multi-access edge computing, with ETSI-compliant interfaces towards
       real MEC applications;
@@ -86,12 +88,15 @@ Frequently Asked Questions
 
 .. question:: Does Simu5G model the control plane?
 
-   Simu5G is a user-plane simulator. RRC functionality (bearer management,
-   handover, radio link failure handling and RRC re-establishment) is
-   modeled, but RRC signaling between the UE and the base station, and
-   control-plane signaling towards the core network, are not simulated:
-   procedures take effect through direct function calls between the modules
-   involved, and where the duration of a procedure matters (handover,
+   Simu5G is a user-plane simulator, but its control plane is modeled after
+   the 3GPP entities: a core network control module (the MME of an EPC, or
+   the AMF and SMF of a 5G core), and control-plane entry points in the base
+   stations, the UEs and the user plane nodes. Attach, session establishment,
+   handover, radio link failure handling and RRC re-establishment run between
+   these modules, each step on the node that performs it in 3GPP. The
+   signaling itself (RRC, NAS, S1AP/NGAP, PFCP) is not simulated: procedures
+   take effect through direct calls named after the messages they stand for,
+   and where the duration of a procedure matters (handover,
    re-establishment), it is modeled with timers. Bearers come from
    configuration rather than from session management signaling.
 
