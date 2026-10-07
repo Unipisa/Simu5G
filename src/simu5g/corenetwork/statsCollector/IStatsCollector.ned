@@ -20,6 +20,7 @@ package simu5g.corenetwork.statsCollector;
 //
 moduleinterface IStatsCollector
 {
+    @display("i=block/cogwheel");
     string collectorType; // One of "eNBStatsCollector", "gNBStatsCollector", "ueStatsCollector", "NrUeStatsCollector"
 }
 
