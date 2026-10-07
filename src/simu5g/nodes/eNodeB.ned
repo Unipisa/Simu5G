@@ -129,7 +129,7 @@ module eNodeB
         }
 
         collector: <default("BaseStationStatsCollector")> like IStatsCollector if hasRniSupport {
-            @display("p=50,275;is=s");
+            @display("p=110,430;is=s");
         }
 
         //#
@@ -191,7 +191,7 @@ module eNodeB
 	    // =============== X2AP ============== //
         x2App[numX2Apps]: LteX2App {
             parameters:
-                @display("p=325,68,row,150");
+                @display("p=625,68,row,150");
         }
         sctp: Sctp {
             parameters:
@@ -233,7 +233,7 @@ module eNodeB
 
         gtpUserX2: GtpUserX2 {
             parameters:
-                @display("p=850,40");
+                @display("p=875,40");
         }
 
     connections allowunconnected:
