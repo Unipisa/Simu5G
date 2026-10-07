@@ -18,7 +18,7 @@ import inet.applications.contract.IApp;
 import inet.linklayer.contract.IMacForwardingTable;
 import inet.node.inet.StandardHost;
 import simu5g.corenetwork.statsCollector.UeStatsCollector;
-import simu5g.stack.ICellularNic;
+import simu5g.stack.IUeCellularNic;
 
 
 //
@@ -109,7 +109,7 @@ module LteUe extends StandardHost
         input lteRadioIn @directIn;     // Connection to master
 
     submodules:
-        cellularNic: <default(hasD2D ? "LteNicUeD2D" : "LteNicUe")> like ICellularNic {
+        cellularNic: <default(hasD2D ? "LteNicUeD2D" : "LteNicUe")> like IUeCellularNic {
             nodeType = parent.nodeType;
             sessionType = parent.sessionType;
             @display("p=600,975");

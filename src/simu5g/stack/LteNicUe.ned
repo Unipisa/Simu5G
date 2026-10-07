@@ -25,7 +25,7 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 // The PDCP and RLC entities are missing from the submodules on purpose: the RRC
 // layer's ~BearerManagement creates them per bearer at run time.
 //
-module LteNicUe extends LteNicBase
+module LteNicUe extends LteNicBase like IUeCellularNic
 {
     parameters:
         mac.typename = default("LteMacUe");
