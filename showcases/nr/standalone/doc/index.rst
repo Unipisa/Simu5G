@@ -11,7 +11,7 @@ environment, and how traffic flows between these elements.
 
 .. versionadded:: 1.2.2
 
-| Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`__
+| Source files location: `showcases/nr/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/nr/standalone>`__
 
 Model
 -----
@@ -66,10 +66,10 @@ operation using the *Simu5G* framework, focusing on the key interactions and
 performance metrics essential for evaluating the network's capabilities.
 
 Sources: :download:`omnetpp.ini <../omnetpp.ini>`,
-:download:`SingleCell_Standalone.ned <../../../../simulations/NR/networks/SingleCell_Standalone.ned>`
+:download:`SingleCell_Standalone.ned <../../../../simulations/nr/networks/SingleCell_Standalone.ned>`
 
 Discussion
 ----------
 
-Use `this page <https://github.com/Unipisa/Simu5G/discussions/TODO`__ in
-the GitHub issue tracker for commenting on this showcase.
+Use the `Simu5G discussions <https://github.com/Unipisa/Simu5G/discussions>`__
+on GitHub for commenting on this showcase.

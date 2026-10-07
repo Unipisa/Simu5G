@@ -9,7 +9,7 @@ hints about the basic configurations of 5G NR networks.
 
 .. versionadded:: 1.2.2
 
-Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`__
+Source files location: `tutorials/nr <https://github.com/Unipisa/Simu5G/tree/master/tutorials/nr>`__
 
 
 Introduction
@@ -20,13 +20,13 @@ by the previous one. This way, the beginner user is provided with a step-by-step
 scenarios with increasing complexities.
 
 All the configurations use the :ned:`SingleCell_Standalone` network that can be found in the
-:file:`simulations/NR/networks` folder.
+:file:`simulations/nr/networks` folder.
 
-.. literalinclude:: ../../../simulations/NR/networks/SingleCell_Standalone.ned
+.. literalinclude:: ../../../simulations/nr/networks/SingleCell_Standalone.ned
     :language: ned
     :start-at: SingleCell_Standalone
 
-.. figure:: media/SingleCell_Standalone.png
+.. figure:: ../../../showcases/nr/standalone/doc/media/SingleCell_Standalone.png
 
     Initial configuration of the network
 
@@ -136,10 +136,10 @@ more UEs will get higher throughput.
 See ``avgServerBlocksDl:mean`` and ``cbrReceivedThroughput:mean`` statistics.
 
 
-Sources: :download:`omnetpp.ini <../omnetpp.ini>`, :download:`SingleCell_Standalone.ned <../../../simulations/NR/networks/SingleCell_Standalone.ned>`
+Sources: :download:`omnetpp.ini <../omnetpp.ini>`, :download:`SingleCell_Standalone.ned <../../../simulations/nr/networks/SingleCell_Standalone.ned>`
 
 Discussion
 ----------
 
-Use `this page <https://github.com/Unipisa/Simu5G/discussions/TODO`__ in
-the GitHub issue tracker for commenting on this showcase.
+Use the `Simu5G discussions <https://github.com/Unipisa/Simu5G/discussions>`__
+on GitHub for commenting on this tutorial.
