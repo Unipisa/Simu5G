@@ -1,35 +1,18 @@
 # What's New in Simu5G
 
-## v1.8.0 (unreleased)
+## v1.8.0 (2026-10-07)
 
-The most significant change in this release is the support for IPv6,
-Ethernet and Unstructured PDU sessions. A UE now requests its session type
-with the new `sessionType` parameter, and the session is carried end to
-end, from the UE's applications through the RAN and the anchor UPF to the
-data network. A UE has one session, a deliberate simplification of 3GPP
-that keeps configuration simple. Non-IP sessions carry no address that
-identifies the UE, so sessions are now represented explicitly, and GTP-U
-tunnels carry per-session TEIDs, allocated by their receiving ends, instead
-of TEID 0. The tunnels of a 5G core also carry the QFI in a PDU Session
-Container, and a path switch closes the old path with an End Marker. Keeping
-the sessions' tunnels current across handovers is run-time state that has no
-place in the declarative `BearerConfigurator`. The control plane was
-therefore given modules of its own, each responsibility lying with the node
-that has it in 3GPP. The core network's control plane is now a separate
-module (`CoreControl`), every base station, UE and user plane node has a
-control-plane entry point, and the handover decision is now made by the
-serving base station. Attach, handover and radio link failure run between
-the entry points as direct calls named after the RRC, Xn, S1AP/NGAP and
-PFCP/GTP-C messages; the signaling messages themselves are not modeled.
-Header compression is now configured
-per bearer, with a model of ROHC's profiles, contexts and states, and is on
-by default for voice bearers. The UE is now an INET `StandardHost`. Simu5G
-now builds on OMNeT++ 6.4 and INET 4.7. Changes were validated using
-fingerprint, module and unit tests (details at the end of this entry). This
-release, like all releases since v1.3.1, was developed by Andras Varga and
-the OMNeT++ core team.
+The most significant change in this release is the support for new PDU
+session types: besides IPv4, a UE can now have an IPv6, IPv4v6, Ethernet or
+Unstructured session, carried end to end from the UE to the data network.
+The control plane was rebuilt after 3GPP's division of responsibilities,
+with a core network control module and control-plane entry points in the
+base stations, UEs and user plane nodes. GTP-U tunnels now carry
+per-session TEIDs and, in a 5G core, the QFI. Header compression is
+modeled as ROHC configured per bearer. This release, like all releases
+since v1.3.1, was developed by Andras Varga and the OMNeT++ core team.
 
-Tested with INET-4.7.0 and OMNeT++ 6.4.0.
+This release requires INET-4.7.0 and OMNeT++ 6.4.0.
 
 ### Session types: the UE's sessionType parameter
 
@@ -43,19 +26,14 @@ so the user plane dispatches on the type instead of parsing packets. An EPC
 (a `PgwStandard` anchor) carries the IP types only, and a non-IP session
 anchored at a PGW is an error.
 
-**One session per UE.** In 3GPP a UE may have several PDU sessions at once,
-e.g. an IPv4 session to the Internet and an Ethernet session to an
-industrial LAN, each with its own type, anchor and bearers. In Simu5G a UE
-has exactly one, whose type is selected by its `sessionType` parameter. This
-is a deliberate simplification that keeps configuration simple: one
-parameter per UE, and no session reference in the bearer definitions. The
-limitation lies in the configuration code, not in the protocol modules,
-which identify sessions by session ID throughout (TEIDs resolve to sessions,
-and packets carry their session inside the node). It can therefore be
-lifted by a more sophisticated configurator.
-[DRAFT: NOT YET TRUE -- several modules still keep per-UE session state;
-see the multi-session readiness work item. Make true or reword before the
-release.]
+**One session per UE.** In 3GPP a UE may have several PDU sessions at once, e.g.
+an IPv4 session to the Internet and an Ethernet session to an industrial LAN,
+each with its own type, anchor and bearers. In Simu5G a UE has exactly one,
+whose type is selected by its `sessionType` parameter. This is a deliberate
+simplification that keeps configuration simple: one parameter per UE, and no
+session reference in the bearer definitions. Future releases may lift this
+limitation and offer an alternative configurator that allows multiple sessions
+per UE at the cost of requiring more complex configuration.
 
 Bearers are typed by the session of their UE, so the bearer definitions no
 longer carry a type. The `pduSessionType` and `upperProtocol` fields of
@@ -63,11 +41,16 @@ longer carry a type. The `pduSessionType` and `upperProtocol` fields of
 still has one is an error that names the UE parameter. In v1.7.0 only the
 default `"IPv4"` worked, so in practice the fields can simply be deleted.
 
+The UE passes the session type to its NIC as well, so the `cellularNic` of
+`LteUe` is now typed by the new `IUeCellularNic` interface: an `ICellularNic`
+with a `sessionType` parameter. The built-in UE NICs implement it; a custom UE
+NIC must implement it too.
+
 ### IPv6 and IPv4v6 sessions
 
 - The user plane is address-family neutral. The `Binder` maps `L3Address`es
-  to node ids. A UE's addresses are registered by the UE's `Registration`
-  module, which follows the cellular interface's configuration as it
+  to node ids. A UE's addresses are registered by the UE RRC's `Registration`
+  submodule, which follows the cellular interface's configuration as it
   changes during the run: link-local and autoconfigured IPv6 addresses
   appear only after initialization. On an IPv4v6 session, IPv4 and IPv6
   datagrams share the session's bearers, and each goes up as its own
@@ -123,11 +106,13 @@ its Ethernet sessions and its N6 Ethernet LAN.
   an error.
 
 - **UPF**: the new `EthernetSessionBridge` (submodule `ethBridge`, present
-  with `hasEthernetBridge = true`; the N6 Ethernet link connects to the
-  `dnEthg` gate) is built on INET's `BridgingLayer`. It has one port per
-  session, which is created when the session is established and removed,
-  along with its learned addresses, when the session is released. Traffic
-  between two UEs is switched at the UPF without passing through N6.
+  with `hasEthernetBridge = true`) is built on INET's `BridgingLayer`. It
+  has one port per session, which is created when the session is
+  established and removed, along with its learned addresses, when the
+  session is released. Its N6 port is the UPF's `dnEth` interface, which is
+  connected to the `dnEthg` gate; being the bridge's port, `dnEth` is not an
+  interface of the UPF's network layer. Traffic between two UEs is switched
+  at the UPF without passing through N6.
 
 - **Not modeled** (listed in `EthernetSessionBridge`'s documentation):
   VLAN-scoped flooding, ARP/ND proxying, allowed VLAN and MAC lists, S-TAG
@@ -302,9 +287,9 @@ datagram from its inner IP address. Now:
   handovers.**
 
 - The base station's user plane is wired directly, as in 3GPP: the cellular
-  NIC connects to `TrafficFlowFilter` and `GtpUser`, not to the base
-  station's own IP layer. Traffic between two UEs of the same base station
-  is handed straight back to the NIC.
+  NIC connects to the base station's user plane relay (see below), not to
+  the base station's own IP layer. Traffic between two UEs of the same base
+  station is handed straight back to the NIC.
 
 ### Header compression (ROHC) configured per bearer
 
@@ -397,6 +382,32 @@ Configurations written for v1.7.0 may need these updates:
   `"ue[0]%cellular"`. UEs without addressed `eth[]` interfaces, which
   includes all simulation examples, are unaffected.
 
+### The user plane relay
+
+The nodes that end GTP-U tunnels (`eNodeB`, `gNodeB`, `Upf` and
+`PgwStandard`) now have a `relay` submodule, a `UserPlaneRelay`: the "relay"
+of the 3GPP user plane protocol stacks, i.e. the `TrafficFlowFilter` that
+picks the tunnel and the `GtpUser` that tunnels. The base stations'
+`gtpUserX2` stays a submodule of the node. In `Upf` and `PgwStandard`, an
+INET `MessageDispatcher` (`rd`) below the relay passes the user data to the
+data network interface (`dnPpp`), the Ethernet session bridge or the
+Neighbor Discovery responder, by the service it is for.
+
+Configurations and code written for v1.7.0 may need these updates:
+
+- **Submodule paths**: the `gtpUser` and `trafficFlowFilter` of a base
+  station are now `relay.gtpUser` and `relay.trafficFlowFilter`, and the
+  `gtp_user` and `trafficFlowFilter` of `Upf` and `PgwStandard` are now
+  `relay.gtpUser` and `relay.trafficFlowFilter`. Ini keys that address them
+  must be updated accordingly.
+
+- **Gate names**, named after what the gates carry: `GtpUser`'s
+  `trafficFlowFilterGate` and `pppGate` are now `userDataIn` and
+  `userDataOut`, and `TrafficFlowFilter`'s `internetFilterGateIn` and
+  `gtpUserGateOut` are now `in` and `out`. Only networks that use these
+  modules outside the Simu5G nodes, and code that refers to the gates by
+  name, are affected.
+
 ### Core network nodes: the N6 interface, and IPv6 on the nodes themselves
 
 - The data-network interface of `Upf` and `PgwStandard` (`dnPpp`) is no
@@ -416,10 +427,11 @@ Configurations written for v1.7.0 may need these updates:
 
 ### Other
 
-- **OMNeT++ 6.4 and INET 4.7**: CI builds against OMNeT++ 6.4.0 and
-  INET-4.7.0 (previously 6.3.0 and 4.5.4), and the fingerprint baselines are
-  re-recorded for them. `~tNl` did not move in any configuration, so the
-  traffic between network nodes is unaffected by the upgrade.
+- **D2dBinder declared in the network**: a network with D2D-capable nodes
+  (`hasD2D = true`) must now declare a `d2dBinder: D2dBinder` submodule next
+  to `binder`. It is no longer created on the fly by the first D2D module that
+  needs it, and initialization fails without it. The D2D example networks
+  declare it.
 
 - **Bug fixes**:
   - Header compression on a 5G core bearer with a suppressed SDAP header
@@ -449,12 +461,33 @@ Configurations written for v1.7.0 may need these updates:
   - The master eNodeB of the dual-connectivity examples (dualConnectivity,
     dualConnectivity_multicell, test_numerology, test_tdd) ran a D2D stack,
     although none of their UEs is D2D-capable.
+  - Serializing an application packet, as PCAP recording, emulation and
+    computed checksums do, aborted the simulation: `CbrPacket` and
+    `BurstPacket` had no serializer, and `VoipPacket` could not be
+    serialized at `VoipSender`'s default packet size of 40 bytes. The VoIP
+    packet's wire format no longer contains the receiver's arrival and
+    playout times. In addition, a deserialized `VoipPacket` lost its
+    timestamp, so `VoipReceiver` computed wrong end-to-end delays in
+    emulation.
+  - Memory leaks: the H-ARQ mirror buffers and the conflict graph of the
+    D2D base station MAC, the per-SDU bookkeeping of the NR RLC AM TX
+    entity, and the flow descriptor of every RLC RX entity were never
+    freed.
 
-- **D2dBinder declared in the network**: a network with D2D-capable nodes
-  (`hasD2D = true`) must now declare a `d2dBinder: D2dBinder` submodule next
-  to `binder`. It is no longer created on the fly by the first D2D module that
-  needs it, and initialization fails without it. The D2D example networks
-  declare it.
+- **Node layouts**: `LteUe`, `NrUe`, `Upf` and `PgwStandard` are laid out on
+  INET's node-base grid. The UPF and the PGW are drawn as two stacks: the
+  core network node's own stack, and the user plane relay with its
+  data-network interfaces. In `eNodeB` and `gNodeB`, the cellular NIC is
+  drawn in a box of its own to the right of the node's stack, as it is not
+  an interface of the node's network layer. The cellular NICs are taller,
+  with their upper modules in two columns, one per direction.
+
+- **Inspectors**: the runtime state of the modules (counters, tables,
+  per-UE and per-bearer state) is now `WATCH`ed throughout, so it can be
+  examined in Qtenv's inspectors. Watches of mere copies of parameters
+  were removed, and the obsolete `WATCH_MAP`, `WATCH_VECTOR` etc. macros
+  were replaced by plain `WATCH()`, which displays containers since
+  OMNeT++ 6.4.
 
 - **Documentation**: the NED documentation was revised throughout. All
   parameter and gate comments were reworded where they were unclear, and
@@ -465,11 +498,6 @@ Configurations written for v1.7.0 may need these updates:
   brought up to date (opp_env as the recommended installation method, the
   development history since v1.3), and the website now serves the NED
   documentation of the latest release instead of that of v1.3.0.
-
-- **Node layouts**: `LteUe`, `NrUe`, `Upf` and `PgwStandard` are laid out on
-  INET's node-base grid. The UPF and the PGW are drawn as two stacks: the
-  core network node's own stack, and the user plane relay with its
-  data-network interfaces.
 
 ### Validation
 
@@ -486,13 +514,28 @@ Configurations written for v1.7.0 may need these updates:
   small simulations and checks their outcome (`make moduletests`). It covers
   the configurations a session cannot have, checking both the exit code and
   the error message, the frame fields that an Ethernet session's QoS rules
-  can read, and core networks whose nodes run IPv6.
+  can read, and core networks whose nodes run IPv6. A module test may carry
+  C++ code, e.g. module classes of its own; the runner compiles it into a
+  test executable linked with Simu5G and INET.
 
 - **Unit tests**: `RohcCompression` covers profile selection, state
   transitions, refreshes and CID allocation. `EthernetSessionBridging`
   checks the UPF's bridge against TS 23.501 5.8.2.5.3, one case per sentence
   of the spec. VLAN-scoped flooding, which is not modeled, is a recorded
-  expected failure.
+  expected failure. `AppPacketSerializers` serializes the packets of the
+  CBR, burst and VoIP senders at several sizes and checks that they read
+  back as sent.
+
+### Requires INET 4.7 and OMNeT++ 6.4
+
+Simu5G now requires INET 4.7 and OMNeT++ 6.4; INET 4.5.4 and OMNeT++ 6.3 are no
+longer supported. The newer INET is needed for the IPv6 sessions (INET 4.7 has
+significantly improved IPv6 support), and the newer OMNeT++ for the newly added
+`WATCH`es that display complex data structures. CI builds against INET-4.7.0 and
+OMNeT++ 6.4.0, and the fingerprint baselines were re-recorded for them. `~tNl`
+did not move in any configuration, so the upgrade itself does not affect the
+traffic between network nodes.
+
 
 ## v1.7.0 (2026-09-14)
 
