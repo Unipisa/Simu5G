@@ -382,6 +382,12 @@ class StochasticChannelModel : public ChannelModelBase
     const inet::Coord& receptionPosition(const AirFrame *frame) const;
 
     /*
+     * When the frame started to arrive at the local radio (stamped by the
+     * radio), or now for a frame that was never received (a what-if)
+     */
+    simtime_t receptionStartTime(const AirFrame *frame) const;
+
+    /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
      * local module is one endpoint, 'coord' the other, and 'dir' says which of
      * the two is the UE.

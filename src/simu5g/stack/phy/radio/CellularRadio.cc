@@ -41,6 +41,7 @@ void CellularRadio::handleMessage(cMessage *msg)
         auto frame = check_and_cast<AirFrame *>(msg);
         // the reception is evaluated where the radio is as the frame starts to arrive
         frame->setArrivalPosition(endpoint_->getCoord());
+        frame->setReceptionStartTime(simTime());
         if (frame->getDuration() == 0)
             send(frame, upperLayerOutGateId_);
         else

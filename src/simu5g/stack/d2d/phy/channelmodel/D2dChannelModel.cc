@@ -36,6 +36,7 @@ void D2dChannelModel::initialize(int stage)
 RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId destId, Coord destCoord)
 {
     RadioLink link;
+    link.startTime = simTime();
     link.dir = D2D;
 
     link.txId = srcId;
@@ -63,6 +64,7 @@ std::vector<double> D2dChannelModel::getRSRP_D2D(AirFrame *frame, UserControlInf
     EV << "------------ GET RSRP D2D----------------" << endl;
 
     RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
+    link.startTime = receptionStartTime(frame);
 
     // Note the D2D-specific transmit power: a D2D transmission does not use the
     // power the UE would use towards the base station.
@@ -84,6 +86,7 @@ std::vector<double> D2dChannelModel::getSINR_D2D(AirFrame *frame, UserControlInf
     // The desired signal is already known; the core adds noise and interference,
     // asking computeInterferencePlusNoise() below for the D2D denominator.
     RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
+    link.startTime = receptionStartTime(frame);
     link.cellId = enbId;
 
     // The caller is expected to supply one RSRP value per band. The one-to-many

@@ -58,6 +58,10 @@ struct RadioLink
     inet::Coord txCoord;
     inet::Coord rxCoord;
 
+    // When the transmission evaluated on the link started to arrive at the
+    // receiver; for a what-if, the instant of the measurement.
+    simtime_t startTime;
+
     // ---- channel state ----
     // linkKey is the link itself: LinkKey(txId, rxId). It indexes the
     // state the radio medium keeps per link and shares among every channel

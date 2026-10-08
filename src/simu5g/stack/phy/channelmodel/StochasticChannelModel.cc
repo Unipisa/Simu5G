@@ -152,6 +152,7 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     // The local module is one endpoint and 'coord' the other; 'dir' says which
     // of the two is the UE. The UE is the node whose position history we track.
     RadioLink link;
+    link.startTime = simTime();
     link.dir = dir;
     link.stateNodeId = ueId;
 
@@ -183,9 +184,16 @@ const Coord& StochasticChannelModel::receptionPosition(const AirFrame *frame) co
     return arrivalPosition.isUnspecified() ? phy_->getCoord() : arrivalPosition;
 }
 
+simtime_t StochasticChannelModel::receptionStartTime(const AirFrame *frame) const
+{
+    simtime_t startTime = frame->getReceptionStartTime();
+    return startTime < SIMTIME_ZERO ? simTime() : startTime;
+}
+
 RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo, const Coord& localPosition)
 {
     RadioLink link;
+    link.startTime = simTime();
     link.dir = lteInfo->getDirection();
 
     // The object associated with the packet: the eNodeB if the direction is DL,
@@ -404,6 +412,7 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
 std::vector<double> StochasticChannelModel::getSINR(AirFrame *frame, UserControlInfo *lteInfo)
 {
     RadioLink link = linkFor(lteInfo, receptionPosition(frame));
+    link.startTime = receptionStartTime(frame);
 
     EV << "------------ GET SINR ----------------" << endl;
 
@@ -498,7 +507,9 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
 
 std::vector<double> StochasticChannelModel::getRSRP(AirFrame *frame, UserControlInfo *lteInfo)
 {
-    return getRSRP(linkFor(lteInfo, receptionPosition(frame)), lteInfo->getTxPower());
+    RadioLink link = linkFor(lteInfo, receptionPosition(frame));
+    link.startTime = receptionStartTime(frame);
+    return getRSRP(link, lteInfo->getTxPower());
 }
 
 std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, double txPower)
