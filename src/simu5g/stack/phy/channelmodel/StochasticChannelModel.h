@@ -310,7 +310,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param speed speed of UE
      * @param band logical band id
      */
-    virtual double jakesFading(JakesFadingMap& jakesMap, const LinkKey& key, double speed, unsigned int band);
+    virtual double jakesFading(JakesFadingMap& jakesMap, const LinkKey& key, double speed, unsigned int band, simtime_t startTime);
 
     /*
      * Decide whether the link is in line of sight -- drawn against the LOS

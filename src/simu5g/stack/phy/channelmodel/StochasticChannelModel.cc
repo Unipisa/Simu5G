@@ -600,7 +600,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
                 fadingAttenuation = rayleighFading(link.stateNodeId, i);
 
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i);
+                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i, link.startTime);
         }
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
@@ -725,7 +725,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
                 fadingAttenuation = rayleighFading(bgUeId, i);
 
             else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i);
+                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i, link.startTime);
         }
         // add fading contribution to the received power
         double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
@@ -788,7 +788,7 @@ double StochasticChannelModel::rayleighFading(MacNodeId id,
 }
 
 double StochasticChannelModel::jakesFading(JakesFadingMap& jakesMap, const LinkKey& key, double speed,
-        unsigned int band)
+        unsigned int band, simtime_t startTime)
 {
     JakesFadingMap *actualJakesMap = &jakesMap;
 
@@ -820,8 +820,8 @@ double StochasticChannelModel::jakesFading(JakesFadingMap& jakesMap, const LinkK
     // convert carrier frequency from GHz to Hz
     double f = carrierFrequencyHz_;
 
-    // get transmission time start (TTI = 1ms)
-    simtime_t t = simTime().dbl() - 0.001;
+    // the fading of a transmission is that at its start (at the receiver)
+    simtime_t t = startTime;
 
     double re_h = 0;
     double im_h = 0;

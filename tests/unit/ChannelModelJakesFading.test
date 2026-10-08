@@ -8,7 +8,8 @@ The value is graded exactly. On the first call for a link the model draws a
 realization band by band, and within each band path by path: an angle of
 arrival, cos(uniform(0, pi)), and a delay spread, exponential(delayRms), stored
 as a simtime_t. It then sums the paths, one-ring (Clarke) with Cavers'
-frequency selectivity, at t = now - 1 ms with a Doppler shift of speed * f / c.
+frequency selectivity, at the transmission's start time t with a Doppler shift of
+speed * f / c.
 An RngSnapshot taken before the call replays the same draws, so the test
 recomputes that sum independently and compares -- to 1e-9 dB, since both sides
 evaluate the same operations in the same order.
@@ -75,10 +76,10 @@ static JakesRealization replayRealization(omnetpp::cRNG *rng, int bands, int pat
 // |H|^2 in dB for one band of a realization, written out from the model's
 // documented formula. The speed of light is spelled out rather than taken from
 // the macro the model uses, so that a change to that constant fails here.
-static double jakesGainDb(const JakesRealization& r, int band, double speed, double fHz, double now)
+static double jakesGainDb(const JakesRealization& r, int band, double speed, double fHz, double startTime)
 {
     const double c = 299792458.0;
-    SimTime t = now - 0.001;
+    SimTime t = startTime;
     double doppler = (speed * fHz) / c;
     int paths = r.cosAoa[band].size();
     double attenuation = 1.00 / sqrt(static_cast<double>(paths));
@@ -158,7 +159,7 @@ const double delayRms = bs->par("delayRms").doubleValue();
 const double fHz = inet::units::values::Hz(bs->getCarrierFrequency()).get();
 ChannelModelProbe bsProbe(bs), ueProbe(ue);
 
-// Away from t = 0, so that the evaluation time t = now - 1 ms is positive.
+// Away from t = 0, so that the fading varies with the start time.
 wait(0.010);
 
 //
@@ -170,13 +171,13 @@ wait(0.010);
     const LinkKey key(MacNodeId(1100));
     const double speed = 13.9;   // m/s, 50 km/h
     RngSnapshot snapshot(ue);
-    double got3 = ue->jakesFading(ueProbe.jakesMap(), key, speed, 3);
+    double got3 = ue->jakesFading(ueProbe.jakesMap(), key, speed, 3, simTime());
     JakesRealization r = replayRealization(snapshot.rng(), bands, paths, delayRms);
     c.expectNear("the fading value is the Jakes sum over the drawn realization",
             got3, jakesGainDb(r, 3, speed, fHz, simTime().dbl()), 1e-9);
 
     // The realization covers every band, and each band has its own.
-    double got8 = ue->jakesFading(ueProbe.jakesMap(), key, speed, 8);
+    double got8 = ue->jakesFading(ueProbe.jakesMap(), key, speed, 8, simTime());
     c.expectNear("...on every band, from that band's own paths",
             got8, jakesGainDb(r, 8, speed, fHz, simTime().dbl()), 1e-9);
 
@@ -188,11 +189,11 @@ wait(0.010);
     // Drawn once. A second call on the same link, even on another band, draws
     // nothing and reuses the realization.
     const LinkKey key(MacNodeId(1101));
-    ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0);
+    ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0, simTime());
     unsigned long drawnBefore = ue->getRNG(0)->getNumbersDrawn();
-    double a = ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0);
-    double b = ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0);
-    ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 6);
+    double a = ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0, simTime());
+    double b = ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 0, simTime());
+    ue->jakesFading(ueProbe.jakesMap(), key, 5.0, 6, simTime());
     c.expectValue("a realization is drawn once and then reused",
             (long long)(ue->getRNG(0)->getNumbersDrawn() - drawnBefore), 0);
     c.check("the same link, band and instant give the same value", a == b);
@@ -202,22 +203,22 @@ wait(0.010);
     // the speed changes.
     const LinkKey key(MacNodeId(1102));
     RngSnapshot snapshot(ue);
-    ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2);
+    ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2, simTime());
     JakesRealization r = replayRealization(snapshot.rng(), bands, paths, delayRms);
     bool followsSpeed = true;
     for (double speed : {0.0, 1.0, 13.9, 33.3, 69.4}) {
-        double got = ue->jakesFading(ueProbe.jakesMap(), key, speed, 2);
+        double got = ue->jakesFading(ueProbe.jakesMap(), key, speed, 2, simTime());
         if (fabs(got - jakesGainDb(r, 2, speed, fHz, simTime().dbl())) > 1e-9)
             followsSpeed = false;
     }
     c.check("the Doppler term is speed * f / c, at every speed", followsSpeed);
 
     // A stationary link is frozen in time; a moving one is not.
-    double still = ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2);
-    double moving = ue->jakesFading(ueProbe.jakesMap(), key, 30.0, 2);
+    double still = ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2, simTime());
+    double moving = ue->jakesFading(ueProbe.jakesMap(), key, 30.0, 2, simTime());
     wait(0.005);
-    double stillLater = ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2);
-    double movingLater = ue->jakesFading(ueProbe.jakesMap(), key, 30.0, 2);
+    double stillLater = ue->jakesFading(ueProbe.jakesMap(), key, 0.0, 2, simTime());
+    double movingLater = ue->jakesFading(ueProbe.jakesMap(), key, 30.0, 2, simTime());
     c.check("a stationary link's fading does not change over time", still == stillLater);
     c.check("a moving link's fading does", moving != movingLater);
     c.expectNear("...and follows the same realization at the new instant",
@@ -253,8 +254,8 @@ wait(0.010);
     c.check("the link has one realization, whichever end drew it", bsProbe.jakesMap().count(link) == 1);
 
     // The same link, band, speed and instant, through the two views.
-    double cqiView = bs->jakesFading(bsProbe.jakesMap(), link, 3.0, 4);
-    double decoderView = ue->jakesFading(ueProbe.jakesMap(), link, 3.0, 4);
+    double cqiView = bs->jakesFading(bsProbe.jakesMap(), link, 3.0, 4, simTime());
+    double decoderView = ue->jakesFading(ueProbe.jakesMap(), link, 3.0, 4, simTime());
     c.check("the channel a DL CQI describes is the channel the UE decodes through",
             cqiView == decoderView,
             "cqi=" + std::to_string(cqiView) + " decoder=" + std::to_string(decoderView));
