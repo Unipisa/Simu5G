@@ -1,0 +1,152 @@
+%description:
+
+A link's value depends on the link and the transmission evaluated on it, not on
+when or how often it is evaluated -- what INET's radio medium assumes when it
+computes one reception per (receiver, transmission) and caches it, sometimes
+before the reception ends.
+
+One downlink transmission is evaluated at the UE as it is decoded, again later,
+and from the base station's end (as a CQI would evaluate the same link). Every
+per-link and per-UE draw the TR 38.901 UMa path loss can make is in play: the
+LOS state and the effective environment height h_E (the UE is 22.5 m high, so
+h_E is drawn; at 128 m and 28 GHz the link is short of the breakpoint distance
+whatever h_E is, so the value does not show it: ChannelModelEnvironmentHeight
+checks that), the shadowing, the Jakes paths, and an indoor UE's building
+penetration loss at 28 GHz, whose random term is the UE's own deviate. The
+first evaluation draws the link's realization; the others give the same value
+to the bit and draw nothing. A later start time changes the Jakes fading and
+draws nothing either, and leaves the attenuation as it was.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The control information a packet from 'source' to 'dest' carries, with the
+// sender's position.
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
+        MacNodeId dest, const Coord& senderPosition)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCoord(senderPosition);
+    return info;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 28GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Every per-link draw in play
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 22.5m
+**.dynamicLos = true
+**.shadowing = true
+**.fading = true
+**.fadingType = "JAKES"
+**.numFadingPaths = 6
+**.delayRms = 363ns
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+bs->setPhy(&bsEndpoint);
+ue->setPhy(&ueEndpoint);
+const MacNodeId bsId = MacNodeId(1);
+const MacNodeId ueId = MacNodeId(1025);
+bsEndpoint.nodeId = bsId;
+ueEndpoint.nodeId = ueId;
+bsEndpoint.coord = Coord(0, 0, 25);
+ueEndpoint.coord = Coord(120, 45, 22.5);
+bsEndpoint.antennaGain = 8.0;
+ueEndpoint.speed = 13.9;   // m/s
+ueEndpoint.insideBuilding = true;
+ueEndpoint.insideDistance = 7.0;
+ueEndpoint.penetrationLossDeviate = 0.8;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+StubRadioRegistration bsRadio(medium, bsId, &bsEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe bsProbe(bs), ueProbe(ue);
+auto drawn = [](StochasticChannelModel *model) { return (long long)model->getRNG(0)->getNumbersDrawn(); };
+
+wait(0.010);
+
+// one downlink transmission, as the UE decodes it
+UserControlInfo data = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
+RadioLink link = ueProbe.linkFor(&data);
+
+long long before = drawn(ue);
+std::vector<double> first = ue->getRSRP(link, 30.0);
+long long afterFirst = drawn(ue);
+c.check("the first evaluation of a link draws its realization", afterFirst > before);
+
+// the same transmission, evaluated later
+wait(0.007);
+std::vector<double> later = ue->getRSRP(link, 30.0);
+c.check("a later evaluation of the same transmission gives the same value", later == first);
+c.expectValue("...and draws nothing", drawn(ue) - afterFirst, 0);
+
+// the same transmission, evaluated from the base station's end
+UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
+RadioLink atBs = bsProbe.linkFor(&cqi);
+atBs.startTime = link.startTime;
+long long beforeBs = drawn(bs);
+std::vector<double> fromBs = bs->getRSRP(atBs, 30.0);
+c.check("the base station's evaluation of the same transmission gives the same value", fromBs == first);
+c.expectValue("...and draws nothing", drawn(bs) - beforeBs, 0);
+
+// a transmission starting later on the same link: only the fading moves
+RadioLink next = link;
+next.startTime = link.startTime + 0.005;
+long long beforeNext = drawn(ue);
+std::vector<double> nextValue = ue->getRSRP(next, 30.0);
+c.check("a transmission starting later is faded differently (Jakes, at its start time)", nextValue != first);
+c.expectValue("...and draws nothing", drawn(ue) - beforeNext, 0);
+c.check("...and its attenuation is the same: only the fading moves", ue->getAttenuation(next) == ue->getAttenuation(link));
+
+c.summary();
+
+%contains: stdout
+modelchecks=8 modelfailures=0
+
+%not-contains: stdout
+FAILED
