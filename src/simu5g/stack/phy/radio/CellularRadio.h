@@ -26,7 +26,7 @@ class IRadioEndpoint;
 
 /**
  * See the NED documentation of CellularRadio. A received frame is held until
- * the end of its transmission (it is rescheduled as a self-message) and then
+ * the end of its transmission (on a reception timer of the radio's own) and then
  * passed up unchanged; a frame from the PHY carries a RadioTransmissionRequest
  * that says where to send it.
  */
