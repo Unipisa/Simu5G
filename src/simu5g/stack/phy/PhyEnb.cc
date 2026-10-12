@@ -210,11 +210,7 @@ void PhyEnb::handleAirFrame(cMessage *msg)
         return; // If frame contains a control packet no further action is needed
 
     // DAS removed - single antenna only
-    bool result;
-    {
-        ChannelModelBase::EvaluatedAt at(channelModel, this);
-        result = channelModel->isReceptionSuccessful(frame, lteInfo);
-    }
+    bool result = channelModel->isReceptionSuccessful(this, frame, lteInfo);
     if (result)
         numAirFrameReceived_++;
     else
@@ -250,7 +246,6 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
     ChannelModelBase *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
     if (channelModel == nullptr)
         throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
-    ChannelModelBase::EvaluatedAt at(channelModel, this);
 
     //get UE Position
     Coord sendersPos = lteinfo->getCoord();
@@ -262,7 +257,7 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
     //Apply analog model (path loss)
     //Get snr for UL direction
     if (channelModel != nullptr)
-        snr = channelModel->getSINR(frame, lteinfo);
+        snr = channelModel->getSINR(this, frame, lteinfo);
     else
         throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
 
@@ -294,7 +289,7 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
 
             //Get snr for DL direction
             if (channelModel != nullptr)
-                snr = channelModel->getSINR(frame, lteinfo);
+                snr = channelModel->getSINR(this, frame, lteinfo);
             else
                 throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
         }

@@ -137,8 +137,6 @@ auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 
 StubEndpoint bsEndpoint, ueEndpoint;
-bs->setPhy(&bsEndpoint);
-ue->setPhy(&ueEndpoint);
 ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
 const MacNodeId ueId = MacNodeId(1025);
 bsEndpoint.nodeId = MacNodeId(1);
@@ -235,16 +233,16 @@ wait(0.010);
     UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, MacNodeId(1), ueEndpoint.coord);
     const LinkKey link(MacNodeId(1), ueId);
 
-    bs->getRSRP(bsProbe.linkFor(&cqi), 30.0);
+    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &cqi), 30.0);
 
     // The path loss and shadowing of this harness may draw on their own
     // account, so "draws nothing" is measured against an identical evaluation
     // at once.
     unsigned long before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getRSRP(ueProbe.linkFor(&data), 30.0);
+    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data), 30.0);
     long long decoderDraws = ue->getRNG(0)->getNumbersDrawn() - before;
     before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getRSRP(ueProbe.linkFor(&data), 30.0);
+    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data), 30.0);
     long long repeatDraws = ue->getRNG(0)->getNumbersDrawn() - before;
 
     c.check("every channel model on the carrier reads the same Jakes map, the medium's",
@@ -265,10 +263,10 @@ wait(0.010);
     UserControlInfo ul = controlInfo(UL, DATAPKT, ueId, MacNodeId(1), ueEndpoint.coord);
     size_t entries = bsProbe.jakesMap().size();
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getRSRP(bsProbe.linkFor(&ul), 30.0);
+    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul), 30.0);
     long long uplinkDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getRSRP(bsProbe.linkFor(&ul), 30.0);
+    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul), 30.0);
     long long uplinkRepeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     c.expectValue("...and the uplink is the same realization: a link has one, whichever direction",
             uplinkDraws, uplinkRepeatDraws);
@@ -287,17 +285,17 @@ wait(0.010);
     ul.setDirection(UL);
     ul.setTxPower(23.0);
 
-    bs->getSINR_bgUe(&frame, &dl, 0.0);
+    bs->getSINR_bgUe(&bsEndpoint, &frame, &dl, 0.0);
     c.check("a background UE's DL CQI draws the fading paths of its link to the base station",
             bsProbe.jakesMap().count(link) == 1);
 
     // what the UL CQI draws, against what an identical evaluation draws at once
     // (the path loss may draw on its own account)
     unsigned long before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getSINR_bgUe(&frame, &ul, 0.0);
+    bs->getSINR_bgUe(&bsEndpoint, &frame, &ul, 0.0);
     long long ulDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getSINR_bgUe(&frame, &ul, 0.0);
+    bs->getSINR_bgUe(&bsEndpoint, &frame, &ul, 0.0);
     long long repeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     c.expectValue("...and its UL CQI fades by the same paths, drawing none of its own", ulDraws, repeatDraws);
 }

@@ -56,11 +56,11 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
 
     // Route D2D/D2D_MULTI receptions through getSINR_D2D (called from the core
     // isReceptionSuccessful()).
-    std::vector<double> getReceptionSinr(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector) override;
+    std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector) override;
 
     // Report D2D receptions under rcvdSinrD2D rather than letting them fall into
     // the core's uplink statistic.
-    void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr) override;
+    void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr) override;
 
     // Substitute the UE-to-UE interference for the cellular contributions.
     void computeInterferencePlusNoise(const RadioLink& link, UserControlInfo *lteInfo,

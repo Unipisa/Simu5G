@@ -80,8 +80,6 @@ auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 
 StubEndpoint bsEndpoint, ueEndpoint;
-bs->setPhy(&bsEndpoint);
-ue->setPhy(&ueEndpoint);
 const MacNodeId bsId = MacNodeId(1);
 const MacNodeId ueId = MacNodeId(1025);
 bsEndpoint.nodeId = bsId;
@@ -101,9 +99,9 @@ wait(0.010);
 UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
 UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
 UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
-RadioLink atUe = ueProbe.linkFor(&dlData);
-RadioLink cqiAtBs = bsProbe.linkFor(&dlCqi);
-RadioLink ulAtBs = bsProbe.linkFor(&ulData);
+RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData);
+RadioLink cqiAtBs = bsProbe.linkFor(&bsEndpoint, &dlCqi);
+RadioLink ulAtBs = bsProbe.linkFor(&bsEndpoint, &ulData);
 
 // the attenuation of each link at the UE's deviate z
 auto attenuations = [&] (double z) {

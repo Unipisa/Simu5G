@@ -147,30 +147,31 @@ void StochasticChannelModel::initialize(int stage)
     }
 }
 
-RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Coord coord)
+RadioLink StochasticChannelModel::cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, Coord coord)
 {
-    // The local module is one endpoint and 'coord' the other; 'dir' says which
-    // of the two is the UE. The UE is the node whose position history we track.
+    // The radio the evaluation is at is one endpoint and 'coord' the other;
+    // 'dir' says which of the two is the UE. The UE is the node whose position
+    // history we track.
     RadioLink link;
     link.startTime = simTime();
     link.dir = dir;
     link.stateNodeId = ueId;
 
-    if (dir == DL) { // the local module is the UE, 'coord' is the BS
+    if (dir == DL) { // the local radio is the UE, 'coord' is the BS
         link.txIsBaseStation = true;
         link.txCoord = coord;
-        link.rxCoord = phy_->getCoord();
+        link.rxCoord = radio->getCoord();
         link.rxId = ueId;
-        link.rxRadio = phy_;
+        link.rxRadio = radio;
     }
-    else { // the local module is the BS, 'coord' is the UE
+    else { // the local radio is the BS, 'coord' is the UE
         link.txIsBaseStation = false;
         link.txCoord = coord;
-        link.rxCoord = phy_->getCoord();
+        link.rxCoord = radio->getCoord();
         link.txId = ueId;
-        link.rxId = phy_->getMacNodeId();
+        link.rxId = radio->getMacNodeId();
         link.txRadio = radioMedium_->findRadio(ueId);
-        link.rxRadio = phy_;
+        link.rxRadio = radio;
     }
     // The link is the UE and the local radio. For DL the local radio is the UE
     // itself, and the base station at 'coord' is not named.
@@ -178,10 +179,10 @@ RadioLink StochasticChannelModel::cellularLink(MacNodeId ueId, Direction dir, Co
     return link;
 }
 
-const Coord& StochasticChannelModel::receptionPosition(const AirFrame *frame) const
+const Coord& StochasticChannelModel::receptionPosition(IRadioEndpoint *radio, const AirFrame *frame) const
 {
     const Coord& arrivalPosition = frame->getArrivalPosition();
-    return arrivalPosition.isUnspecified() ? phy_->getCoord() : arrivalPosition;
+    return arrivalPosition.isUnspecified() ? radio->getCoord() : arrivalPosition;
 }
 
 simtime_t StochasticChannelModel::receptionStartTime(const AirFrame *frame) const
@@ -190,7 +191,7 @@ simtime_t StochasticChannelModel::receptionStartTime(const AirFrame *frame) cons
     return startTime < SIMTIME_ZERO ? simTime() : startTime;
 }
 
-RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo, const Coord& localPosition)
+RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const Coord& localPosition)
 {
     RadioLink link;
     link.startTime = simTime();
@@ -240,32 +241,33 @@ RadioLink StochasticChannelModel::linkFor(UserControlInfo *lteInfo, const Coord&
         link.rxCoord = enbCoord;
     }
 
-    // The two radios: the local one is this model's own, the other the frame's
-    // source -- the base station of a DL frame or a beacon, the UE of a UL frame
-    // or a CQI report. The local end is named by the local radio, not by the
-    // frame's destination: a beacon and a cell-selection probe carry none.
-    MacNodeId localId = phy_->getMacNodeId();
+    // The two radios: the local one is the radio the evaluation is at, the
+    // other the frame's source -- the base station of a DL frame or a beacon,
+    // the UE of a UL frame or a CQI report. The local end is named by the local
+    // radio, not by the frame's destination: a beacon and a cell-selection probe
+    // carry none.
+    MacNodeId localId = radio->getMacNodeId();
     if (link.dir == DL && lteInfo->getFrameType() != FEEDBACKPKT) { // decoding at the UE
         link.rxId = localId;
         link.txRadio = radioMedium_->findRadio(eNbId);
-        link.rxRadio = phy_;
+        link.rxRadio = radio;
     }
     else if (link.dir == DL) { // a DL CQI, at the base station
         link.txId = localId;
-        link.txRadio = phy_;
+        link.txRadio = radio;
         link.rxRadio = radioMedium_->findRadio(ueId);
     }
     else { // UL data or a UL CQI, at the base station
         link.rxId = localId;
         link.txRadio = radioMedium_->findRadio(ueId);
-        link.rxRadio = phy_;
+        link.rxRadio = radio;
     }
     link.linkKey = LinkKey(link.txId, link.rxId);
 
     // It is always the UE's position that feeds the speed computation -- which is
     // why the old code's "pass UL for a FEEDBACKPKT" special case is not needed
     // here: it only existed to make getAttenuation() pick 'coord' rather than
-    // phy_->getCoord().
+    // the local radio's position.
     link.stateNodeId = ueId;
 
     // the cell this link belongs to, for the interference computation
@@ -409,9 +411,9 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
     return pathLoss_->computeAngularAttenuation(hAngle, vAngle);
 }
 
-std::vector<double> StochasticChannelModel::getSINR(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> StochasticChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
-    RadioLink link = linkFor(lteInfo, receptionPosition(frame));
+    RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
     link.startTime = receptionStartTime(frame);
 
     EV << "------------ GET SINR ----------------" << endl;
@@ -489,8 +491,8 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
     if (dir == DL)
         computeDownlinkInterference(eNbId, ueId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey,
                 enableDownlinkInterference_ && lteInfo->getFrameType() != BEACONPKT);
-    else if (dir == UL)
-        computeUplinkInterference(eNbId, ueId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
+    else if (dir == UL) // at the link's receiver, the base station
+        computeUplinkInterference(link.rxRadio, eNbId, ueId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
 
     EV << "StochasticChannelModel::getSINR - distance from my eNb=" << enbCoord.distance(ueCoord) << " - DIR=" << ((dir == DL) ? "DL" : "UL") << endl;
 
@@ -505,9 +507,9 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
     }
 }
 
-std::vector<double> StochasticChannelModel::getRSRP(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> StochasticChannelModel::getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
-    RadioLink link = linkFor(lteInfo, receptionPosition(frame));
+    RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
     link.startTime = receptionStartTime(frame);
     return getRSRP(link, lteInfo->getTxPower());
 }
@@ -621,7 +623,7 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
     return rsrpVector;
 }
 
-std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed)
+std::vector<double> StochasticChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)
 {
     //get tx power
     double recvPower = lteInfo->getTxPower(); // dBm
@@ -633,7 +635,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
 
     // position of e/gNb and UE
     Coord ueCoord = lteInfo->getCoord();
-    Coord enbCoord = phy_->getCoord();
+    Coord enbCoord = radio->getCoord();
 
     double antennaGainTx = 0.0;
     double antennaGainRx = 0.0;
@@ -672,7 +674,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     // Note that shadowing and fading effects are not applied here and left FFW
 
     // UL because we are computing a feedback
-    RadioLink link = cellularLink(bgUeId, UL, ueCoord);
+    RadioLink link = cellularLink(radio, bgUeId, UL, ueCoord);
     double attenuation = getAttenuation(link);
 
     //compute recvPower
@@ -757,7 +759,7 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(AirFrame *frame, UserCo
     if (dir == DL)
         computeDownlinkInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableDownlinkInterference_);
     else if (dir == UL)
-        computeUplinkInterference(eNbId, bgUeId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
+        computeUplinkInterference(radio, eNbId, bgUeId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
 
     //===================== SINR COMPUTATION ========================
     // compute and linearize total noise
@@ -856,7 +858,7 @@ double StochasticChannelModel::jakesFading(JakesFadingMap& jakesMap, const LinkK
     return linearToDb(re_h * re_h + im_h * im_h);
 }
 
-bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
+bool StochasticChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     EV << "StochasticChannelModel::error" << endl;
 
@@ -894,13 +896,13 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
     // Take sinr
     // Take sinr (the D2D channel model overrides getReceptionSinr() to route
     // D2D/D2D_MULTI receptions through getSINR_D2D)
-    std::vector<double> snrV = getReceptionSinr(frame, lteInfo, rsrpVector);
+    std::vector<double> snrV = getReceptionSinr(radio, frame, lteInfo, rsrpVector);
 
     // Get the resource Block id used to transmit this packet
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
     // the receiving node's receiver decides, against its error model
-    CellularReceiver *receiver = phy_->getReceiver();
+    CellularReceiver *receiver = radio->getReceiver();
     std::optional<double> packetErrorRate = receiver->getErrorModel()->computePacketErrorRate(cqi, snrV, rbmap, transmissionAttempt);
     if (!packetErrorRate)
         return false; // lost for certain, no decision to draw
@@ -918,7 +920,7 @@ bool StochasticChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlI
             }
         }
         if (usedRBs > 0)
-            emitRcvdSinr(dir, id, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
+            emitRcvdSinr(radio, dir, id, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
     }
 
     return receiver->decide(*packetErrorRate);
@@ -936,10 +938,10 @@ double StochasticChannelModel::cableLossOf(MacNodeId nodeId) const
     return radio != nullptr ? radio->getCableLoss() : cableLoss_;
 }
 
-void StochasticChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
+void StochasticChannelModel::emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
 {
     if (dir == DL) { // we are on the UE
-        phy_->getReceiver()->emitRcvdSinr(DL, carrierFrequency, sinr);
+        radio->getReceiver()->emitRcvdSinr(DL, carrierFrequency, sinr);
         return;
     }
 
@@ -1106,11 +1108,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         double txPwr = powerTowardsUe(id, *transmission);
 
         // the attenuation, evaluated at the interfering cell with its channel model
-        double att;
-        {
-            EvaluatedAt at(interfChanModel, cell);
-            att = interfChanModel->getAttenuation(ueId, UL, coord);
-        }
+        double att = interfChanModel->getAttenuation(cell, ueId, UL, coord);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]" << endl;
 
         for (unsigned int i : bands) {
@@ -1184,7 +1182,7 @@ std::vector<unsigned int> StochasticChannelModel::sharedBands(const CellularTran
     return bands;
 }
 
-bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference,
+bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, MacNodeId eNbId, MacNodeId senderId, Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference,
         const LinkKey& link, bool cells)
 {
     EV << "**** Uplink Interference for cellId[" << eNbId << "] node[" << senderId << "] ****" << endl;
@@ -1201,7 +1199,7 @@ bool StochasticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeI
 
     // the attenuation from an interfering UE to the base station
     auto attenuationFrom = [&] (const InterfererInfo& interferer) {
-        return getAttenuation(interferer.nodeId, UL, interferer.coord);
+        return getAttenuation(radio, interferer.nodeId, UL, interferer.coord);
     };
 
     // what an interfering UE adds on the band, at the given attenuation

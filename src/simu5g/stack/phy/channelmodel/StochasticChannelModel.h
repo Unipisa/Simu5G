@@ -195,13 +195,14 @@ class StochasticChannelModel : public ChannelModelBase
      * the background-UE path. Builds a cellular link and forwards, so the
      * subclass override of getAttenuation(const RadioLink&) still applies.
      *
+     * @param radio the radio the evaluation is at, the local end of the link
      * @param nodeId mac node id of UE
      * @param dir traffic direction
      * @param coord position of end point communication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord)
+    double getAttenuation(IRadioEndpoint *radio, MacNodeId nodeId, Direction dir, inet::Coord coord)
     {
-        return getAttenuation(cellularLink(nodeId, dir, coord));
+        return getAttenuation(cellularLink(radio, nodeId, dir, coord));
     }
 
     /*
@@ -247,7 +248,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    std::vector<double> getSINR(AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Add noise and interference to an already-computed per-band received-power
@@ -263,7 +264,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    std::vector<double> getRSRP(AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Compute sinr for each band for a background UE according to pathloss
@@ -271,7 +272,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
+    std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
 
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
@@ -281,7 +282,7 @@ class StochasticChannelModel : public ChannelModelBase
      * @param lteinfo pointer to the user control info
      * @param rsrpVector the received signal for each RB, if it has already been computed
      */
-    bool isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteI, const std::vector<double>& rsrpVector) override;
+    bool isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteI, const std::vector<double>& rsrpVector) override;
 
     /*
      * Compute the path-loss attenuation according to the selected scenario
@@ -367,11 +368,12 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and the
-     * feedback variants), the local radio at the given position (see
-     * receptionPosition()). The D2D path builds its links separately -- its API
-     * takes the peer endpoint explicitly rather than deriving it.
+     * feedback variants), the local end the radio the evaluation is at, at the
+     * given position (see receptionPosition()). The D2D path builds its links
+     * separately -- its API takes the peer endpoint explicitly rather than
+     * deriving it.
      */
-    virtual RadioLink linkFor(UserControlInfo *lteInfo, const inet::Coord& localPosition);
+    virtual RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const inet::Coord& localPosition);
 
     /*
      * Where the local radio was as the frame started to arrive, which is where
@@ -379,7 +381,7 @@ class StochasticChannelModel : public ChannelModelBase
      * that did not arrive through it (a frame built to ask what a reception
      * would be).
      */
-    const inet::Coord& receptionPosition(const AirFrame *frame) const;
+    const inet::Coord& receptionPosition(IRadioEndpoint *radio, const AirFrame *frame) const;
 
     /*
      * When the frame started to arrive at the local radio (stamped by the
@@ -389,23 +391,24 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
-     * local module is one endpoint, 'coord' the other, and 'dir' says which of
-     * the two is the UE.
+     * radio the evaluation is at is one endpoint, 'coord' the other, and 'dir'
+     * says which of the two is the UE.
      */
-    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord);
+    RadioLink cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, inet::Coord coord);
 
     /*
      * Emit the received-SINR statistic for a decoded frame, on the UE's
-     * receiver: this node's for a downlink reception, the sending UE's for any
-     * other. The D2D model overrides it to route D2D/D2D_MULTI receptions to
-     * rcvdSinrD2D instead of letting them fall into the uplink statistic.
+     * receiver: the decoding radio's for a downlink reception, the sending UE's
+     * for any other. The D2D model overrides it to route D2D/D2D_MULTI receptions
+     * to rcvdSinrD2D instead of letting them fall into the uplink statistic.
      *
+     * @param radio the radio the evaluation is at, the decoding one
      * @param dir direction of the reception
      * @param ueId the UE end of the link (the sender, for an uplink reception)
      * @param carrierFrequency carrier the frame arrived on
      * @param sinr mean SINR over the resource blocks actually used
      */
-    virtual void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr);
+    virtual void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr);
 
     /*
      * The antenna gain of a node's radio, or gainIfNoRadio if the node is not
@@ -438,8 +441,8 @@ class StochasticChannelModel : public ChannelModelBase
      *
      * @param rsrpVector the RSRP the caller already holds, when it has one
      */
-    virtual std::vector<double> getReceptionSinr(AirFrame *frame, UserControlInfo *lteInfo,
-            const std::vector<double>& rsrpVector) { return getSINR(frame, lteInfo); }
+    virtual std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo,
+            const std::vector<double>& rsrpVector) { return getSINR(radio, frame, lteInfo); }
 
     /*
      * Returns the 2D distance between two coordinates (ignore z-axis)
@@ -512,8 +515,9 @@ class StochasticChannelModel : public ChannelModelBase
      * uplink transmissions of the slot (as for computeDownlinkInterference()) in
      * creation order: the UEs of other cells if cells is set, the background
      * cells' UEs as their switch says.
+     * @param radio the radio the evaluation is at, the base station
      */
-    virtual bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
+    virtual bool computeUplinkInterference(IRadioEndpoint *radio, MacNodeId eNbId, MacNodeId senderId, inet::Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
 
     /*
      * The power, in dBm, with which a transmission of an external or a

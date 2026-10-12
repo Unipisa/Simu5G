@@ -66,8 +66,6 @@ sim-time-limit = 1s
 %activity:
 Checker c;
 auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
-StubEndpoint bsEndpoint;
-bs->setPhy(&bsEndpoint);
 const int bands = bs->getNumBands();
 
 // Two links of the base station, to two different UEs.

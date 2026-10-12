@@ -81,8 +81,6 @@ auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 
 StubEndpoint bsEndpoint, ueEndpoint;
-bs->setPhy(&bsEndpoint);
-ue->setPhy(&ueEndpoint);
 const MacNodeId bsId = MacNodeId(1);
 const MacNodeId ueId = MacNodeId(1025);
 bsEndpoint.nodeId = bsId;
@@ -106,8 +104,8 @@ wait(0.010);
 
 UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
 UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
-RadioLink atUe = ueProbe.linkFor(&dlData);
-RadioLink atBs = bsProbe.linkFor(&dlCqi);
+RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData);
+RadioLink atBs = bsProbe.linkFor(&bsEndpoint, &dlCqi);
 
 double first = ue->getAttenuation(atUe);
 ChannelState::LosSample& sample = medium->getLosMap(GHz(0.8))[atUe.linkKey];

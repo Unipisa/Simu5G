@@ -56,7 +56,7 @@ class FixedSinrChannelModel : public StochasticChannelModel
     std::vector<double> sinr;  // by band
 
   protected:
-    std::vector<double> getReceptionSinr(AirFrame *frame, UserControlInfo *lteInfo,
+    std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo,
             const std::vector<double>& rsrpVector) override { return sinr; }
 };
 
@@ -72,7 +72,7 @@ struct Reception
     std::vector<double> sinr = std::vector<double>(10, 0.0);  // by band
 };
 
-static bool decide(FixedSinrChannelModel *model, const Reception& r)
+static bool decide(FixedSinrChannelModel *model, IRadioEndpoint *radio, const Reception& r)
 {
     UserControlInfo info;
     info.setDirection(DL);
@@ -88,7 +88,7 @@ static bool decide(FixedSinrChannelModel *model, const Reception& r)
     params->writeCqi(r.cqis);
     info.setUserTxParams(params);
     model->sinr = r.sinr;
-    return model->isReceptionSuccessful(nullptr, &info, {});
+    return model->isReceptionSuccessful(radio, nullptr, &info, {});
 }
 
 // Whether the model drew a random number while fn ran: a copy of its generator
@@ -238,7 +238,6 @@ const double harqReduction = receiver->getErrorModel()->par("harqReduction").dou
 // the receiver draw from the same RNG here, so the twin below replays both)
 StubEndpoint decoder;
 decoder.receiver = receiver;
-model->setPhy(&decoder);
 
 SinrRecorder recorder;
 receiver->subscribe("rcvdSinrDl", &recorder);
@@ -254,44 +253,44 @@ base.sinr[2] = 6.0;
 {
     Reception rx = base;
     rx.txNumber = 0;
-    c.expectRejected("a transmission counter of 0 is rejected", [&] { decide(model, rx); });
+    c.expectRejected("a transmission counter of 0 is rejected", [&] { decide(model, &decoder, rx); });
 }
 {
     Reception rx = base;
     rx.cqis = {16};
-    c.expectRejected("a CQI above 15 is rejected", [&] { decide(model, rx); });
+    c.expectRejected("a CQI above 15 is rejected", [&] { decide(model, &decoder, rx); });
 
     rx.blocks.clear();
-    c.expectRejected("...even in an empty grant: the CQI is checked before any band is", [&] { decide(model, rx); });
+    c.expectRejected("...even in an empty grant: the CQI is checked before any band is", [&] { decide(model, &decoder, rx); });
 
     rx.cqis = base.cqis;
     bool received = false;
-    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    bool drew = drawsDuring(model, [&] { received = decide(model, &decoder, rx); });
     c.check("an empty grant is a certain success, decided by a draw like any other", received && drew);
 }
 {
     Reception rx = base;
     rx.cqis = {0};
     bool received = true;
-    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    bool drew = drawsDuring(model, [&] { received = decide(model, &decoder, rx); });
     c.check("CQI 0 is a loss, decided before the draw", !received && !drew);
 }
 {
     Reception rx = base;
     rx.sinr[2] = -15.0;
     bool received = true;
-    bool drew = drawsDuring(model, [&] { received = decide(model, rx); });
+    bool drew = drawsDuring(model, [&] { received = decide(model, &decoder, rx); });
     c.check("a band below the curves (-15 dB) is a loss, decided before the draw", !received && !drew);
 
     rx.sinr[2] = -14.9;
-    drew = drawsDuring(model, [&] { decide(model, rx); });
+    drew = drawsDuring(model, [&] { decide(model, &decoder, rx); });
     c.check("...judged on the SINR truncated toward zero: -14.9 dB counts as -14, inside the curves, and goes to the draw",
             drew);
 }
 {
     Reception rx = base;
     rx.sinr[2] = 41.0;
-    c.check("a band above the curves (41 dB) is a certain success", decide(model, rx));
+    c.check("a band above the curves (41 dB) is a certain success", decide(model, &decoder, rx));
 }
 {
     // A band of BLER 1 fails with certainty, whatever the other bands do.
@@ -299,7 +298,7 @@ base.sinr[2] = 6.0;
     rx.sinr[2] = -10.0;
     rx.blocks[MACRO][5] = 1;
     rx.sinr[5] = 41.0;
-    c.check("a band at BLER 1 makes the first transmission a certain loss", !decide(model, rx));
+    c.check("a band at BLER 1 makes the first transmission a certain loss", !decide(model, &decoder, rx));
 }
 {
     // Bands with nothing on them hold an SINR that would lose the packet
@@ -308,7 +307,7 @@ base.sinr[2] = 6.0;
     rx.blocks[MACRO][5] = 0;
     rx.sinr[5] = -30.0;
     rx.sinr[7] = -30.0;
-    bool drew = drawsDuring(model, [&] { decide(model, rx); });
+    bool drew = drawsDuring(model, [&] { decide(model, &decoder, rx); });
     c.check("a band the grant gives no blocks, listed or not, is not read", drew);
 }
 
@@ -322,7 +321,7 @@ base.sinr[2] = 6.0;
     rx.sinr[1] = 3.7;
     rx.sinr[4] = 8.1;
     recorder.values.clear();
-    decide(model, rx);
+    decide(model, &decoder, rx);
     c.check("the SINR recorded is the plain mean over the allocated bands: untruncated, and not weighted by blocks",
             recorder.values.size() == 1 && recorder.values[0] == (3.7 + 8.1) / 2);
 
@@ -330,8 +329,8 @@ base.sinr[2] = 6.0;
     zeroCqi.cqis = {0};
     belowCurves.sinr[4] = -15.0;
     recorder.values.clear();
-    decide(model, zeroCqi);
-    decide(model, belowCurves);
+    decide(model, &decoder, zeroCqi);
+    decide(model, &decoder, belowCurves);
     c.check("a packet lost before the draw records no SINR: the statistic leaves out the worst receptions",
             recorder.values.empty());
 }
@@ -351,7 +350,7 @@ base.sinr[2] = 6.0;
     for (int i = 0; i < count; i++) {
         Reception rx = randomReception(gen);
         double u = omnetpp::uniform(twin.rng(), 0.0, 1.0);
-        bool actual = decide(model, rx);
+        bool actual = decide(model, &decoder, rx);
         (actual ? received : lost)++;
         if (actual != !(u <= errorProbability(rx, harqReduction, EXACT)) && mismatches++ == 0)
             firstMismatch = "reception " + std::to_string(i) + ": draw " + std::to_string(u) + ", error probability "

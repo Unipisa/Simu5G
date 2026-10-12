@@ -118,8 +118,6 @@ const GHz carrier = ueModel->getCarrierFrequency();
 
 // a base station, a UE that receives, and a D2D peer that transmits to the UE
 StubEndpoint bs, ue, peer;
-ueModel->setPhy(&ue);
-d2dModel->setPhy(&ue);
 bs.nodeId = MacNodeId(1);
 ue.nodeId = MacNodeId(1025);
 peer.nodeId = MacNodeId(1026);
@@ -172,11 +170,11 @@ auto receivedFrame = [&] () {
     info.setGrantedBlocks(bands);
 
     AirFrame *frame = receivedFrame();
-    std::vector<double> rsrp = ueModel->getRSRP(frame, &info);
-    std::vector<double> sinr = ueModel->getSINR(frame, &info);
+    std::vector<double> rsrp = ueModel->getRSRP(&ue, frame, &info);
+    std::vector<double> sinr = ueModel->getSINR(&ue, frame, &info);
     delete frame;
 
-    RadioLink atStart = ueProbe.linkFor(&info);
+    RadioLink atStart = ueProbe.linkFor(&ue, &info);
     atStart.startTime = t0;
     RadioLink atNow = atStart;
     atNow.startTime = simTime();
@@ -192,7 +190,7 @@ auto receivedFrame = [&] () {
             show(sinr) + " / " + show(sinrAtStart));
 
     AirFrame whatIf;
-    c.check("DL: a frame with no reception start is evaluated now", ueModel->getRSRP(&whatIf, &info) == rsrpAtNow);
+    c.check("DL: a frame with no reception start is evaluated now", ueModel->getRSRP(&ue, &whatIf, &info) == rsrpAtNow);
 }
 
 //

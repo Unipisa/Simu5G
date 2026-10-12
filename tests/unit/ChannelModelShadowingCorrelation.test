@@ -98,8 +98,6 @@ sim-time-limit = 100s
 %activity:
 Checker c;
 auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
-StubEndpoint bsEndpoint;
-bs->setPhy(&bsEndpoint);
 ChannelModelProbe bsProbe(bs);
 PathLossModel *pathLoss = bsProbe.pathLoss();
 const double dcorr = bs->par("correlationDistance").doubleValue();

@@ -16,7 +16,8 @@ with this name fails instead of every test failing for no visible reason.
 
  - the network builds, and each channel model comes up on the carrier it was
    configured with;
- - a model's own endpoint is whatever the test hands setPhy();
+ - the local end of a link is whatever endpoint the test passes as the radio
+   the evaluation is at;
  - an RngSnapshot reproduces the numbers the model draws next, which is what
    lets the other tests grade a random recurrence exactly.
 
@@ -76,14 +77,13 @@ auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
             ue->getCarrierFrequency() == GHz(3.5) && ue->getNumBands() == 10);
 }
 {
-    // A model's own endpoint is the stub: cellularLink() reads the local
-    // position from it, and for a downlink the local end is the receiver.
+    // The radio the evaluation is at is the stub: cellularLink() reads the
+    // local position from it, and for a downlink the local end is the receiver.
     StubEndpoint own;
     own.coord = inet::Coord(12, 34, 1.5);
-    bs->setPhy(&own);
     ChannelModelProbe probe(bs);
-    RadioLink link = probe.cellularLink(MacNodeId(1025), DL, inet::Coord(0, 0, 25));
-    c.check("the model's own position comes from the endpoint handed to setPhy()",
+    RadioLink link = probe.cellularLink(&own, MacNodeId(1025), DL, inet::Coord(0, 0, 25));
+    c.check("the local position comes from the radio the evaluation is at",
             link.rxCoord == own.coord);
 }
 {

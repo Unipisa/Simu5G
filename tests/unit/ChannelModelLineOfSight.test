@@ -96,9 +96,6 @@ otherEnb.nodeId = MacNodeId(2);
 otherEnb.coord = Coord(400, 0, 10);
 ue.nodeId = MacNodeId(1025);
 ue.coord = Coord(60, 30, 1.5);
-bs->setPhy(&enb);
-otherBs->setPhy(&otherEnb);
-ueModel->setPhy(&ue);
 ChannelModelProbe atEnb(bs), atOther(otherBs), atUe(ueModel);
 
 auto drawn = [](StochasticChannelModel *model) { return (long long)model->getRNG(0)->getNumbersDrawn(); };
@@ -113,7 +110,7 @@ const LinkKey link1(MacNodeId(1), MacNodeId(1025)), link2(MacNodeId(2), MacNodeI
     double p = atUe.pathLoss()->computeLosProbability(d3D, d2D);
     RngSnapshot snapshot(ueModel);
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
     bool expected = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= p;
     c.check("a link's first evaluation draws its LOS state against the strategy's LOS probability",
             atUe.losMap().count(link1) == 1 && atUe.losMap().at(link1).los == expected,
@@ -128,20 +125,20 @@ const bool los1 = atUe.losMap().at(link1).los;
     // The other end of the link.
     UserControlInfo info = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
     long long before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&info));
+    bs->getAttenuation(atEnb.linkFor(&enb, &info));
     c.expectValue("the other end of the link reads the same state and draws nothing", drawn(bs) - before, 0);
 }
 {
     UserControlInfo info = controlInfo(DL, FEEDBACKPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
     long long before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&info));
+    bs->getAttenuation(atEnb.linkFor(&enb, &info));
     c.expectValue("a DL CQI at the base station is the same link: no draw", drawn(bs) - before, 0);
 }
 {
     // Another cell's link to the same UE.
     UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(2), MacNodeId(1025), otherEnb.coord);
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
     c.expectValue("another cell's link to the same UE is another link, drawn on its own",
             drawn(ueModel) - before, 1);
     c.check("...and the first link's state is untouched",
@@ -150,14 +147,14 @@ const bool los1 = atUe.losMap().at(link1).los;
 {
     // What the interference computation evaluates.
     long long before = drawn(otherBs);
-    otherBs->getAttenuation(atOther.cellularLink(MacNodeId(1025), UL, ue.coord));
+    otherBs->getAttenuation(atOther.cellularLink(&otherEnb, MacNodeId(1025), UL, ue.coord));
     c.expectValue("the other cell evaluating its link to the UE, as for interference, reads that state: no draw",
             drawn(otherBs) - before, 0);
 }
 {
     UserControlInfo info = controlInfo(DL, BEACONPKT, MacNodeId(1), NODEID_NONE, enb.coord);
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
     c.expectValue("a beacon is evaluated on the link between its sender and the receiver: no draw",
             drawn(ueModel) - before, 0);
 }
@@ -172,7 +169,7 @@ c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.
     const Coord enbAt = atUe.losMap().at(link1).positionA;
     auto evaluateDl = [&]() {
         UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025), enb.coord);
-        ueModel->getAttenuation(atUe.linkFor(&info));
+        ueModel->getAttenuation(atUe.linkFor(&ue, &info));
     };
     auto moveTo = [&](double distance) { ue.coord = Coord(decidedAt.x + distance, decidedAt.y, decidedAt.z); };
 
@@ -207,7 +204,7 @@ c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.
     // The base station evaluates the same link, the UE at its new position.
     UserControlInfo ul = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
     before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&ul));
+    bs->getAttenuation(atEnb.linkFor(&enb, &ul));
     c.expectValue("...and it is decided for the link: the other end, at the same positions, holds it",
             drawn(bs) - before, 0);
 

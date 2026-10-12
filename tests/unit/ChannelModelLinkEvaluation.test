@@ -89,8 +89,6 @@ auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
 auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
 
 StubEndpoint bsEndpoint, ueEndpoint;
-bs->setPhy(&bsEndpoint);
-ue->setPhy(&ueEndpoint);
 const MacNodeId bsId = MacNodeId(1);
 const MacNodeId ueId = MacNodeId(1025);
 bsEndpoint.nodeId = bsId;
@@ -112,7 +110,7 @@ wait(0.010);
 
 // one downlink transmission, as the UE decodes it
 UserControlInfo data = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-RadioLink link = ueProbe.linkFor(&data);
+RadioLink link = ueProbe.linkFor(&ueEndpoint, &data);
 
 long long before = drawn(ue);
 std::vector<double> first = ue->getRSRP(link, 30.0);
@@ -127,7 +125,7 @@ c.expectValue("...and draws nothing", drawn(ue) - afterFirst, 0);
 
 // the same transmission, evaluated from the base station's end
 UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
-RadioLink atBs = bsProbe.linkFor(&cqi);
+RadioLink atBs = bsProbe.linkFor(&bsEndpoint, &cqi);
 atBs.startTime = link.startTime;
 long long beforeBs = drawn(bs);
 std::vector<double> fromBs = bs->getRSRP(atBs, 30.0);

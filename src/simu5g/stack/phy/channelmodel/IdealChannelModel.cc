@@ -54,32 +54,32 @@ double IdealChannelModel::getErrorProbability(Direction dir, unsigned char txNum
     return per->doubleValue() * pow(harqReduction_, txNumber - 1);
 }
 
-std::vector<double> IdealChannelModel::getSINR(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> IdealChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
     std::vector<double> tmp(numBands_, FAKE_SINR_DB);
     // fake SINR is needed by the handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
-std::vector<double> IdealChannelModel::getRSRP(AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> IdealChannelModel::getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
     std::vector<double> tmp(numBands_, FAKE_SINR_DB);
     // fake RSRP is needed by the handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
-std::vector<double> IdealChannelModel::getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed)
+std::vector<double> IdealChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)
 {
     std::vector<double> tmp(numBands_, FAKE_SINR_DB);
     // fake SINR is needed by the handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
-bool IdealChannelModel::isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
+bool IdealChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     double per = getErrorProbability(lteInfo->getDirection(), lteInfo->getTxNumber());
     // the receiving node's receiver draws the decision
-    bool success = phy_->getReceiver()->decide(per);
+    bool success = radio->getReceiver()->decide(per);
     EV << "IdealChannelModel::isReceptionSuccessful - transmission " << (int)lteInfo->getTxNumber()
        << ", error probability " << per << " -> " << (success ? "received" : "lost") << endl;
     return success;

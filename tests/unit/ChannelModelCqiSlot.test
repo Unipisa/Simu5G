@@ -127,8 +127,6 @@ const GHz carrier = servingModel->getCarrierFrequency();
 const simtime_t slot = SimTime(250, SIMTIME_US);
 
 StubEndpoint servingBs, interferingBs, ue;
-servingModel->setPhy(&ue);
-interfererModel->setPhy(&interferingBs);
 servingBs.nodeId = MacNodeId(1);
 interferingBs.nodeId = MacNodeId(2);
 ue.nodeId = MacNodeId(1025);

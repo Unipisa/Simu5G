@@ -161,7 +161,6 @@ class ChannelModelProbe
         static auto jakesFadingMapPtr() { return &Access::jakesFadingMap; }
         static auto pathLossPtr() { return &Access::pathLoss_; }
         static auto fadingPtr() { return &Access::fading_; }
-        static auto phyPtr() { return &Access::phy_; }
 
         static auto linkForPtr() { return &Access::linkFor; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
@@ -187,15 +186,15 @@ class ChannelModelProbe
     bool& fading() { return model_->*Access::fadingPtr(); }
 
     // internal steps
-    // the link of a frame that did not arrive through the model's radio: the local end where the radio is now
-    RadioLink linkFor(UserControlInfo *info) { return (model_->*Access::linkForPtr())(info, (model_->*Access::phyPtr())->getCoord()); }
-    RadioLink cellularLink(MacNodeId ueId, Direction dir, inet::Coord coord)
+    // the link of a frame that did not arrive through the radio the evaluation is at: the local end where the radio is now
+    RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *info) { return (model_->*Access::linkForPtr())(radio, info, radio->getCoord()); }
+    RadioLink cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, inet::Coord coord)
     {
-        return (model_->*Access::cellularLinkPtr())(ueId, dir, coord);
+        return (model_->*Access::cellularLinkPtr())(radio, ueId, dir, coord);
     }
-    void emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
+    void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
     {
-        (model_->*Access::emitRcvdSinrPtr())(dir, ueId, carrierFrequency, sinr);
+        (model_->*Access::emitRcvdSinrPtr())(radio, dir, ueId, carrierFrequency, sinr);
     }
 };
 

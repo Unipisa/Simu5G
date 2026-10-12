@@ -146,8 +146,6 @@ bsEndpoint.nodeId = MacNodeId(1);
 ueEndpoint.nodeId = ueId;
 bsEndpoint.coord = inet::Coord(0, 0, 25);
 ueEndpoint.coord = inet::Coord(200, 0, 1.5);
-bs->setPhy(&bsEndpoint);
-ue->setPhy(&ueEndpoint);
 ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
 
 ChannelModelProbe bsProbe(bs), ueProbe(ue);
@@ -322,15 +320,15 @@ const inet::Coord bsPos(0, 0, 25);
     // evaluated from its two ends, at the same geometry and LOS state.
     UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId, bsEndpoint.coord);
     UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, MacNodeId(1), ueEndpoint.coord);
-    double cqiView = bs->getAttenuation(bsProbe.linkFor(&cqi));
+    double cqiView = bs->getAttenuation(bsProbe.linkFor(&bsEndpoint, &cqi));
 
     // The path loss may draw on its own account (see the background UE below),
     // so "draws nothing" is measured against an identical evaluation at once.
     unsigned long before = ue->getRNG(0)->getNumbersDrawn();
-    double decoderView = ue->getAttenuation(ueProbe.linkFor(&data));
+    double decoderView = ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data));
     long long decoderDraws = ue->getRNG(0)->getNumbersDrawn() - before;
     before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getAttenuation(ueProbe.linkFor(&data));
+    ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data));
     long long pathLossDraws = ue->getRNG(0)->getNumbersDrawn() - before;
 
     c.check("every channel model on the carrier reads the same shadowing map, the medium's",

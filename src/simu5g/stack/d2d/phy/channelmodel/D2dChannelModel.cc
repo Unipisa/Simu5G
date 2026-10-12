@@ -149,12 +149,12 @@ void D2dChannelModel::computeInterferencePlusNoise(const RadioLink& link, UserCo
     }
 }
 
-std::vector<double> D2dChannelModel::getReceptionSinr(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
+std::vector<double> D2dChannelModel::getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     Direction dir = lteInfo->getDirection();
     if (dir == D2D || dir == D2D_MULTI) {
         MacNodeId destId = lteInfo->getDestId();
-        Coord destCoord = receptionPosition(frame);
+        Coord destCoord = receptionPosition(radio, frame);
         MacNodeId enbId = binder_->getServingNodeOrSelf(lteInfo->getSourceId());
 
         // One-to-many reception decides on the RSRP captured by the capture-effect
@@ -164,10 +164,10 @@ std::vector<double> D2dChannelModel::getReceptionSinr(AirFrame *frame, UserContr
             return getSINR_D2D(frame, lteInfo, destId, destCoord, enbId, rsrpVector);
         return getSINR_D2D(frame, lteInfo, destId, destCoord, enbId);
     }
-    return StochasticChannelModel::getReceptionSinr(frame, lteInfo, rsrpVector);
+    return StochasticChannelModel::getReceptionSinr(radio, frame, lteInfo, rsrpVector);
 }
 
-void D2dChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
+void D2dChannelModel::emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
 {
     if (dir == D2D || dir == D2D_MULTI) {
         // A D2D reception is not an uplink reception. Attribute it to the receiver --
@@ -176,7 +176,7 @@ void D2dChannelModel::emitRcvdSinr(Direction dir, MacNodeId ueId, GHz carrierFre
         emit(rcvdSinrD2DSignal_, sinr);
         return;
     }
-    StochasticChannelModel::emitRcvdSinr(dir, ueId, carrierFrequency, sinr);
+    StochasticChannelModel::emitRcvdSinr(radio, dir, ueId, carrierFrequency, sinr);
 }
 
 bool D2dChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, Coord senderCoord, MacNodeId destId, Coord destCoord, bool isCqi, GHz carrierFrequency,

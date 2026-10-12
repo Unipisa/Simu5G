@@ -99,8 +99,6 @@ enbEndpoint.coord = enbPos;
 ueEndpoint.coord = uePos;
 enbEndpoint.nodeId = enbId;
 ueEndpoint.nodeId = ueId;
-bs->setPhy(&enbEndpoint);
-ue->setPhy(&ueEndpoint);
 ChannelModelProbe atEnb(bs), atUe(ue);
 
 //
@@ -109,7 +107,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 {
     // Downlink data, decoded at the UE: the base station sent it.
     UserControlInfo info = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
-    RadioLink l = atUe.linkFor(&info);
+    RadioLink l = atUe.linkFor(&ueEndpoint, &info);
     c.check("DL data: the base station transmits to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
@@ -120,7 +118,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 {
     // Uplink data, decoded at the base station: the UE sent it.
     UserControlInfo info = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
-    RadioLink l = atEnb.linkFor(&info);
+    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
     c.check("UL data: the UE transmits to the base station",
             l.txId == ueId && l.rxId == enbId && !l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
@@ -132,7 +130,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // Feedback for a downlink CQI, evaluated at the base station: the UE sent
     // the report, but the link being evaluated is the downlink.
     UserControlInfo info = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
-    RadioLink l = atEnb.linkFor(&info);
+    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
     c.check("DL CQI: still the downlink, the base station transmitting to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
     c.check("...evaluated where the report arrived, from the UE's reported position",
@@ -143,8 +141,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // Feedback for an uplink CQI is the uplink link.
     UserControlInfo info = controlInfo(UL, FEEDBACKPKT, ueId, enbId, uePos);
     UserControlInfo data = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
-    RadioLink uplinkData = atEnb.linkFor(&data);
-    RadioLink l = atEnb.linkFor(&info);
+    RadioLink uplinkData = atEnb.linkFor(&enbEndpoint, &data);
+    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
     c.check("UL CQI: the same link as the uplink data it describes, mobile end included",
             sameLink(l, uplinkData));
 }
@@ -153,7 +151,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // that received it. The mobile end is still the UE the frame names,
     // which is none.
     UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE, enbPos);
-    RadioLink l = atUe.linkFor(&info);
+    RadioLink l = atUe.linkFor(&ueEndpoint, &info);
     c.check("a beacon: the link is its sender and the receiving radio",
             l.txId == enbId && l.rxId == ueId && l.linkKey == LinkKey(enbId, ueId));
     c.check("...while the mobile end is the missing destination", l.stateNodeId == NODEID_NONE);
@@ -162,8 +160,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // The two ends see the same link, at the level of the link itself.
     UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
     UserControlInfo report = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
-    RadioLink decoderView = atUe.linkFor(&decode);
-    RadioLink cqiView = atEnb.linkFor(&report);
+    RadioLink decoderView = atUe.linkFor(&ueEndpoint, &decode);
+    RadioLink cqiView = atEnb.linkFor(&enbEndpoint, &report);
     c.check("the link a DL CQI is computed on is the link the UE decodes on, seen from the other end",
             sameLink(cqiView, decoderView));
 }
@@ -172,14 +170,14 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 // --- cellularLink() ---
 //
 {
-    RadioLink dl = atUe.cellularLink(ueId, DL, enbPos);
+    RadioLink dl = atUe.cellularLink(&ueEndpoint, ueId, DL, enbPos);
     c.check("cellularLink, DL: the other end transmits, the local end is the UE",
             dl.txIsBaseStation && dl.txCoord == enbPos && dl.rxCoord == uePos && dl.rxId == ueId);
     c.check("...and the UE is the mobile end",
             dl.stateNodeId == ueId);
     c.check("...and the link is the UE and an unnamed base station", dl.linkKey == LinkKey(ueId, NODEID_NONE));
 
-    RadioLink ul = atEnb.cellularLink(ueId, UL, uePos);
+    RadioLink ul = atEnb.cellularLink(&enbEndpoint, ueId, UL, uePos);
     c.check("cellularLink, UL: the UE at the given position transmits to the local base station",
             !ul.txIsBaseStation && ul.txCoord == uePos && ul.rxCoord == enbPos && ul.txId == ueId);
     c.check("...and the UE is the mobile end", ul.stateNodeId == ueId);

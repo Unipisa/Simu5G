@@ -35,9 +35,9 @@ class Binder;
  * A radio link between two arbitrary endpoints, and the parameters the channel
  * model needs to evaluate it.
  *
- * The channel model used to be phrased as "a link between me (phy_->getCoord())
- * and one remote endpoint", with Direction selecting -- all at once -- which
- * endpoint was mobile, which antenna gains applied, and which noise figure
+ * The channel model used to be phrased as "a link between me (the local radio's
+ * position) and one remote endpoint", with Direction selecting -- all at once --
+ * which endpoint was mobile, which antenna gains applied, and which noise figure
  * applied. A UE-to-UE link fits neither of those two shapes, which is why the
  * D2D channel model had to re-implement the whole propagation path rather than
  * reuse it.
@@ -51,7 +51,7 @@ struct RadioLink
 {
     // ---- geometry ----
     // The node ids of the two radios. The builders name both, the local one by
-    // the evaluating model's own radio, except where a caller does not name the
+    // the radio the evaluation is at, except where a caller does not name the
     // other end (cellularLink() for DL leaves the base station NODEID_NONE).
     MacNodeId txId = NODEID_NONE;
     MacNodeId rxId = NODEID_NONE;
@@ -76,8 +76,9 @@ struct RadioLink
     // ---- radios ----
     // The link budget is not part of the link: the antenna gains, the cable loss
     // and the noise figure are those of the two radios. They are resolved where
-    // the link is built -- the local one is the evaluating model's own -- and not
-    // from txId and rxId, which a frame evaluated as a broadcast leaves unset.
+    // the link is built -- the local one is the radio the evaluation is at --
+    // and not from txId and rxId, which a frame evaluated as a broadcast leaves
+    // unset.
     IRadioEndpoint *txRadio = nullptr;
     IRadioEndpoint *rxRadio = nullptr;
     bool txIsBaseStation = false;   // gates angular attenuation
@@ -122,6 +123,11 @@ struct RadioLink
  * Tr38901ChannelModel preset there by default. Everything
  * technology-dependent -- carrier frequency, bandwidth, numerology -- is
  * read from the ComponentCarrier module rather than encoded in the class.
+ *
+ * The model is the radio medium's, shared by every radio of its RAT on its
+ * carrier, so each evaluation entry point takes the radio the evaluation is at
+ * as its first argument: the receiver of a frame, or the base station computing
+ * a CQI. A later step makes it the receiver everywhere (the what-if).
  */
 class ChannelModelBase : public cSimpleModule
 {
@@ -131,12 +137,6 @@ class ChannelModelBase : public cSimpleModule
 
     // The radio medium, whose registry holds the radios of all nodes
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
-
-    // The radio the model is evaluating a link at, set for the evaluation by
-    // EvaluatedAt: the model is the radio medium's, shared by every radio of
-    // its RAT on its carrier. Everything the channel model needs from it is in
-    // IRadioEndpoint, which is what lets a test put a stub here.
-    IRadioEndpoint *phy_ = nullptr;
 
     // Reference to the component carrier
     inet::ModuleRefByPar<ComponentCarrier> componentCarrier_;
@@ -170,39 +170,19 @@ class ChannelModelBase : public cSimpleModule
      */
     virtual unsigned int getNumerologyIndex() const { return componentCarrier_->getNumerologyIndex(); }
 
-    virtual void setPhy(IRadioEndpoint *phy) { phy_ = phy; }
-
-    /**
-     * Names the radio the model evaluates at -- the receiver of a frame, or
-     * the base station computing a CQI -- for the lifetime of the object, and
-     * restores the previous one after it, so evaluations can nest (an
-     * interfering cell's link evaluated at that cell, in the middle of a
-     * reception at another radio).
-     */
-    class EvaluatedAt
-    {
-      private:
-        ChannelModelBase *model_;
-        IRadioEndpoint *previous_;
-
-      public:
-        EvaluatedAt(ChannelModelBase *model, IRadioEndpoint *radio) : model_(model), previous_(model->phy_) { model_->phy_ = radio; }
-        ~EvaluatedAt() { model_->phy_ = previous_; }
-        EvaluatedAt(const EvaluatedAt&) = delete;
-        EvaluatedAt& operator=(const EvaluatedAt&) = delete;
-    };
-
     /*
      * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
      * After that, it generates a random number to check if this packet will be corrupted or not
      *
+     * @param radio the radio the evaluation is at: the receiver of a frame, or the
+     *        base station computing a CQI
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      * @param rsrpVector the per-band received power captured for this frame, when the
      *        caller already has it (the D2D one-to-many capture-effect path). Empty
      *        otherwise; models that do not need it ignore it.
      */
-    virtual bool isReceptionSuccessful(AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector = {}) = 0;
+    virtual bool isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector = {}) = 0;
 
     /*
      * Compute attenuation (path loss + optional shadowing) over a radio link.
@@ -220,25 +200,31 @@ class ChannelModelBase : public cSimpleModule
     /*
      * Compute SINR for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
+     * @param radio the radio the evaluation is at: the receiver of a frame, or the
+     *        base station computing a CQI
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR(AirFrame *frame, UserControlInfo *lteInfo) = 0;
+    virtual std::vector<double> getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
      * Compute SINR for each band for a background UE according to path loss
      *
+     * @param radio the radio the evaluation is at: the receiver of a frame, or the
+     *        base station computing a CQI
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR_bgUe(AirFrame *frame, UserControlInfo *lteInfo, double speed) = 0;
+    virtual std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) = 0;
 
     /*
      * Compute received useful signal for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
+     * @param radio the radio the evaluation is at: the receiver of a frame, or the
+     *        base station computing a CQI
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    virtual std::vector<double> getRSRP(AirFrame *frame, UserControlInfo *lteInfo) = 0;
+    virtual std::vector<double> getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) = 0;
 
     virtual bool isUplinkInterferenceEnabled() { return false; }
 
