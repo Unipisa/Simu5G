@@ -15,6 +15,8 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
+#include <inet/common/packet/chunk/ByteCountChunk.h>
+
 namespace simu5g {
 
 Define_Module(PhyEnb);
@@ -83,9 +85,12 @@ void PhyEnb::handleSelfMessage(cMessage *msg)
 
 AirFrame *PhyEnb::createBeaconMessage()
 {
-    // broadcast airframe; it carries a packet, as every other frame
+    // broadcast airframe; it carries a packet, as every other frame, of the
+    // size of a master information block (24 bits in both LTE and NR, TS 36.331
+    // and TS 38.331) -- an approximation: the beacon stands for the cell's
+    // synchronization and broadcast signals as a whole
     AirFrame *beaconAirFrame = new AirFrame("beaconMessage");
-    beaconAirFrame->encapsulate(new Packet("beacon"));
+    beaconAirFrame->encapsulate(new Packet("beacon", makeShared<ByteCountChunk>(B(3))));
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(BEACONPKT);
