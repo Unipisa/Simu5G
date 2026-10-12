@@ -225,6 +225,14 @@ RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo
         enbCoord = localPosition;
     }
 
+    // A DL CQI is a what-if: a transmission of the base station starting now,
+    // arriving where the UE is now -- not where the UE was when it sent the
+    // report
+    if (link.dir == DL && lteInfo->getFrameType() == FEEDBACKPKT) {
+        ueCoord = radioMedium_->getRadio(ueId)->getCoord();
+        enbCoord = radio->getCoord();
+    }
+
     if (link.dir == DL) {
         link.txIsBaseStation = true;
         link.txId = eNbId;
@@ -415,7 +423,9 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
 std::vector<double> StochasticChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
     RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
-    link.startTime = receptionStartTime(frame);
+    // a DL CQI is a what-if, measured now (see linkFor())
+    bool isDlCqi = link.dir == DL && lteInfo->getFrameType() == FEEDBACKPKT;
+    link.startTime = isDlCqi ? simTime() : receptionStartTime(frame);
 
     EV << "------------ GET SINR ----------------" << endl;
 

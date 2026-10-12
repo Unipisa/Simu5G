@@ -128,12 +128,14 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 }
 {
     // Feedback for a downlink CQI, evaluated at the base station: the UE sent
-    // the report, but the link being evaluated is the downlink.
-    UserControlInfo info = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
+    // the report, but the link being evaluated is the downlink -- a what-if,
+    // to where the UE is now, not where it sent the report from.
+    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), ueId, &ueEndpoint);
+    UserControlInfo info = controlInfo(DL, FEEDBACKPKT, ueId, enbId, Coord(100, 40, 1.5));
     RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
     c.check("DL CQI: still the downlink, the base station transmitting to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
-    c.check("...evaluated where the report arrived, from the UE's reported position",
+    c.check("...from the base station to where the UE is now, not where it sent the report",
             l.txCoord == enbPos && l.rxCoord == uePos);
     c.check("...on the same link", l.linkKey == LinkKey(enbId, ueId));
 }
@@ -158,6 +160,7 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 }
 {
     // The two ends see the same link, at the level of the link itself.
+    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), ueId, &ueEndpoint);
     UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
     UserControlInfo report = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
     RadioLink decoderView = atUe.linkFor(&ueEndpoint, &decode);

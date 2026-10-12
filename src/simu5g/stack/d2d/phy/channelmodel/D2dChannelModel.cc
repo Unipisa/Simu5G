@@ -59,12 +59,27 @@ RadioLink D2dChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNodeId de
     return link;
 }
 
+RadioLink D2dChannelModel::d2dLinkFor(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, Coord destCoord)
+{
+    // A D2D CQI (computed at the base station from a UE's report) is a what-if:
+    // a transmission of the reporting UE starting now, from where it is now --
+    // not where it was when it sent the report
+    MacNodeId srcId = lteInfo->getSourceId();
+    if (lteInfo->getFrameType() == FEEDBACKPKT) {
+        RadioLink link = d2dLink(srcId, radioMedium_->getRadio(srcId)->getCoord(), destId, destCoord);
+        link.startTime = simTime();
+        return link;
+    }
+    RadioLink link = d2dLink(srcId, lteInfo->getCoord(), destId, destCoord);
+    link.startTime = receptionStartTime(frame);
+    return link;
+}
+
 std::vector<double> D2dChannelModel::getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, Coord destCoord)
 {
     EV << "------------ GET RSRP D2D----------------" << endl;
 
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
-    link.startTime = receptionStartTime(frame);
+    RadioLink link = d2dLinkFor(frame, lteInfo_1, destId, destCoord);
 
     // Note the D2D-specific transmit power: a D2D transmission does not use the
     // power the UE would use towards the base station.
@@ -85,8 +100,7 @@ std::vector<double> D2dChannelModel::getSINR_D2D(AirFrame *frame, UserControlInf
 
     // The desired signal is already known; the core adds noise and interference,
     // asking computeInterferencePlusNoise() below for the D2D denominator.
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
-    link.startTime = receptionStartTime(frame);
+    RadioLink link = d2dLinkFor(frame, lteInfo_1, destId, destCoord);
     link.cellId = enbId;
 
     // The caller is expected to supply one RSRP value per band. The one-to-many

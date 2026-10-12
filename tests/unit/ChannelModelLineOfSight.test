@@ -130,6 +130,7 @@ const bool los1 = atUe.losMap().at(link1).los;
 }
 {
     UserControlInfo info = controlInfo(DL, FEEDBACKPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
+    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), MacNodeId(1025), &ue);
     long long before = drawn(bs);
     bs->getAttenuation(atEnb.linkFor(&enb, &info));
     c.expectValue("a DL CQI at the base station is the same link: no draw", drawn(bs) - before, 0);

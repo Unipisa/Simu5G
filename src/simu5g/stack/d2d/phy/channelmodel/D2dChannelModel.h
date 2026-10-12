@@ -49,6 +49,13 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
     RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
 
     /*
+     * The D2D link a frame is evaluated on, to destId at destCoord: from where
+     * the sender was when it sent the frame, at the frame's reception start --
+     * or, for a D2D CQI, from where the reporting UE is now, now (a what-if)
+     */
+    RadioLink d2dLinkFor(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord);
+
+    /*
      * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction.
      * For a data reception, only on the bands of rbmap (all bands if it is empty).
      */
