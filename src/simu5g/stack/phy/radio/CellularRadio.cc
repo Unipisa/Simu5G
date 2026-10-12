@@ -49,11 +49,10 @@ void CellularRadio::handleMessage(cMessage *msg)
         // the reception is evaluated where the radio is as the frame starts to arrive
         frame->setArrivalPosition(endpoint_->getCoord());
         frame->setReceptionStartTime(simTime());
-        if (frame->getDuration() == 0)
-            send(frame, upperLayerOutGateId_);
-        else
-            // held until the transmission ends; the frame keeps its scheduling priority
-            scheduleAfter(frame->getDuration(), frame);
+        // held until the transmission ends -- for a zero-duration beacon, an
+        // event at the same instant, as INET's reception timer; the frame keeps
+        // its scheduling priority
+        scheduleAfter(frame->getDuration(), frame);
     }
     else if (msg->getArrivalGateId() == upperLayerInGateId_)
         transmit(check_and_cast<AirFrame *>(msg));

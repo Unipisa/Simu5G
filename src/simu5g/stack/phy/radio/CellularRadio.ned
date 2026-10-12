@@ -21,7 +21,7 @@ package simu5g.stack.phy.radio;
 // A frame arrives when its transmission starts. The radio holds it until the
 // transmission ends and passes it up to the PHY then, at the frame's own
 // scheduling priority; a frame that takes no air time (a beacon) is passed up
-// on arrival.
+// at an event of its own, at the instant it arrives.
 //
 module CellularRadio
 {
