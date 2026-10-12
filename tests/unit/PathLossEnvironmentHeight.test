@@ -33,8 +33,9 @@ const int N = 40000;
 const double heValues[] = { 1, 12, 15, 18, 21 };
 
 auto pathLossAt = [] (PathLossModel& m, double d3D, double d2D, bool los, double hE) {
-    m.setEnvironmentHeight(hE);
-    return m.computePathLoss(d3D, d2D, los);
+    PathLossModel::LinkConditions conditions;
+    conditions.environmentHeight = hE;
+    return m.computePathLoss(d3D, d2D, los, conditions);
 };
 // the frequency of each h_E value over N draws at d2D; returns the number of other values drawn
 auto frequencies = [&] (PathLossModel& m, double d2D, std::map<double, double>& freq) {

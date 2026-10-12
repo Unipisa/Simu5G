@@ -40,8 +40,8 @@ probe.pathLoss("t873_umi_nlos", m, p, 21.5, 20, false);
 probe.pathLoss("t873_umi_nlos", m, p, 100.36, 100, false);
 probe.pathLoss("t873_umi_nlos", m, p, 1500.02, 1500, false);
 
-probe.expectRejected("UMi LOS d2D=6000 rejected",  [&]() { m.computePathLoss(6000, 6000, true); });
-probe.expectRejected("UMi NLOS d2D=3000 rejected", [&]() { m.computePathLoss(3000, 3000, false); });
+probe.expectRejected("UMi LOS d2D=6000 rejected",  [&]() { m.computePathLoss(6000, 6000, true, {}); });
+probe.expectRejected("UMi NLOS d2D=3000 rejected", [&]() { m.computePathLoss(3000, 3000, false, {}); });
 
 // --- 3D-UMa, hBS = 25 m, hUT = 1.5 m, fc = 2 GHz, W = 20 m, h = 20 m --
 // hE = 1 m with probability 1/(1 + C(d2D, hUT)); C = 0 for hUT < 13 m, so
@@ -61,27 +61,27 @@ probe.pathLoss("t873_uma_los",  m, p, 1000.28, 1000, true);    // above d'BP
 probe.pathLoss("t873_uma_nlos", m, p, 102.7, 100, false);
 probe.pathLoss("t873_uma_nlos", m, p, 1000.28, 1000, false);
 
-probe.expectRejected("UMa d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true); });
+probe.expectRejected("UMa d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true, {}); });
 
 // The O2I loss of clause 7.2.3 is PL_tw = 20 dB plus PL_in = 0.5 d_2D-in at
 // every carrier frequency, and is measured as the difference between the
 // indoor and the outdoor result.
 p.apply(m, this);
-double umaOutdoor2GHz = m.computePathLoss(102.7, 100, true);
+double umaOutdoor2GHz = m.computePathLoss(102.7, 100, true, p.conditions());
 ScenarioParams indoor = p;
 indoor.insideBuilding = true;
 indoor.insideDistance = 10;
 indoor.apply(m, this);
 probe.record("t873_o2i", indoor, { { "dIn", 10 } },
-        m.computePathLoss(102.7, 100, true) - umaOutdoor2GHz);
+        m.computePathLoss(102.7, 100, true, indoor.conditions()) - umaOutdoor2GHz);
 
 p.carrierFrequencyGHz = 28.0;
 p.apply(m, this);
-double umaOutdoor28GHz = m.computePathLoss(102.7, 100, true);
+double umaOutdoor28GHz = m.computePathLoss(102.7, 100, true, p.conditions());
 indoor.carrierFrequencyGHz = 28.0;
 indoor.apply(m, this);
 probe.record("t873_o2i", indoor, { { "dIn", 10 } },
-        m.computePathLoss(102.7, 100, true) - umaOutdoor28GHz);
+        m.computePathLoss(102.7, 100, true, indoor.conditions()) - umaOutdoor28GHz);
 
 // --- RMa, hBS = 35 m, hUT = 1.5 m, fc = 0.8 GHz, W = 20 m, h = 5 m ----
 // dBP = 2 pi hBS hUT fc/c = 879.646 m.
@@ -99,8 +99,8 @@ probe.pathLoss("t873_rma_los",  m, p, 3000.19, 3000, true);    // above dBP
 probe.pathLoss("t873_rma_nlos", m, p, 501.1, 500, false);
 probe.pathLoss("t873_rma_nlos", m, p, 3000.19, 3000, false);
 
-probe.expectRejected("RMa LOS d2D=11000 rejected", [&]() { m.computePathLoss(11000, 11000, true); });
-probe.expectRejected("RMa NLOS d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, false); });
+probe.expectRejected("RMa LOS d2D=11000 rejected", [&]() { m.computePathLoss(11000, 11000, true, {}); });
+probe.expectRejected("RMa NLOS d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, false, {}); });
 
 // --- Scenarios TR 36.873 does not cover fall through to TR 36.814 -----
 // SMa is evaluated by the TR 36.814 macrocell formula; it is fed the 2D
@@ -114,7 +114,7 @@ p.wStreet = 20;
 p.carrierFrequencyGHz = 2.0;
 
 p.apply(m, this);
-probe.record("t814_macro_nlos", p, { { "d", 500 } }, m.computePathLoss(501.1, 500, false));
+probe.record("t814_macro_nlos", p, { { "d", 500 } }, m.computePathLoss(501.1, 500, false, {}));
 
 probe.summary();
 

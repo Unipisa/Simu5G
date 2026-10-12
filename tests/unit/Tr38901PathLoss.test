@@ -42,9 +42,9 @@ probe.pathLoss("t901_inh_nlos", m, p, 100, 100, false);
 // Below 1 m the 3D distance is clamped to 1 m, where the report's own
 // formula takes over, so the case is graded at 1 m rather than at 0.5 m.
 p.apply(m, this);
-probe.record("t901_inh_los", p, { { "d3D", 1.0 } }, m.computePathLoss(0.5, 0.5, true));
+probe.record("t901_inh_los", p, { { "d3D", 1.0 } }, m.computePathLoss(0.5, 0.5, true, {}));
 
-probe.expectRejected("InH d3D=200 rejected", [&]() { m.computePathLoss(200, 200, true); });
+probe.expectRejected("InH d3D=200 rejected", [&]() { m.computePathLoss(200, 200, true, {}); });
 
 // --- UMi-Street Canyon, hBS = 10 m, hUT = 1.5 m, fc = 3.5 GHz ---------
 // hE = 1 m, so dBP = 4 (hBS-1)(hUT-1) fc/c = 210.000 m.
@@ -61,7 +61,7 @@ probe.pathLoss("t901_umi_nlos", m, p, 21.5, 20, false);
 probe.pathLoss("t901_umi_nlos", m, p, 100.36, 100, false);
 probe.pathLoss("t901_umi_nlos", m, p, 1000.04, 1000, false);
 
-probe.expectRejected("UMi d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true); });
+probe.expectRejected("UMi d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true, {}); });
 
 // --- UMa, hBS = 25 m, hUT = 1.5 m, fc = 2 GHz -------------------------
 // hE = 1 m with probability 1/(1 + C(d2D, hUT)); C = 0 for hUT < 13 m, so
@@ -78,7 +78,7 @@ probe.pathLoss("t901_uma_los",  m, p, 1000.28, 1000, true);    // above dBP
 probe.pathLoss("t901_uma_nlos", m, p, 102.7, 100, false);
 probe.pathLoss("t901_uma_nlos", m, p, 1000.28, 1000, false);
 
-probe.expectRejected("UMa d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true); });
+probe.expectRejected("UMa d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, true, {}); });
 
 // --- RMa, hBS = 35 m, hUT = 1.5 m, fc = 0.8 GHz -----------------------
 // dBP = 2 pi hBS hUT fc/c = 879.646 m. TR 38.901 fixes the average building
@@ -97,8 +97,8 @@ probe.pathLoss("t901_rma_los",  m, p, 3000.19, 3000, true);    // above dBP
 probe.pathLoss("t901_rma_nlos", m, p, 501.1, 500, false);
 probe.pathLoss("t901_rma_nlos", m, p, 3000.19, 3000, false);
 
-probe.expectRejected("RMa LOS d2D=11000 rejected", [&]() { m.computePathLoss(11000, 11000, true); });
-probe.expectRejected("RMa NLOS d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, false); });
+probe.expectRejected("RMa LOS d2D=11000 rejected", [&]() { m.computePathLoss(11000, 11000, true, {}); });
+probe.expectRejected("RMa NLOS d2D=6000 rejected", [&]() { m.computePathLoss(6000, 6000, false, {}); });
 
 // --- Scenarios TR 38.901 does not cover fall through to TR 36.873 -----
 // SMa is evaluated by the TR 36.814 macrocell formula reached through
@@ -112,7 +112,7 @@ p.wStreet = 20;
 p.carrierFrequencyGHz = 2.0;
 
 p.apply(m, this);
-probe.record("t814_macro_nlos", p, { { "d", 500 } }, m.computePathLoss(501.1, 500, false));
+probe.record("t814_macro_nlos", p, { { "d", 500 } }, m.computePathLoss(501.1, 500, false, {}));
 
 probe.summary();
 

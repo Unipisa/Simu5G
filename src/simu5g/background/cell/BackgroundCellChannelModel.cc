@@ -86,7 +86,6 @@ void BackgroundCellChannelModel::initialize(int stage)
         // modules by this later stage
         pathLoss_ = new Tr36814PathLossModel();
         pathLoss_->initialize(this, scenario_, hNodeB_, hUe_, hBuilding_, wStreet_,
-                inside_building_, inside_distance_,
                 carrierFrequencyHz_, carrierFrequencyGHz_, log10CarrierFrequencyGHz_,
                 tolerateMaxDistViolation_);
     }
@@ -348,7 +347,7 @@ void BackgroundCellChannelModel::computeLosProbability(double d, MacNodeId nodeI
 
 double BackgroundCellChannelModel::computePathLoss(double distance, double dbp, bool los)
 {
-    return pathLoss_->computePathLoss(distance, distance, los);
+    return pathLoss_->computePathLoss(distance, distance, los, PathLossModel::LinkConditions());
 }
 
 double BackgroundCellChannelModel::computeShadowing(double sqrDistance, MacNodeId nodeId, double speed)

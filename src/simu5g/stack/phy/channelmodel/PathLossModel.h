@@ -27,10 +27,12 @@ using namespace omnetpp;
  * distances, LOS state) the shell has already resolved.
  *
  * All per-link state -- LOS map, shadowing history, fading maps, position
- * history -- stays in the owning channel model; an instance of this class
- * holds nothing but the cached scenario parameters and a back-pointer to the
- * owner for RNG draws, so that every random draw a formula makes still comes
- * from the same RNG stream as before.
+ * history -- stays in the owning channel model, and the facts of the link
+ * being evaluated that its geometry does not give come with each call as
+ * LinkConditions; an instance of this class holds nothing but the cached
+ * scenario parameters and a back-pointer to the owner for RNG draws, so that
+ * every random draw a formula makes still comes from the same RNG stream as
+ * before.
  */
 class PathLossModel
 {
@@ -42,14 +44,10 @@ class PathLossModel
     double hUe_ = 0;
     double hBuilding_ = 0;
     double wStreet_ = 0;
-    bool inside_building_ = false;
-    double inside_distance_ = 0;
     double carrierFrequencyHz_ = 0;
     double carrierFrequencyGHz_ = 0;
     double log10CarrierFrequencyGHz_ = 0;
     bool tolerateMaxDistViolation_ = false;
-    double environmentHeight_ = 1.0;    // h_E of the link being evaluated, see setEnvironmentHeight()
-    double penetrationDeviate_ = 0.0;   // the UE's standard-normal penetration-loss deviate, see setIndoor()
 
     /*
      * Propagation velocity in free space, as the breakpoint-distance notes of
@@ -62,6 +60,20 @@ class PathLossModel
     static constexpr double PROPAGATION_VELOCITY = 3.0e8;
 
   public:
+    /**
+     * The facts of the link being evaluated that its geometry does not give:
+     * the link's effective environment height, and the UE end's building
+     * penetration. The defaults are a link outdoors, at the h_E a link takes
+     * without a draw.
+     */
+    struct LinkConditions
+    {
+        double environmentHeight = 1.0;  // h_E (TR 38.901 Table 7.4.1-1 NOTE 1, TR 36.873 7.2.1 NOTE 4)
+        bool indoor = false;             // the UE end is inside a building
+        double indoorDistance = 0.0;     // how far inside (d_2D-in)
+        double penetrationDeviate = 0.0; // the UE's standard-normal penetration-loss deviate (TR 38.901 7.4.3.1)
+    };
+
     virtual ~PathLossModel() {}
 
     /*
@@ -71,21 +83,8 @@ class PathLossModel
      */
     virtual void initialize(cComponent *owner, DeploymentScenario scenario,
             double hNodeB, double hUe, double hBuilding, double wStreet,
-            bool insideBuilding, double insideDistance,
             double carrierFrequencyHz, double carrierFrequencyGHz, double log10CarrierFrequencyGHz,
             bool tolerateMaxDistViolation);
-
-    /*
-     * Set whether the UE end of the link about to be evaluated is inside a
-     * building, how far inside, and the standard-normal deviate of its
-     * building penetration loss (the UE's, TR 38.901 7.4.3.1)
-     */
-    virtual void setIndoor(bool insideBuilding, double insideDistance, double penetrationDeviate)
-    {
-        inside_building_ = insideBuilding;
-        inside_distance_ = insideDistance;
-        penetrationDeviate_ = penetrationDeviate;
-    }
 
     /*
      * Draw the effective environment height h_E of a link between a base
@@ -96,16 +95,11 @@ class PathLossModel
     virtual double drawEnvironmentHeight(double d2D) { return 1.0; }
 
     /*
-     * Set the h_E of the link about to be evaluated
+     * Compute the path-loss attenuation according to the selected scenario,
+     * for a link in the given conditions. A concrete model that needs only
+     * one of the two distances ignores the other.
      */
-    virtual void setEnvironmentHeight(double environmentHeight) { environmentHeight_ = environmentHeight; }
-
-    /*
-     * Compute the path-loss attenuation according to the selected scenario.
-     * A concrete model that needs only one of the two distances ignores the
-     * other.
-     */
-    virtual double computePathLoss(double d3D, double d2D, bool los) = 0;
+    virtual double computePathLoss(double d3D, double d2D, bool los, const LinkConditions& conditions) = 0;
 
     /*
      * Compute the LOS probability according to the selected scenario.

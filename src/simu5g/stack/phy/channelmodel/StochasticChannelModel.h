@@ -15,6 +15,7 @@
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
+#include "simu5g/stack/phy/channelmodel/PathLossModel.h"
 
 namespace simu5g {
 
@@ -22,7 +23,6 @@ using namespace omnetpp;
 
 class Binder;
 class CellularTransmission;
-class PathLossModel;
 
 /**
  * The full PHY link model: everything between a transmitted air frame and the
@@ -532,9 +532,10 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * The path loss of a phantom transmission, in dB: the model's own path-loss
      * formulas, in the LOS state of the given link (RadioLink::linkKey) unless
-     * enableExtCellLos is off
+     * enableExtCellLos is off, at that link's h_E, with the UE end's building
+     * penetration given in 'conditions'
      */
-    virtual double computePhantomPathLoss(double d3D, double d2D, const LinkKey& key);
+    virtual double computePhantomPathLoss(double d3D, double d2D, const LinkKey& key, PathLossModel::LinkConditions conditions);
 };
 
 } //namespace

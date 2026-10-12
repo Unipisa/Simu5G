@@ -20,7 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-double Tr36814PathLossModel::computePathLoss(double d3D, double d2D, bool los)
+double Tr36814PathLossModel::computePathLoss(double d3D, double d2D, bool los, const LinkConditions& conditions)
 {
     // compute attenuation based on selected scenario and based on LOS or NLOS
     double pathLoss = 0;

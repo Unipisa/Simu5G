@@ -27,10 +27,11 @@ namespace unittest {
 
 /**
  * Deployment-scenario parameters of a path-loss model, with the defaults of
- * the StochasticChannelModel NED parameters they mirror. A test fills in the
- * fields it cares about and hands it to a CaseRecorder, which configures the
- * model with it and reports it as the input of the case, which spares it the
- * twelve-argument PathLossModel::initialize() call.
+ * the StochasticChannelModel NED parameters they mirror, and the UE's indoor
+ * facts the model is evaluated with. A test fills in the fields it cares about
+ * and hands it to a CaseRecorder, which configures the model with it and
+ * reports it as the input of the case, which spares it the ten-argument
+ * PathLossModel::initialize() call.
  *
  * The carrier frequency is given in GHz only; the Hz value and its logarithm,
  * which initialize() takes separately because the owning channel model caches
@@ -52,10 +53,18 @@ struct ScenarioParams
     void apply(PathLossModel& model, omnetpp::cComponent *owner) const
     {
         model.initialize(owner, scenario, hNodeB, hUe, hBuilding, wStreet,
-                insideBuilding, insideDistance,
                 carrierFrequencyGHz * 1e9, carrierFrequencyGHz, std::log10(carrierFrequencyGHz),
                 tolerateMaxDistViolation);
-        model.setIndoor(insideBuilding, insideDistance, penetrationDeviate);
+    }
+
+    // the indoor facts, for computePathLoss(), at the h_E a link takes without a draw
+    PathLossModel::LinkConditions conditions() const
+    {
+        PathLossModel::LinkConditions c;
+        c.indoor = insideBuilding;
+        c.indoorDistance = insideDistance;
+        c.penetrationDeviate = penetrationDeviate;
+        return c;
     }
 };
 
@@ -160,7 +169,7 @@ class CaseRecorder
     {
         p.apply(model, owner_);
         record(ref, p, { { "d3D", d3D }, { "d2D", d2D }, { "los", static_cast<double>(los) } },
-                model.computePathLoss(d3D, d2D, los));
+                model.computePathLoss(d3D, d2D, los, p.conditions()));
     }
 
     /**
@@ -173,7 +182,7 @@ class CaseRecorder
     {
         p.apply(model, owner_);
         record(ref, p, { { "d", d }, { "los", static_cast<double>(los) } },
-                model.computePathLoss(d, d, los));
+                model.computePathLoss(d, d, los, p.conditions()));
     }
 
     void losProbability(const char *ref, PathLossModel& model, const ScenarioParams& p,

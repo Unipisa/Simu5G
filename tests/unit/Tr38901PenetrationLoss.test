@@ -48,8 +48,8 @@ outdoor.hUe = 1.5;
 outdoor.carrierFrequencyGHz = 2.0;
 
 outdoor.apply(m, this);
-double umaLos = m.computePathLoss(102.7, 100, true);
-double umaNlos = m.computePathLoss(102.7, 100, false);
+double umaLos = m.computePathLoss(102.7, 100, true, outdoor.conditions());
+double umaNlos = m.computePathLoss(102.7, 100, false, outdoor.conditions());
 
 indoor = outdoor;
 indoor.insideBuilding = true;
@@ -57,23 +57,23 @@ indoor.insideBuilding = true;
 indoor.insideDistance = 10;
 indoor.apply(m, this);
 probe.record("t901_o2i_sub6", indoor, { { "dIn", 10 } },
-        m.computePathLoss(102.7, 100, true) - umaLos);
+        m.computePathLoss(102.7, 100, true, indoor.conditions()) - umaLos);
 probe.record("t901_o2i_sub6", indoor, { { "dIn", 10 } },
-        m.computePathLoss(102.7, 100, false) - umaNlos);
+        m.computePathLoss(102.7, 100, false, indoor.conditions()) - umaNlos);
 
 indoor.insideDistance = 25;
 indoor.apply(m, this);
 probe.record("t901_o2i_sub6", indoor, { { "dIn", 25 } },
-        m.computePathLoss(102.7, 100, true) - umaLos);
+        m.computePathLoss(102.7, 100, true, indoor.conditions()) - umaLos);
 
 // The indoor distance cannot exceed the length of the link, so a 50 m indoor
 // leg of a 20 m link is graded as the 20 m one it is clamped to.
 outdoor.apply(m, this);
-double umaShort = m.computePathLoss(20, 18, true);
+double umaShort = m.computePathLoss(20, 18, true, outdoor.conditions());
 indoor.insideDistance = 50;
 indoor.apply(m, this);
 probe.record("t901_o2i_sub6", indoor, { { "dIn", 20 } },
-        m.computePathLoss(20, 18, true) - umaShort);
+        m.computePathLoss(20, 18, true, indoor.conditions()) - umaShort);
 
 // --- fc > 6 GHz: the material-based model of table 7.4.3-2 ------------
 // Its through-wall term is sigma_P times the UE's standard-normal deviate.
@@ -84,7 +84,7 @@ outdoor.hNodeB = 25;
 outdoor.hUe = 1.5;
 outdoor.carrierFrequencyGHz = 28.0;
 outdoor.apply(m, this);
-double mmWaveOutdoor = m.computePathLoss(102.7, 100, true);
+double mmWaveOutdoor = m.computePathLoss(102.7, 100, true, outdoor.conditions());
 
 indoor = outdoor;
 indoor.insideBuilding = true;
@@ -95,12 +95,12 @@ for (double z : { 0.0, 1.0 }) {
     indoor.apply(m, this);
     m.setUseBuildingPenetrationHighLossModel(false);
     probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", z } },
-            m.computePathLoss(102.7, 100, true) - mmWaveOutdoor);
+            m.computePathLoss(102.7, 100, true, indoor.conditions()) - mmWaveOutdoor);
 
     indoor.apply(m, this);
     m.setUseBuildingPenetrationHighLossModel(true);
     probe.record("t901_o2i_highloss", indoor, { { "dIn", 10 }, { "z", z } },
-            m.computePathLoss(102.7, 100, true) - mmWaveOutdoor);
+            m.computePathLoss(102.7, 100, true, indoor.conditions()) - mmWaveOutdoor);
 }
 indoor.penetrationDeviate = 0;
 
@@ -116,23 +116,23 @@ indoor.insideDistance = 10;
 
 outdoor.carrierFrequencyGHz = 2.0;
 outdoor.apply(m, this);
-double rmaOutdoor = m.computePathLoss(501.1, 500, true);
+double rmaOutdoor = m.computePathLoss(501.1, 500, true, outdoor.conditions());
 
 indoor.carrierFrequencyGHz = 2.0;
 indoor.penetrationDeviate = 1.0;
 indoor.apply(m, this);
 probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", 1.0 } },
-        m.computePathLoss(501.1, 500, true) - rmaOutdoor);
+        m.computePathLoss(501.1, 500, true, indoor.conditions()) - rmaOutdoor);
 
 outdoor.carrierFrequencyGHz = 0.8;
 outdoor.apply(m, this);
-rmaOutdoor = m.computePathLoss(501.1, 500, true);
+rmaOutdoor = m.computePathLoss(501.1, 500, true, outdoor.conditions());
 
 indoor.carrierFrequencyGHz = 0.8;
 indoor.penetrationDeviate = -1.0;
 indoor.apply(m, this);
 probe.record("t901_o2i_lowloss", indoor, { { "dIn", 10 }, { "z", -1.0 } },
-        m.computePathLoss(501.1, 500, true) - rmaOutdoor);
+        m.computePathLoss(501.1, 500, true, indoor.conditions()) - rmaOutdoor);
 
 %postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
 

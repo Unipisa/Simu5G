@@ -141,7 +141,6 @@ void StochasticChannelModel::initialize(int stage)
         // by ChannelModelBase::initialize() above, in this same stage
         pathLoss_ = createPathLossModel();
         pathLoss_->initialize(this, scenario_, hNodeB_, hUe_, hBuilding_, wStreet_,
-                false, 0.0,
                 carrierFrequencyHz_, carrierFrequencyGHz_, log10CarrierFrequencyGHz_,
                 tolerateMaxDistViolation_);
     }
@@ -282,8 +281,10 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     // uplink, otherwise the receiver (the UE, or a D2D link's receiver); a
     // background UE is outdoors
     IRadioEndpoint *ueEnd = link.dir == UL ? link.txRadio : link.rxRadio;
-    pathLoss_->setIndoor(ueEnd != nullptr && ueEnd->isInsideBuilding(), ueEnd != nullptr ? ueEnd->getInsideDistance() : 0.0,
-            ueEnd != nullptr ? ueEnd->getPenetrationLossDeviate() : 0.0);
+    PathLossModel::LinkConditions conditions;
+    conditions.indoor = ueEnd != nullptr && ueEnd->isInsideBuilding();
+    conditions.indoorDistance = ueEnd != nullptr ? ueEnd->getInsideDistance() : 0.0;
+    conditions.penetrationDeviate = ueEnd != nullptr ? ueEnd->getPenetrationLossDeviate() : 0.0;
 
     // COMPUTE 3D and 2D DISTANCE between the two endpoints
     double threeDimDistance = link.txCoord.distance(link.rxCoord);
@@ -303,8 +304,8 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     //compute attenuation based on selected scenario and based on LOS or NLOS
     const ChannelState::LosSample& sample = losMap()[link.linkKey];
     bool los = sample.los;
-    pathLoss_->setEnvironmentHeight(sample.environmentHeight);
-    double attenuation = pathLoss_->computePathLoss(threeDimDistance, twoDimDistance, los);
+    conditions.environmentHeight = sample.environmentHeight;
+    double attenuation = pathLoss_->computePathLoss(threeDimDistance, twoDimDistance, los, conditions);
 
     //    Applying shadowing only if it is enabled by configuration
     //    log-normal shadowing (not available for background UEs)
@@ -969,9 +970,7 @@ double StochasticChannelModel::computePathLoss(double distance, double dbp, bool
 {
     // a path loss outside any link: outdoors, at the environment height a
     // link takes without a draw -- not the facts of the link evaluated last
-    pathLoss_->setIndoor(false, 0.0, 0.0);
-    pathLoss_->setEnvironmentHeight(1.0);
-    return pathLoss_->computePathLoss(distance, dbp, los);
+    return pathLoss_->computePathLoss(distance, dbp, los, PathLossModel::LinkConditions());
 }
 
 double StochasticChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord b)
@@ -986,11 +985,13 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     const Coord& c = transmission.startPosition;
 
     // the UE end: the receiving UE of a cell's downlink; a background UE is outdoors
-    pathLoss_->setIndoor(ue != nullptr && ue->isInsideBuilding(), ue != nullptr ? ue->getInsideDistance() : 0.0,
-            ue != nullptr ? ue->getPenetrationLossDeviate() : 0.0);
+    PathLossModel::LinkConditions conditions;
+    conditions.indoor = ue != nullptr && ue->isInsideBuilding();
+    conditions.indoorDistance = ue != nullptr ? ue->getInsideDistance() : 0.0;
+    conditions.penetrationDeviate = ue != nullptr ? ue->getPenetrationLossDeviate() : 0.0;
 
     // compute attenuation according to some path loss model
-    double att = computePhantomPathLoss(position.distance(c), getTwoDimDistance(c, position), link);
+    double att = computePhantomPathLoss(position.distance(c), getTwoDimDistance(c, position), link, conditions);
 
     //=============== ANGULAR ATTENUATION =================
     double angularAtt = 0;
@@ -1015,18 +1016,18 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     return transmission.txPower - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 }
 
-double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, const LinkKey& key)
+double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, const LinkKey& key, PathLossModel::LinkConditions conditions)
 {
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
     const ChannelState::LosSample& sample = losMap()[key];
     bool los = sample.los;
-    pathLoss_->setEnvironmentHeight(sample.environmentHeight);
+    conditions.environmentHeight = sample.environmentHeight;
 
     if (!enable_extCell_los_)
         los = false;
 
-    double attenuation = pathLoss_->computePathLoss(d3D, d2D, los);
+    double attenuation = pathLoss_->computePathLoss(d3D, d2D, los, conditions);
 
     return attenuation;
 }

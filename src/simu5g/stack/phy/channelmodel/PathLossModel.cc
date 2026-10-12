@@ -16,7 +16,6 @@ namespace simu5g {
 
 void PathLossModel::initialize(cComponent *owner, DeploymentScenario scenario,
         double hNodeB, double hUe, double hBuilding, double wStreet,
-        bool insideBuilding, double insideDistance,
         double carrierFrequencyHz, double carrierFrequencyGHz, double log10CarrierFrequencyGHz,
         bool tolerateMaxDistViolation)
 {
@@ -26,8 +25,6 @@ void PathLossModel::initialize(cComponent *owner, DeploymentScenario scenario,
     hUe_ = hUe;
     hBuilding_ = hBuilding;
     wStreet_ = wStreet;
-    inside_building_ = insideBuilding;
-    inside_distance_ = insideDistance;
     carrierFrequencyHz_ = carrierFrequencyHz;
     carrierFrequencyGHz_ = carrierFrequencyGHz;
     log10CarrierFrequencyGHz_ = log10CarrierFrequencyGHz;
