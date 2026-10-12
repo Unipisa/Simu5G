@@ -34,9 +34,16 @@ void CellularRadio::initialize(int stage)
 
 void CellularRadio::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-        // the end of a held frame's transmission
-        send(msg, upperLayerOutGateId_);
+    if (msg->isSelfMessage()) {
+        if (auto frame = dynamic_cast<AirFrame *>(msg))
+            // the end of a held frame's transmission
+            send(frame, upperLayerOutGateId_);
+        else if (strcmp(msg->getName(), "transmissionTimer") == 0)
+            // the end of this radio's own transmission
+            delete msg;
+        else
+            throw cRuntimeError("CellularRadio: unknown self-message %s", msg->getName());
+    }
     else if (msg->getArrivalGateId() == radioInGateId_) {
         auto frame = check_and_cast<AirFrame *>(msg);
         // the reception is evaluated where the radio is as the frame starts to arrive
@@ -71,6 +78,8 @@ void CellularRadio::transmit(AirFrame *frame)
         ASSERT(request->targets.size() == 1);
         sendDirect(frame, 0, request->duration, request->targets.front());
     }
+    // the transmission ends with an event of its own at the transmitter, as INET's radio schedules one
+    scheduleAfter(request->duration, new cMessage("transmissionTimer"));
     delete request;
 }
 
