@@ -21,6 +21,7 @@
 #include "simu5g/stack/phy/channelmodel/PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/StochasticChannelModel.h"
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
 #include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
 
@@ -163,6 +164,7 @@ class ChannelModelProbe
         static auto fadingPtr() { return &Access::fading_; }
 
         static auto linkForPtr() { return &Access::linkFor; }
+        static auto whatIfLinkPtr() { return &Access::whatIfLink; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
         static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
     };
@@ -188,6 +190,8 @@ class ChannelModelProbe
     // internal steps
     // the link of a frame that did not arrive through the radio the evaluation is at: the local end where the radio is now
     RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *info) { return (model_->*Access::linkForPtr())(radio, info, radio->getCoord()); }
+    // the link of a what-if: the transmission to where the receiver is now
+    RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission) { return (model_->*Access::whatIfLinkPtr())(receiver, transmission); }
     RadioLink cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, inet::Coord coord)
     {
         return (model_->*Access::cellularLinkPtr())(radio, ueId, dir, coord);
@@ -197,6 +201,25 @@ class ChannelModelProbe
         (model_->*Access::emitRcvdSinrPtr())(radio, dir, ueId, carrierFrequency, sinr);
     }
 };
+
+/**
+ * A downlink CQI as the base station computes it from a UE's report, a
+ * what-if: a transmission of the base station's radio to the UE, from where
+ * the base station is, starting now.
+ */
+inline CellularTransmission dlCqiTransmission(IRadioEndpoint *bs, MacNodeId ueId)
+{
+    CellularTransmission transmission;
+    transmission.transmitter = bs;
+    transmission.sourceId = bs->getMacNodeId();
+    transmission.destId = ueId;
+    transmission.cellId = bs->getMacNodeId();
+    transmission.direction = DL;
+    transmission.frameType = FEEDBACKPKT;
+    transmission.startPosition = bs->getCoord();
+    transmission.startTime = omnetpp::simTime();
+    return transmission;
+}
 
 /**
  * A copy of the random number generator a component draws from, taken at a

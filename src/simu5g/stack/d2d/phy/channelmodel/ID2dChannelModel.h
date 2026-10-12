@@ -27,7 +27,7 @@ class UserControlInfo;
 /*
  * Interface implemented by the D2D-capable channel model (D2dChannelModel).
  *
- * D2D PHY code talks to the channel model's D2D reception/feedback machinery through
+ * D2D PHY code talks to the channel model's D2D reception machinery through
  * this interface instead of the concrete channel-model class, so that the core
  * channel model (StochasticChannelModel) carries no D2D code. Obtain it with
  * check_and_cast<ID2dChannelModel *>(channelModel): a D2D NIC always wires a D2D
@@ -40,12 +40,6 @@ class ID2dChannelModel
 
     /// Compute the received useful signal (RSRP) for a D2D transmission, per band.
     virtual std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) = 0;
-
-    /// Compute the D2D SINR towards the given peer, per band (path loss, shadowing, fading and D2D interference).
-    virtual std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId peerUeId, inet::Coord peerUeCoord, MacNodeId enbId = NODEID_NONE) = 0;
-
-    /// Compute the D2D SINR from a precomputed RSRP vector (used for one-to-many D2D reception).
-    virtual std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector) = 0;
 };
 
 } //namespace

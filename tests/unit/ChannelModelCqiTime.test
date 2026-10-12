@@ -6,18 +6,25 @@ it sent the report.
 
 The base station computes two CQIs from a UE's report, at the report's
 reception end: the DL CQI, what the UE would receive of a transmission of the
-base station (PhyEnb::requestFeedback(), the report's control information
-with its direction flipped to DL, through getSINR()), and the D2D CQI, what a
-peer would receive of a D2D transmission of the reporting UE
-(PhyEnbD2D::appendExtraFeedback(), through getSINR_D2D()). Both are what-ifs:
-a transmission starting now, arriving where the receiver is now. A DL CQI
+base station (PhyEnb::requestFeedback()), and the D2D CQI, what a peer would
+receive of a D2D transmission of the reporting UE
+(PhyEnbD2D::appendExtraFeedback()). Both are what-ifs on the radio medium
+(CellularRadioMedium::computeSinr()): a transmission starting now, from where
+its transmitter is now, arriving where the receiver is now. A DL CQI
 therefore has exactly the value of a DL frame whose reception starts now at
 the UE where it is now, and a D2D CQI that of a D2D frame of the reporting
 UE, from where it is now, starting now.
 
 ChannelModelRadioLink checks only the DL CQI's positions. A CQI faded at the
 report's reception start (one slot older), or a D2D CQI taken from where the
-reporting UE sent the report, would pass every other test.
+reporting UE sent the report, would pass every other test. The what-if
+transmissions are built here exactly as the two PHY functions build them
+(start time: now; start position: the transmitting radio's position now);
+what this test checks is that the medium evaluates such a transmission at
+its start time and start position and at the receiver's current position --
+also when those are the report's, so that the PHY's choice is what decides.
+That the PHY functions choose now and the current position is outside the
+reach of a unit test, which has no PHY.
 
 Checked with a moving reporting UE, 30 m/s at 3.5 GHz, so that the Jakes
 fading moves by a measurable amount within one numerology-2 slot (0.25 ms).
@@ -164,19 +171,13 @@ const simtime_t t = simTime();
 const inet::Coord nowPosition(100, 40, 1.5);
 ue.coord = nowPosition;
 
-// the report as the base station's radio passes it up: stamped with where and when it began to arrive
-auto *report = new AirFrame();
-report->setArrivalPosition(bs.coord);
-report->setReceptionStartTime(tReport);
-
-// the report's control information, as requestFeedback() has it for the DL CQI: direction flipped to DL, the base station's power
+// the report's control information, as the base station's radio passes it up
 UserControlInfo info;
-info.setDirection(DL);
+info.setDirection(UL);
 info.setFrameType(FEEDBACKPKT);
 info.setSourceId(ue.nodeId);
 info.setDestId(bs.nodeId);
 info.setCoord(reportPosition);
-info.setTxPower(bs.txPower);
 info.setD2dTxPower(ue.txPower);
 info.setCarrierFrequency(carrier);
 info.setGrantedBlocks(bands);
@@ -185,7 +186,22 @@ info.setGrantedBlocks(bands);
 // DL CQI
 //
 {
-    std::vector<double> cqi = model->getSINR(&bs, report, &info);
+    // the DL CQI as PhyEnb::requestFeedback() builds it: a transmission of the base station, starting now
+    CellularTransmission dlCqi;
+    dlCqi.transmitter = &bs;
+    dlCqi.sourceId = bs.nodeId;
+    dlCqi.destId = info.getSourceId();
+    dlCqi.cellId = bs.nodeId;
+    dlCqi.direction = DL;
+    dlCqi.frameType = FEEDBACKPKT;
+    dlCqi.carrierFrequency = info.getCarrierFrequency();
+    dlCqi.grantedBlocks = info.getGrantedBlocks();
+    dlCqi.txPower = bs.txPower;
+    dlCqi.startPosition = bs.getCoord();
+    dlCqi.txDirection = bs.getTxDirection();
+    dlCqi.txAngle = bs.getTxAngle();
+    dlCqi.startTime = simTime();
+    std::vector<double> cqi = medium->computeSinr(medium->getRadio(info.getSourceId()), dlCqi);
 
     // a DL frame of the base station, as the UE decodes it: the link from the base station to the UE where it is now
     UserControlInfo data;
@@ -215,13 +231,37 @@ info.setGrantedBlocks(bands);
             maxDiff(expected, elsewhere) > minDiffDb, show(expected) + " / " + show(elsewhere));
     c.check("DL CQI: the value of a DL frame whose reception starts now, at the UE where it is now",
             cqi == expected, show(cqi) + " / " + show(expected));
+
+    // what decides the time is the transmission's start time, which the PHY chooses
+    CellularTransmission atReportStartWhatIf = dlCqi;
+    atReportStartWhatIf.startTime = tReport;
+    std::vector<double> cqiAtReportStart = medium->computeSinr(medium->getRadio(info.getSourceId()), atReportStartWhatIf);
+    c.check("DL CQI: ...and the medium evaluates a what-if at its own start time",
+            cqiAtReportStart == older, show(cqiAtReportStart) + " / " + show(older));
 }
 
 //
 // D2D CQI
 //
 {
-    std::vector<double> cqi = model->getSINR_D2D(report, &info, peer.nodeId, peer.coord, bs.nodeId);
+    // the D2D CQI as PhyEnbD2D::appendExtraFeedback() builds it: a D2D transmission of the reporting UE,
+    // from where it is now, starting now
+    IRadioEndpoint *sourceRadio = medium->getRadio(info.getSourceId());
+    CellularTransmission d2dCqi;
+    d2dCqi.transmitter = sourceRadio;
+    d2dCqi.sourceId = info.getSourceId();
+    d2dCqi.destId = peer.nodeId;
+    d2dCqi.cellId = bs.nodeId;
+    d2dCqi.direction = D2D;
+    d2dCqi.frameType = FEEDBACKPKT;
+    d2dCqi.carrierFrequency = info.getCarrierFrequency();
+    d2dCqi.grantedBlocks = info.getGrantedBlocks();
+    d2dCqi.txPower = info.getD2dTxPower();
+    d2dCqi.startPosition = sourceRadio->getCoord();
+    d2dCqi.txDirection = sourceRadio->getTxDirection();
+    d2dCqi.txAngle = sourceRadio->getTxAngle();
+    d2dCqi.startTime = simTime();
+    std::vector<double> cqi = medium->computeSinr(&peer, d2dCqi);
 
     // a D2D frame of the reporting UE, as the peer decodes it
     UserControlInfo data;
@@ -251,14 +291,19 @@ info.setGrantedBlocks(bands);
             maxDiff(expected, elsewhere) > minDiffDb, show(expected) + " / " + show(elsewhere));
     c.check("D2D CQI: the value of a D2D frame of the reporting UE from where it is now, starting now",
             cqi == expected, show(cqi) + " / " + show(expected));
-}
 
-delete report;
+    // what decides the source position is the transmission's start position, which the PHY chooses
+    CellularTransmission fromReportPositionWhatIf = d2dCqi;
+    fromReportPositionWhatIf.startPosition = reportPosition;
+    std::vector<double> cqiFromReportPosition = medium->computeSinr(&peer, fromReportPositionWhatIf);
+    c.check("D2D CQI: ...and the medium evaluates a what-if from its own start position",
+            cqiFromReportPosition == elsewhere, show(cqiFromReportPosition) + " / " + show(elsewhere));
+}
 
 c.summary();
 
 %contains: stdout
-modelchecks=6 modelfailures=0
+modelchecks=8 modelfailures=0
 
 %not-contains: stdout
 FAILED

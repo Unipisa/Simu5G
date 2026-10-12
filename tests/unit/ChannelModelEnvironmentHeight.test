@@ -103,9 +103,8 @@ const double d3D = std::sqrt(d2D * d2D + 2.5 * 2.5);
 wait(0.010);
 
 UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
 RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData);
-RadioLink atBs = bsProbe.linkFor(&bsEndpoint, &dlCqi);
+RadioLink atBs = bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId));
 
 double first = ue->getAttenuation(atUe);
 ChannelState::LosSample& sample = medium->getLosMap(GHz(0.8))[atUe.linkKey];

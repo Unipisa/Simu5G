@@ -70,12 +70,13 @@ class IdealChannelModel : public ChannelModelBase
      */
     std::vector<double> getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) override;
     /*
-     * Compute fake received useful signal for each band for user nodeId according to path loss, shadowing (optional) and multipath fading
-     *
-     * @param frame pointer to the packet
-     * @param lteInfo pointer to the user control info
+     * Compute fake received useful signal for each band of a what-if
      */
-    std::vector<double> getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
+    /*
+     * Compute fake SINR for each band of a what-if
+     */
+    std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
     /*
      * Compute SINR for each band for a background UE according to path loss
      *

@@ -126,7 +126,6 @@ ChannelModelProbe bsProbe(bs), ueProbe(ue);
 wait(0.050);
 
 UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
 UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
 
 // The received power per band of the three evaluations of the link, at the
@@ -137,7 +136,7 @@ auto evaluate = [&] (double ueSpeed, double bsSpeed) {
     bsEndpoint.speed = bsSpeed;
     Evaluations e;
     e.dlData = ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &dlData), 30.0);
-    e.dlCqi = bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &dlCqi), 30.0);
+    e.dlCqi = bs->getRSRP(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
     e.ulData = bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ulData), 30.0);
     return e;
 };

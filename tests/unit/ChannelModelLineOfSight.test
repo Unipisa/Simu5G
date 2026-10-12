@@ -129,10 +129,8 @@ const bool los1 = atUe.losMap().at(link1).los;
     c.expectValue("the other end of the link reads the same state and draws nothing", drawn(bs) - before, 0);
 }
 {
-    UserControlInfo info = controlInfo(DL, FEEDBACKPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
-    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), MacNodeId(1025), &ue);
     long long before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&enb, &info));
+    bs->getAttenuation(atEnb.whatIfLink(&ue, dlCqiTransmission(&enb, MacNodeId(1025))));
     c.expectValue("a DL CQI at the base station is the same link: no draw", drawn(bs) - before, 0);
 }
 {

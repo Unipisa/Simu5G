@@ -259,12 +259,16 @@ class StochasticChannelModel : public ChannelModelBase
     virtual std::vector<double> getSINR(const RadioLink& link, UserControlInfo *lteInfo, std::vector<double> snrVector);
 
     /*
-     * Compute received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
-     *
-     * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * Compute the received useful signal for each band of a what-if, over
+     * whatIfLink(), at the transmission's power
      */
-    std::vector<double> getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) override;
+    std::vector<double> computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
+
+    /*
+     * Compute the SINR for each band of a what-if, over whatIfLink(): its
+     * received useful signal, and the noise and interference on top
+     */
+    std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
 
     /*
      * Compute sinr for each band for a background UE according to pathloss
@@ -367,13 +371,28 @@ class StochasticChannelModel : public ChannelModelBase
     JakesFadingMap& jakesFadingMap();
 
     /*
-     * Build the RadioLink described by a frame's control info (DL, UL, and the
-     * feedback variants), the local end the radio the evaluation is at, at the
-     * given position (see receptionPosition()). The D2D path builds its links
-     * separately -- its API takes the peer endpoint explicitly rather than
-     * deriving it.
+     * Build the RadioLink described by a frame's control info (DL, UL, and a
+     * UL CQI), the local end the radio the evaluation is at, at the given
+     * position (see receptionPosition()). A DL CQI is a what-if (see
+     * whatIfLink()). The D2D path builds its links separately -- its API takes
+     * the peer endpoint explicitly rather than deriving it.
      */
     virtual RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const inet::Coord& localPosition);
+
+    /*
+     * Build the RadioLink of a what-if (see computeRsrp()): from the
+     * transmission's radio, at its start position and start time, to the
+     * receiver where it is now. A cellular transmission, DL or UL; the D2D
+     * model builds its D2D links.
+     */
+    virtual RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission);
+
+    /*
+     * The control info of a what-if's transmission, which the SINR assembly
+     * reads its frame type (a FEEDBACKPKT is a CQI), its carrier and its
+     * resource blocks from
+     */
+    static UserControlInfo whatIfControlInfo(const CellularTransmission& transmission);
 
     /*
      * Where the local radio was as the frame started to arrive, which is where

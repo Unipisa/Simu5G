@@ -230,10 +230,9 @@ wait(0.010);
     // A DL CQI at the base station and the UE's decoding are the same link,
     // evaluated from its two ends, through the real entry point getRSRP().
     UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId, bsEndpoint.coord);
-    UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, MacNodeId(1), ueEndpoint.coord);
     const LinkKey link(MacNodeId(1), ueId);
 
-    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &cqi), 30.0);
+    bs->getRSRP(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
 
     // The path loss and shadowing of this harness may draw on their own
     // account, so "draws nothing" is measured against an identical evaluation

@@ -7,9 +7,9 @@ Jakes fading is a function of time, and a frame is decoded at the end of its
 transmission, one slot after it began. The receiving radio stamps the frame
 with the start of its reception (AirFrame::receptionStartTime), and every
 entry point that evaluates a received frame -- the DL/UL data path's
-getRSRP() and getSINR(), and the D2D path's getRSRP_D2D() and getSINR_D2D()
--- evaluates the frame's link at that stamp. So the value of a reception does
-not depend on the slot length or on when it is decoded.
+getSINR(), and the D2D path's getRSRP_D2D() and getSINR_D2D() -- evaluates
+the frame's link at that stamp. So the value of a reception does not depend
+on the slot length or on when it is decoded.
 
 Other tests grade the fading at a start time they pass in, or evaluate a link
 they built themselves; a frame-based entry point that left the link at the
@@ -170,7 +170,6 @@ auto receivedFrame = [&] () {
     info.setGrantedBlocks(bands);
 
     AirFrame *frame = receivedFrame();
-    std::vector<double> rsrp = ueModel->getRSRP(&ue, frame, &info);
     std::vector<double> sinr = ueModel->getSINR(&ue, frame, &info);
     delete frame;
 
@@ -181,16 +180,16 @@ auto receivedFrame = [&] () {
     std::vector<double> rsrpAtStart = ueModel->getRSRP(atStart, bs.txPower);
     std::vector<double> rsrpAtNow = ueModel->getRSRP(atNow, bs.txPower);
     std::vector<double> sinrAtStart = ueModel->getSINR(atStart, &info, rsrpAtStart);
+    std::vector<double> sinrAtNow = ueModel->getSINR(atNow, &info, rsrpAtNow);
 
     c.check("DL: the fading at the frame's start and at its decoding differ measurably",
             maxDiff(rsrpAtStart, rsrpAtNow) > minDiffDb,
             show(rsrpAtStart) + " / " + show(rsrpAtNow));
-    c.check("DL: a received frame's RSRP is that at its reception start", rsrp == rsrpAtStart, show(rsrp));
     c.check("DL: a received frame's SINR is that at its reception start", sinr == sinrAtStart,
             show(sinr) + " / " + show(sinrAtStart));
 
     AirFrame whatIf;
-    c.check("DL: a frame with no reception start is evaluated now", ueModel->getRSRP(&ue, &whatIf, &info) == rsrpAtNow);
+    c.check("DL: a frame with no reception start is evaluated now", ueModel->getSINR(&ue, &whatIf, &info) == sinrAtNow);
 }
 
 //
@@ -236,7 +235,7 @@ auto receivedFrame = [&] () {
 c.summary();
 
 %contains: stdout
-modelchecks=8 modelfailures=0
+modelchecks=7 modelfailures=0
 
 %not-contains: stdout
 FAILED

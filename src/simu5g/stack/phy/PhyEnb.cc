@@ -283,15 +283,25 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
 
         if (dir == UL) {
             header->setLteFeedbackDoubleVectorUl(fb);
-            //Prepare  parameters for next loop iteration - in order to compute SNR in DL
-            lteinfo->setTxPower(txPower_);
-            lteinfo->setDirection(DL);
 
-            //Get snr for DL direction
-            if (channelModel != nullptr)
-                snr = channelModel->getSINR(this, frame, lteinfo);
-            else
-                throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
+            //Get snr for DL direction: what the UE would receive of a
+            //transmission of this base station, starting now (a what-if)
+            ASSERT(lteinfo->getDestId() == nodeId_);
+            CellularTransmission dlCqiTransmission;
+            dlCqiTransmission.transmitter = this;
+            dlCqiTransmission.sourceId = nodeId_;
+            dlCqiTransmission.destId = lteinfo->getSourceId();
+            dlCqiTransmission.cellId = nodeId_;
+            dlCqiTransmission.direction = DL;
+            dlCqiTransmission.frameType = FEEDBACKPKT;
+            dlCqiTransmission.carrierFrequency = lteinfo->getCarrierFrequency();
+            dlCqiTransmission.grantedBlocks = lteinfo->getGrantedBlocks();
+            dlCqiTransmission.txPower = txPower_;
+            dlCqiTransmission.startPosition = getCoord();
+            dlCqiTransmission.txDirection = getTxDirection();
+            dlCqiTransmission.txAngle = getTxAngle();
+            dlCqiTransmission.startTime = simTime();
+            snr = radioMedium_->computeSinr(radioMedium_->getRadio(lteinfo->getSourceId()), dlCqiTransmission);
         }
         else
             header->setLteFeedbackDoubleVectorDl(fb);

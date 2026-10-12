@@ -203,34 +203,31 @@ RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo
     MacNodeId ueId, eNbId;
     Coord ueCoord, enbCoord;
 
+    // A DL CQI is a what-if, a transmission no radio received
+    if (link.dir == DL && lteInfo->getFrameType() == FEEDBACKPKT)
+        throw cRuntimeError("StochasticChannelModel::linkFor(): a DL CQI is a what-if, evaluated over whatIfLink()");
+
     /*
-     * If the direction is DL and this is not a feedback packet, this function has been
-     * called by isReceptionSuccessful() in the UE: downlink error computation.
+     * If the direction is DL, this function has been called by
+     * isReceptionSuccessful() in the UE: downlink error computation.
      */
-    if (link.dir == DL && (lteInfo->getFrameType() != FEEDBACKPKT)) {
+    if (link.dir == DL) {
         ueId = lteInfo->getDestId();
         eNbId = lteInfo->getSourceId();
         ueCoord = localPosition;
         enbCoord = coord;
     }
     /*
-     * If the direction is UL, or the packet is a feedback packet, this function is called
-     * by the feedback computation module located in the eNodeB, which computes the feedback
-     * received from the UE. Hence the UE macNodeId comes from the sourceId of the lteInfo.
+     * If the direction is UL, this function is called by the eNodeB: for the
+     * uplink error computation, or by the feedback computation module, which
+     * computes the feedback received from the UE. Hence the UE macNodeId comes
+     * from the sourceId of the lteInfo.
      */
-    else { // UL/DL CQI & UL error computation
+    else { // UL CQI & UL error computation
         ueId = lteInfo->getSourceId();
         eNbId = lteInfo->getDestId();
         ueCoord = coord;
         enbCoord = localPosition;
-    }
-
-    // A DL CQI is a what-if: a transmission of the base station starting now,
-    // arriving where the UE is now -- not where the UE was when it sent the
-    // report
-    if (link.dir == DL && lteInfo->getFrameType() == FEEDBACKPKT) {
-        ueCoord = radioMedium_->getRadio(ueId)->getCoord();
-        enbCoord = radio->getCoord();
     }
 
     if (link.dir == DL) {
@@ -251,18 +248,12 @@ RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo
     // The two radios: the local one is the radio the evaluation is at, the
     // other the frame's source -- the base station of a DL frame or a beacon,
     // the UE of a UL frame or a CQI report. The local end is named by the local
-    // radio, not by the frame's destination: a beacon and a cell-selection probe
-    // carry none.
+    // radio, not by the frame's destination: a beacon carries none.
     MacNodeId localId = radio->getMacNodeId();
-    if (link.dir == DL && lteInfo->getFrameType() != FEEDBACKPKT) { // decoding at the UE
+    if (link.dir == DL) { // decoding at the UE
         link.rxId = localId;
         link.txRadio = radioMedium_->findRadio(eNbId);
         link.rxRadio = radio;
-    }
-    else if (link.dir == DL) { // a DL CQI, at the base station
-        link.txId = localId;
-        link.txRadio = radio;
-        link.rxRadio = radioMedium_->findRadio(ueId);
     }
     else { // UL data or a UL CQI, at the base station
         link.rxId = localId;
@@ -423,9 +414,7 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
 std::vector<double> StochasticChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
     RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
-    // a DL CQI is a what-if, measured now (see linkFor())
-    bool isDlCqi = link.dir == DL && lteInfo->getFrameType() == FEEDBACKPKT;
-    link.startTime = isDlCqi ? simTime() : receptionStartTime(frame);
+    link.startTime = receptionStartTime(frame);
 
     EV << "------------ GET SINR ----------------" << endl;
 
@@ -516,13 +505,6 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
 
         EV << "\t interference[" << interference[i] << "] - den[" << den[i] << "]\n";
     }
-}
-
-std::vector<double> StochasticChannelModel::getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
-{
-    RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
-    link.startTime = receptionStartTime(frame);
-    return getRSRP(link, lteInfo->getTxPower());
 }
 
 std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, double txPower)
@@ -632,6 +614,69 @@ std::vector<double> StochasticChannelModel::getRSRP(const RadioLink& link, doubl
     // ============ END PATH LOSS + SHADOWING + FADING ===============
 
     return rsrpVector;
+}
+
+RadioLink StochasticChannelModel::whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    Direction dir = transmission.direction;
+    if (dir != DL && dir != UL)
+        throw cRuntimeError("StochasticChannelModel::whatIfLink(): a what-if in direction %s is not a cellular link", dirToA(dir).c_str());
+
+    RadioLink link;
+    link.startTime = transmission.startTime;
+    link.dir = dir;
+    link.txIsBaseStation = dir == DL;
+    link.txId = transmission.sourceId;
+    link.rxId = receiver->getMacNodeId();
+    link.txCoord = transmission.startPosition;
+    link.rxCoord = receiver->getCoord();
+    link.txRadio = transmission.transmitter;
+    link.rxRadio = receiver;
+    link.linkKey = LinkKey(link.txId, link.rxId);
+
+    // the UE end as the transmission names it, as linkFor() takes it from a
+    // frame: the destination of a DL transmission (none, for a broadcast),
+    // the source of a UL one
+    link.stateNodeId = dir == DL ? transmission.destId : transmission.sourceId;
+
+    // the cell this link belongs to, for the interference computation
+    link.cellId = transmission.cellId;
+    return link;
+}
+
+UserControlInfo StochasticChannelModel::whatIfControlInfo(const CellularTransmission& transmission)
+{
+    UserControlInfo info;
+    info.setSourceId(transmission.sourceId);
+    info.setDestId(transmission.destId);
+    info.setDirection(transmission.direction);
+    info.setFrameType(transmission.frameType);
+    info.setCarrierFrequency(transmission.carrierFrequency);
+    info.setGrantedBlocks(transmission.grantedBlocks);
+    // a D2D transmission's power is the UE's D2D transmit power (see CellularTransmitter::createTransmission())
+    if (transmission.direction == D2D || transmission.direction == D2D_MULTI)
+        info.setD2dTxPower(transmission.txPower);
+    else
+        info.setTxPower(transmission.txPower);
+    info.setCoord(transmission.startPosition);
+    return info;
+}
+
+std::vector<double> StochasticChannelModel::computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    return getRSRP(whatIfLink(receiver, transmission), transmission.txPower);
+}
+
+std::vector<double> StochasticChannelModel::computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    RadioLink link = whatIfLink(receiver, transmission);
+
+    EV << "------------ GET SINR ----------------" << endl;
+
+    // The desired signal: path loss, shadowing and fading. getSINR() adds
+    // noise and interference on top of it.
+    UserControlInfo info = whatIfControlInfo(transmission);
+    return getSINR(link, &info, getRSRP(link, transmission.txPower));
 }
 
 std::vector<double> StochasticChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)

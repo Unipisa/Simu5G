@@ -126,8 +126,9 @@ struct RadioLink
  *
  * The model is the radio medium's, shared by every radio of its RAT on its
  * carrier, so each evaluation entry point takes the radio the evaluation is at
- * as its first argument: the receiver of a frame, or the base station computing
- * a CQI. A later step makes it the receiver everywhere (the what-if).
+ * as its first argument: the receiver of a frame (the base station, for the
+ * uplink CQI of a UE's report). A what-if, a transmission that is not on the
+ * medium (computeRsrp(), computeSinr()), takes the radio it would arrive at.
  */
 class ChannelModelBase : public cSimpleModule
 {
@@ -219,14 +220,21 @@ class ChannelModelBase : public cSimpleModule
     virtual std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) = 0;
 
     /*
-     * Compute received useful signal for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
+     * What the receiver would receive of a transmission that is not on the
+     * medium (a what-if: a cell's broadcast during cell selection, a CQI): the
+     * transmission starts at its start time from its start position, and
+     * arrives where the receiver is now. The received power per band, in dBm.
      *
-     * @param radio the radio the evaluation is at: the receiver of a frame, or the
-     *        base station computing a CQI
-     * @param frame pointer to the packet
-     * @param lteInfo pointer to the user control info
+     * @param receiver the radio the transmission would arrive at, which uses this model on the transmission's carrier
+     * @param transmission the hypothetical transmission, never added to the medium
      */
-    virtual std::vector<double> getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) = 0;
+    virtual std::vector<double> computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission) = 0;
+
+    /*
+     * As computeRsrp(), the SINR per band, in dB: the interference and the
+     * noise at the receiver added.
+     */
+    virtual std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) = 0;
 
     virtual bool isUplinkInterferenceEnabled() { return false; }
 

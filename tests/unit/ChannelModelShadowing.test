@@ -319,9 +319,7 @@ const inet::Coord bsPos(0, 0, 25);
     // A DL CQI at the base station and the UE's decoding are the same link,
     // evaluated from its two ends, at the same geometry and LOS state.
     UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId, bsEndpoint.coord);
-    UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, MacNodeId(1), ueEndpoint.coord);
-    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), ueId, &ueEndpoint);
-    double cqiView = bs->getAttenuation(bsProbe.linkFor(&bsEndpoint, &cqi));
+    double cqiView = bs->getAttenuation(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)));
 
     // The path loss may draw on its own account (see the background UE below),
     // so "draws nothing" is measured against an identical evaluation at once.

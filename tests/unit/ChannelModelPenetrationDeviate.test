@@ -97,10 +97,9 @@ ChannelModelProbe bsProbe(bs), ueProbe(ue);
 wait(0.010);
 
 UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
 UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
 RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData);
-RadioLink cqiAtBs = bsProbe.linkFor(&bsEndpoint, &dlCqi);
+RadioLink cqiAtBs = bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId));
 RadioLink ulAtBs = bsProbe.linkFor(&bsEndpoint, &ulData);
 
 // the attenuation of each link at the UE's deviate z

@@ -13,7 +13,6 @@
 #include "simu5g/stack/d2d/phy/PhyEnbD2D.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
-#include "simu5g/stack/d2d/phy/channelmodel/ID2dChannelModel.h"
 
 namespace simu5g {
 
@@ -52,11 +51,25 @@ void PhyEnbD2D::appendExtraFeedback(inet::Ptr<LteFeedbackPkt>& header, UserContr
         if (peerId != lteinfo->getSourceId() && d2dBinder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getServingNodeOrSelf(peerId) == nodeId_) {
             // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
 
-            // Retrieve the position of the peer
-            Coord peerCoord = ueInfo->phy->getCoord();
-
-            // Get SINR for this link
-            std::vector<double> snr = check_and_cast<ID2dChannelModel *>(channelModel)->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
+            // Get SINR for this link: what the peer would receive of a D2D
+            // transmission of the source UE, from where it is now, starting
+            // now (a what-if)
+            IRadioEndpoint *sourceRadio = radioMedium_->getRadio(lteinfo->getSourceId());
+            CellularTransmission d2dCqiTransmission;
+            d2dCqiTransmission.transmitter = sourceRadio;
+            d2dCqiTransmission.sourceId = lteinfo->getSourceId();
+            d2dCqiTransmission.destId = peerId;
+            d2dCqiTransmission.cellId = nodeId_;
+            d2dCqiTransmission.direction = D2D;
+            d2dCqiTransmission.frameType = FEEDBACKPKT;
+            d2dCqiTransmission.carrierFrequency = lteinfo->getCarrierFrequency();
+            d2dCqiTransmission.grantedBlocks = lteinfo->getGrantedBlocks();
+            d2dCqiTransmission.txPower = lteinfo->getD2dTxPower();
+            d2dCqiTransmission.startPosition = sourceRadio->getCoord();
+            d2dCqiTransmission.txDirection = sourceRadio->getTxDirection();
+            d2dCqiTransmission.txAngle = sourceRadio->getTxAngle();
+            d2dCqiTransmission.startTime = simTime();
+            std::vector<double> snr = radioMedium_->computeSinr(ueInfo->phy, d2dCqiTransmission);
 
             // Compute the feedback for this link
             LteFeedbackDoubleVector fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,

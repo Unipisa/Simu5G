@@ -71,9 +71,6 @@ void PhyUe::initialize(int stage)
 
 void PhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandidateMasterRssi)
 {
-    // this is a fictitious frame that needs to compute the SINR
-    AirFrame *frame = new AirFrame("cellSelectionFrame");
-    UserControlInfo *cInfo = new UserControlInfo();
     outCandidateMasterId = NODEID_NONE;
 
     // get the list of all eNodeBs in the network
@@ -94,15 +91,22 @@ void PhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandida
         if (cellChannelModel == nullptr)
             continue;
 
-        // build a control info
-        cInfo->setSourceId(cellId);
-        cInfo->setTxPower(cellTxPower);
-        cInfo->setCoord(cellPos);
-        cInfo->setFrameType(BROADCASTPKT);
-        cInfo->setDirection(DL);
+        // the cell's broadcast on the UE's carrier, starting now: a what-if
+        CellularTransmission broadcast;
+        broadcast.transmitter = cellPhy;
+        broadcast.sourceId = cellId;
+        broadcast.cellId = cellId;
+        broadcast.direction = DL;
+        broadcast.frameType = BROADCASTPKT;
+        broadcast.carrierFrequency = ueCarrierFrequency;
+        broadcast.txPower = cellTxPower;
+        broadcast.startPosition = cellPos;
+        broadcast.txDirection = cellPhy->getTxDirection();
+        broadcast.txAngle = cellPhy->getTxAngle();
+        broadcast.startTime = simTime();
         // get RSSI from the BS
         double rssi = 0;
-        std::vector<double> rssiV = primaryChannelModel_->getRSRP(this, frame, cInfo);
+        std::vector<double> rssiV = radioMedium_->computeRsrp(this, broadcast);
         for (auto value : rssiV)
             rssi += value;
         rssi /= rssiV.size(); // compute the mean over all RBs
@@ -112,8 +116,6 @@ void PhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandida
             outCandidateMasterRssi = rssi;
         }
     }
-    delete cInfo;
-    delete frame;
 }
 
 void PhyUe::handleSelfMessage(cMessage *msg)

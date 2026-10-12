@@ -24,18 +24,6 @@ own carrier's, and the second carrier draws a realization of its own.
 using namespace simu5g;
 using namespace simu5g::unittest;
 
-static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const inet::Coord& senderPosition)
-{
-    UserControlInfo info;
-    info.setDirection(dir);
-    info.setFrameType(type);
-    info.setSourceId(source);
-    info.setDestId(dest);
-    info.setCoord(senderPosition);
-    return info;
-}
-
 %file: harness.ned
 import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
@@ -106,9 +94,8 @@ c.check("each carrier has its own LOS, shadowing and Jakes maps",
 wait(0.010);
 
 // A DL CQI of the same link, at the base station, on each carrier.
-UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
 
-modelA->getRSRP(probeA.linkFor(&bsEndpoint, &cqi), 30.0);
+modelA->getRSRP(probeA.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
 c.check("an evaluation on the first carrier fills that carrier's state for the link",
         probeA.losMap().count(link) == 1 && probeA.shadowingMap().count(link) == 1 && probeA.jakesMap().count(link) == 1);
 c.check("...and none of the other carrier's",
@@ -117,10 +104,10 @@ c.check("...and none of the other carrier's",
 // The second carrier draws a realization of its own: its first evaluation
 // draws more than an identical one right after it.
 unsigned long before = modelB->getRNG(0)->getNumbersDrawn();
-modelB->getRSRP(probeB.linkFor(&bsEndpoint, &cqi), 30.0);
+modelB->getRSRP(probeB.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
 long long firstDraws = modelB->getRNG(0)->getNumbersDrawn() - before;
 before = modelB->getRNG(0)->getNumbersDrawn();
-modelB->getRSRP(probeB.linkFor(&bsEndpoint, &cqi), 30.0);
+modelB->getRSRP(probeB.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
 long long repeatDraws = modelB->getRNG(0)->getNumbersDrawn() - before;
 c.check("the same link on the second carrier draws a realization of its own",
         firstDraws > repeatDraws && probeB.losMap().count(link) == 1 && probeB.shadowingMap().count(link) == 1

@@ -61,11 +61,16 @@ std::vector<double> IdealChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *
     return tmp;
 }
 
-std::vector<double> IdealChannelModel::getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
+std::vector<double> IdealChannelModel::computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission)
 {
-    std::vector<double> tmp(numBands_, FAKE_SINR_DB);
     // fake RSRP is needed by the handover function to decide if the terminal should trigger the handover
-    return tmp;
+    return std::vector<double>(numBands_, FAKE_SINR_DB);
+}
+
+std::vector<double> IdealChannelModel::computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    // fake SINR, as getSINR()
+    return std::vector<double>(numBands_, FAKE_SINR_DB);
 }
 
 std::vector<double> IdealChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)

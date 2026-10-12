@@ -49,11 +49,11 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
     RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
 
     /*
-     * The D2D link a frame is evaluated on, to destId at destCoord: from where
-     * the sender was when it sent the frame, at the frame's reception start --
-     * or, for a D2D CQI, from where the reporting UE is now, now (a what-if)
+     * The link of a what-if: for a D2D one (a D2D CQI), the D2D link from the
+     * transmission's source, at its start position and start time, to the
+     * receiver where it is now; a cellular one as the core builds it
      */
-    RadioLink d2dLinkFor(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord);
+    RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
 
     /*
      * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction.
@@ -78,8 +78,11 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
 
     // ---- ID2dChannelModel ----
     std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) override;
-    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId = NODEID_NONE) override;
-    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector) override;
+
+    /// Compute the D2D SINR towards the given peer, per band (path loss, shadowing, fading and D2D interference).
+    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId = NODEID_NONE);
+    /// Compute the D2D SINR from a precomputed RSRP vector (used for one-to-many D2D reception).
+    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector);
 
     virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
     bool recordsUlTransmissionMap() override { return isUplinkInterferenceEnabled() || enableD2DInterference_; }

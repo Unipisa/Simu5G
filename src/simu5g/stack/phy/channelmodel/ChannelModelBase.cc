@@ -37,11 +37,5 @@ std::vector<double> ChannelModelBase::getSINR(IRadioEndpoint *radio, AirFrame *f
     return tmp;
 }
 
-std::vector<double> ChannelModelBase::getRSRP(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
-{
-    static const std::vector<double> tmp { 10000.0 };
-    return tmp;
-}
-
 } //namespace
 

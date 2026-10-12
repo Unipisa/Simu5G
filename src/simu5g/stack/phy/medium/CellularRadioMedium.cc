@@ -36,6 +36,25 @@ ChannelModelBase *CellularRadioMedium::getChannelModel(GHz carrierFrequency, boo
     return nullptr;
 }
 
+ChannelModelBase *CellularRadioMedium::getWhatIfChannelModel(IRadioEndpoint *receiver, const CellularTransmission& transmission) const
+{
+    ChannelModelBase *channelModel = receiver->getChannelModel(transmission.carrierFrequency);
+    if (channelModel == nullptr)
+        throw cRuntimeError("CellularRadioMedium::getWhatIfChannelModel(): the receiver %d of a what-if does not operate on its carrier %g GHz",
+                (int)num(receiver->getMacNodeId()), transmission.carrierFrequency.get());
+    return channelModel;
+}
+
+std::vector<double> CellularRadioMedium::computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    return getWhatIfChannelModel(receiver, transmission)->computeRsrp(receiver, transmission);
+}
+
+std::vector<double> CellularRadioMedium::computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission)
+{
+    return getWhatIfChannelModel(receiver, transmission)->computeSinr(receiver, transmission);
+}
+
 void CellularRadioMedium::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {

@@ -124,8 +124,7 @@ c.check("a later evaluation of the same transmission gives the same value", late
 c.expectValue("...and draws nothing", drawn(ue) - afterFirst, 0);
 
 // the same transmission, evaluated from the base station's end
-UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
-RadioLink atBs = bsProbe.linkFor(&bsEndpoint, &cqi);
+RadioLink atBs = bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId));
 atBs.startTime = link.startTime;
 long long beforeBs = drawn(bs);
 std::vector<double> fromBs = bs->getRSRP(atBs, 30.0);

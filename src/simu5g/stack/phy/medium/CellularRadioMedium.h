@@ -61,6 +61,12 @@ class CellularRadioMedium : public cSimpleModule
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
+    /**
+     * The channel model a what-if is evaluated with: the receiver's on the
+     * transmission's carrier. Throws if the receiver does not operate on it.
+     */
+    virtual ChannelModelBase *getWhatIfChannelModel(IRadioEndpoint *receiver, const CellularTransmission& transmission) const;
+
   public:
     virtual ~CellularRadioMedium();
 
@@ -70,6 +76,17 @@ class CellularRadioMedium : public cSimpleModule
      * nullptr if the network has no such carrier.
      */
     virtual ChannelModelBase *getChannelModel(GHz carrierFrequency, bool isNr) const;
+
+    /**
+     * What the receiver would receive of a transmission that is not on the
+     * medium (a what-if: a cell's broadcast during cell selection, a CQI): the
+     * transmission starts at its start time from its start position, and
+     * arrives where the receiver is now. Evaluated by the channel model of the
+     * receiver's RAT on the transmission's carrier; the received power per
+     * band, in dBm, or the SINR per band, in dB.
+     */
+    virtual std::vector<double> computeRsrp(IRadioEndpoint *receiver, const CellularTransmission& transmission);
+    virtual std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission);
 
     /**
      * Adds a radio under the node id of its PHY. A radio registered with

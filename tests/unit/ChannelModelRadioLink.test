@@ -1,9 +1,10 @@
 %description:
 
 The RadioLink builders of StochasticChannelModel: linkFor(), which turns a
-received packet's control information into the link to evaluate, and
-cellularLink(), its node-id form. A RadioLink carries, as data, which end
-transmits and whose channel state to use -- so these two functions are where
+received packet's control information into the link to evaluate,
+whatIfLink(), the link of a transmission that is not on the medium, and
+cellularLink(), linkFor()'s node-id form. A RadioLink carries, as data, which
+end transmits and whose channel state to use -- so these functions are where
 those choices are made. (The link budget is not part of the link: it is the
 two radios'.)
 
@@ -13,10 +14,11 @@ indexed by, and it is the same key from either end. linkFor() takes the
 frame's source as the other end and the local radio as this one, which also
 names the receiving UE of a beacon, a frame with no destination.
 
-linkFor() is checked for the four cases it distinguishes: downlink data, which
-the UE decodes; uplink data, which the base station decodes; and the feedback
-variants, which the base station evaluates for a CQI. In each: the endpoints,
-the geometry, and the link's mobile end, the UE.
+linkFor() is checked for the cases it distinguishes: downlink data, which the
+UE decodes; uplink data, which the base station decodes; and the uplink CQI,
+which the base station evaluates from a UE's report. whatIfLink() is checked
+for the downlink CQI, the base station's what-if. In each: the endpoints, the
+geometry, and the link's mobile end, the UE.
 
 The property that matters most is stated on its own. The link a downlink CQI
 is computed on, at the base station, and the link the UE decodes downlink data
@@ -127,15 +129,13 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     c.check("...the same link, named from the other end", l.linkKey == LinkKey(enbId, ueId));
 }
 {
-    // Feedback for a downlink CQI, evaluated at the base station: the UE sent
-    // the report, but the link being evaluated is the downlink -- a what-if,
-    // to where the UE is now, not where it sent the report from.
-    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), ueId, &ueEndpoint);
-    UserControlInfo info = controlInfo(DL, FEEDBACKPKT, ueId, enbId, Coord(100, 40, 1.5));
-    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
+    // A downlink CQI, computed at the base station from the UE's report: the
+    // link being evaluated is the downlink -- a what-if, a transmission of the
+    // base station to where the UE is now (whatIfLink()).
+    RadioLink l = atEnb.whatIfLink(&ueEndpoint, dlCqiTransmission(&enbEndpoint, ueId));
     c.check("DL CQI: still the downlink, the base station transmitting to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation);
-    c.check("...from the base station to where the UE is now, not where it sent the report",
+    c.check("...from the base station to where the UE is now",
             l.txCoord == enbPos && l.rxCoord == uePos);
     c.check("...on the same link", l.linkKey == LinkKey(enbId, ueId));
 }
@@ -160,11 +160,9 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 }
 {
     // The two ends see the same link, at the level of the link itself.
-    StubRadioRegistration ueRadio(harnessModule<CellularRadioMedium>(this, "radioMedium"), ueId, &ueEndpoint);
     UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
-    UserControlInfo report = controlInfo(DL, FEEDBACKPKT, ueId, enbId, uePos);
     RadioLink decoderView = atUe.linkFor(&ueEndpoint, &decode);
-    RadioLink cqiView = atEnb.linkFor(&enbEndpoint, &report);
+    RadioLink cqiView = atEnb.whatIfLink(&ueEndpoint, dlCqiTransmission(&enbEndpoint, ueId));
     c.check("the link a DL CQI is computed on is the link the UE decodes on, seen from the other end",
             sameLink(cqiView, decoderView));
 }
