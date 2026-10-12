@@ -99,7 +99,8 @@ class CellularRadioMedium : public cSimpleModule
     /**
      * Adds a transmission, giving it the next id; the medium owns it. The
      * transmissions on the same carrier that ended more than one of its
-     * durations (a slot) before its start are dropped.
+     * durations (a slot) before its start are dropped. Every other radio's
+     * position is read, as the transmission starts.
      */
     virtual void addTransmission(CellularTransmission *transmission);
 

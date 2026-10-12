@@ -124,6 +124,14 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     });
     carrierTransmissions.erase(ended, carrierTransmissions.end());
     carrierTransmissions.push_back(transmission);
+
+    // where each other radio is as the transmission starts, read from its
+    // mobility, in the order the radios were added -- as INET's medium does
+    // when it computes the transmission's arrival at every radio; the value
+    // itself is not needed, the read is: it moves each mobility to now
+    for (const auto& radioModule : radioModules)
+        if (radioModule.radio != transmission->transmitter)
+            radioModule.radio->getCoord();
 }
 
 std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const
