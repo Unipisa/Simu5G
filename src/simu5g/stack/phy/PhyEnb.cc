@@ -83,8 +83,9 @@ void PhyEnb::handleSelfMessage(cMessage *msg)
 
 AirFrame *PhyEnb::createBeaconMessage()
 {
-    // broadcast airframe
+    // broadcast airframe; it carries a packet, as every other frame
     AirFrame *beaconAirFrame = new AirFrame("beaconMessage");
+    beaconAirFrame->encapsulate(new Packet("beacon"));
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(BEACONPKT);
