@@ -61,7 +61,7 @@ void CellularRadioMedium::addRadio(MacNodeId nodeId, IRadioEndpoint *radio, cMod
     if (nodeId != NODEID_NONE && !radios.emplace(nodeId, radio).second)
         throw cRuntimeError("CellularRadioMedium::addRadio(): a radio is already registered for node %d", (int)num(nodeId));
     if (radioModule != nullptr)
-        radioModules[check_and_cast<cModule *>(radio)->getId()] = RadioModule{radio, radioModule->gate("radioIn")->getPathStartGate()};
+        radioModules.push_back(RadioModule{radio, radioModule->gate("radioIn")->getPathStartGate()});
 }
 
 void CellularRadioMedium::removeRadio(IRadioEndpoint *radio)
@@ -75,8 +75,11 @@ void CellularRadioMedium::removeRadio(IRadioEndpoint *radio)
             break;
         }
     }
-    if (auto module = dynamic_cast<cModule *>(radio))
-        found = radioModules.erase(module->getId()) != 0 || found;
+    auto it = std::find_if(radioModules.begin(), radioModules.end(), [radio] (const RadioModule& m) { return m.radio == radio; });
+    if (it != radioModules.end()) {
+        radioModules.erase(it);
+        found = true;
+    }
     if (!found)
         throw cRuntimeError("CellularRadioMedium::removeRadio(): the radio is not on the medium");
 }
@@ -92,7 +95,7 @@ void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, cSimpleModule 
     // NOTE: no Enter_Method(): the copies are sent by the sending radio module
     const inet::Coord& senderPosition = sender->getCoord();
     double maxDistanceSquared = maxInterferenceDistance * maxInterferenceDistance;
-    for (const auto& [moduleId, radioModule] : radioModules) {
+    for (const auto& radioModule : radioModules) {
         if (radioModule.radio == sender)
             continue;
         if (senderPosition.sqrdist(radioModule.radio->getCoord()) < maxDistanceSquared) {
