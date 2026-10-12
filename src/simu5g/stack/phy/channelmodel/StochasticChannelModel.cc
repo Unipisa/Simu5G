@@ -304,7 +304,7 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
     const ChannelState::LosSample& sample = losMap()[link.linkKey];
     bool los = sample.los;
     pathLoss_->setEnvironmentHeight(sample.environmentHeight);
-    double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
+    double attenuation = pathLoss_->computePathLoss(threeDimDistance, twoDimDistance, los);
 
     //    Applying shadowing only if it is enabled by configuration
     //    log-normal shadowing (not available for background UEs)
@@ -967,6 +967,10 @@ void StochasticChannelModel::computeLosProbability(double d3D, double d2D,
 
 double StochasticChannelModel::computePathLoss(double distance, double dbp, bool los)
 {
+    // a path loss outside any link: outdoors, at the environment height a
+    // link takes without a draw -- not the facts of the link evaluated last
+    pathLoss_->setIndoor(false, 0.0, 0.0);
+    pathLoss_->setEnvironmentHeight(1.0);
     return pathLoss_->computePathLoss(distance, dbp, los);
 }
 
@@ -1022,7 +1026,7 @@ double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, co
     if (!enable_extCell_los_)
         los = false;
 
-    double attenuation = computePathLoss(d3D, d2D, los);
+    double attenuation = pathLoss_->computePathLoss(d3D, d2D, los);
 
     return attenuation;
 }
