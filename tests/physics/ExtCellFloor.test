@@ -3,8 +3,9 @@
 The interference floor an external cell imposes, against the closed form.
 
 An ExtCell is not a node: it is a transmit power, a position and a band
-allocation policy. It registers its transmissions with the radio medium as a
-cell that is no node, and the UE's channel model takes them into its downlink
+allocation policy, with a phantom radio -- an antenna and a transmitter with
+no protocol stack behind it -- that registers its transmissions with the
+radio medium. The UE's channel model takes them into its downlink
 interference with every other transmission of the slot. The fingerprint suite
 barely sees it: in the lte/multicell Interference-* family, switching it off
 moves only the statistics hash. This grades the floor it adds.
@@ -20,9 +21,9 @@ no idle TTIs to reach, unlike InterferenceDelta and BackgroundCellFloor:
     N = thermalNoise + noiseFigure
 
 The interferer's link takes the model's own propagation study, with the real
-3D and 2D distances, but not the link's own LOS state or shadowing:
-enableExtCellLos is switched off, so it is NLOS by configuration rather than
-by borrowing the serving link's LOS state.
+3D and 2D distances, and a LOS state of its own, but no shadowing.
+enableExtCellLos is switched off, so the link is NLOS by configuration rather
+than by its own LOS state, which fixedLos would make LOS here.
 
 Both statistics are asserted, the SINR of the CQI computation (measuredSinrDl)
 and that of a data reception (rcvdSinrDl). With extCellInterference off each

@@ -85,18 +85,14 @@ sim-time-limit = 1s
 Checker c;
 CaseRecorder graded(this, 1e-9);
 auto *model = harnessModule<StochasticChannelModel>(this, "model");
-ChannelModelProbe probe(model);
 ScenarioParams p;
 p.scenario = URBAN_MICROCELL;
 p.hNodeB = 25;
 p.hUe = 1.5;
 p.carrierFrequencyGHz = 3.5;
 
-// the receiver's serving link, whose LOS state a phantom transmission borrows
-const LinkKey servingLink(MacNodeId(1), MacNodeId(1025));
-probe.losMap()[servingLink].los = true;
 auto powerAt = [&] (const CellularTransmission& transmission, IRadioEndpoint *receiver) {
-    return (model->*PhantomPowerAccess::powerPtr())(transmission, receiver, receiver->getCoord(), servingLink);
+    return (model->*PhantomPowerAccess::powerPtr())(transmission, receiver, receiver->getCoord());
 };
 
 // a transmission as a phantom radio creates it; the radio's txPower is a decoy, the transmission's counts

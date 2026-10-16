@@ -489,10 +489,10 @@ void StochasticChannelModel::computeInterferencePlusNoise(const RadioLink& link,
     std::vector<double> interference(numBands_, 0); // Linear value (mW)
     bool isCqi = lteInfo->getFrameType() == FEEDBACKPKT;
     if (dir == DL)
-        computeDownlinkInterference(eNbId, ueId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey,
+        computeDownlinkInterference(eNbId, ueId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference,
                 enableDownlinkInterference_ && lteInfo->getFrameType() != BEACONPKT);
     else if (dir == UL) // at the link's receiver, the base station
-        computeUplinkInterference(link.rxRadio, eNbId, ueId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
+        computeUplinkInterference(link.rxRadio, eNbId, ueId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, enableUplinkInterference_);
 
     EV << "StochasticChannelModel::getSINR - distance from my eNb=" << enbCoord.distance(ueCoord) << " - DIR=" << ((dir == DL) ? "DL" : "UL") << endl;
 
@@ -813,9 +813,9 @@ std::vector<double> StochasticChannelModel::getSINR_bgUe(IRadioEndpoint *radio, 
     // the interference on each band: from other cells' transmissions, external cells' and background cells'
     std::vector<double> interference(numBands_, 0); // Linear value (mW)
     if (dir == DL)
-        computeDownlinkInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableDownlinkInterference_);
+        computeDownlinkInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, enableDownlinkInterference_);
     else if (dir == UL)
-        computeUplinkInterference(radio, eNbId, bgUeId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, link.linkKey, enableUplinkInterference_);
+        computeUplinkInterference(radio, eNbId, bgUeId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, enableUplinkInterference_);
 
     //===================== SINR COMPUTATION ========================
     // compute and linearize total noise
@@ -1035,10 +1035,25 @@ double StochasticChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord b)
     return a.distance(b);
 }
 
-double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const Coord& position, const LinkKey& link)
+double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const Coord& position)
 {
     const Coord& c = transmission.startPosition;
     IRadioEndpoint *transmitter = transmission.transmitter;
+
+    // the link from the phantom transmitter to the receiver: its own LOS state
+    RadioLink link;
+    link.startTime = transmission.startTime;
+    link.dir = transmission.direction;
+    link.txIsBaseStation = transmission.direction == DL;
+    link.txId = transmission.sourceId;
+    link.rxId = receiver->getMacNodeId();
+    link.txCoord = c;
+    link.rxCoord = position;
+    link.txRadio = transmitter;
+    link.rxRadio = receiver;
+    link.linkKey = LinkKey(link.txId, link.rxId);
+    link.stateNodeId = transmission.direction == UL ? link.txId : link.rxId;
+    link.cellId = transmission.cellId;
 
     // the UE end: the receiver of a cell's downlink, the transmitter of a UE's uplink
     IRadioEndpoint *ue = transmission.direction == UL ? transmitter : receiver;
@@ -1048,7 +1063,7 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     conditions.penetrationDeviate = ue->getPenetrationLossDeviate();
 
     // compute attenuation according to some path loss model
-    double att = computePhantomPathLoss(position.distance(c), getTwoDimDistance(c, position), link, conditions);
+    double att = computePhantomPathLoss(link, conditions);
 
     //=============== ANGULAR ATTENUATION =================
     double angularAtt = 0;
@@ -1072,11 +1087,21 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     return transmission.txPower - att - angularAtt + transmitter->getAntennaGain() + receiver->getAntennaGain() - receiver->getCableLoss();
 }
 
-double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, const LinkKey& key, PathLossModel::LinkConditions conditions)
+double StochasticChannelModel::computePhantomPathLoss(const RadioLink& link, PathLossModel::LinkConditions conditions)
 {
+    double d3D = link.txCoord.distance(link.rxCoord);
+    double d2D = getTwoDimDistance(link.txCoord, link.rxCoord);
+
+    // the link's own LOS state, decided and redrawn as any link's
+    auto it = losMap().find(link.linkKey);
+    if (it == losMap().end()
+        || link.displacementSince(it->second.positionA, it->second.positionB) > correlationDistance_)
+    {
+        computeLosProbability(d3D, d2D, link);
+    }
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
-    const ChannelState::LosSample& sample = losMap()[key];
+    const ChannelState::LosSample& sample = losMap()[link.linkKey];
     bool los = sample.los;
     conditions.environmentHeight = sample.environmentHeight;
 
@@ -1089,7 +1114,7 @@ double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, co
 }
 
 bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,
-        std::vector<double> *interference, const LinkKey& link, bool cells)
+        std::vector<double> *interference, bool cells)
 {
     EV << "**** Downlink Interference ****" << endl;
 
@@ -1141,8 +1166,12 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             bool external = dynamic_cast<const ExtCellAllocator *>(transmission->phantomCell) != nullptr;
             if (external ? !enableExtCellInterference_ : !enableBackgroundCellInterference_)
                 continue;
-            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radioMedium_->getRadio(ueId), coord, link));
-            for (unsigned int i : sharedBands(*transmission, numBands_, receptionBands)) {
+            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+            auto bands = sharedBands(*transmission, numBands_, receptionBands);
+            if (bands.empty())
+                continue;
+            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radioMedium_->getRadio(ueId), coord));
+            for (unsigned int i : bands) {
                 (*interference)[i] += recvPwr;
 
                 EV << "\t band " << i << " occupied by " << (external ? "external" : "background") << " cell " << id << "/pwr[" << linearToDBm(recvPwr) << "]-int[" << (*interference)[i] << "]" << endl;
@@ -1242,7 +1271,7 @@ std::vector<unsigned int> StochasticChannelModel::sharedBands(const CellularTran
 }
 
 bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, MacNodeId eNbId, MacNodeId senderId, Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference,
-        const LinkKey& link, bool cells)
+        bool cells)
 {
     EV << "**** Uplink Interference for cellId[" << eNbId << "] node[" << senderId << "] ****" << endl;
 
@@ -1287,8 +1316,12 @@ bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, Ma
         if (transmission->phantomCell != nullptr) {
             if (!enableBackgroundCellInterference_)
                 continue;
-            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radio, enbCoord, link));
-            for (unsigned int i : sharedBands(*transmission, numBands_, receptionBands)) {
+            // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
+            auto bands = sharedBands(*transmission, numBands_, receptionBands);
+            if (bands.empty())
+                continue;
+            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radio, enbCoord));
+            for (unsigned int i : bands) {
                 (*interference)[i] += recvPwr;
 
                 EV << "\t band " << i << " occupied by background UE " << transmission->sourceId << "/pwr[" << linearToDBm(recvPwr) << "]-int[" << (*interference)[i] << "]" << endl;

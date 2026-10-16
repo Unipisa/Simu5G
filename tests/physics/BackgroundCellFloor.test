@@ -9,9 +9,9 @@ grades it rather than recording it.
 
 Worth having separately from InterferenceDelta, which covers the same
 arithmetic for a real neighbouring cell, because the background path is not
-the same code: a background cell is a phantom transmitter with no radio, whose
-link takes the model's own propagation study, but not the link's own LOS
-state or shadowing.
+the same code: a background cell is a phantom transmitter, a radio with no
+node's protocol stack behind it, whose link takes the model's own propagation
+study and a LOS state of its own, but no shadowing.
 
 The scenario is one real cell, one background cell and a UE between them,
 with every random ingredient switched off, so both the wanted signal and the
@@ -30,9 +30,8 @@ fully-loaded one. Both are asserted, which makes the check independent of how
 the background load happened to fall.
 
 enableExtCellLos is switched off, so the background link is NLOS by
-configuration rather than by borrowing the serving link's LOS state -- which
-is what computePhantomPathLoss does otherwise, and which would make the
-expected value depend on a draw belonging to a different link.
+configuration rather than by its own LOS state, which fixedLos would make
+LOS here.
 
 The interferer transmits at a different power from the server (37 dBm against 40 dBm), so that an
 interferer evaluated with the serving transmitter's power -- or the other way

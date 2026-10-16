@@ -514,10 +514,8 @@ class StochasticChannelModel : public ChannelModelBase
      * their switches say.
      * @param eNbId id of the UE's cell
      * @param isCqi if we are computing a CQI
-     * @param link the link the interference is computed for, whose LOS state
-     *        the path loss from external and background cells takes
      */
-    virtual bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
+    virtual bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, bool cells);
 
     /*
      * Whether, for a cell with one carrier, the bands of a reception with the
@@ -536,27 +534,29 @@ class StochasticChannelModel : public ChannelModelBase
      * cells' UEs as their switch says.
      * @param radio the radio the evaluation is at, the base station
      */
-    virtual bool computeUplinkInterference(IRadioEndpoint *radio, MacNodeId eNbId, MacNodeId senderId, inet::Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, const LinkKey& link, bool cells);
+    virtual bool computeUplinkInterference(IRadioEndpoint *radio, MacNodeId eNbId, MacNodeId senderId, inet::Coord enbCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, bool cells);
 
     /*
      * The power, in dBm, with which a transmission of an external or a
      * background cell, or of a background cell's UE, arrives at the given
-     * position: the model's path loss in the LOS state of the given link (see
-     * computePhantomPathLoss), the attenuation of the transmitting antenna's
+     * position: the model's path loss in the LOS state of the link from the
+     * transmitter to the receiver (see computePhantomPathLoss), no shadowing,
+     * the attenuation of the transmitting antenna's
      * pattern, both antennas' gains and the receiver's cable loss. The
      * receiver is the radio at the position; the building penetration is the
      * UE end's: the receiver of a downlink transmission, the transmitter (a
      * background UE's phantom radio, outdoors) of an uplink one.
      */
-    double phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const inet::Coord& position, const LinkKey& link);
+    double phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const inet::Coord& position);
 
     /*
-     * The path loss of a phantom transmission, in dB: the model's own path-loss
-     * formulas, in the LOS state of the given link (RadioLink::linkKey) unless
-     * enableExtCellLos is off, at that link's h_E, with the UE end's building
-     * penetration given in 'conditions'
+     * The path loss of a phantom transmission on the given link, in dB: the
+     * model's own path-loss formulas, in the link's own LOS state -- decided
+     * and redrawn as any link's (see getAttenuation()) -- unless
+     * enableExtCellLos is off (then NLOS), at the link's h_E, with the UE
+     * end's building penetration given in 'conditions'; no shadowing
      */
-    virtual double computePhantomPathLoss(double d3D, double d2D, const LinkKey& key, PathLossModel::LinkConditions conditions);
+    virtual double computePhantomPathLoss(const RadioLink& link, PathLossModel::LinkConditions conditions);
 };
 
 } //namespace

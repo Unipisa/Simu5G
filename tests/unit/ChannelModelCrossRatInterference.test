@@ -54,8 +54,7 @@ static std::vector<double> cqiInterference(StochasticChannelModel *model, MacNod
     RbMap everyBand;
     for (Band b = 0; b < model->getNumBands(); b++)
         everyBand[MACRO][b] = 1;
-    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), true, model->getCarrierFrequency(), everyBand, &interference,
-            LinkKey(servingId, ue->getMacNodeId()), true);
+    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), true, model->getCarrierFrequency(), everyBand, &interference, true);
     return interference;
 }
 
