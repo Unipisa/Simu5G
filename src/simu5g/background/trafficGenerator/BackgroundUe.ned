@@ -14,6 +14,7 @@
 package simu5g.background.trafficGenerator;
 
 import inet.mobility.contract.IMobility;
+import simu5g.stack.phy.radio.CellularPhantomRadio;
 import simu5g.background.trafficGenerator.generators.ITrafficGenerator;
 
 //
@@ -28,7 +29,9 @@ import simu5g.background.trafficGenerator.generators.ITrafficGenerator;
 // simulation floor plan. This allows for realistic channel status information to be
 // computed for the background UE and used by the ~BackgroundScheduler.
 // Since this module does not send or receive actual traffic, application-level
-// statistics are not produced.
+// statistics are not produced. Its phantom radio (~CellularPhantomRadio) stands
+// for its transmitter and antenna on the radio medium; the UE's transmit power
+// is the generator's.
 //
 module BackgroundUe
 {
@@ -37,6 +40,9 @@ module BackgroundUe
         bool computeAvgInterference;
         bool enablePeriodicCqiUpdate;
         bool useProbabilisticCqi;
+        bool isNr; // Whether the UE is a NR one
+        radio.isNr = this.isNr;
+        radio.txPower = generator.txPower;
         *.computeAvgInterference = this.computeAvgInterference;
         *.enablePeriodicCqiUpdate = this.enablePeriodicCqiUpdate;
         *.useProbabilisticCqi = this.useProbabilisticCqi;
@@ -46,5 +52,10 @@ module BackgroundUe
         }
         generator: <default("TrafficGeneratorBase")> like ITrafficGenerator {
             @display("p=142,61;is=s");
+        }
+        radio: CellularPhantomRadio {
+            @display("p=57,141;is=s");
+            antenna.gain = default(0dBi);
+            noiseFigure = default(7dB);
         }
 }

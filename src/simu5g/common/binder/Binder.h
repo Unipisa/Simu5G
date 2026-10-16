@@ -21,7 +21,7 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/blerCurves/PhyPisaData.h"
-#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/nodes/ExtCellAllocator.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
@@ -523,7 +523,7 @@ class Binder : public cSimpleModule
         return nodeInfoMap_.size();
     }
 
-    virtual int addExtCell(ExtCell *extCell, GHz carrierFrequency)
+    virtual int addExtCell(ExtCellAllocator *extCell, GHz carrierFrequency)
     {
         if (extCellList_.find(carrierFrequency) == extCellList_.end())
             extCellList_[carrierFrequency] = ExtCellList();

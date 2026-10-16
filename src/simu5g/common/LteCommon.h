@@ -63,7 +63,7 @@ class PhyBase;
 class StochasticChannelModel;
 class LteControlInfo;
 class FlowControlInfo;
-class ExtCell;
+class ExtCellAllocator;
 class IBackgroundTrafficManager;
 class BackgroundScheduler;
 class TrafficGeneratorBase;
@@ -446,7 +446,7 @@ inline std::ostream& operator<<(std::ostream& os, const UeAllocationInfo& e)
     return os;
 }
 
-typedef std::vector<ExtCell *> ExtCellList;
+typedef std::vector<ExtCellAllocator *> ExtCellList;
 typedef std::vector<BackgroundScheduler *> BackgroundSchedulerList;
 
 /*****************

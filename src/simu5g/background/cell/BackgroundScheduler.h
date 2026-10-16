@@ -19,10 +19,11 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/background/cell/BackgroundCellChannelModel.h"
-#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/nodes/ExtCellAllocator.h"
 #include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 #include "simu5g/stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 namespace simu5g {
 
@@ -44,6 +45,9 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     MacNodeId nodeId_ = NODEID_NONE;
 
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
+
+    // the base station's phantom radio
+    inet::ModuleRefByPar<CellularPhantomRadio> radio_;
 
     // tx power [dBm]
     double txPower_;

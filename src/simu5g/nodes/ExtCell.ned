@@ -12,6 +12,9 @@
 
 package simu5g.nodes;
 
+import inet.mobility.static.StationaryMobility;
+import simu5g.stack.phy.radio.CellularPhantomRadio;
+
 //
 // The ExtCell module represents a fictitious cell that is used to model
 // interference from neighboring cells, without actually instantiating them
@@ -21,7 +24,11 @@ package simu5g.nodes;
 // Can be replaced by ~BackgroundCell modules, which provide more
 // flexibility.
 //
-simple ExtCell
+// It consists of a stationary mobility at the configured position, a phantom
+// radio (~CellularPhantomRadio) with its antenna, and the allocator
+// (~ExtCellAllocator), which decides the resource occupation.
+//
+module ExtCell
 {
     parameters:
         @display("i=device/antennatower;bgb=300,300");
@@ -53,4 +60,38 @@ simple ExtCell
         string bandAllocationType @enum(FULL_ALLOC,RANDOM_ALLOC,CONTIGUOUS_ALLOC) = default("FULL_ALLOC");
         double bandUtilization = default(0.5);
         int startingOffset = default(0);
+
+    submodules:
+        mobility: StationaryMobility {
+            initFromDisplayString = false;
+            initialX = parent.positionX;
+            initialY = parent.positionY;
+            initialZ = parent.positionZ;
+            @display("p=60,60;is=s");
+        }
+        radio: CellularPhantomRadio {
+            radioMediumModule = parent.radioMediumModule;
+            txPower = parent.txPower;
+            antenna.txDirection = parent.txDirection;
+            antenna.txAngle = parent.txAngle;
+            antenna.gain = default(18dBi);
+            noiseFigure = default(5dB);
+            @display("p=60,150");
+        }
+        allocator: ExtCellAllocator {
+            binderModule = parent.binderModule;
+            radioMediumModule = parent.radioMediumModule;
+            positionX = parent.positionX;
+            positionY = parent.positionY;
+            positionZ = parent.positionZ;
+            txPower = parent.txPower;
+            txDirection = parent.txDirection;
+            txAngle = parent.txAngle;
+            carrierFrequency = parent.carrierFrequency;
+            numBands = parent.numBands;
+            bandAllocationType = parent.bandAllocationType;
+            bandUtilization = parent.bandUtilization;
+            startingOffset = parent.startingOffset;
+            @display("p=180,60");
+        }
 }

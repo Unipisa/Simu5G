@@ -10,25 +10,21 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/nodes/ExtCellAllocator.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
-Define_Module(ExtCell);
+Define_Module(ExtCellAllocator);
 
-void ExtCell::initialize(int stage)
+void ExtCellAllocator::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         // get coordinates
         position_.x = par("positionX");
         position_.y = par("positionY");
         position_.z = par("positionZ");
-        if (getEnvir()->isGUI()) {
-            getDisplayString().setTagArg("p", 0, (long)position_.x);
-            getDisplayString().setTagArg("p", 1, (long)position_.y);
-        }
 
         txPower_ = par("txPower");
 
@@ -49,6 +45,8 @@ void ExtCell::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         radioMedium_.reference(this, "radioMediumModule", true);
         nodeId_ = binder_->allocatePhantomBaseStationId();
+        radio_.reference(this, "radioModule", true);
+        radio_->addToMedium(nodeId_);
 
         // initialize band status structures
         bandStatus_.resize(numBands_, 0);
@@ -107,7 +105,7 @@ void ExtCell::initialize(int stage)
     }
 }
 
-void ExtCell::handleMessage(cMessage *msg)
+void ExtCellAllocator::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         updateBandStatus();
@@ -118,7 +116,7 @@ void ExtCell::handleMessage(cMessage *msg)
     }
 }
 
-void ExtCell::updateBandStatus()
+void ExtCellAllocator::updateBandStatus()
 {
     EV << "----- EXT CELL ALLOCATION UPDATE -----" << std::endl;
 
@@ -149,7 +147,7 @@ void ExtCell::updateBandStatus()
     EV << "----- END EXT CELL ALLOCATION UPDATE -----" << std::endl;
 }
 
-void ExtCell::registerTransmission(simtime_t duration)
+void ExtCellAllocator::registerTransmission(simtime_t duration)
 {
     RbMap blocks;
     for (unsigned int band = 0; band < numBands_; ++band)
@@ -176,7 +174,7 @@ void ExtCell::registerTransmission(simtime_t duration)
     radioMedium_->addTransmission(transmission);
 }
 
-void ExtCell::resetBandStatus()
+void ExtCellAllocator::resetBandStatus()
 {
     prevBandStatus_ = bandStatus_;
 
@@ -184,7 +182,7 @@ void ExtCell::resetBandStatus()
     bandStatus_.resize(numBands_, 0);
 }
 
-void ExtCell::setBandUtilization(double bandUtilization)
+void ExtCellAllocator::setBandUtilization(double bandUtilization)
 {
     if (bandUtilization < 0)
         bandUtilization = 0;

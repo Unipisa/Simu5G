@@ -34,6 +34,7 @@ module NrNicEnb extends LteNicEnb
         sdap.nodeRole = default("gNB");
         ip2nic.isNr = default(true);
         phy.isNr = default(true);
+        bgTrafficGenerator[*].isNr = default(true);
         rrc.bearerManagement.pdcpEntityModuleType = default("simu5g.stack.pdcp.NrPdcpEntity");
         mac.typename = default("NrMacGnb");
         packetFlowObserver.typename = default("NrPacketFlowObserverGnb");

@@ -10,14 +10,15 @@
 // and cannot be removed from it.
 //
 
-#ifndef __EXTCELL_H_
-#define __EXTCELL_H_
+#ifndef __EXTCELLALLOCATOR_H_
+#define __EXTCELLALLOCATOR_H_
 
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 namespace simu5g {
 
@@ -34,7 +35,10 @@ enum BandAllocationType {
     FULL_ALLOC, RANDOM_ALLOC, CONTIGUOUS_ALLOC
 };
 
-class ExtCell : public cSimpleModule
+/**
+ * See the NED documentation of ExtCellAllocator.
+ */
+class ExtCellAllocator : public cSimpleModule
 {
     // Playground coordinates
     inet::Coord position_;
@@ -45,6 +49,9 @@ class ExtCell : public cSimpleModule
     MacNodeId nodeId_ = NODEID_NONE; // the node id its transmissions on the radio medium name it by
 
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
+
+    // the cell's phantom radio
+    inet::ModuleRefByPar<CellularPhantomRadio> radio_;
 
     // TX power
     double txPower_;

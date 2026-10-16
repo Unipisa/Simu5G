@@ -25,6 +25,7 @@ simple BackgroundScheduler
 
         string binderModule = default("binder");
         string radioMediumModule = default("radioMedium");
+        string radioModule = default("^.radio"); // The base station's phantom radio
         string trafficManagerModule = default("^.bgTrafficGenerator.manager");
         string channelModelModule = default("^.bgChannelModel");
 

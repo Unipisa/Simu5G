@@ -18,7 +18,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/mac/amc/UserTxParams.h"
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/nodes/ExtCellAllocator.h"
 #include "simu5g/stack/phy/PhyUe.h"
 #include "simu5g/stack/d2d/mac/ID2dMacEnb.h"
 #include "simu5g/stack/phy/channelmodel/Tr36814PathLossModel.h"
@@ -1137,7 +1137,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
 
         // an external or a background cell, whose interference takes the model's path loss
         if (transmission->phantomCell != nullptr) {
-            bool external = dynamic_cast<const ExtCell *>(transmission->phantomCell) != nullptr;
+            bool external = dynamic_cast<const ExtCellAllocator *>(transmission->phantomCell) != nullptr;
             if (external ? !enableExtCellInterference_ : !enableBackgroundCellInterference_)
                 continue;
             double recvPwr = dBmToLinear(phantomPowerAt(*transmission, coord, link, radioMedium_->findRadio(ueId)));

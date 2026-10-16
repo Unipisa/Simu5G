@@ -26,6 +26,8 @@ module BackgroundTrafficGenerator
         bool enablePeriodicCqiUpdate = default(true);
         bool useProbabilisticCqi = default(false);
         bool computeAvgInterference = default(false);
+        bool isNr = default(false); // Whether the background UEs are NR ones
+        bgUE[*].isNr = this.isNr;
         *.computeAvgInterference = this.computeAvgInterference;
         *.enablePeriodicCqiUpdate = this.enablePeriodicCqiUpdate;
         *.useProbabilisticCqi = this.useProbabilisticCqi;

@@ -16,6 +16,7 @@ import inet.mobility.static.StationaryMobility;
 import simu5g.background.cell.BackgroundCellChannelModel;
 import simu5g.background.cell.BackgroundScheduler;
 import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
+import simu5g.stack.phy.radio.CellularPhantomRadio;
 
 
 //
@@ -29,7 +30,8 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 // To achieve this, it includes a ~BackgroundTrafficGenerator to customize the level of background
 // traffic to be simulated, a ~BackgroundCellChannelModel to configure channel parameters, and a
 // ~BackgroundScheduler that manages the allocation of time-frequency resources based on the traffic
-// generator.
+// generator, and a phantom radio (~CellularPhantomRadio) for the base station,
+// whose antenna and power are the scheduler's.
 // Note that this module can generate interference on only one Component Carrier, as configured
 // in the ~BackgroundScheduler module. To produce interference across multiple carriers, it is
 // possible to use multiple instances of this module, each configured with the desired carrier frequency.
@@ -41,7 +43,13 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 module BackgroundCell
 {
     parameters:
-        @display("i=device/antennatower;bgb=430,163");
+        @display("i=device/antennatower;bgb=430,230");
+        // the radio's RAT, power and antenna, and the background UEs' RAT, are the scheduler's
+        radio.isNr = bgScheduler.isNr;
+        radio.txPower = bgScheduler.txPower;
+        radio.antenna.txDirection = bgScheduler.txDirection;
+        radio.antenna.txAngle = bgScheduler.txAngle;
+        bgTrafficGenerator.isNr = bgScheduler.isNr;
 
     submodules:
         // mobility module for the background base station
@@ -64,6 +72,13 @@ module BackgroundCell
         bgTrafficGenerator: BackgroundTrafficGenerator {
             @display("p=347,38,row");
             manager.typename = default("BackgroundCellTrafficManager");
+        }
+
+        // the base station's radio
+        radio: CellularPhantomRadio {
+            @display("p=100,172;is=s");
+            antenna.gain = default(18dBi);
+            noiseFigure = default(5dB);
         }
 }
 

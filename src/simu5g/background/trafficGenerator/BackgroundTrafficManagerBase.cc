@@ -17,6 +17,7 @@
 #include "simu5g/background/trafficGenerator/ActiveUeNotification_m.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 namespace simu5g {
 
@@ -58,9 +59,12 @@ void BackgroundTrafficManagerBase::initialize(int stage)
         firstBgUeId_ = binder_->allocateBackgroundUeIds(numBgUEs_);
         radioMedium_.reference(this, "radioMediumModule", true);
 
-        // create vector of BackgroundUEs
-        for (int i = 0; i < numBgUEs_; i++)
-            bgUe_.push_back(check_and_cast<TrafficGeneratorBase *>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
+        // create vector of BackgroundUEs, and put their radios on the medium under their ids
+        for (int i = 0; i < numBgUEs_; i++) {
+            cModule *bgUe = getParentModule()->getSubmodule("bgUE", i);
+            bgUe_.push_back(check_and_cast<TrafficGeneratorBase *>(bgUe->getSubmodule("generator")));
+            check_and_cast<CellularPhantomRadio *>(bgUe->getSubmodule("radio"))->addToMedium(getBgUeId(i));
+        }
 
         phyPisaData_ = &(binder_->phyPisaData);
 
