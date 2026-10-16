@@ -542,11 +542,13 @@ class StochasticChannelModel : public ChannelModelBase
      * The power, in dBm, with which a transmission of an external or a
      * background cell, or of a background cell's UE, arrives at the given
      * position: the model's path loss in the LOS state of the given link (see
-     * computePhantomPathLoss), the antenna's attenuation, the model's own gains
-     * and cable loss. 'ue' is the receiving UE of a downlink transmission, whose
-     * building penetration applies; nullptr for an uplink one.
+     * computePhantomPathLoss), the attenuation of the transmitting antenna's
+     * pattern, both antennas' gains and the receiver's cable loss. The
+     * receiver is the radio at the position; the building penetration is the
+     * UE end's: the receiver of a downlink transmission, the transmitter (a
+     * background UE's phantom radio, outdoors) of an uplink one.
      */
-    double phantomPowerAt(const CellularTransmission& transmission, const inet::Coord& position, const LinkKey& link, IRadioEndpoint *ue);
+    double phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const inet::Coord& position, const LinkKey& link);
 
     /*
      * The path loss of a phantom transmission, in dB: the model's own path-loss

@@ -1035,15 +1035,17 @@ double StochasticChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord b)
     return a.distance(b);
 }
 
-double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transmission, const Coord& position, const LinkKey& link, IRadioEndpoint *ue)
+double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver, const Coord& position, const LinkKey& link)
 {
     const Coord& c = transmission.startPosition;
+    IRadioEndpoint *transmitter = transmission.transmitter;
 
-    // the UE end: the receiving UE of a cell's downlink; a background UE is outdoors
+    // the UE end: the receiver of a cell's downlink, the transmitter of a UE's uplink
+    IRadioEndpoint *ue = transmission.direction == UL ? transmitter : receiver;
     PathLossModel::LinkConditions conditions;
-    conditions.indoor = ue != nullptr && ue->isInsideBuilding();
-    conditions.indoorDistance = ue != nullptr ? ue->getInsideDistance() : 0.0;
-    conditions.penetrationDeviate = ue != nullptr ? ue->getPenetrationLossDeviate() : 0.0;
+    conditions.indoor = ue->isInsideBuilding();
+    conditions.indoorDistance = ue->getInsideDistance();
+    conditions.penetrationDeviate = ue->getPenetrationLossDeviate();
 
     // compute attenuation according to some path loss model
     double att = computePhantomPathLoss(position.distance(c), getTwoDimDistance(c, position), link, conditions);
@@ -1067,8 +1069,7 @@ double StochasticChannelModel::phantomPowerAt(const CellularTransmission& transm
     }
     //=============== END ANGULAR ATTENUATION =================
 
-    // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
-    return transmission.txPower - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+    return transmission.txPower - att - angularAtt + transmitter->getAntennaGain() + receiver->getAntennaGain() - receiver->getCableLoss();
 }
 
 double StochasticChannelModel::computePhantomPathLoss(double d3D, double d2D, const LinkKey& key, PathLossModel::LinkConditions conditions)
@@ -1140,7 +1141,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
             bool external = dynamic_cast<const ExtCellAllocator *>(transmission->phantomCell) != nullptr;
             if (external ? !enableExtCellInterference_ : !enableBackgroundCellInterference_)
                 continue;
-            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, coord, link, radioMedium_->findRadio(ueId)));
+            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radioMedium_->getRadio(ueId), coord, link));
             for (unsigned int i : sharedBands(*transmission, numBands_, receptionBands)) {
                 (*interference)[i] += recvPwr;
 
@@ -1286,7 +1287,7 @@ bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, Ma
         if (transmission->phantomCell != nullptr) {
             if (!enableBackgroundCellInterference_)
                 continue;
-            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, enbCoord, link, nullptr));
+            double recvPwr = dBmToLinear(phantomPowerAt(*transmission, radio, enbCoord, link));
             for (unsigned int i : sharedBands(*transmission, numBands_, receptionBands)) {
                 (*interference)[i] += recvPwr;
 
