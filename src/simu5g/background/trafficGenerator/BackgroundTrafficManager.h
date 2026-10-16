@@ -59,6 +59,9 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 
     // returns the bytes per block of the given UE in the given direction
     unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) override;
+
+    // registers with the radio medium the transmission a background UE's allocation stands for
+    void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) override;
 };
 
 } //namespace

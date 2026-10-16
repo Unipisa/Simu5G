@@ -286,35 +286,15 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
 void BackgroundScheduler::registerTransmissions()
 {
-    // the cell is no node, and no radio sends its transmissions or its UEs'
-    auto newTransmission = [&] (MacNodeId sourceId, MacNodeId destId, Direction dir, const RbMap& blocks) {
-        auto transmission = new CellularTransmission();
-        transmission->phantomCell = this;
-        transmission->sourceId = sourceId;
-        transmission->destId = destId;
-        transmission->cellId = nodeId_;
-        transmission->direction = dir;
-        transmission->frameType = DATAPKT;
-        transmission->carrierFrequency = carrierFrequency_;
-        transmission->grantedBlocks = blocks;
-        transmission->startTime = NOW;
-        transmission->duration = ttiPeriod_;
-        return transmission;
-    };
+    // the cell is no node: the phantom radios of its base station and its UEs send them
 
     // the base station's: every band allocated in DL
     RbMap dlBlocks;
     for (unsigned int b = 0; b < numBands_; b++)
         if (bandStatus_[DL][b] != 0)
             dlBlocks[MACRO][b] = 1;
-    if (!dlBlocks.empty()) {
-        auto transmission = newTransmission(nodeId_, NODEID_NONE, DL, dlBlocks);
-        transmission->txPower = txPower_;
-        transmission->startPosition = pos_;
-        transmission->txDirection = txDirection_;
-        transmission->txAngle = txAngle_;
-        radioMedium_->addPhantomTransmission(transmission);
-    }
+    if (!dlBlocks.empty())
+        radio_->transmit(NODEID_NONE, nodeId_, DL, carrierFrequency_, dlBlocks, ttiPeriod_, this);
 
     // each UE's: the bands allocated to it in UL, in the order of their first band
     std::vector<MacNodeId> ues;
@@ -327,14 +307,8 @@ void BackgroundScheduler::registerTransmissions()
             ues.push_back(bgUeId);
         ulBlocks[bgUeId][MACRO][b] = 1;
     }
-    for (MacNodeId bgUeId : ues) {
-        TrafficGeneratorBase *bgUe = bgTrafficManager_->getTrafficGenerator(bgUeId);
-        auto transmission = newTransmission(bgUeId, nodeId_, UL, ulBlocks[bgUeId]);
-        transmission->backgroundUe = bgUe;
-        transmission->txPower = bgUe->getTxPwr();
-        transmission->startPosition = bgUe->getCoord();
-        radioMedium_->addPhantomTransmission(transmission);
-    }
+    for (MacNodeId bgUeId : ues)
+        bgTrafficManager_->getBgUeRadio(bgUeId)->transmit(nodeId_, nodeId_, UL, carrierFrequency_, ulBlocks[bgUeId], ttiPeriod_, this);
 }
 
 void BackgroundScheduler::resetAllocation(Direction dir)

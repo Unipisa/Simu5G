@@ -12,6 +12,7 @@
 #include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 #include "simu5g/stack/phy/radio/CellularAntenna.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
 
 namespace simu5g {
 
@@ -47,6 +48,16 @@ void CellularPhantomRadio::addToMedium(MacNodeId nodeId)
     // not a radio frames are sent to: no radio module
     radioMedium_->addRadio(nodeId, this);
     nodeId_ = nodeId;
+}
+
+void CellularPhantomRadio::transmit(MacNodeId destId, MacCellId cellId, Direction direction, GHz carrierFrequency, const RbMap& blocks, simtime_t duration,
+        const cModule *phantomCell)
+{
+    Enter_Method("transmit");
+    if (nodeId_ == NODEID_NONE)
+        throw cRuntimeError("CellularPhantomRadio::transmit(): the radio is not on the medium");
+    auto transmitter = check_and_cast<CellularTransmitter *>(getSubmodule("transmitter"));
+    radioMedium_->addPhantomTransmission(transmitter->createPhantomTransmission(this, destId, cellId, direction, carrierFrequency, blocks, duration, phantomCell));
 }
 
 const inet::Coord& CellularPhantomRadio::getCoord() const

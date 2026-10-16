@@ -57,6 +57,14 @@ class CellularPhantomRadio : public cModule, public IRadioEndpoint
      */
     virtual void addToMedium(MacNodeId nodeId);
 
+    /**
+     * Puts on the medium the transmission an allocation of the radio's owner
+     * stands for (see CellularTransmitter::createPhantomTransmission()):
+     * created by the radio's transmitter, added as a phantom transmission.
+     */
+    virtual void transmit(MacNodeId destId, MacCellId cellId, Direction direction, GHz carrierFrequency, const RbMap& blocks, simtime_t duration,
+            const cModule *phantomCell);
+
     // IRadioEndpoint
     virtual MacNodeId getMacNodeId() override { return nodeId_; }
     virtual const inet::Coord& getCoord() const override;

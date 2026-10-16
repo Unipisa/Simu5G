@@ -12,6 +12,11 @@
 
 #include "simu5g/background/trafficGenerator/BackgroundTrafficManager.h"
 
+#include <algorithm>
+
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
+
 namespace simu5g {
 
 Define_Module(BackgroundTrafficManager);
@@ -79,6 +84,28 @@ unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bg
 
     // Get bytes per block based on CQI
     return mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
+}
+
+void BackgroundTrafficManager::registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap)
+{
+    Enter_Method("registerTransmission");
+    if (dir != DL && dir != UL)
+        throw cRuntimeError("BackgroundTrafficManager::registerTransmission(): unrecognized direction %d", (int)dir);
+    // an allocation that occupies no band stands for no transmission
+    ASSERT(std::any_of(allocatedRbMap.begin(), allocatedRbMap.end(), [] (const auto& antennaBlocks) {
+        return std::any_of(antennaBlocks.second.begin(), antennaBlocks.second.end(), [] (const auto& bandBlocks) { return bandBlocks.second != 0; });
+    }));
+
+    // one slot of the carrier, as the duration of a frame a radio sends on it
+    double slotDuration = binder_->getSlotDurationFromNumerologyIndex(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
+    if (dir == DL) {
+        // the base station's radio sends it to the UE
+        ASSERT(phy_->getMacNodeId() == bsNodeId_);
+        auto transmission = phy_->getTransmitter()->createPhantomTransmission(phy_.get(), bgUeId, bsNodeId_, DL, carrierFrequency, allocatedRbMap, slotDuration, nullptr);
+        radioMedium_->addPhantomTransmission(transmission);
+    }
+    else
+        getBgUeRadio(bgUeId)->transmit(bsNodeId_, bsNodeId_, UL, carrierFrequency, allocatedRbMap, slotDuration, nullptr);
 }
 
 double BackgroundTrafficManager::getTtiPeriod()

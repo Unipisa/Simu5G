@@ -74,6 +74,11 @@ unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeI
     return bgAmc_->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
 }
 
+void BackgroundCellTrafficManager::registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap)
+{
+    throw cRuntimeError("BackgroundCellTrafficManager::registerTransmission(): the transmissions of a background cell's UEs are sent by its scheduler");
+}
+
 double BackgroundCellTrafficManager::getTtiPeriod()
 {
     return bgScheduler_->getTtiPeriod();

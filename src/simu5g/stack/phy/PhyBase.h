@@ -34,6 +34,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class ChannelModelBase;
+class CellularTransmitter;
 
 /**
  * Base class of the physical layer of the LTE and NR NICs.
@@ -189,6 +190,9 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     double getNoiseFigure() override;
     double getCableLoss() override;
     CellularReceiver *getReceiver() override;
+
+    /** The transmitter of the PHY's radio. */
+    virtual CellularTransmitter *getTransmitter();
 
     /**
      * Delivers a decoded packet to the upper (stack) layer: records the

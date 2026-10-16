@@ -50,6 +50,9 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
 
     // returns the bytes per block of the given UE for the given direction
     unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) override;
+
+    // throws: the scheduler of a background cell sends its transmissions itself
+    void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) override;
 };
 
 } //namespace

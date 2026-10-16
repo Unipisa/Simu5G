@@ -19,6 +19,7 @@
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 #include "simu5g/stack/phy/PhyBase.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
 
 namespace simu5g {
@@ -212,9 +213,10 @@ bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, sim
             if (i >= view[band].size())
                 return false;
             auto t = view[band][i++];
-            // a PHY's entry is its radio's frame, a background UE's entry its registered allocation
-            if (info.nodeId != t->sourceId || info.dir != t->direction
-                    || static_cast<IRadioEndpoint *>(info.phy) != t->transmitter || info.trafficGen != t->backgroundUe)
+            // a PHY's entry is its radio's frame, a background UE's entry the allocation its phantom radio sent
+            IRadioEndpoint *entryRadio = info.phy != nullptr ? static_cast<IRadioEndpoint *>(info.phy)
+                    : check_and_cast<CellularPhantomRadio *>(info.trafficGen->getParentModule()->getSubmodule("radio"));
+            if (info.nodeId != t->sourceId || info.dir != t->direction || entryRadio != t->transmitter)
                 return false;
             // the cell and the power the interference computation takes for the entry
             double txPower = info.phy != nullptr ? info.phy->getTxPwr(info.dir) : info.trafficGen->getTxPwr();

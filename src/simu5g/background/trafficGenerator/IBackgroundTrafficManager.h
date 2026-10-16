@@ -24,6 +24,8 @@
 
 namespace simu5g {
 
+class CellularPhantomRadio;
+
 //
 // IBackgroundTrafficManager
 //
@@ -61,6 +63,9 @@ class IBackgroundTrafficManager
     // Returns the index of the background UE with the given node id; throws if it is not one of this manager's
     virtual int getBgUeIndex(MacNodeId bgUeId) = 0;
 
+    // Returns the phantom radio of the given background UE
+    virtual CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) = 0;
+
     // Returns the begin (end) iterator of the vector of UEs
     virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() = 0;
     virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd() = 0;
@@ -86,9 +91,11 @@ class IBackgroundTrafficManager
     virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) = 0;
 
     // Registers with the radio medium the transmission a background UE's
-    // allocation stands for: in DL from its base station to it, in UL from it;
-    // it lasts one slot of the carrier. Background UEs have no radio, so this
-    // is the medium's only record of the bands they occupy.
+    // allocation stands for: in DL its base station's radio sends it to the
+    // UE, in UL the UE's phantom radio sends it; it lasts one slot of the
+    // carrier. It is the medium's only record of the bands background UEs
+    // occupy. Only for the background UEs of a real base station: a
+    // background cell's scheduler sends its own.
     virtual void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) = 0;
 };
 

@@ -15,21 +15,15 @@ package simu5g.nodes;
 //
 // The resource occupation of an ~ExtCell: which bands it allocates in each
 // TTI, according to its allocation type, and the transmission on the radio
-// medium that stands for it. The enclosing ~ExtCell sets every parameter.
+// medium that stands for it, which the cell's radio sends. The enclosing
+// ~ExtCell sets every parameter.
 //
 simple ExtCellAllocator
 {
     parameters:
         @display("i=block/control");
         string binderModule;
-        string radioMediumModule;
-        string radioModule = default("^.radio"); // The cell's phantom radio
-        double positionX @unit("m");
-        double positionY @unit("m");
-        double positionZ @unit("m");
-        double txPower @unit(dBm);
-        string txDirection @enum(ANISOTROPIC,OMNI);
-        double txAngle @unit(deg);
+        string radioModule = default("^.radio"); // The cell's phantom radio, which sends its transmission
         double carrierFrequency @unit(GHz);
         int numBands;
         string bandAllocationType @enum(FULL_ALLOC,RANDOM_ALLOC,CONTIGUOUS_ALLOC);

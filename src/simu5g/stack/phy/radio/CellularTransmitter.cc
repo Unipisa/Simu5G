@@ -42,4 +42,26 @@ CellularTransmission *CellularTransmitter::createTransmission(const RadioTransmi
     return transmission;
 }
 
+CellularTransmission *CellularTransmitter::createPhantomTransmission(IRadioEndpoint *sender, MacNodeId destId, MacCellId cellId, Direction direction,
+        GHz carrierFrequency, const RbMap& blocks, simtime_t duration, const cModule *phantomCell) const
+{
+    auto transmission = new CellularTransmission();
+    transmission->transmitter = sender;
+    transmission->phantomCell = phantomCell;
+    transmission->sourceId = sender->getMacNodeId();
+    transmission->destId = destId;
+    transmission->cellId = cellId;
+    transmission->direction = direction;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = carrierFrequency;
+    transmission->grantedBlocks = blocks;
+    transmission->txPower = sender->getTxPwr(direction);
+    transmission->startPosition = sender->getCoord();
+    transmission->txDirection = sender->getTxDirection();
+    transmission->txAngle = sender->getTxAngle();
+    transmission->startTime = simTime();
+    transmission->duration = duration;
+    return transmission;
+}
+
 } // namespace simu5g

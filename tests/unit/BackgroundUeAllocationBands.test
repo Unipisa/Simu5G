@@ -66,6 +66,7 @@ class RecordingBgManager : public IBackgroundTrafficManager
     Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) override { unexpected("computeCqi"); }
     Cqi computeCqiFromSinr(double sinr) override { unexpected("computeCqiFromSinr"); }
     TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override { unexpected("getTrafficGenerator"); }
+    CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) override { unexpected("getBgUeRadio"); }
     MacNodeId getBgUeId(int bgUeIndex) override { unexpected("getBgUeId"); }
     int getBgUeIndex(MacNodeId bgUeId) override { unexpected("getBgUeIndex"); }
     std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() override { unexpected("getBgUesBegin"); }

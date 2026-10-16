@@ -20,6 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+class IRadioEndpoint;
 class RadioTransmissionRequest;
 class UserControlInfo;
 
@@ -35,6 +36,18 @@ class CellularTransmitter : public cSimpleModule
      * given in the request. The caller owns the result.
      */
     virtual CellularTransmission *createTransmission(const RadioTransmissionRequest& request, const UserControlInfo& info) const;
+
+    /**
+     * A transmission that stands for no frame (see
+     * CellularRadioMedium::addPhantomTransmission()): the sender's, to the
+     * given destination (NODEID_NONE for none) for the given cell, in the
+     * given direction on the given blocks, starting now where the sender is,
+     * at its power and with its antenna, for the given duration. phantomCell
+     * is the cell if it is not a node (an external or a background cell),
+     * else nullptr. The caller owns the result.
+     */
+    virtual CellularTransmission *createPhantomTransmission(IRadioEndpoint *sender, MacNodeId destId, MacCellId cellId, Direction direction,
+            GHz carrierFrequency, const RbMap& blocks, simtime_t duration, const cModule *phantomCell) const;
 };
 
 } // namespace simu5g

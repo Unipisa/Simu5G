@@ -17,6 +17,7 @@
 #include "simu5g/stack/phy/radio/CellularAntenna.h"
 #include "simu5g/stack/phy/radio/CellularRadio.h"
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 #include <inet/common/InitStages.h>
@@ -378,6 +379,11 @@ double PhyBase::getCableLoss()
 CellularReceiver *PhyBase::getReceiver()
 {
     return check_and_cast<CellularReceiver *>(radio_->getSubmodule("receiver"));
+}
+
+CellularTransmitter *PhyBase::getTransmitter()
+{
+    return check_and_cast<CellularTransmitter *>(radio_->getSubmodule("transmitter"));
 }
 
 int PhyBase::getReceiverGateIndex(const cModule *receiver, MacNodeId dest) const

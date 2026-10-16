@@ -87,13 +87,6 @@ module ExtCell
         }
         allocator: ExtCellAllocator {
             binderModule = parent.binderModule;
-            radioMediumModule = parent.radioMediumModule;
-            positionX = parent.positionX;
-            positionY = parent.positionY;
-            positionZ = parent.positionZ;
-            txPower = parent.txPower;
-            txDirection = parent.txDirection;
-            txAngle = parent.txAngle;
             carrierFrequency = parent.carrierFrequency;
             numBands = parent.numBands;
             bandAllocationType = parent.bandAllocationType;

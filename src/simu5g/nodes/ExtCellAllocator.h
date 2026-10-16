@@ -17,7 +17,6 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 namespace simu5g {
@@ -40,27 +39,13 @@ enum BandAllocationType {
  */
 class ExtCellAllocator : public cSimpleModule
 {
-    // Playground coordinates
-    inet::Coord position_;
-
     // ID among all the external cells
     int id_;
 
     MacNodeId nodeId_ = NODEID_NONE; // the node id its transmissions on the radio medium name it by
 
-    inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
-
     // the cell's phantom radio
     inet::ModuleRefByPar<CellularPhantomRadio> radio_;
-
-    // TX power
-    double txPower_;
-
-    // TX direction
-    TxDirectionType txDirection_;
-
-    // TX angle
-    double txAngle_;
 
     // Carrier frequency
     GHz carrierFrequency_;
@@ -107,17 +92,9 @@ class ExtCellAllocator : public cSimpleModule
 
   public:
 
-    const inet::Coord getPosition() { return position_; }
-
     int getId() { return id_; }
 
     MacNodeId getNodeId() const { return nodeId_; }
-
-    double getTxPower() { return txPower_; }
-
-    TxDirectionType getTxDirection() { return txDirection_; }
-
-    double getTxAngle() { return txAngle_; }
 
     unsigned int getNumBands() { return numBands_; }
 

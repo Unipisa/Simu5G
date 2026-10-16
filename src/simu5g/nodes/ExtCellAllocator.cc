@@ -21,29 +21,10 @@ Define_Module(ExtCellAllocator);
 void ExtCellAllocator::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        // get coordinates
-        position_.x = par("positionX");
-        position_.y = par("positionY");
-        position_.z = par("positionZ");
-
-        txPower_ = par("txPower");
-
-        // set TX direction
-        std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
-        switch (txDirection_) {
-            case OMNI: txAngle_ = 0.0;
-                break;
-            case ANISOTROPIC: txAngle_ = par("txAngle");
-                break;
-            default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
-        }
-
         carrierFrequency_ = GHz(par("carrierFrequency"));
         numBands_ = par("numBands");
 
         binder_.reference(this, "binderModule", true);
-        radioMedium_.reference(this, "radioMediumModule", true);
         nodeId_ = binder_->allocatePhantomBaseStationId();
         radio_.reference(this, "radioModule", true);
         radio_->addToMedium(nodeId_);
@@ -74,9 +55,6 @@ void ExtCellAllocator::initialize(int stage)
             // because FULL_ALLOC schedules no TTI tick.
             bandStatus_.assign(numBands_, 1);
             prevBandStatus_.assign(numBands_, 1);
-
-            // on the radio medium, a transmission on every band that never ends
-            registerTransmission(SimTime::getMaxTime() - NOW);
         }
         else {
             // get the band utilization
@@ -98,6 +76,12 @@ void ExtCellAllocator::initialize(int stage)
         WATCH(id_);
         WATCH(bandStatus_);
         WATCH(prevBandStatus_);
+    }
+    if (stage == inet::INITSTAGE_SINGLE_MOBILITY && allocationType_ == FULL_ALLOC) {
+        // on the radio medium, a transmission on every band that never ends,
+        // from where the radio is: the mobility, declared before the
+        // allocator, has its position from this stage on
+        registerTransmission(SimTime::getMaxTime() - NOW);
     }
     if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // add this cell to the binder
@@ -156,22 +140,8 @@ void ExtCellAllocator::registerTransmission(simtime_t duration)
     if (blocks.empty())
         return;
 
-    // the cell is no node, and no radio sends its transmission
-    auto transmission = new CellularTransmission();
-    transmission->phantomCell = this;
-    transmission->sourceId = nodeId_;
-    transmission->cellId = nodeId_;
-    transmission->direction = DL;
-    transmission->frameType = DATAPKT;
-    transmission->carrierFrequency = carrierFrequency_;
-    transmission->grantedBlocks = blocks;
-    transmission->txPower = txPower_;
-    transmission->startPosition = position_;
-    transmission->txDirection = txDirection_;
-    transmission->txAngle = txAngle_;
-    transmission->startTime = NOW;
-    transmission->duration = duration;
-    radioMedium_->addPhantomTransmission(transmission);
+    // the cell is no node: its phantom radio sends the transmission
+    radio_->transmit(NODEID_NONE, nodeId_, DL, carrierFrequency_, blocks, duration, this);
 }
 
 void ExtCellAllocator::resetBandStatus()

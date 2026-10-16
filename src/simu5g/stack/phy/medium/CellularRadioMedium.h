@@ -157,7 +157,7 @@ class CellularRadioMedium : public cSimpleModule
      * frames sent in UL or on the sidelink, and the UL allocations of
      * background UEs -- are, band by band and in creation order, the entries
      * of the Binder's uplink transmission map: a PHY's entry matching its
-     * radio's frame, a background UE's entry its registered allocation, each
+     * radio's frame, a background UE's entry the allocation its phantom radio sent, each
      * with the same cell and transmit power. A null map has no entries.
      */
     virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, simtime_t from, simtime_t to, const std::vector<std::vector<UeAllocationInfo>> *map) const;

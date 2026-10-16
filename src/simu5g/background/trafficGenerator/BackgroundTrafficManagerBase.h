@@ -44,6 +44,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // reference to all the background UEs
     std::vector<TrafficGeneratorBase *> bgUe_;
 
+    // their phantom radios, by index
+    std::vector<CellularPhantomRadio *> bgUeRadio_;
+
     // the node id of the first background UE, reserved by the Binder; the others follow it in the order of their indices
     MacNodeId firstBgUeId_ = NODEID_NONE;
 
@@ -77,7 +80,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // position of the e/gNodeB
     inet::Coord bsCoord_;
 
-    // node id of the e/gNodeB; NODEID_NONE for a background cell, which is not on the radio medium
+    // node id of the e/gNodeB; NODEID_NONE for a background cell, whose scheduler sends the transmissions
     MacNodeId bsNodeId_ = NODEID_NONE;
 
     /**************************************
@@ -134,6 +137,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override;
     MacNodeId getBgUeId(int bgUeIndex) override;
     int getBgUeIndex(MacNodeId bgUeId) override;
+    CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) override;
 
     // returns the begin (end) iterator of the vector of UEs
     std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() override;
@@ -155,9 +159,6 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // update background UE's backlog and returns true if the buffer is empty
     unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) override;
-
-    // registers with the radio medium the transmission a background UE's allocation stands for
-    void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) override;
 };
 
 } //namespace
