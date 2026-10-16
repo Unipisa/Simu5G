@@ -127,9 +127,8 @@ void CellularRadioMedium::sendToNeighbors(IRadioEndpoint *sender, cSimpleModule 
     delete frame;
 }
 
-void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
+void CellularRadioMedium::keepTransmission(CellularTransmission *transmission)
 {
-    Enter_Method("addTransmission");
     transmission->id = nextTransmissionId++;
     auto& carrierTransmissions = transmissions[transmission->carrierFrequency];
     // the slot before this one is kept, for the questions about the slot completed last
@@ -143,6 +142,12 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     });
     carrierTransmissions.erase(ended, carrierTransmissions.end());
     carrierTransmissions.push_back(transmission);
+}
+
+void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
+{
+    Enter_Method("addTransmission");
+    keepTransmission(transmission);
 
     // where each other radio is as the transmission starts, read from its
     // mobility, in the order the radios were added -- as INET's medium does
@@ -151,6 +156,12 @@ void CellularRadioMedium::addTransmission(CellularTransmission *transmission)
     for (const auto& radioModule : radioModules)
         if (radioModule.radio != transmission->transmitter)
             radioModule.radio->getCoord();
+}
+
+void CellularRadioMedium::addPhantomTransmission(CellularTransmission *transmission)
+{
+    Enter_Method("addPhantomTransmission");
+    keepTransmission(transmission);
 }
 
 std::vector<const CellularTransmission *> CellularRadioMedium::getDataTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const

@@ -311,7 +311,7 @@ void BackgroundTrafficManagerBase::registerTransmission(MacNodeId bgUeId, Direct
     // one slot of the carrier, as the duration of a frame a radio sends on it
     double slotDuration = binder_->getSlotDurationFromNumerologyIndex(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency));
     transmission->duration = slotDuration;
-    radioMedium_->addTransmission(transmission);
+    radioMedium_->addPhantomTransmission(transmission);
 }
 
 void BackgroundTrafficManagerBase::initializeAvgInterferenceComputation()

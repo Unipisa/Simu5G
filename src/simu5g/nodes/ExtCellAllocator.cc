@@ -171,7 +171,7 @@ void ExtCellAllocator::registerTransmission(simtime_t duration)
     transmission->txAngle = txAngle_;
     transmission->startTime = NOW;
     transmission->duration = duration;
-    radioMedium_->addTransmission(transmission);
+    radioMedium_->addPhantomTransmission(transmission);
 }
 
 void ExtCellAllocator::resetBandStatus()

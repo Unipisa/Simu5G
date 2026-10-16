@@ -14,13 +14,19 @@ happen as the transmissions start.
 Nothing else checks this: deleting the reads changes only fingerprints, and
 reading the transmitter's position too passes every suite.
 
+A phantom transmission -- the occupation of an external or a background cell,
+or of a background UE, in a slot, which stands for no frame -- is added with
+addPhantomTransmission() and reads no radio's position: it will never be a
+transmission on INET's medium.
+
 Checked with three stub radios A, B, C, added in this order (and not in the
 order of their node ids), whose getCoord() counts its calls and logs whose it
 was, each registered with a module of its own that has a radioIn gate:
  - a transmission from A reads B's and C's position once each, in this
    order, and not A's;
  - a transmission from B reads A's and C's once each, in this order, and not
-   B's.
+   B's;
+ - a phantom transmission, which no radio on the medium sends, reads none.
 
 %includes:
 #include <string>
@@ -161,13 +167,28 @@ c.check("a transmission from B reads A's and C's position once each", radioA.rea
 c.check("...and not B's, the transmitter's", radioB.reads == 0, reads(radioB));
 c.check("...in the order the radios were added", readLog == (std::vector<std::string>{"A", "C"}), show(readLog));
 
+// an external cell's DL allocation in the slot: no radio on the medium sends it
+wait(slot);
+resetReads();
+auto *phantom = new CellularTransmission();
+phantom->sourceId = MacNodeId(2);
+phantom->direction = DL;
+phantom->frameType = DATAPKT;
+phantom->carrierFrequency = GHz(2.0);
+phantom->startPosition = Coord(500, 500, 25);
+phantom->startTime = simTime();
+phantom->duration = slot;
+medium->addPhantomTransmission(phantom);
+c.check("a phantom transmission reads no radio's position",
+        radioA.reads == 0 && radioB.reads == 0 && radioC.reads == 0, show(readLog));
+
 for (auto radio : radios)
     medium->removeRadio(radio);
 
 c.summary();
 
 %contains: stdout
-modelchecks=7 modelfailures=0
+modelchecks=8 modelfailures=0
 
 %not-contains: stdout
 FAILED

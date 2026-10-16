@@ -313,7 +313,7 @@ void BackgroundScheduler::registerTransmissions()
         transmission->startPosition = pos_;
         transmission->txDirection = txDirection_;
         transmission->txAngle = txAngle_;
-        radioMedium_->addTransmission(transmission);
+        radioMedium_->addPhantomTransmission(transmission);
     }
 
     // each UE's: the bands allocated to it in UL, in the order of their first band
@@ -333,7 +333,7 @@ void BackgroundScheduler::registerTransmissions()
         transmission->backgroundUe = bgUe;
         transmission->txPower = bgUe->getTxPwr();
         transmission->startPosition = bgUe->getCoord();
-        radioMedium_->addTransmission(transmission);
+        radioMedium_->addPhantomTransmission(transmission);
     }
 }
 

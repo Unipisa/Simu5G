@@ -67,6 +67,13 @@ class CellularRadioMedium : public cSimpleModule
      */
     virtual ChannelModelBase *getWhatIfChannelModel(IRadioEndpoint *receiver, const CellularTransmission& transmission) const;
 
+    /**
+     * Gives the transmission the next id and keeps it, dropping the
+     * transmissions on its carrier that ended more than one of its durations
+     * (a slot) before its start.
+     */
+    virtual void keepTransmission(CellularTransmission *transmission);
+
   public:
     virtual ~CellularRadioMedium();
 
@@ -120,6 +127,14 @@ class CellularRadioMedium : public cSimpleModule
      * position is read, as the transmission starts.
      */
     virtual void addTransmission(CellularTransmission *transmission);
+
+    /**
+     * Adds a transmission that stands for no frame -- the occupation of an
+     * external or a background cell, or of a background UE, in a slot -- as
+     * addTransmission() does, but reads no radio's position: it is no
+     * transmission on INET's medium, only one the interference counts.
+     */
+    virtual void addPhantomTransmission(CellularTransmission *transmission);
 
     /**
      * The data transmissions on the carrier that overlap the interval [from,
