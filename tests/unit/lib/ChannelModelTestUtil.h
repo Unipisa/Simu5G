@@ -167,6 +167,7 @@ class ChannelModelProbe
         static auto whatIfLinkPtr() { return &Access::whatIfLink; }
         static auto cellularLinkPtr() { return &Access::cellularLink; }
         static auto emitRcvdSinrPtr() { return &Access::emitRcvdSinr; }
+        static auto phantomPowerAtPtr() { return &Access::phantomPowerAt; }
     };
 
     StochasticChannelModel *model_;
@@ -199,6 +200,11 @@ class ChannelModelProbe
     void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
     {
         (model_->*Access::emitRcvdSinrPtr())(radio, dir, ueId, carrierFrequency, sinr);
+    }
+    // what a phantom transmission (an external or a background cell's) adds at the receiver, in dBm
+    double phantomPowerAt(const CellularTransmission& transmission, IRadioEndpoint *receiver)
+    {
+        return (model_->*Access::phantomPowerAtPtr())(transmission, receiver, receiver->getCoord());
     }
 };
 

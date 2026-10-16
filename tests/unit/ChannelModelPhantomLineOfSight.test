@@ -1,0 +1,166 @@
+%description:
+
+The line of sight of a phantom transmission -- an external or a background
+cell's, or a background cell's UE's -- at a receiver: the link from the
+phantom transmitter to the receiver has a LOS state of its own, kept by the
+radio medium like any link's, drawn on its first evaluation and decided again
+when an end has moved farther than the correlation distance. The state of the
+link the interference is computed for (the receiver's own serving link) does
+not enter: changing it leaves the phantom's power unchanged. enableExtCellLos
+off makes every phantom link NLOS; shadowing never applies to one.
+
+The power is graded against the closed form: transmit power, less the
+strategy's path loss in the link's state at its h_E, plus both antennas' gains,
+less the receiver's cable loss. The LOS draw is replayed from an RngSnapshot.
+Draws can be counted exactly: the TR 38.901 UMi path loss draws nothing for an
+outdoor UE, and shadowing, which is on, is not applied to a phantom link.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        ueChannelModel: Tr38901ChannelModel;
+        noLosChannelModel: Tr38901ChannelModel {
+            enableExtCellLos = false;
+        }
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# LOS is drawn, and nothing else is: the TR 38.901 UMi path loss draws nothing
+# for an outdoor UE, and shadowing, on, does not apply to a phantom link.
+**.scenario = "URBAN_MICROCELL"
+**.dynamicLos = true
+**.shadowing = true
+**.correlationDistance = 50m
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *ueModel = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+auto *noLosModel = harnessModule<StochasticChannelModel>(this, "noLosChannelModel");
+ChannelModelProbe atUe(ueModel), noLos(noLosModel);
+auto drawn = [](StochasticChannelModel *model) { return (long long)model->getRNG(0)->getNumbersDrawn(); };
+
+// the UE, its serving base station, and a background cell's phantom radio
+StubEndpoint ue, phantom;
+ue.nodeId = MacNodeId(1025);
+ue.coord = Coord(60, 30, 1.5);
+ue.cableLoss = 2;
+phantom.nodeId = MacNodeId(900);
+phantom.coord = Coord(300, 200, 25);
+phantom.antennaGain = 18;
+phantom.txPower = 46;
+
+CellularTransmission transmission;
+transmission.transmitter = &phantom;
+transmission.phantomCell = this;
+transmission.sourceId = phantom.nodeId;
+transmission.cellId = phantom.nodeId;
+transmission.direction = DL;
+transmission.frameType = DATAPKT;
+transmission.txPower = phantom.txPower;
+transmission.startPosition = phantom.coord;
+transmission.startTime = omnetpp::simTime();
+
+const LinkKey phantomLink(MacNodeId(900), MacNodeId(1025)), servingLink(MacNodeId(1), MacNodeId(1025));
+const double d3D = phantom.coord.distance(ue.coord);
+const double d2D = sqrt(pow(ue.coord.x - phantom.coord.x, 2) + pow(ue.coord.y - phantom.coord.y, 2));
+// the closed form, in the given LOS state at the link's h_E
+auto expectedPower = [&](ChannelModelProbe& probe, bool los) {
+    PathLossModel::LinkConditions conditions;
+    conditions.environmentHeight = probe.losMap().at(phantomLink).environmentHeight;
+    return phantom.txPower - probe.pathLoss()->computePathLoss(d3D, d2D, los, conditions) + phantom.antennaGain + ue.antennaGain - ue.cableLoss;
+};
+
+// the serving link has a state of its own, decided elsewhere
+atUe.losMap()[servingLink].los = true;
+atUe.losMap()[servingLink].positionA = Coord(0, 0, 10);
+atUe.losMap()[servingLink].positionB = ue.coord;
+
+bool phantomLos;
+double power;
+{
+    double p = atUe.pathLoss()->computeLosProbability(d3D, d2D);
+    RngSnapshot snapshot(ueModel);
+    long long before = drawn(ueModel);
+    power = atUe.phantomPowerAt(transmission, &ue);
+    bool expected = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= p;
+    c.check("the phantom link's first evaluation draws its own LOS state against the strategy's LOS probability",
+            atUe.losMap().count(phantomLink) == 1 && atUe.losMap().at(phantomLink).los == expected, "p=" + std::to_string(p));
+    c.expectValue("...one draw, and nothing else: no shadowing", drawn(ueModel) - before, 1);
+    c.check("...and no shadowing sample for the link", atUe.shadowingMap().count(phantomLink) == 0);
+    phantomLos = atUe.losMap().at(phantomLink).los;
+    c.expectNear("the power is the transmit power, less the path loss in that state, plus both gains, less the receiver's cable loss",
+            power, expectedPower(atUe, phantomLos), 1e-9);
+}
+{
+    long long before = drawn(ueModel);
+    atUe.losMap()[servingLink].los = !phantomLos;
+    double again = atUe.phantomPowerAt(transmission, &ue);
+    atUe.losMap()[servingLink].los = phantomLos;
+    double third = atUe.phantomPowerAt(transmission, &ue);
+    c.check("the serving link's LOS state does not enter: both ways the same power", again == power && third == power);
+    c.expectValue("...and the phantom link's state is held: no draw", drawn(ueModel) - before, 0);
+}
+{
+    atUe.losMap()[phantomLink].los = !phantomLos;
+    c.expectNear("it is the phantom link's own state that decides", atUe.phantomPowerAt(transmission, &ue), expectedPower(atUe, !phantomLos), 1e-9);
+    atUe.losMap()[phantomLink].los = phantomLos;
+}
+{
+    // the same link on a model with enableExtCellLos off: NLOS whatever the state
+    noLos.losMap()[phantomLink].los = true;
+    c.expectNear("with enableExtCellLos off the phantom link is NLOS, whatever its state",
+            noLos.phantomPowerAt(transmission, &ue), expectedPower(noLos, false), 1e-9);
+}
+{
+    // the UE moves past the correlation distance from where the state was decided
+    const Coord decidedAt = atUe.losMap().at(phantomLink).positionB;
+    ue.coord = Coord(decidedAt.x + 30, decidedAt.y, decidedAt.z);
+    long long before = drawn(ueModel);
+    atUe.phantomPowerAt(transmission, &ue);
+    c.expectValue("within the correlation distance the state is held", drawn(ueModel) - before, 0);
+    ue.coord = Coord(decidedAt.x + 60, decidedAt.y, decidedAt.z);
+    before = drawn(ueModel);
+    atUe.phantomPowerAt(transmission, &ue);
+    c.check("past it, the phantom link's state is decided again",
+            drawn(ueModel) - before == 1 && atUe.losMap().at(phantomLink).positionB == ue.coord);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=10 modelfailures=0
+
+%not-contains: stdout
+FAILED
