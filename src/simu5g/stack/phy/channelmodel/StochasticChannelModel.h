@@ -75,8 +75,8 @@ class CellularTransmission;
  * scenarios (not every study covers every scenario; see the PathLossModel
  * subclasses).
  *
- * D2D links are not evaluated here. The D2dChannelModel subclass layers them on
- * top of this class.
+ * D2D links, UE to UE, are evaluated here too: see d2dLink(),
+ * computeD2DInterference() and the D2D branches of the SINR assembly.
  */
 class StochasticChannelModel : public ChannelModelBase
 {
@@ -106,6 +106,8 @@ class StochasticChannelModel : public ChannelModelBase
     bool enableExtCellInterference_;
     bool enableDownlinkInterference_;
     bool enableUplinkInterference_;
+    // enable/disable the interference computation for D2D connections
+    bool enableD2DInterference_ = false;
 
     bool enable_extCell_los_;
 
@@ -321,6 +323,11 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void computeLosProbability(double d3D, double d2D, const RadioLink& link);
 
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
+    virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
+    bool recordsUlTransmissionMap() override { return isUplinkInterferenceEnabled() || enableD2DInterference_; }
+
+    /// Compute the received useful signal (RSRP) for a D2D transmission, per band.
+    std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord);
     /*
      * Compute the received useful signal (RSRP) per band over a radio link.
      */
@@ -366,18 +373,37 @@ class StochasticChannelModel : public ChannelModelBase
      * Build the RadioLink described by a frame's control info (DL, UL, and a
      * UL CQI), the local end the radio the evaluation is at, at the given
      * position (see receptionPosition()). A DL CQI is a what-if (see
-     * whatIfLink()). The D2D path builds its links separately -- its API takes
-     * the peer endpoint explicitly rather than deriving it.
+     * whatIfLink()). A D2D link is built by d2dLink() -- its API takes the
+     * peer endpoint explicitly rather than deriving it.
      */
     virtual RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const inet::Coord& localPosition);
 
     /*
      * Build the RadioLink of a what-if (see computeRsrp()): from the
      * transmission's radio, at its start position and start time, to the
-     * receiver where it is now. A cellular transmission, DL or UL; the D2D
-     * model builds its D2D links.
+     * receiver where it is now. A cellular transmission, DL or UL, or a D2D
+     * one (a D2D CQI): the D2D link from the reporting UE to its peer.
      */
     virtual RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission);
+
+    /*
+     * Build the RadioLink for a UE-to-UE transmission. Both endpoints being UEs
+     * is the whole of what makes a D2D link different: no sectorial antenna
+     * (hence no angular attenuation); the gains and the noise figure are the
+     * two UEs' radios'.
+     */
+    RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
+
+    /*
+     * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction.
+     * For a data reception, only on the bands of rbmap (all bands if it is empty).
+     */
+    virtual bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
+
+    /// Compute the D2D SINR towards the given peer, per band (path loss, shadowing, fading and D2D interference).
+    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId);
+    /// Compute the D2D SINR from a precomputed RSRP vector (used for one-to-many D2D reception).
+    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector);
 
     /*
      * The control info of a what-if's transmission, which the SINR assembly
@@ -410,9 +436,8 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * Emit the received-SINR statistic for a decoded frame, on the UE's
      * receiver: the decoding radio's for a downlink reception, the sending UE's
-     * for any other. The D2D model overrides it to route D2D/D2D_MULTI receptions
-     * to the decoding radio's rcvdSinrD2D instead of letting them fall into the
-     * uplink statistic.
+     * for any other; a D2D/D2D_MULTI reception on the decoding radio's
+     * rcvdSinrD2D, not in the uplink statistic.
      *
      * @param radio the radio the evaluation is at, the decoding one
      * @param dir direction of the reception
@@ -438,8 +463,8 @@ class StochasticChannelModel : public ChannelModelBase
     /*
      * Fill den[] with the per-band interference-plus-noise denominator, in dBm,
      * for the bands this frame actually uses. Computes the cellular contributions
-     * (multi-cell, background-cell, external-cell). A subclass substitutes its own
-     * for link types the cellular model does not describe.
+     * (multi-cell, background-cell, external-cell); for a D2D link, the D2D
+     * ones (see computeD2dInterferencePlusNoise()).
      *
      * @param totN linearized thermal noise + noise figure (mW)
      */
@@ -447,14 +472,21 @@ class StochasticChannelModel : public ChannelModelBase
             RbMap& rbmap, double totN, std::vector<double>& den);
 
     /*
-     * Computes the per-band SINR used by isReceptionSuccessful(). Split out so that
-     * a subclass can route link types the cellular model does not describe -- the
-     * D2D channel model overrides this to send D2D/D2D_MULTI through getSINR_D2D.
+     * The denominator of a D2D/D2D_MULTI link: noise plus the interference of
+     * the other UEs (see computeD2DInterference()), if d2dInterference is on.
+     */
+    virtual void computeD2dInterferencePlusNoise(const RadioLink& link, UserControlInfo *lteInfo,
+            RbMap& rbmap, double totN, std::vector<double>& den);
+
+    /*
+     * Computes the per-band SINR used by isReceptionSuccessful(): a cellular
+     * frame's through getSINR(), a D2D/D2D_MULTI frame's through getSINR_D2D()
+     * (a one-to-many frame's with the RSRP the capture effect selected it by).
      *
      * @param rsrpVector the RSRP the caller already holds, when it has one
      */
     virtual std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo,
-            const std::vector<double>& rsrpVector) { return getSINR(radio, frame, lteInfo); }
+            const std::vector<double>& rsrpVector);
 
     /*
      * Returns the 2D distance between two coordinates (ignore z-axis)

@@ -18,67 +18,19 @@
 
 namespace simu5g {
 
-using namespace inet;
-using namespace omnetpp;
-
 /**
- * Channel model for D2D-capable NICs: StochasticChannelModel (whose
- * pathLossType parameter selects the propagation study -- TR 36.814, 36.873
- * or 38.901) plus the ~800 lines of D2D channel math (attenuation, RSRP/SINR,
- * interference and reception decision) layered on top of it.
+ * The channel model of D2D-capable networks: StochasticChannelModel, which
+ * evaluates D2D links itself, under the interface the D2D UE PHY's capture
+ * effect asks for a frame's RSRP through.
  */
 class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
 {
-  protected:
-    // enable/disable the interference computation for D2D connections
-    bool enableD2DInterference_ = false;
-
-    /*
-     * Build the RadioLink for a UE-to-UE transmission, so that the core
-     * propagation path can evaluate it. Both endpoints being UEs is the whole of
-     * what makes a D2D link different: no sectorial antenna (hence no angular
-     * attenuation); the gains and the noise figure are the two UEs' radios'.
-     */
-    RadioLink d2dLink(MacNodeId srcId, inet::Coord srcCoord, MacNodeId destId, inet::Coord destCoord);
-
-    /*
-     * The link of a what-if: for a D2D one (a D2D CQI), the D2D link from the
-     * transmission's source, at its start position and start time, to the
-     * receiver where it is now; a cellular one as the core builds it
-     */
-    RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
-
-    /*
-     * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction.
-     * For a data reception, only on the bands of rbmap (all bands if it is empty).
-     */
-    bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
-
-    // Route D2D/D2D_MULTI receptions through getSINR_D2D (called from the core
-    // isReceptionSuccessful()).
-    std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector) override;
-
-    // Report D2D receptions under the receiving radio's rcvdSinrD2D rather than
-    // letting them fall into the core's uplink statistic.
-    void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr) override;
-
-    // Substitute the UE-to-UE interference for the cellular contributions.
-    void computeInterferencePlusNoise(const RadioLink& link, UserControlInfo *lteInfo,
-            RbMap& rbmap, double totN, std::vector<double>& den) override;
-
   public:
-    void initialize(int stage) override;
-
     // ---- ID2dChannelModel ----
-    std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) override;
-
-    /// Compute the D2D SINR towards the given peer, per band (path loss, shadowing, fading and D2D interference).
-    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId = NODEID_NONE);
-    /// Compute the D2D SINR from a precomputed RSRP vector (used for one-to-many D2D reception).
-    std::vector<double> getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector);
-
-    virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
-    bool recordsUlTransmissionMap() override { return isUplinkInterferenceEnabled() || enableD2DInterference_; }
+    std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) override
+    {
+        return StochasticChannelModel::getRSRP_D2D(frame, lteInfo_1, destId, destCoord);
+    }
 };
 
 } //namespace

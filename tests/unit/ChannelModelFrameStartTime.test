@@ -30,7 +30,6 @@ stamp (a what-if) is evaluated at the decoding instant.
 #include <vector>
 #include "SchedulerTestUtil.h"
 #include "ChannelModelTestUtil.h"
-#include "simu5g/stack/d2d/phy/channelmodel/D2dChannelModel.h"
 
 %global:
 using namespace simu5g;
@@ -56,11 +55,15 @@ static double maxDiff(const std::vector<double>& a, const std::vector<double>& b
     return d;
 }
 
-// The D2D model's own link builder, which is protected. Never instantiated:
-// see ChannelModelProbe for the technique.
-struct D2dLinkAccess : D2dChannelModel
+// The model's own D2D link builder and D2D SINR, which are protected. Never
+// instantiated: see ChannelModelProbe for the technique.
+struct D2dAccess : StochasticChannelModel
 {
-    static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
+    using SinrD2d = std::vector<double> (StochasticChannelModel::*)(AirFrame *, UserControlInfo *, MacNodeId, inet::Coord, MacNodeId);
+    using SinrD2dWithRsrp = std::vector<double> (StochasticChannelModel::*)(AirFrame *, UserControlInfo *, MacNodeId, inet::Coord, MacNodeId, const std::vector<double>&);
+    static auto d2dLinkPtr() { return &D2dAccess::d2dLink; }
+    static SinrD2d sinrD2dPtr() { return &D2dAccess::getSINR_D2D; }
+    static SinrD2dWithRsrp sinrD2dWithRsrpPtr() { return &D2dAccess::getSINR_D2D; }
 };
 
 %file: harness.ned
@@ -68,7 +71,6 @@ import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
-import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
 
 network Harness
 {
@@ -77,7 +79,6 @@ network Harness
         radioMedium: CellularRadioMedium;
         carrierAggregation: CarrierAggregation;
         ueModel: Tr38901ChannelModel;
-        d2dModel: Tr38901D2dChannelModel;
         test: Test;
 }
 
@@ -112,7 +113,6 @@ sim-time-limit = 1s
 %activity:
 Checker c;
 auto *ueModel = harnessModule<StochasticChannelModel>(this, "ueModel");
-auto *d2dModel = harnessModule<D2dChannelModel>(this, "d2dModel");
 auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
 const GHz carrier = ueModel->getCarrierFrequency();
 
@@ -207,20 +207,20 @@ auto receivedFrame = [&] () {
     info.setGrantedBlocks(bands);
 
     AirFrame *frame = receivedFrame();
-    std::vector<double> rsrp = d2dModel->getRSRP_D2D(frame, &info, ue.nodeId, ue.coord);
-    std::vector<double> sinr = d2dModel->getSINR_D2D(frame, &info, ue.nodeId, ue.coord, bs.nodeId);
+    std::vector<double> rsrp = ueModel->getRSRP_D2D(frame, &info, ue.nodeId, ue.coord);
+    std::vector<double> sinr = (ueModel->*D2dAccess::sinrD2dPtr())(frame, &info, ue.nodeId, ue.coord, bs.nodeId);
     // no RSRP captured (one-to-many with the Distance capture factor): the desired signal is computed for the SINR
-    std::vector<double> sinrUncaptured = d2dModel->getSINR_D2D(frame, &info, ue.nodeId, ue.coord, bs.nodeId, std::vector<double>());
+    std::vector<double> sinrUncaptured = (ueModel->*D2dAccess::sinrD2dWithRsrpPtr())(frame, &info, ue.nodeId, ue.coord, bs.nodeId, std::vector<double>());
     delete frame;
 
-    RadioLink atStart = (d2dModel->*D2dLinkAccess::d2dLinkPtr())(peer.nodeId, peer.coord, ue.nodeId, ue.coord);
+    RadioLink atStart = (ueModel->*D2dAccess::d2dLinkPtr())(peer.nodeId, peer.coord, ue.nodeId, ue.coord);
     atStart.startTime = t0;
     atStart.cellId = bs.nodeId;
     RadioLink atNow = atStart;
     atNow.startTime = simTime();
-    std::vector<double> rsrpAtStart = d2dModel->getRSRP(atStart, peer.txPower);
-    std::vector<double> rsrpAtNow = d2dModel->getRSRP(atNow, peer.txPower);
-    std::vector<double> sinrAtStart = d2dModel->getSINR(atStart, &info, rsrpAtStart);
+    std::vector<double> rsrpAtStart = ueModel->getRSRP(atStart, peer.txPower);
+    std::vector<double> rsrpAtNow = ueModel->getRSRP(atNow, peer.txPower);
+    std::vector<double> sinrAtStart = ueModel->getSINR(atStart, &info, rsrpAtStart);
 
     c.check("D2D: the fading at the frame's start and at its decoding differ measurably",
             maxDiff(rsrpAtStart, rsrpAtNow) > minDiffDb,

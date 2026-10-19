@@ -103,6 +103,8 @@ simple StochasticChannelModel extends ChannelModelBase
         bool downlinkInterference = default(false);
         // Whether interference from the UEs of other cells is included in the UL SINR
         bool uplinkInterference = default(false);
+        // Whether interference from other D2D transmissions is included in the D2D SINR
+        bool d2dInterference = default(true);
 
         bool enableExtCellLos = default(true);
 
