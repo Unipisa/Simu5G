@@ -26,19 +26,12 @@ using namespace omnetpp;
  * pathLossType parameter selects the propagation study -- TR 36.814, 36.873
  * or 38.901) plus the ~800 lines of D2D channel math (attenuation, RSRP/SINR,
  * interference and reception decision) layered on top of it.
- *
- * The rcvdSinrD2D signal is owned and interned here, not in the core channel model.
  */
 class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
 {
   protected:
     // enable/disable the interference computation for D2D connections
     bool enableD2DInterference_ = false;
-
-    // Interned in initialize() rather than registered by a static initializer, so that
-    // linking the D2D package in cannot shift the signal ids the core assigns. See the
-    // "Signals" note in D2dUeMacBase.h.
-    simsignal_t rcvdSinrD2DSignal_ = SIMSIGNAL_NULL;
 
     /*
      * Build the RadioLink for a UE-to-UE transmission, so that the core
@@ -65,8 +58,8 @@ class D2dChannelModel : public StochasticChannelModel, public ID2dChannelModel
     // isReceptionSuccessful()).
     std::vector<double> getReceptionSinr(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector) override;
 
-    // Report D2D receptions under rcvdSinrD2D rather than letting them fall into
-    // the core's uplink statistic.
+    // Report D2D receptions under the receiving radio's rcvdSinrD2D rather than
+    // letting them fall into the core's uplink statistic.
     void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr) override;
 
     // Substitute the UE-to-UE interference for the cellular contributions.

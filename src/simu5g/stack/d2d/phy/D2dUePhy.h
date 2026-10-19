@@ -19,6 +19,7 @@
 #include "simu5g/stack/d2d/phy/D2dUePhyHelper.h"
 #include "simu5g/stack/d2d/binder/D2dBinder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
 #include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
 
 namespace simu5g {
@@ -175,6 +176,8 @@ void D2dUePhy<Base>::initialize(int stage)
         d2dHelper_.setMulticastD2DRange(this->par("multicastD2DRange"));
         d2dBinder_.reference(this, "d2dBinderModule", true);
         d2dHelper_.initWatches();
+        // its radio records the SINR of its D2D receptions
+        this->getReceiver()->enableD2dStatistics();
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         // Publish this PHY under its node id, so that a peer's one-to-many transmit

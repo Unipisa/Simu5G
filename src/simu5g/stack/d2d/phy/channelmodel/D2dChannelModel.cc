@@ -19,6 +19,7 @@
 #include "simu5g/stack/mac/amc/UserTxParams.h"
 #include "simu5g/stack/phy/PhyUe.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/radio/CellularReceiver.h"
 
 namespace simu5g {
 
@@ -28,7 +29,6 @@ void D2dChannelModel::initialize(int stage)
 {
     StochasticChannelModel::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        rcvdSinrD2DSignal_ = cComponent::registerSignal("rcvdSinrD2D");
         enableD2DInterference_ = par("d2dInterference");
     }
 }
@@ -182,10 +182,8 @@ std::vector<double> D2dChannelModel::getReceptionSinr(IRadioEndpoint *radio, Air
 void D2dChannelModel::emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
 {
     if (dir == D2D || dir == D2D_MULTI) {
-        // A D2D reception is not an uplink reception. Attribute it to the receiver --
-        // this module -- which is also what the one-to-many path already does, rather
-        // than to the sender's channel model the way the core's UL branch does.
-        emit(rcvdSinrD2DSignal_, sinr);
+        // A D2D reception is not an uplink reception: the receiving radio records it
+        radio->getReceiver()->emitRcvdSinr(dir, carrierFrequency, sinr);
         return;
     }
     StochasticChannelModel::emitRcvdSinr(radio, dir, ueId, carrierFrequency, sinr);

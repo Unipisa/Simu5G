@@ -55,7 +55,19 @@ void CellularReceiver::setCarrierFrequencies(const std::vector<GHz>& carrierFreq
         signals.rcvdSinrUl = addCarrierStatistic("rcvdSinrUl", carrierFrequency);
         signals.measuredSinrDl = addCarrierStatistic("measuredSinrDl", carrierFrequency);
         signals.measuredSinrUl = addCarrierStatistic("measuredSinrUl", carrierFrequency);
+        if (rcvdSinrD2DSignal_ != SIMSIGNAL_NULL)
+            signals.rcvdSinrD2D = addCarrierStatistic("rcvdSinrD2D", carrierFrequency);
     }
+}
+
+void CellularReceiver::enableD2dStatistics()
+{
+    Enter_Method_Silent();
+    if (rcvdSinrD2DSignal_ != SIMSIGNAL_NULL)
+        throw cRuntimeError("CellularReceiver::enableD2dStatistics(): already enabled");
+    rcvdSinrD2DSignal_ = addStatistic("rcvdSinrD2D", "rcvdSinrD2D");
+    for (auto& [carrierFrequency, signals] : carrierSignals_)
+        signals.rcvdSinrD2D = addCarrierStatistic("rcvdSinrD2D", carrierFrequency);
 }
 
 simsignal_t CellularReceiver::addCarrierStatistic(const char *statisticName, GHz carrierFrequency)
@@ -64,11 +76,16 @@ simsignal_t CellularReceiver::addCarrierStatistic(const char *statisticName, GHz
     // dot would split the name where the ini file addresses the statistic
     std::string name = opp_stringf("%s-%gMHz", statisticName, inet::units::values::MHz(carrierFrequency).get());
     std::replace(name.begin(), name.end(), '.', '_');
+    return addStatistic(statisticName, name.c_str());
+}
+
+simsignal_t CellularReceiver::addStatistic(const char *statisticName, const char *signalName)
+{
     cProperty *statisticTemplate = getProperties()->get("statisticTemplate", statisticName);
     if (statisticTemplate == nullptr)
         throw cRuntimeError("No @statisticTemplate[%s] on %s", statisticName, getNedTypeName());
-    simsignal_t signal = registerSignal(name.c_str());
-    getEnvir()->addResultRecorders(this, signal, name.c_str(), statisticTemplate);
+    simsignal_t signal = registerSignal(signalName);
+    getEnvir()->addResultRecorders(this, signal, signalName, statisticTemplate);
     return signal;
 }
 
@@ -95,6 +112,14 @@ void CellularReceiver::emitOnCarrier(simsignal_t signal, double value)
 void CellularReceiver::emitRcvdSinr(Direction dir, GHz carrierFrequency, double sinr)
 {
     Enter_Method_Silent();
+    if (dir == D2D || dir == D2D_MULTI) {
+        if (rcvdSinrD2DSignal_ == SIMSIGNAL_NULL)
+            throw cRuntimeError("CellularReceiver::emitRcvdSinr(): a D2D reception at a radio without D2D statistics");
+        emitOnCarrier(rcvdSinrD2DSignal_, sinr);
+        if (const CarrierSignals *signals = findCarrierSignals(carrierFrequency))
+            emitOnCarrier(signals->rcvdSinrD2D, sinr);
+        return;
+    }
     ASSERT(dir == DL || dir == UL);
     emit(dir == DL ? rcvdSinrDlSignal_ : rcvdSinrUlSignal_, sinr);
     if (const CarrierSignals *signals = findCarrierSignals(carrierFrequency))

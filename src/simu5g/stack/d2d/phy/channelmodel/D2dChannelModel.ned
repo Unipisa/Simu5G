@@ -28,8 +28,4 @@ simple D2dChannelModel extends StochasticChannelModel
 
         // Whether interference from other D2D transmissions is included in the D2D SINR
         bool d2dInterference = default(true);
-
-        // Statistics
-        @signal[rcvdSinrD2D];
-        @statistic[rcvdSinrD2D](title="SINR measured at packet reception, D2D"; unit="dB"; source="rcvdSinrD2D"; record=mean,vector);
 }

@@ -43,8 +43,12 @@ class CellularReceiver : public cSimpleModule
         simsignal_t rcvdSinrUl;
         simsignal_t measuredSinrDl;
         simsignal_t measuredSinrUl;
+        simsignal_t rcvdSinrD2D = SIMSIGNAL_NULL;
     };
     std::map<GHz, CarrierSignals> carrierSignals_;
+
+    // the D2D reception statistic, on a D2D-capable radio only (see enableD2dStatistics())
+    simsignal_t rcvdSinrD2DSignal_ = SIMSIGNAL_NULL;
 
   protected:
     virtual void initialize() override;
@@ -52,10 +56,13 @@ class CellularReceiver : public cSimpleModule
     /** Registers the per-carrier signal of a statistic and attaches its recorders. */
     simsignal_t addCarrierStatistic(const char *statisticName, GHz carrierFrequency);
 
+    /** Registers the signal of a statistic under the given name and attaches the recorders of its @statisticTemplate. */
+    simsignal_t addStatistic(const char *statisticName, const char *signalName);
+
     /** The carrier's signals, or nullptr if the radio serves only one carrier. */
     const CarrierSignals *findCarrierSignals(GHz carrierFrequency) const;
 
-    /** Emits on a per-carrier signal, once the warm-up period is over. */
+    /** Emits on a signal whose recorders were attached at run time (a per-carrier or the D2D one), once the warm-up period is over. */
     void emitOnCarrier(simsignal_t signal, double value);
 
   public:
@@ -80,9 +87,17 @@ class CellularReceiver : public cSimpleModule
     void setCarrierFrequencies(const std::vector<GHz>& carrierFrequencies);
 
     /**
+     * Makes the radio record the SINR of its D2D receptions, rcvdSinrD2D (and
+     * per carrier, as the other statistics). Called once, during
+     * initialization, by a D2D-capable PHY; the statistic exists on no other
+     * radio.
+     */
+    void enableD2dStatistics();
+
+    /**
      * Records the mean SINR over the resource blocks of a decoded frame, on
-     * rcvdSinrDl or rcvdSinrUl (dir is DL or UL), in the aggregate statistic
-     * and in the carrier's own.
+     * rcvdSinrDl, rcvdSinrUl or (D2D or D2D_MULTI, at a D2D-capable radio)
+     * rcvdSinrD2D, in the aggregate statistic and in the carrier's own.
      */
     void emitRcvdSinr(Direction dir, GHz carrierFrequency, double sinr);
 

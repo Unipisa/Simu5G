@@ -664,7 +664,7 @@ def grade_d2d_link_budget(grader):
     # on heights TR 38.901 does not define for it.
     breakpoint = plr._dbp_effective(fc, hBS, hUT)
 
-    table = scalar_table('module =~ "*.radioMedium.nrChannelModel[*]" '
+    table = scalar_table('module =~ "*.ueD2DRx[0].cellularNic.nrRadio.receiver" '
                          'AND name =~ "rcvdSinrD2D:*"', itervars=('d',))
     previous = None
     for d, row in table.iterrows():

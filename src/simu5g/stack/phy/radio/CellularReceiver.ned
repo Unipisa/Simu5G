@@ -48,6 +48,8 @@ module CellularReceiver
         @statisticTemplate[measuredSinrDl](title="SINR measured at feedback computation on one carrier, DL"; unit="dB"; record=mean,vector);
         @signal[measuredSinrUl-*];
         @statisticTemplate[measuredSinrUl](title="SINR measured at feedback computation on one carrier, UL"; unit="dB"; record=mean,vector);
+        @signal[rcvdSinrD2D*];
+        @statisticTemplate[rcvdSinrD2D](title="SINR measured at packet reception, D2D"; unit="dB"; record=mean,vector);
     submodules:
         errorModel: BlerCurveErrorModel {
             @display("p=100,100");

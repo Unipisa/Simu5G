@@ -411,7 +411,8 @@ class StochasticChannelModel : public ChannelModelBase
      * Emit the received-SINR statistic for a decoded frame, on the UE's
      * receiver: the decoding radio's for a downlink reception, the sending UE's
      * for any other. The D2D model overrides it to route D2D/D2D_MULTI receptions
-     * to rcvdSinrD2D instead of letting them fall into the uplink statistic.
+     * to the decoding radio's rcvdSinrD2D instead of letting them fall into the
+     * uplink statistic.
      *
      * @param radio the radio the evaluation is at, the decoding one
      * @param dir direction of the reception
