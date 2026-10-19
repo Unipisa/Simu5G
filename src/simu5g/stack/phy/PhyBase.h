@@ -191,6 +191,9 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     double getCableLoss() override;
     CellularReceiver *getReceiver() override;
 
+    /** The radio medium the PHY's radio is on. */
+    CellularRadioMedium *getRadioMedium() const { return radioMedium_; }
+
     /** The transmitter of the PHY's radio. */
     virtual CellularTransmitter *getTransmitter();
 

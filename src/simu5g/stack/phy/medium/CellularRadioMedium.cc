@@ -56,6 +56,16 @@ std::vector<double> CellularRadioMedium::computeSinr(IRadioEndpoint *receiver, c
     return getWhatIfChannelModel(receiver, transmission)->computeSinr(receiver, transmission);
 }
 
+std::vector<double> CellularRadioMedium::computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame)
+{
+    GHz carrierFrequency = check_and_cast<UserControlInfo *>(frame->getControlInfo())->getCarrierFrequency();
+    ChannelModelBase *channelModel = receiver->getChannelModel(carrierFrequency);
+    if (channelModel == nullptr)
+        throw cRuntimeError("CellularRadioMedium::computeReceptionRsrp(): the receiver %d does not operate on the frame's carrier %g GHz",
+                (int)num(receiver->getMacNodeId()), carrierFrequency.get());
+    return channelModel->computeReceptionRsrp(receiver, frame);
+}
+
 void CellularRadioMedium::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {

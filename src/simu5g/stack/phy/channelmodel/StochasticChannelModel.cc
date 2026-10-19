@@ -684,6 +684,15 @@ std::vector<double> StochasticChannelModel::computeRsrp(IRadioEndpoint *receiver
     return getRSRP(whatIfLink(receiver, transmission), transmission.txPower);
 }
 
+std::vector<double> StochasticChannelModel::computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame)
+{
+    auto info = check_and_cast<UserControlInfo *>(frame->getControlInfo());
+    Direction dir = (Direction)info->getDirection();
+    if (dir != D2D && dir != D2D_MULTI)
+        throw cRuntimeError("StochasticChannelModel::computeReceptionRsrp(): only for a D2D frame, not one in direction %s", dirToA(dir).c_str());
+    return getRSRP_D2D(frame, info, receiver->getMacNodeId(), receptionPosition(receiver, frame));
+}
+
 std::vector<double> StochasticChannelModel::computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission)
 {
     RadioLink link = whatIfLink(receiver, transmission);

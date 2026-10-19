@@ -227,6 +227,19 @@ class ChannelModelBase : public cSimpleModule
      */
     virtual std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) = 0;
 
+    /*
+     * The power per band, in dBm, with which a frame received at the receiver
+     * arrived: its transmission's from where its transmitter was as it started,
+     * to where the receiver was as the frame began to arrive (the radio's
+     * arrival stamp), at the frame's start time -- a real reception, not a
+     * what-if. So far for a D2D frame only (the capture effect of a
+     * one-to-many D2D receiver ranks the frames of a slot by it).
+     *
+     * @param receiver the radio the frame arrived at, which uses this model on the frame's carrier
+     * @param frame the received frame, with its control info
+     */
+    virtual std::vector<double> computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame) = 0;
+
     virtual bool isUplinkInterferenceEnabled() { return false; }
 
     /// Whether transmissions must be recorded in the Binder's UL transmission map

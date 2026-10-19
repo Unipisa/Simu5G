@@ -96,6 +96,14 @@ class CellularRadioMedium : public cSimpleModule
     virtual std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission);
 
     /**
+     * The power per band, in dBm, with which a frame received at the receiver
+     * arrived (see ChannelModelBase::computeReceptionRsrp()): a real reception,
+     * at the receiver's position as the frame began to arrive. Evaluated by
+     * the channel model of the receiver's RAT on the frame's carrier.
+     */
+    virtual std::vector<double> computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame);
+
+    /**
      * Adds a radio under the node id of its PHY. A radio registered with
      * NODEID_NONE is on the medium, but cannot be looked up. If radioModule is
      * given, broadcast frames are sent to its radioIn gate (entering at the

@@ -273,6 +273,12 @@ class StochasticChannelModel : public ChannelModelBase
     std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
 
     /*
+     * The received power per band of a D2D or one-to-many D2D frame at the
+     * receiver (see getRSRP_D2D()), at the frame's arrival position
+     */
+    std::vector<double> computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame) override;
+
+    /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
      * after that it throws a random number in order to check if this packet will be corrupted or not
      *

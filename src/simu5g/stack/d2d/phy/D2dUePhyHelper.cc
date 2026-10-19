@@ -18,7 +18,7 @@
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/phy/PhyBase.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
-#include "simu5g/stack/d2d/phy/channelmodel/ID2dChannelModel.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
 
 namespace simu5g {
@@ -38,8 +38,7 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
     // Store the frame received from the nearest transmitter
     UserControlInfo *newInfo = check_and_cast<UserControlInfo *>(newFrame->getControlInfo());
     GHz carrierFreq = newInfo->getCarrierFrequency();
-    ChannelModelBase *channelModel = phy_->getChannelModel(carrierFreq);
-    if (channelModel == nullptr)
+    if (phy_->getChannelModel(carrierFreq) == nullptr)
         throw cRuntimeError("D2dUePhyHelper::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     // where this radio was as the frame started to arrive
@@ -55,7 +54,8 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
 
         double sum = 0.0;
         unsigned int allocatedRbs = 0;
-        rsrpVector = check_and_cast<ID2dChannelModel *>(channelModel)->getRSRP_D2D(newFrame, newInfo, phy_->getMacNodeId(), myCoord);
+        // the frame's power as it arrived, from the medium
+        rsrpVector = phy_->getRadioMedium()->computeReceptionRsrp(phy_, newFrame);
 
         // Get the average RSRP on the RBs allocated for the transmission
         RbMap rbmap = newInfo->getGrantedBlocks();

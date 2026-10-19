@@ -77,6 +77,10 @@ class IdealChannelModel : public ChannelModelBase
      * Compute fake SINR for each band of a what-if
      */
     std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
+    /*
+     * Compute fake received useful signal for each band of a received frame
+     */
+    std::vector<double> computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame) override;
 };
 
 } //namespace

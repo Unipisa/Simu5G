@@ -73,6 +73,12 @@ std::vector<double> IdealChannelModel::computeSinr(IRadioEndpoint *receiver, con
     return std::vector<double>(numBands_, FAKE_SINR_DB);
 }
 
+std::vector<double> IdealChannelModel::computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame)
+{
+    // fake RSRP, as computeRsrp()
+    return std::vector<double>(numBands_, FAKE_SINR_DB);
+}
+
 bool IdealChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     double per = getErrorProbability(lteInfo->getDirection(), lteInfo->getTxNumber());
