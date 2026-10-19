@@ -28,7 +28,14 @@ between are graded against the draw, on a copy of the receiver's generator
 (see ChannelModelReception), and a series at one fixed rate would be
 contradicted.
 
+A rate outside 0..1 is a defect of the error model: CellularReceiver::decide()
+asserts the range, before it draws. Checked directly and through the channel
+model, at both ends and with NaN. An ASSERT is a cRuntimeError in a debug build,
+caught here like any other; a release build compiles it out, so there the checks
+are placeholders that keep the count.
+
 %includes:
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -369,10 +376,46 @@ for (const Link& link : links) {
     c.check(link.name + ": ...that tells the rate from a fixed one", contradictsFixedRate > 0);
 }
 
+//
+// --- a rate outside 0..1 ---
+//
+{
+    auto expectAssert = [&] (const std::string& what, auto fn) {
+#ifdef NDEBUG
+        c.check(what + " (not checked: a release build compiles the ASSERT out)", true);
+#else
+        bool rejected = false;
+        std::string message;
+        int draws = drawsDuring(ueReceiver, [&] {
+            try {
+                fn();
+            }
+            catch (cRuntimeError& e) {
+                rejected = true;
+                message = e.what();
+            }
+        });
+        c.check(what + " is rejected, with no draw", rejected && draws == 0, "draws=" + std::to_string(draws) + " " + message);
+#endif
+    };
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    expectAssert("decide(1.5)", [&] { ueReceiver->decide(1.5); });
+    expectAssert("decide(-0.1)", [&] { ueReceiver->decide(-0.1); });
+    expectAssert("decide(NaN)", [&] { ueReceiver->decide(nan); });
+
+    Reception r = makeReception(links[0]);
+    r.blocks = everyBand;
+    auto *stub = stubOf(ueReceiver);
+    stub->rate = 1.5;
+    expectAssert("an error model's rate of 1.5", [&] { decide(model, r); });
+    stub->rate = -0.1;
+    expectAssert("an error model's rate of -0.1", [&] { decide(model, r); });
+}
+
 c.summary();
 
 %contains: stdout
-modelchecks=171 modelfailures=0
+modelchecks=176 modelfailures=0
 
 %not-contains: stdout
 FAILED

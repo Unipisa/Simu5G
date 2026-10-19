@@ -18,7 +18,8 @@ package simu5g.stack.phy.channelmodel;
 // statistically -- drawn from the distributions of a 3GPP propagation study,
 // rather than computed from the geometry of an actual environment -- which is
 // what sets this model apart from ~IdealChannelModel, where there are no
-// impairments at all, only a configured packet error rate.
+// impairments at all (and, with a ~ConfiguredRateErrorModel at the receivers,
+// only a configured packet error rate).
 //
 // It covers:
 // - path loss per deployment scenario, LOS/NLOS state and log-normal shadowing,

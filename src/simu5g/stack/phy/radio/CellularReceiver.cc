@@ -36,6 +36,7 @@ ICellularErrorModel *CellularReceiver::getErrorModel() const
 bool CellularReceiver::decide(double packetErrorRate)
 {
     Enter_Method("decide");
+    ASSERT(packetErrorRate >= 0 && packetErrorRate <= 1);
     double randomSample = uniform(0.0, 1.0);
     bool received = randomSample > packetErrorRate;
     EV << "CellularReceiver: packet error rate " << packetErrorRate << ", random sample " << randomSample

@@ -22,25 +22,10 @@ using namespace omnetpp;
 
 class IdealChannelModel : public ChannelModelBase
 {
-  private:
-    // volatile, so that the error rate can be made a function of simulation time --
-    // which is how a coverage loss is scripted
-    cPar *perDl_ = nullptr;
-    cPar *perUl_ = nullptr;
-    cPar *perD2D_ = nullptr;
-    double harqReduction_ = 0;
-
-    /**
-     * Error probability of the txNumber-th transmission attempt of a frame sent in
-     * the given direction.
-     */
-    virtual double getErrorProbability(Direction dir, unsigned char txNumber) const;
-
   public:
-    void initialize(int stage) override;
-
     /*
-     * Compute the error probability of the transmitted packet
+     * Decide the reception by the receiver's error model, at the model's fixed
+     * SINR on every band
      *
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info

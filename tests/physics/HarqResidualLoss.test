@@ -3,12 +3,14 @@
 The residual loss rate HARQ leaves for RLC is an exactly known number, and
 nothing checks it.
 
-IdealChannelModel decides reception by a coin flip whose probability is
-per * harqReduction^(n-1) for the n-th attempt (IdealChannelModel.cc:37). With
-harqReduction = 1 the attempts of a MAC PDU are independent and identically
-distributed, so the PDU is discarded only when all maxHarqRtx+1 of them fail,
-with probability perDl^(maxHarqRtx+1). IdealChannelModel.ned:32 states this
-contract in prose, and simulations/nr/rlc/omnetpp.ini:15 states it again as
+With IdealChannelModel as the channel and ConfiguredRateErrorModel at the
+receivers, a reception is decided by a coin flip whose probability is
+per * harqReduction^(n-1) for the n-th attempt
+(ConfiguredRateErrorModel::computePacketErrorRate()). With harqReduction = 1
+the attempts of a MAC PDU are independent and identically distributed, so the
+PDU is discarded only when all maxHarqRtx+1 of them fail, with probability
+perDl^(maxHarqRtx+1). ConfiguredRateErrorModel.ned states this contract in
+prose, and simulations/nr/rlc/omnetpp.ini:15 states it again as
 the reason those scenarios exist; neither is tested.
 
 This grades it over a 3x3 sweep of the base and the exponent, so an error in
@@ -85,6 +87,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 # No propagation at all, so the loss rate is the configured number rather than
 # an emergent property of geometry and MCS selection.
 *.radioMedium.nrChannelModelType = "IdealChannelModel"
+**.receiver.errorModel.typename = "ConfiguredRateErrorModel"
 
 # Independent attempts. This is the assumption the closed form rests on.
 **.harqReduction = 1
