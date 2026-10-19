@@ -73,17 +73,11 @@ std::vector<double> IdealChannelModel::computeSinr(IRadioEndpoint *receiver, con
     return std::vector<double>(numBands_, FAKE_SINR_DB);
 }
 
-std::vector<double> IdealChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)
-{
-    std::vector<double> tmp(numBands_, FAKE_SINR_DB);
-    // fake SINR is needed by the handover function to decide if the terminal should trigger the handover
-    return tmp;
-}
-
 bool IdealChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
     double per = getErrorProbability(lteInfo->getDirection(), lteInfo->getTxNumber());
     // the receiving node's receiver draws the decision
+    ASSERT(radio->getReceiver() != nullptr); // no frame reaches a phantom radio
     bool success = radio->getReceiver()->decide(per);
     EV << "IdealChannelModel::isReceptionSuccessful - transmission " << (int)lteInfo->getTxNumber()
        << ", error probability " << per << " -> " << (success ? "received" : "lost") << endl;

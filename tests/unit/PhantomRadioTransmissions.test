@@ -249,7 +249,7 @@ auto *spareRadio = check_and_cast<CellularPhantomRadio *>(network->getSubmodule(
             medium->findRadio(bgId) == static_cast<IRadioEndpoint *>(bgRadio));
 }
 
-c.expectRejected("a phantom radio has no receiver", [&] { bgRadio->getReceiver(); });
+c.check("a phantom radio has no receiver", bgRadio->getReceiver() == nullptr);
 
 c.check("a phantom radio answers outdoors, whatever **.insideBuilding says",
         !bgRadio->isInsideBuilding() && bgRadio->getInsideDistance() == 0 && bgRadio->getPenetrationLossDeviate() == 0);

@@ -78,7 +78,7 @@ class IRadioEndpoint
     /** The loss between the antenna and the receiver, in dB. */
     virtual double getCableLoss() = 0;
 
-    /** The receiver, which decides the receptions at this endpoint. */
+    /** The receiver, which decides the receptions at this endpoint; nullptr for a radio without one (a phantom radio). */
     virtual CellularReceiver *getReceiver() = 0;
 
     /**

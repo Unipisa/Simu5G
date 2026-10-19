@@ -109,7 +109,7 @@ struct RadioLink
  *
  * This is not a propagation model: it is the interface to the entire PHY link
  * model. A channel model is asked for received power (getRSRP), for per-band
- * SINR (getSINR, getSINR_bgUe), and for the reception decision itself
+ * SINR (getSINR, and computeSinr for a what-if), and for the reception decision itself
  * (isReceptionSuccessful), so it owns propagation, fading, interference and
  * the SINR-to-error mapping alike. Path loss (getAttenuation,
  * computePathLoss) is one ingredient among those, not the subject of the
@@ -209,15 +209,6 @@ class ChannelModelBase : public cSimpleModule
      * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo) = 0;
-    /*
-     * Compute SINR for each band for a background UE according to path loss
-     *
-     * @param radio the radio the evaluation is at: the receiver of a frame, or the
-     *        base station computing a CQI
-     * @param frame pointer to the packet
-     * @param lteInfo pointer to the user control info
-     */
-    virtual std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) = 0;
 
     /*
      * What the receiver would receive of a transmission that is not on the

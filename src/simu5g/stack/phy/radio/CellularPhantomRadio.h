@@ -78,8 +78,8 @@ class CellularPhantomRadio : public cModule, public IRadioEndpoint
     virtual double getAntennaGain() override;
     virtual double getNoiseFigure() override { return noiseFigure_; }
     virtual double getCableLoss() override { return cableLoss_; }
-    /** A phantom radio has no receiver: throws. */
-    virtual CellularReceiver *getReceiver() override;
+    /** A phantom radio has no receiver: nullptr, as INET's NoiseSource. */
+    virtual CellularReceiver *getReceiver() override { return nullptr; }
     /** The medium's channel model of the radio's RAT on the carrier; nullptr for GHz(0.0), as the radio has no primary carrier. */
     virtual ChannelModelBase *getChannelModel(GHz carrierFreq = GHz(0.0)) override;
 };

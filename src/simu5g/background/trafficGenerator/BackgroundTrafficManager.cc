@@ -52,29 +52,29 @@ unsigned int BackgroundTrafficManager::getNumBands()
 
 std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    // This is a fictitious frame that we need to compute the SINR
-    AirFrame *frame = new AirFrame("bgUeSinrComputationFrame");
-    UserControlInfo *cInfo = new UserControlInfo();
-
-    // Build a control info
-    cInfo->setSourceId(getBgUeId(bgUeIndex));  // MacNodeId for the bgUe
-    cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
-    cInfo->setFrameType(FEEDBACKPKT);
-    cInfo->setCoord(bgUePos);
-    cInfo->setDirection(dir);
-    cInfo->setCarrierFrequency(carrierFrequency_);
-    if (dir == UL)
-        cInfo->setTxPower(bgUeTxPower);
-    else
-        cInfo->setTxPower(bsTxPower_);
-
-    std::vector<double> snr = channelModel_->getSINR_bgUe(phy_.get(), frame, cInfo, bgUe_.at(bgUeIndex)->getSpeed());
-
-    // Free memory
-    delete frame;
-    delete cInfo;
-
-    return snr;
+    // a CQI is a what-if on the medium: in DL a transmission of the base
+    // station to the UE, at the UE's phantom radio; in UL one of the UE's
+    // phantom radio, at the base station. The UE's position and power are its
+    // radio's: bgUePos and bgUeTxPower, its mobility's position and its
+    // generator's power, are the same values.
+    MacNodeId bgUeId = getBgUeId(bgUeIndex);
+    CellularPhantomRadio *bgUeRadio = getBgUeRadio(bgUeId);
+    IRadioEndpoint *transmitter = dir == DL ? static_cast<IRadioEndpoint *>(phy_.get()) : bgUeRadio;
+    IRadioEndpoint *receiver = dir == DL ? bgUeRadio : static_cast<IRadioEndpoint *>(phy_.get());
+    CellularTransmission transmission;
+    transmission.transmitter = transmitter;
+    transmission.sourceId = transmitter->getMacNodeId();
+    transmission.destId = receiver->getMacNodeId();
+    transmission.cellId = bsNodeId_;
+    transmission.direction = dir;
+    transmission.frameType = FEEDBACKPKT;
+    transmission.carrierFrequency = carrierFrequency_;
+    transmission.txPower = transmitter->getTxPwr(dir);
+    transmission.startPosition = transmitter->getCoord();
+    transmission.txDirection = transmitter->getTxDirection();
+    transmission.txAngle = transmitter->getTxAngle();
+    transmission.startTime = simTime();
+    return radioMedium_->computeSinr(receiver, transmission);
 }
 
 unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)

@@ -87,11 +87,6 @@ double CellularPhantomRadio::getAntennaGain()
     return antenna_->getGain();
 }
 
-CellularReceiver *CellularPhantomRadio::getReceiver()
-{
-    throw cRuntimeError("CellularPhantomRadio::getReceiver(): the phantom radio of node %d has no receiver", (int)num(nodeId_));
-}
-
 ChannelModelBase *CellularPhantomRadio::getChannelModel(GHz carrierFreq)
 {
     if (carrierFreq == GHz(0.0))

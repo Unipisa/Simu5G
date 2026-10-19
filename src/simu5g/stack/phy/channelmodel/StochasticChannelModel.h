@@ -271,14 +271,6 @@ class StochasticChannelModel : public ChannelModelBase
     std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
 
     /*
-     * Compute sinr for each band for a background UE according to pathloss
-     *
-     * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
-     */
-    std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
-
-    /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
      * after that it throws a random number in order to check if this packet will be corrupted or not
      *

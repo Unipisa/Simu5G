@@ -77,13 +77,6 @@ class IdealChannelModel : public ChannelModelBase
      * Compute fake SINR for each band of a what-if
      */
     std::vector<double> computeSinr(IRadioEndpoint *receiver, const CellularTransmission& transmission) override;
-    /*
-     * Compute SINR for each band for a background UE according to path loss
-     *
-     * @param frame pointer to the packet
-     * @param lteInfo pointer to the user control info
-     */
-    std::vector<double> getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed) override;
 };
 
 } //namespace

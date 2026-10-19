@@ -467,9 +467,13 @@ std::vector<double> StochasticChannelModel::getSINR(const RadioLink& link, UserC
     // emit SINR statistic. Only DL and UL have a measured-SINR signal; other link
     // types must not be reported as one of them. The UE's receiver records it in
     // both directions (for UL we are on the BS).
+    // A background UE's phantom radio has no receiver, and records nothing.
     if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0
-        && (link.dir == DL || link.dir == UL))
-        radioMedium_->getRadio(ueId)->getReceiver()->emitMeasuredSinr(link.dir, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
+        && (link.dir == DL || link.dir == UL)) {
+        CellularReceiver *ueReceiver = radioMedium_->getRadio(ueId)->getReceiver();
+        if (ueReceiver != nullptr)
+            ueReceiver->emitMeasuredSinr(link.dir, lteInfo->getCarrierFrequency(), sumSnr / usedRBs);
+    }
     return snrVector;
 }
 
@@ -679,163 +683,6 @@ std::vector<double> StochasticChannelModel::computeSinr(IRadioEndpoint *receiver
     return getSINR(link, &info, getRSRP(link, transmission.txPower));
 }
 
-std::vector<double> StochasticChannelModel::getSINR_bgUe(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo, double speed)
-{
-    //get tx power
-    double recvPower = lteInfo->getTxPower(); // dBm
-
-    // get MacId and Direction
-    MacNodeId bgUeId = lteInfo->getSourceId();
-    MacNodeId eNbId = lteInfo->getDestId();
-    Direction dir = lteInfo->getDirection();
-
-    // position of e/gNb and UE
-    Coord ueCoord = lteInfo->getCoord();
-    Coord enbCoord = radio->getCoord();
-
-    double antennaGainTx = 0.0;
-    double antennaGainRx = 0.0;
-    double noiseFigure = 0.0;
-
-    EV << "------------ GET SINR for background UE ----------------" << endl;
-    //===================== PARAMETERS SETUP ============================
-    /*
-     * This function is called on the e/gNodeB side and is similar
-     * to what is called when computing feedback
-     */
-    if (dir == DL) {
-        //set noise figure
-        noiseFigure = ueNoiseFigure_; //dB
-        //set antenna gain figure
-        antennaGainTx = antennaGainEnB_; //dB
-        antennaGainRx = antennaGainUe_;  //dB
-    }
-    else { // if( dir == UL )
-        // TODO check if antennaGainEnB should be added in UL direction too
-        antennaGainTx = antennaGainUe_;
-        antennaGainRx = antennaGainEnB_;
-        noiseFigure = bsNoiseFigure_;
-    }
-    CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
-    const char *eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
-
-    EV << "StochasticChannelModel::getSINR_bgUe - DIR=" << ((dir == DL) ? "DL" : "UL")
-       << " " << eNbTypeString << " - txPwr " << lteInfo->getTxPower()
-       << " - ueCoord[" << ueCoord << "] - enbCoord[" << enbCoord << "] - enbId[" << eNbId << "]" <<
-        endl;
-
-    //=================== END PARAMETERS SETUP =======================
-
-    //=============== PATH LOSS =================
-    // Note that shadowing and fading effects are not applied here and left FFW
-
-    // UL because we are computing a feedback
-    RadioLink link = cellularLink(radio, bgUeId, UL, ueCoord);
-    double attenuation = getAttenuation(link);
-
-    //compute recvPower
-    recvPower -= attenuation; // (dBm-dB)=dBm
-
-    //add antenna gain
-    recvPower += antennaGainTx; // (dBm+dB)=dBm
-    recvPower += antennaGainRx; // (dBm+dB)=dBm
-    //sub cable loss
-    recvPower -= cableLoss_; // (dBm-dB)=dBm
-
-    // ANGULAR ATTENUATION
-    if (dir == DL) {
-        //get tx angle
-        IRadioEndpoint *bsEndpoint = radioMedium_->findRadio(eNbId);
-
-        if (bsEndpoint && bsEndpoint->getTxDirection() == ANISOTROPIC) {
-            // get tx angle
-            double txAngle = bsEndpoint->getTxAngle();
-
-            // compute the angle between uePosition and reference axis, considering the eNb as center
-            double ueAngle = computeAngle(enbCoord, ueCoord);
-
-            // compute the reception angle between ue and eNb
-            double recvAngle = fabs(txAngle - ueAngle);
-
-            if (recvAngle > 180)
-                recvAngle = 360 - recvAngle;
-
-            double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
-
-            // compute attenuation due to sectorial tx
-            double angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
-
-            recvPower -= angularAtt;
-        }
-        // else, antenna is omni-directional
-    }
-
-    std::vector<double> snrVector;
-    snrVector.resize(numBands_, recvPower);
-
-    // for each logical band
-    double fadingAttenuation = 0;
-    for (unsigned int i = 0; i < numBands_; i++) {
-        //if fading is enabled
-        if (fading_) {
-            //Applying fading
-            if (fadingType_ == RAYLEIGH)
-                fadingAttenuation = rayleighFading(bgUeId, i);
-
-            else if (fadingType_ == JAKES)
-                fadingAttenuation = jakesFading(jakesFadingMap(), link.linkKey, speed, i, link.startTime);
-        }
-        // add fading contribution to the received power
-        double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
-
-        snrVector[i] = finalRecvPower;
-    }
-
-    //============ END PATH LOSS + SHADOWING + FADING ===============
-
-    /*
-     * The SINR will be calculated as follows
-     *
-     *           Pwr
-     * SINR = ---------
-     *         N  +  I
-     *
-     * Ndb = thermalNoise_ + noiseFigure (measured in decibel)
-     * I = the interference of other cells, external cells, background cells and their UEs
-     */
-
-    // TODO Interference computation still needs to be implemented
-
-    //============ INTERFERENCE COMPUTATION =================
-    // for background UEs, we only compute CQI
-    bool isCqi = true;
-    RbMap rbmap;
-    // the interference on each band: from other cells' transmissions, external cells' and background cells'
-    std::vector<double> interference(numBands_, 0); // Linear value (mW)
-    if (dir == DL)
-        computeDownlinkInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, enableDownlinkInterference_);
-    else if (dir == UL)
-        computeUplinkInterference(radio, eNbId, bgUeId, enbCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &interference, enableUplinkInterference_);
-
-    //===================== SINR COMPUTATION ========================
-    // compute and linearize total noise
-    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
-
-    // add interference for each band
-    for (unsigned int i = 0; i < numBands_; i++) {
-        // denominator expressed in dBm as (N+I)
-        double den = linearToDBm(totN + interference[i]);
-
-        EV << "\t interference[" << interference[i] << "] - recvPwr["
-           << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i] - den << "]\n";
-
-        // compute final SINR
-        snrVector[i] -= den;
-    }
-
-    return snrVector;
-}
-
 double StochasticChannelModel::rayleighFading(MacNodeId id,
         unsigned int band)
 {
@@ -959,6 +806,7 @@ bool StochasticChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFra
 
     // the receiving node's receiver decides, against its error model
     CellularReceiver *receiver = radio->getReceiver();
+    ASSERT(receiver != nullptr); // no frame reaches a phantom radio
     std::optional<double> packetErrorRate = receiver->getErrorModel()->computePacketErrorRate(cqi, snrV, rbmap, transmissionAttempt);
     if (!packetErrorRate)
         return false; // lost for certain, no decision to draw
@@ -996,6 +844,7 @@ double StochasticChannelModel::cableLossOf(MacNodeId nodeId) const
 
 void StochasticChannelModel::emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
 {
+    ASSERT((dir == UL ? radioMedium_->getRadio(ueId) : radio)->getReceiver() != nullptr); // no frame reaches a phantom radio
     if (dir == DL) { // we are on the UE
         radio->getReceiver()->emitRcvdSinr(DL, carrierFrequency, sinr);
         return;
