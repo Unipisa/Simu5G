@@ -85,8 +85,6 @@ void BackgroundScheduler::initialize(int stage)
         bgTrafficManager_.reference(this, "trafficManagerModule", true);
         bgTrafficManager_->setCarrierFrequency(carrierFrequency_);
 
-        bgChannelModel_.reference(this, "channelModelModule", true);
-        bgChannelModel_->setCarrierFrequency(carrierFrequency_);
     }
 }
 

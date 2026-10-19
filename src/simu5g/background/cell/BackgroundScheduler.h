@@ -18,7 +18,6 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/background/cell/BackgroundCellChannelModel.h"
 #include "simu5g/nodes/ExtCellAllocator.h"
 #include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 #include "simu5g/stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
@@ -78,7 +77,6 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     inet::ModuleRefByPar<IBackgroundTrafficManager> bgTrafficManager_;
 
     // reference to the channel model for this background base station
-    inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;
 
     // TTI self message
     cMessage *ttiTick_ = nullptr;
@@ -115,8 +113,6 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 
     // This module is subscribed to position changes.
     void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
-
-    BackgroundCellChannelModel *getChannelModel() { return bgChannelModel_; }
 
     // the base station's phantom radio
     CellularPhantomRadio *getRadio() { return radio_; }

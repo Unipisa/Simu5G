@@ -124,14 +124,12 @@ BackgroundScheduler takes care of allocating RBs in both UL and
 DL directions. To accomplish that, it interacts with the
 BackgroundTrafficGenerator to get the BG UEs’ buffers and
 stores data structures relevant to the resource allocation.
-Moreover, the BackgroundCellChannelModel deals with the
-computation of SINR for the BG UEs according to the
-configurable parameters provided by this module (e.g. carrier
-frequency, transmission power and so on), whereas the Mobility
-module stores the position of the BG cell in the floorplan.
-Using this model, one can deploy the desired number of BG cells
-in the floorplan and each of them can be configured with its
-own channel model parameters and BG UEs.
+The SINR of the BG UEs is computed by the radio medium's channel
+models, like that of any UE, over the BG cell's radio and those
+of its BG UEs, whereas the Mobility module stores the position
+of the BG cell in the floorplan. Using this model, one can deploy
+the desired number of BG cells in the floorplan, each with its
+own transmission parameters and BG UEs.
 
 Running an emulation example with Simu5G
 ----------------------------------------

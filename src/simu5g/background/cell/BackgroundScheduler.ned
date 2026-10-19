@@ -27,7 +27,6 @@ simple BackgroundScheduler
         string radioMediumModule = default("radioMedium");
         string radioModule = default("^.radio"); // The base station's phantom radio
         string trafficManagerModule = default("^.bgTrafficGenerator.manager");
-        string channelModelModule = default("^.bgChannelModel");
 
         // Transmission power
         double txPower @unit(dBm) = default(46dBm);

@@ -13,7 +13,6 @@
 package simu5g.nodes;
 
 import inet.mobility.static.StationaryMobility;
-import simu5g.background.cell.BackgroundCellChannelModel;
 import simu5g.background.cell.BackgroundScheduler;
 import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.phy.radio.CellularPhantomRadio;
@@ -28,10 +27,10 @@ import simu5g.stack.phy.radio.CellularPhantomRadio;
 // transmission or reception of data packets to or from User Equipments (UEs).
 // Therefore, it is significantly more efficient from a simulation speed perspective.
 // To achieve this, it includes a ~BackgroundTrafficGenerator to customize the level of background
-// traffic to be simulated, a ~BackgroundCellChannelModel to configure channel parameters, and a
-// ~BackgroundScheduler that manages the allocation of time-frequency resources based on the traffic
-// generator, and a phantom radio (~CellularPhantomRadio) for the base station,
-// whose antenna and power are the scheduler's.
+// traffic to be simulated, a ~BackgroundScheduler that manages the allocation of time-frequency
+// resources based on the traffic generator, and a phantom radio (~CellularPhantomRadio) for the
+// base station, whose antenna and power are the scheduler's. The links of the base station and of
+// its background UEs are evaluated by the radio medium's channel models, as every other link.
 // Note that this module can generate interference on only one Component Carrier, as configured
 // in the ~BackgroundScheduler module. To produce interference across multiple carriers, it is
 // possible to use multiple instances of this module, each configured with the desired carrier frequency.
@@ -43,7 +42,7 @@ import simu5g.stack.phy.radio.CellularPhantomRadio;
 module BackgroundCell
 {
     parameters:
-        @display("i=device/antennatower;bgb=430,230");
+        @display("i=device/antennatower;bgb=430,163");
         // the radio's RAT, power and antenna, and the background UEs' RAT, are the scheduler's
         radio.isNr = bgScheduler.isNr;
         radio.txPower = bgScheduler.txPower;
@@ -55,11 +54,6 @@ module BackgroundCell
         // mobility module for the background base station
         mobility: StationaryMobility {
             @display("p=100,38;is=s");
-        }
-
-        // channel model for the background cell
-        bgChannelModel: BackgroundCellChannelModel {
-            @display("p=100,105;is=s");
         }
 
         // perform the scheduling for the BackgroundCell
@@ -76,7 +70,7 @@ module BackgroundCell
 
         // the base station's radio
         radio: CellularPhantomRadio {
-            @display("p=100,172;is=s");
+            @display("p=100,105;is=s");
             antenna.gain = default(18dBi);
             noiseFigure = default(5dB);
         }
