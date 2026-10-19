@@ -118,6 +118,9 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 
     BackgroundCellChannelModel *getChannelModel() { return bgChannelModel_; }
 
+    // the base station's phantom radio
+    CellularPhantomRadio *getRadio() { return radio_; }
+
     const inet::Coord getPosition() const { return pos_; }
 
     int getId() const { return id_; }

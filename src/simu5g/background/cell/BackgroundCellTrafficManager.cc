@@ -18,6 +18,7 @@
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/PhyEnb.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 namespace simu5g {
 
@@ -58,12 +59,39 @@ unsigned int BackgroundCellTrafficManager::getNumBands()
 
 std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    BackgroundCellChannelModel *bgChannelModel = bgScheduler_->getChannelModel();
-    TrafficGeneratorBase *bgUe = bgUe_.at(bgUeIndex);
-
+    // a CQI is a what-if on the medium, as a real cell's background UE's: in DL
+    // a transmission of the cell's phantom radio at the UE's, in UL one of the
+    // UE's phantom radio at the cell's. The UE's position and power are its
+    // radio's: bgUePos and bgUeTxPower, its mobility's position and its
+    // generator's power, are the same values.
     MacNodeId bgUeId = getBgUeId(bgUeIndex);
-    std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgScheduler_, dir);
-    return snr;
+    CellularPhantomRadio *bgUeRadio = getBgUeRadio(bgUeId);
+    CellularPhantomRadio *cellRadio = bgScheduler_->getRadio();
+    CellularPhantomRadio *transmitter = dir == DL ? cellRadio : bgUeRadio;
+    CellularPhantomRadio *receiver = dir == DL ? bgUeRadio : cellRadio;
+    CellularTransmission transmission;
+    transmission.transmitter = transmitter;
+    transmission.phantomCell = bgScheduler_.get();
+    transmission.sourceId = transmitter->getMacNodeId();
+    transmission.destId = receiver->getMacNodeId();
+    transmission.cellId = bgScheduler_->getNodeId();
+    transmission.direction = dir;
+    transmission.frameType = FEEDBACKPKT;
+    transmission.carrierFrequency = carrierFrequency_;
+    transmission.txPower = transmitter->getTxPwr(dir);
+    transmission.startPosition = transmitter->getCoord();
+    transmission.txDirection = transmitter->getTxDirection();
+    transmission.txAngle = transmitter->getTxAngle();
+    transmission.startTime = simTime();
+    std::vector<double> sinr = radioMedium_->computeSinr(receiver, transmission);
+
+    // the cell's bands: the first ones of its carrier
+    unsigned int numBands = bgScheduler_->getNumBands();
+    if (numBands > sinr.size())
+        throw cRuntimeError("BackgroundCellTrafficManager::getSINR(): the background cell has %u bands, its carrier %g GHz only %u",
+                numBands, carrierFrequency_.get(), (unsigned int)sinr.size());
+    sinr.resize(numBands);
+    return sinr;
 }
 
 unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
