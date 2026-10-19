@@ -19,7 +19,7 @@ package simu5g.stack.phy.radio;
 // soft combining). A reception with CQI 0, or with a block below the curves,
 // is lost for certain.
 //
-simple BlerCurveErrorModel
+simple BlerCurveErrorModel like ICellularErrorModel
 {
     parameters:
         string binderModule = default("binder");

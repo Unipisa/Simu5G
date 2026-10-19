@@ -24,7 +24,7 @@
 #include "simu5g/stack/phy/channelmodel/Tr36814PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/Tr36873PathLossModel.h"
 #include "simu5g/stack/phy/channelmodel/Tr38901PathLossModel.h"
-#include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
+#include "simu5g/stack/phy/radio/ICellularErrorModel.h"
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
 
 namespace simu5g {
@@ -827,7 +827,7 @@ bool StochasticChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFra
     // the receiving node's receiver decides, against its error model
     CellularReceiver *receiver = radio->getReceiver();
     ASSERT(receiver != nullptr); // no frame reaches a phantom radio
-    std::optional<double> packetErrorRate = receiver->getErrorModel()->computePacketErrorRate(cqi, snrV, rbmap, transmissionAttempt);
+    std::optional<double> packetErrorRate = receiver->getErrorModel()->computePacketErrorRate(dir, cqi, snrV, rbmap, transmissionAttempt);
     if (!packetErrorRate)
         return false; // lost for certain, no decision to draw
 

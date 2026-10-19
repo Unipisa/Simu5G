@@ -19,6 +19,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/phy/radio/ICellularErrorModel.h"
 
 namespace simu5g {
 
@@ -29,7 +30,7 @@ class Binder;
 /**
  * See the NED documentation of BlerCurveErrorModel.
  */
-class BlerCurveErrorModel : public cSimpleModule
+class BlerCurveErrorModel : public cSimpleModule, public ICellularErrorModel
 {
   protected:
     inet::ModuleRefByPar<Binder> binder_;
@@ -40,12 +41,11 @@ class BlerCurveErrorModel : public cSimpleModule
 
   public:
     /**
-     * The packet error rate of a reception with the given CQI, per-band SINR
-     * (dB) and allocation, at the given transmission attempt (1 for the first
-     * transmission); nullopt if the reception is lost for certain, without a
-     * decision to draw.
+     * The packet error rate from the BLER curves (see the NED documentation),
+     * the same in every direction.
      */
-    virtual std::optional<double> computePacketErrorRate(Cqi cqi, const std::vector<double>& sinrPerBand, const RbMap& grantedBlocks, unsigned char transmissionAttempt) const;
+    std::optional<double> computePacketErrorRate(Direction direction, Cqi cqi, const std::vector<double>& sinrPerBand, const RbMap& grantedBlocks,
+            unsigned char transmissionAttempt) const override;
 };
 
 } // namespace simu5g

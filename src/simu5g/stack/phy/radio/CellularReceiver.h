@@ -20,7 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class BlerCurveErrorModel;
+class ICellularErrorModel;
 
 /**
  * See the NED documentation of CellularReceiver.
@@ -67,7 +67,7 @@ class CellularReceiver : public cSimpleModule
 
   public:
     /** The error model the reception decisions are drawn against. */
-    BlerCurveErrorModel *getErrorModel() const;
+    ICellularErrorModel *getErrorModel() const;
 
     /**
      * Decides a reception with the given packet error rate by one uniform

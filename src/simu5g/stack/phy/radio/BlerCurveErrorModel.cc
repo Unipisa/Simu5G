@@ -23,7 +23,8 @@ void BlerCurveErrorModel::initialize()
     harqReduction_ = par("harqReduction");
 }
 
-std::optional<double> BlerCurveErrorModel::computePacketErrorRate(Cqi cqi, const std::vector<double>& sinrPerBand, const RbMap& grantedBlocks, unsigned char transmissionAttempt) const
+std::optional<double> BlerCurveErrorModel::computePacketErrorRate(Direction direction, Cqi cqi, const std::vector<double>& sinrPerBand, const RbMap& grantedBlocks,
+        unsigned char transmissionAttempt) const
 {
     PhyPisaData& curves = binder_->phyPisaData;
     double cumulativeSuccessProbability = 1.0;

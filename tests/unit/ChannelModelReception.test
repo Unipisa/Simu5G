@@ -232,7 +232,7 @@ sim-time-limit = 1s
 Checker c;
 auto *model = harnessModule<FixedSinrChannelModel>(this, "channelModel");
 auto *receiver = harnessModule<CellularReceiver>(this, "receiver");
-const double harqReduction = receiver->getErrorModel()->par("harqReduction").doubleValue();
+const double harqReduction = receiver->getSubmodule("errorModel")->par("harqReduction").doubleValue();
 
 // the decoding node: the model reaches its receiver through it (the model and
 // the receiver draw from the same RNG here, so the twin below replays both)

@@ -11,7 +11,7 @@
 
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
 
-#include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
+#include "simu5g/stack/phy/radio/ICellularErrorModel.h"
 
 namespace simu5g {
 
@@ -28,9 +28,9 @@ void CellularReceiver::initialize()
     cableLoss_ = par("cableLoss");
 }
 
-BlerCurveErrorModel *CellularReceiver::getErrorModel() const
+ICellularErrorModel *CellularReceiver::getErrorModel() const
 {
-    return check_and_cast<BlerCurveErrorModel *>(getSubmodule("errorModel"));
+    return check_and_cast<ICellularErrorModel *>(getSubmodule("errorModel"));
 }
 
 bool CellularReceiver::decide(double packetErrorRate)

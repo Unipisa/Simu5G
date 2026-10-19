@@ -51,7 +51,7 @@ module CellularReceiver
         @signal[rcvdSinrD2D*];
         @statisticTemplate[rcvdSinrD2D](title="SINR measured at packet reception, D2D"; unit="dB"; record=mean,vector);
     submodules:
-        errorModel: BlerCurveErrorModel {
+        errorModel: <default("BlerCurveErrorModel")> like ICellularErrorModel {
             @display("p=100,100");
         }
 }
