@@ -52,11 +52,12 @@ Module organization and extension points
 All D2D-specific modules live under the ``simu5g.stack.d2d`` package, kept
 separate from the core LTE/NR stack: the D2D-capable NICs (``LteNicUeD2D``,
 ``LteNicEnbD2D``, ``NrNicUeD2D``, ``NrNicEnbD2D``) and, in sub-packages, the
-D2D variants of the MAC, PHY, RLC, IP-to-NIC and RRC layers, the D2D AMC and
-channel models, and the mode-selection modules. The core stack reaches this
+D2D variants of the MAC, PHY, RLC, IP-to-NIC and RRC layers, the D2D AMC,
+and the mode-selection modules. D2D links themselves are evaluated by the
+radio medium's channel models, like every other link. The core stack reaches this
 code only through a small set of interfaces, which are the natural extension
 points for custom D2D behavior: the C++ interfaces ``ID2dMacUe``,
-``ID2dMacEnb``, ``ID2dAmc`` and ``ID2dChannelModel``, and the NED module
+``ID2dMacEnb`` and ``ID2dAmc``, and the NED module
 interface ``ID2DModeSelection``. To add a new mode-selection policy, subclass
 ``D2dModeSelectionBase`` (which implements the periodic evaluation and the
 switch-notification machinery) and select it via

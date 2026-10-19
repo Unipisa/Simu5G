@@ -47,7 +47,6 @@ reporting UE where it sent the report.
 #include <vector>
 #include "SchedulerTestUtil.h"
 #include "ChannelModelTestUtil.h"
-#include "simu5g/stack/d2d/phy/channelmodel/D2dChannelModel.h"
 
 %global:
 using namespace simu5g;
@@ -73,9 +72,9 @@ static double maxDiff(const std::vector<double>& a, const std::vector<double>& b
     return d;
 }
 
-// The D2D model's own link builder, which is protected. Never instantiated:
+// The model's own D2D link builder, which is protected. Never instantiated:
 // see ChannelModelProbe for the technique.
-struct D2dLinkAccess : D2dChannelModel
+struct D2dLinkAccess : StochasticChannelModel
 {
     static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
 };
@@ -84,7 +83,7 @@ struct D2dLinkAccess : D2dChannelModel
 import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
 
 network Harness
 {
@@ -92,7 +91,7 @@ network Harness
         binder: Binder;
         radioMedium: CellularRadioMedium;
         carrierAggregation: CarrierAggregation;
-        bsModel: Tr38901D2dChannelModel;
+        bsModel: Tr38901ChannelModel;
         test: Test;
 }
 
@@ -129,7 +128,7 @@ sim-time-limit = 1s
 
 %activity:
 Checker c;
-auto *model = harnessModule<D2dChannelModel>(this, "bsModel");
+auto *model = harnessModule<StochasticChannelModel>(this, "bsModel");
 auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
 const GHz carrier = model->getCarrierFrequency();
 const simtime_t slot = SimTime(250, SIMTIME_US);

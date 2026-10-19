@@ -70,7 +70,7 @@ class SeenValues : public cListener
 import simu5g.common.binder.Binder;
 import simu5g.stack.phy.medium.CellularRadioMedium;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
 import simu5g.stack.phy.radio.CellularReceiver;
 
 network Harness
@@ -79,7 +79,7 @@ network Harness
         binder: Binder;
         radioMedium: CellularRadioMedium;
         carrierAggregation: CarrierAggregation;
-        model: Tr38901D2dChannelModel;
+        model: Tr38901ChannelModel;
         enabledFirst: CellularReceiver;
         carriersFirst: CellularReceiver;
         senderReceiver: CellularReceiver;
