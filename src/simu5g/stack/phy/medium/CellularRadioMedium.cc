@@ -196,49 +196,6 @@ std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmis
     return uplink;
 }
 
-bool CellularRadioMedium::matchesUplinkTransmissionMap(GHz carrierFrequency, simtime_t from, simtime_t to, const std::vector<std::vector<UeAllocationInfo>> *mapOrNull) const
-{
-    static const std::vector<std::vector<UeAllocationInfo>> noMap;
-    const auto& map = mapOrNull != nullptr ? *mapOrNull : noMap;
-    // the registry's view, band by band
-    std::vector<std::vector<const CellularTransmission *>> view(map.size());
-    for (auto t : getUplinkTransmissionsDuring(carrierFrequency, from, to)) {
-        // background cells' UEs are not in the Binder's map
-        if (t->phantomCell != nullptr)
-            continue;
-        auto antennaIt = t->grantedBlocks.find(MACRO);
-        if (antennaIt == t->grantedBlocks.end())
-            continue;
-        for (const auto& [band, allocation] : antennaIt->second) {
-            if (allocation == 0)
-                continue;
-            if (band >= view.size())
-                return false;
-            view[band].push_back(t);
-        }
-    }
-    for (size_t band = 0; band < map.size(); band++) {
-        size_t i = 0;
-        for (const auto& info : map[band]) {
-            if (i >= view[band].size())
-                return false;
-            auto t = view[band][i++];
-            // a PHY's entry is its radio's frame, a background UE's entry the allocation its phantom radio sent
-            IRadioEndpoint *entryRadio = info.phy != nullptr ? static_cast<IRadioEndpoint *>(info.phy)
-                    : check_and_cast<CellularPhantomRadio *>(info.trafficGen->getParentModule()->getSubmodule("radio"));
-            if (info.nodeId != t->sourceId || info.dir != t->direction || entryRadio != t->transmitter)
-                return false;
-            // the cell and the power the interference computation takes for the entry
-            double txPower = info.phy != nullptr ? info.phy->getTxPwr(info.dir) : info.trafficGen->getTxPwr();
-            if (info.cellId != t->cellId || txPower != t->txPower)
-                return false;
-        }
-        if (i != view[band].size())
-            return false;
-    }
-    return true;
-}
-
 bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t from, simtime_t to) const
 {
     for (auto t : getDataTransmissionsDuring(carrierFrequency, from, to)) {

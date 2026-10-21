@@ -246,21 +246,6 @@ void Binder::unregisterNode(MacNodeId id)
 
     nodeGroupMemberships_.erase(id);
     ueNumerologyIndex_.erase(id);
-    // remove 'id' from ulTransmissionMap_ if currently scheduled
-    for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
-        for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
-            for (auto& ues : bands) { // all Ue's in each block
-                for(auto itr = ues.begin(); itr != ues.end(); ) {
-                    if (itr->nodeId == id) {
-                        itr = ues.erase(itr);
-                    }
-                    else {
-                        itr++;
-                    }
-                }
-            }
-        }
-    }
 
     // Tell the rest of the model, so that state this Binder does not own can be purged too.
     // Everything keyed by node id has the same problem: a departed id that stays behind is
@@ -345,9 +330,6 @@ void Binder::initialize(int stage)
         WATCH(carrierFreqToNumerologyIndex_);
         WATCH(ueMaxNumerologyIndex_);
         WATCH(ueNumerologyIndex_);
-        WATCH(ulTransmissionMap_);
-        WATCH(lastUpdateUplinkTransmissionInfo_);
-        WATCH(lastUplinkTransmission_);
         WATCH(x2ListeningPorts_);
         WATCH(x2PeerAddress_);
         WATCH(nodeGroupMemberships_);
@@ -552,104 +534,6 @@ std::vector<MacNodeId> Binder::getDeployedUes(MacNodeId enbNodeId)
             connectedUes.push_back(nodeId);
 
     return connectedUes;
-}
-
-simtime_t Binder::getLastUpdateUlTransmissionInfo()
-{
-    return lastUpdateUplinkTransmissionInfo_;
-}
-
-void Binder::initAndResetUlTransmissionInfo()
-{
-    // the update of this slot is done even if nothing is shifted, so a later
-    // call in the slot does not shift what has been stored since
-    lastUpdateUplinkTransmissionInfo_ = NOW;
-
-    if (lastUplinkTransmission_ < NOW - 2 * TTI) {
-        // data structures have not been used in the last 2 time slots,
-        // so they do not need to be updated.
-        return;
-    }
-
-    for (auto& [carrierFrequency, transmissions] : ulTransmissionMap_) {
-        // a carrier's slot ends only at its own slot boundaries: with carriers of
-        // different numerologies, the others' slots end in between
-        simtime_t slotDuration = getSlotDurationFromNumerologyIndex(componentCarriers_[carrierFrequency].numerologyIndex);
-        if (NOW.raw() % slotDuration.raw() != 0)
-            continue;
-        // the second element (i.e., referring to the old time slot) becomes the first element
-        if (!transmissions.empty())
-            transmissions.erase(transmissions.begin());
-    }
-}
-
-void Binder::storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, PhyBase *phy, Direction dir)
-{
-    UeAllocationInfo info;
-    info.nodeId = nodeId;
-    info.cellId = cellId;
-    info.phy = phy;
-    info.dir = dir;
-    info.trafficGen = nullptr;
-
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0) {
-        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].resize(2);
-        ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
-        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
-    }
-    else if (ulTransmissionMap_[carrierFreq].size() == 1) {
-        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo>>());
-        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
-    }
-
-    // for each allocated band, store the UE info
-    for (const auto& [band, allocation] : rbMap[antenna]) {
-        if (allocation > 0)
-            ulTransmissionMap_[carrierFreq][CURR_TTI][band].push_back(info);
-    }
-
-    lastUplinkTransmission_ = NOW;
-}
-
-void Binder::storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir)
-{
-    UeAllocationInfo info;
-    info.nodeId = nodeId;
-    info.cellId = cellId;
-    info.phy = nullptr;
-    info.dir = dir;
-    info.trafficGen = trafficGen;
-
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0) {
-        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].resize(2);
-        ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
-        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
-    }
-    else if (ulTransmissionMap_[carrierFreq].size() == 1) {
-        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo>>());
-        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
-    }
-
-    // for each allocated band, store the UE info
-    for (const auto& [band, allocation] : rbMap[antenna]) {
-        if (allocation > 0)
-            ulTransmissionMap_[carrierFreq][CURR_TTI][band].push_back(info);
-    }
-
-    lastUplinkTransmission_ = NOW;
-}
-
-const std::vector<std::vector<UeAllocationInfo>> *Binder::getUlTransmissionMap(GHz carrierFreq, UlTransmissionMapTTI t)
-{
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()) {
-        return nullptr;
-    }
-
-    return &(ulTransmissionMap_[carrierFreq].at(t));
 }
 
 void Binder::registerX2Port(X2NodeId nodeId, int port)

@@ -160,17 +160,6 @@ class CellularRadioMedium : public cSimpleModule
     virtual std::vector<const CellularTransmission *> getUplinkTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const;
 
     /**
-     * Whether the uplink transmissions on the carrier during the slot [from,
-     * to) just completed -- data
-     * frames sent in UL or on the sidelink, and the UL allocations of
-     * background UEs -- are, band by band and in creation order, the entries
-     * of the Binder's uplink transmission map: a PHY's entry matching its
-     * radio's frame, a background UE's entry the allocation its phantom radio sent, each
-     * with the same cell and transmit power. A null map has no entries.
-     */
-    virtual bool matchesUplinkTransmissionMap(GHz carrierFrequency, simtime_t from, simtime_t to, const std::vector<std::vector<UeAllocationInfo>> *map) const;
-
-    /**
      * Whether a data transmission of the given node in the given direction on
      * the carrier, one that overlaps the interval (see
      * getDataTransmissionsDuring()), occupies the band. A background UE's

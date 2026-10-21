@@ -800,10 +800,6 @@ void LteMacEnb::handleSelfMessage()
 
     // UPLINK
     EV << "============================================== UPLINK ==============================================" << endl;
-    // init and reset global allocation information
-    if (binder_->getLastUpdateUlTransmissionInfo() < NOW)                                                            // once per TTI, even in case of multicell scenarios
-        binder_->initAndResetUlTransmissionInfo();
-
     enbSchedulerUl_->updateHarqDescs();
 
     std::map<GHz, LteMacScheduleList> *scheduleListUl = enbSchedulerUl_->schedule();

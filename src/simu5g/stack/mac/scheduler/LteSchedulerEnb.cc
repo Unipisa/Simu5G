@@ -756,11 +756,9 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 
         // the allocation, if any, is a transmission of the background UE on the radio medium
         if (direction_ == UL) {
-            // If uplink interference is enabled, mark the occupation in the uplink transmission map (for uplink interference computation purposes);
-            // the medium records the transmission exactly when the map does
+            // in UL only if uplink interference is enabled
             ChannelModelBase *channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
             if (channelModel->isUplinkInterferenceEnabled()) {
-                binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
                 if (cwAllocatedBytes > 0)
                     bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
             }
@@ -1324,14 +1322,11 @@ unsigned int LteSchedulerEnb::scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequen
             // update rb map
             allocatedRbMap[antenna] = allocatedRbMapEntry;
 
-            // the allocation is a transmission of the background UE on the radio medium;
-            // uplink scheduler only: if uplink interference is enabled, mark the
-            // occupation in the ul transmission map (for ul interference computation purposes),
-            // and the medium records the transmission exactly when the map does
+            // the allocation is a transmission of the background UE on the radio
+            // medium; in UL only if uplink interference is enabled
             if (direction_ == UL) {
                 ChannelModelBase *channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
                 if (channelModel->isUplinkInterferenceEnabled()) {
-                    binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
                     bgTrafficManager->registerTransmission(bgUeId, direction_, carrierFrequency, allocatedRbMap);
                 }
             }

@@ -79,12 +79,6 @@ enum CellGroup
     MCG = 0; SCG = 1; UNKNOWN_CELL_GROUP = 2;
 };
 
-/// Index for UL transmission map
-enum UlTransmissionMapTTI
-{
-    PREV_TTI = 0; CURR_TTI = 1;
-};
-
 //
 // D2D Modes:
 // IM: Infastructure Mode

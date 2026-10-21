@@ -241,10 +241,6 @@ class ChannelModelBase : public cSimpleModule
     virtual std::vector<double> computeReceptionRsrp(IRadioEndpoint *receiver, AirFrame *frame) = 0;
 
     virtual bool isUplinkInterferenceEnabled() { return false; }
-
-    /// Whether transmissions must be recorded in the Binder's UL transmission map
-    /// (used by interference computation on the receive path).
-    virtual bool recordsUlTransmissionMap() { return isUplinkInterferenceEnabled(); }
 };
 
 } //namespace

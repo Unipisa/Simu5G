@@ -108,17 +108,6 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, std::set<NumerologyIndex>> ueNumerologyIndex_;
 
     /*
-     * Uplink interference support
-     */
-    typedef std::map<GHz, std::vector<std::vector<std::vector<UeAllocationInfo>>>> UplinkTransmissionMap;
-    // for each carrier frequency, for both previous and current TTIs, for each RB, stores the UE (nodeId and ref to the PHY module) that transmitted/are transmitting within that RB
-    UplinkTransmissionMap ulTransmissionMap_;
-    // TTI of the last update of the UL band status
-    simtime_t lastUpdateUplinkTransmissionInfo_;
-    // TTI of the last UL transmission (used for optimization purposes, see initAndResetUlTransmissionInfo() )
-    simtime_t lastUplinkTransmission_;
-
-    /*
      * X2 Support
      */
     typedef std::map<X2NodeId, std::list<int>> X2ListeningPortMap;
@@ -585,14 +574,6 @@ class Binder : public cSimpleModule
 
     virtual Cqi medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir);
 
-    /*
-     * Uplink interference support
-     */
-    virtual simtime_t getLastUpdateUlTransmissionInfo();
-    virtual void initAndResetUlTransmissionInfo();
-    virtual void storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, PhyBase *phy, Direction dir);
-    virtual void storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir);  // overloaded function for bgUes
-    virtual const std::vector<std::vector<UeAllocationInfo>> *getUlTransmissionMap(GHz carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support
      */

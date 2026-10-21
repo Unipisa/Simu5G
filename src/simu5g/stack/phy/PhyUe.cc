@@ -322,14 +322,6 @@ void PhyUe::handleUpperMessage(cMessage *msg)
     if (channelModel == nullptr)
         throw cRuntimeError("PhyUe::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
-    if (lteInfo->getFrameType() == DATAPKT && channelModel->recordsUlTransmissionMap()) {
-        // Store the RBs used for data transmission to the binder (for UL interference computation)
-        RbMap rbMap = lteInfo->getGrantedBlocks();
-        Remote antenna = MACRO;  // TODO fix for multi-antenna
-        // note: the direction is always UL here for a plain UE (enforced by validateOutgoingFrame() above)
-        binder_->storeUlTransmissionMap(channelModel->getCarrierFrequency(), antenna, rbMap, nodeId_, servingNodeId_, this, (Direction)lteInfo->getDirection());
-    }
-
     if (lteInfo->getFrameType() == DATAPKT && lteInfo->getUserTxParams() != nullptr) {
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[lteInfo->getCw()];
         if (lteInfo->getDirection() == UL) {

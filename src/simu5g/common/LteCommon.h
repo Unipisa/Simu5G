@@ -431,21 +431,6 @@ struct BgTrafficManagerInfo
     std::string str() const;
 };
 
-// uplink interference support
-struct UeAllocationInfo {
-    MacNodeId nodeId;
-    MacCellId cellId;
-    PhyBase *phy = nullptr;
-    TrafficGeneratorBase *trafficGen = nullptr;
-    Direction dir;
-};
-
-inline std::ostream& operator<<(std::ostream& os, const UeAllocationInfo& e)
-{
-    os << "node=" << e.nodeId << " cell=" << e.cellId << " dir=" << e.dir;
-    return os;
-}
-
 typedef std::vector<ExtCellAllocator *> ExtCellList;
 typedef std::vector<BackgroundScheduler *> BackgroundSchedulerList;
 

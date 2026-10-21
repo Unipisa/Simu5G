@@ -1108,6 +1108,10 @@ bool StochasticChannelModel::dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId
 
 StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterferer(const CellularTransmission& transmission)
 {
+    // a real UE's uplink transmission has its radio's power, as long as the UE is there
+    ASSERT(transmission.phantomCell != nullptr || transmission.direction != UL
+           || radioMedium_->findRadio(transmission.sourceId) == nullptr
+           || transmission.txPower == radioMedium_->findRadio(transmission.sourceId)->getTxPwr(UL));
     InterfererInfo info;
     info.nodeId = transmission.sourceId;
     info.cellId = transmission.cellId;
@@ -1135,6 +1139,8 @@ std::vector<unsigned int> StochasticChannelModel::sharedBands(const CellularTran
     if (antennaIt == transmission.grantedBlocks.end())
         return bands;
     for (const auto& [band, allocation] : antennaIt->second) {
+        // an external cell may be wider than the carrier; a radio's transmission is not
+        ASSERT(transmission.phantomCell != nullptr || band < numBands);
         if (band >= numBands)
             break;
         if (allocation == 0 || (!rbmap.empty() && rbmap.at(MACRO).at(band) == 0))
@@ -1177,12 +1183,11 @@ bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, Ma
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
     };
 
-    // a reception: the uplink transmissions of the slot just completed, on its bands -- the Binder's
-    // map of the previous TTI lists the same ones; a CQI: those of the slot completed last, on every band
+    // a reception: the uplink transmissions of the slot just completed, on its bands; a CQI: those of
+    // the slot completed last, on every band
     static const RbMap everyBand;
     simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
     simtime_t slotStart = slotEnd - slotDuration(carrierFrequency);
-    ASSERT(isCqi || !cells || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, slotStart, slotEnd, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
     const RbMap& receptionBands = isCqi ? everyBand : rbmap;
     // in creation order
     for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
@@ -1397,12 +1402,11 @@ bool StochasticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId s
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
     };
 
-    // a reception: the uplink transmissions of the slot just completed, on its bands -- the Binder's
-    // map of the previous TTI lists the same ones; a CQI: those of the slot completed last, on every band
+    // a reception: the uplink transmissions of the slot just completed, on its bands; a CQI: those of
+    // the slot completed last, on every band
     static const RbMap everyBand;
     simtime_t slotEnd = isCqi ? lastCompletedSlotEnd(carrierFrequency) : NOW;
     simtime_t slotStart = slotEnd - slotDuration(carrierFrequency);
-    ASSERT(isCqi || radioMedium_->matchesUplinkTransmissionMap(carrierFrequency, slotStart, slotEnd, binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI)));
     const RbMap& receptionBands = isCqi ? everyBand : rbmap;
     // in creation order
     for (auto transmission : radioMedium_->getUplinkTransmissionsDuring(carrierFrequency, slotStart, slotEnd)) {
