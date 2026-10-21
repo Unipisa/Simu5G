@@ -814,16 +814,6 @@ unsigned int LteSchedulerEnb::readPerUeAllocatedBlocks(const MacNodeId nodeId,
     return allocator_->getBlocks(antenna, b, nodeId);
 }
 
-unsigned int LteSchedulerEnb::readPerBandAllocatedBlocks(Plane plane, const Remote antenna, const Band band)
-{
-    return allocator_->getAllocatedBlocks(plane, antenna, band);
-}
-
-unsigned int LteSchedulerEnb::getInterferingBlocks(Plane plane, const Remote antenna, const Band band)
-{
-    return allocator_->getInterferingBlocks(plane, antenna, band);
-}
-
 unsigned int LteSchedulerEnb::readAvailableRbs(const MacNodeId id,
         const Remote antenna, const Band b)
 {

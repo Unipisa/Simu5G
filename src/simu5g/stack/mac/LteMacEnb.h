@@ -303,9 +303,6 @@ class LteMacEnb : public LteMacBase
     /// Total number of HARQ processes needing retransmission on this carrier in all directions except 'excluded'
     virtual int getPendingRtxOtherThan(GHz carrierFrequency, Direction excluded);
 
-    // Get band occupation for this/previous TTI. Used for interference computation purposes.
-    unsigned int getDlBandStatus(Band b);
-    unsigned int getDlPrevBandStatus(Band b);
 
     // Configuration push: RRC installs (or replaces) a bearer's QoS profile. MAC does
     // not author its own configuration; this is the only write path into the map.

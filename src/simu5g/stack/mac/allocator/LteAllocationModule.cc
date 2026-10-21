@@ -26,7 +26,6 @@ LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction) : 
     WATCH(freeRbsMatrix_);
     WATCH(allocatedRbsUe_);
     WATCH(allocatedRbsPerBand_);
-    WATCH(prevAllocatedRbsPerBand_);
 }
 
 void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned int bands)
@@ -48,10 +47,6 @@ void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned
     // set the available antennas of MAIN plane to 1 (just MACRO antenna)
     allocatedRbsMatrix_.at(MAIN_PLANE).resize(MACRO + 1, 0);
 
-    // clean and copy stored block-allocation info
-    prevAllocatedRbsPerBand_.clear();
-    prevAllocatedRbsPerBand_ = allocatedRbsPerBand_;
-
     // clear and reinitialize the allocatedBlocks structures and set available planes to 1 (just the main OFDMA space)
     allocatedRbsPerBand_.clear();
     allocatedRbsPerBand_.resize(MAIN_PLANE + 1);
@@ -72,9 +67,6 @@ void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned
 
 void LteAllocationModule::reset(const unsigned int resourceBlocks, const unsigned int bands)
 {
-    // clean and copy stored block-allocation info
-    prevAllocatedRbsPerBand_ = allocatedRbsPerBand_;
-
     // reset structures only if they were used in the previous time slot
     if (usedInLastSlot_) {
         // initialize main OFDMA space
@@ -171,14 +163,6 @@ unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const 
 unsigned int LteAllocationModule::getAllocatedBlocks(Plane plane, const Remote antenna, const Band band)
 {
     return allocatedRbsPerBand_[plane][antenna][band].allocated_;
-}
-
-unsigned int LteAllocationModule::getInterferingBlocks(Plane plane, const Remote antenna, const Band band)
-{
-    if (!prevAllocatedRbsPerBand_.empty())
-        return prevAllocatedRbsPerBand_[plane][antenna][band].allocated_;
-    else
-        return 1000;
 }
 
 unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const Plane plane, const Band band)

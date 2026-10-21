@@ -1080,29 +1080,6 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         }
     }
 
-    // for a cell with one carrier, the bands of a reception its transmissions occupied are what its scheduler allocated
-    if (!isCqi && cells)
-        for (auto enbInfo : binder_->getEnbList())
-            ASSERT(dlOccupancyMatchesScheduler(enbInfo->id, eNbId, carrierFrequency, slotStart, rbmap));
-
-    return true;
-}
-
-bool StochasticChannelModel::dlOccupancyMatchesScheduler(MacNodeId id, MacNodeId eNbId, GHz carrierFrequency, simtime_t slotStart, const RbMap& rbmap)
-{
-    if (id == eNbId)
-        return true;
-    auto interfChanModel = dynamic_cast<StochasticChannelModel *>(radioMedium_->getRadio(id)->getChannelModel(carrierFrequency));
-    auto mac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(id));
-    if (interfChanModel == nullptr || mac->getCellInfo()->getCarriers().size() != 1)
-        return true;
-    unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
-    for (unsigned int i = 0; i < numBands; i++) {
-        if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
-            continue;
-        if (radioMedium_->isBandOccupied(carrierFrequency, id, DL, i, slotStart, NOW) != (mac->getDlPrevBandStatus(i) != 0))
-            return false;
-    }
     return true;
 }
 

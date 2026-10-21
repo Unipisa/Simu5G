@@ -176,11 +176,6 @@ class LteAllocationModule
      */
     std::vector<std::vector<AllocatedRbsPerBandMap>> allocatedRbsPerBand_;
 
-    /*
-     * Stores the block-allocation info of the previous TTI in order to use it for interference computation
-     */
-    std::vector<std::vector<AllocatedRbsPerBandMap>> prevAllocatedRbsPerBand_;
-
   public:
 
     /// Default constructor.
@@ -239,7 +234,6 @@ class LteAllocationModule
      * Returns the amount of blocks allocated in a Band
      */
     virtual unsigned int getAllocatedBlocks(Plane plane, const Remote antenna, const Band band);
-    virtual unsigned int getInterferingBlocks(Plane plane, const Remote antenna, const Band band);
 
     unsigned int getBytes(const Remote antenna, const Band band, const MacNodeId nodeId)
     {

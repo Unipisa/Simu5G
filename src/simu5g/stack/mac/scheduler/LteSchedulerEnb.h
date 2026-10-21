@@ -218,16 +218,6 @@ class LteSchedulerEnb : public cSimpleModule
      */
     virtual unsigned int readPerUeAllocatedBlocks(const MacNodeId nodeId, const Remote antenna, const Band b);
 
-    /*
-     * Returns the amount of blocks allocated on a logical band
-     */
-    virtual unsigned int readPerBandAllocatedBlocks(Plane plane, const Remote antenna, const Band band);
-
-    /*
-     * Returns the amount of blocks allocated on a logical band
-     */
-    virtual unsigned int getInterferingBlocks(Plane plane, const Remote antenna, const Band band);
-
     /**
      * Returns the number of available blocks for the UE on the given antenna
      * in the logical band provided.

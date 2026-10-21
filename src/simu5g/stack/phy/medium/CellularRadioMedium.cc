@@ -196,21 +196,6 @@ std::vector<const CellularTransmission *> CellularRadioMedium::getUplinkTransmis
     return uplink;
 }
 
-bool CellularRadioMedium::isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t from, simtime_t to) const
-{
-    for (auto t : getDataTransmissionsDuring(carrierFrequency, from, to)) {
-        if (t->sourceId != sourceId || t->direction != direction)
-            continue;
-        auto antennaIt = t->grantedBlocks.find(MACRO);
-        if (antennaIt == t->grantedBlocks.end())
-            continue;
-        auto bandIt = antennaIt->second.find(band);
-        if (bandIt != antennaIt->second.end() && bandIt->second != 0)
-            return true;
-    }
-    return false;
-}
-
 IRadioEndpoint *CellularRadioMedium::getRadio(MacNodeId nodeId) const
 {
     IRadioEndpoint *radio = findRadio(nodeId);

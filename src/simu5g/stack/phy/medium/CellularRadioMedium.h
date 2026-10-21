@@ -160,15 +160,6 @@ class CellularRadioMedium : public cSimpleModule
     virtual std::vector<const CellularTransmission *> getUplinkTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const;
 
     /**
-     * Whether a data transmission of the given node in the given direction on
-     * the carrier, one that overlaps the interval (see
-     * getDataTransmissionsDuring()), occupies the band. A background UE's
-     * allocation counts, being a registered transmission: in DL, one of its
-     * base station.
-     */
-    virtual bool isBandOccupied(GHz carrierFrequency, MacNodeId sourceId, Direction direction, Band band, simtime_t from, simtime_t to) const;
-
-    /**
      * The channel state the given channel model evaluates links against,
      * created empty on first use. The reference stays valid until
      * removeChannelState() is called for the same channel model.

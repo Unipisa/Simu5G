@@ -963,18 +963,6 @@ ActiveSet *LteMacEnb::getActiveSet(Direction dir)
         return enbSchedulerUl_->readActiveConnections();
 }
 
-unsigned int LteMacEnb::getDlBandStatus(Band b)
-{
-    unsigned int i = enbSchedulerDl_->readPerBandAllocatedBlocks(MAIN_PLANE, MACRO, b);
-    return i;
-}
-
-unsigned int LteMacEnb::getDlPrevBandStatus(Band b)
-{
-    unsigned int i = enbSchedulerDl_->getInterferingBlocks(MAIN_PLANE, MACRO, b);
-    return i;
-}
-
 double LteMacEnb::getUtilization(Direction dir)
 {
     if (dir == DL) {
