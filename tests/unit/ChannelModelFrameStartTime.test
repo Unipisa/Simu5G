@@ -147,9 +147,10 @@ wait(SimTime(10, SIMTIME_MS));
 const simtime_t t0 = simTime();
 wait(SimTime(250, SIMTIME_US));
 
-// a frame as the UE's radio passes it up: stamped with where and when it began to arrive
-auto receivedFrame = [&] () {
+// a frame as the UE's radio passes it up: stamped with where its transmission started, and where and when it began to arrive
+auto receivedFrame = [&] (const inet::Coord& senderPosition) {
     auto *frame = new AirFrame();
+    frame->setStartPosition(senderPosition);
     frame->setArrivalPosition(ue.coord);
     frame->setReceptionStartTime(t0);
     return frame;
@@ -164,16 +165,15 @@ auto receivedFrame = [&] () {
     info.setFrameType(DATAPKT);
     info.setSourceId(bs.nodeId);
     info.setDestId(ue.nodeId);
-    info.setCoord(bs.coord);
     info.setTxPower(bs.txPower);
     info.setCarrierFrequency(carrier);
     info.setGrantedBlocks(bands);
 
-    AirFrame *frame = receivedFrame();
+    AirFrame *frame = receivedFrame(bs.coord);
     std::vector<double> sinr = ueModel->getSINR(&ue, frame, &info);
     delete frame;
 
-    RadioLink atStart = ueProbe.linkFor(&ue, &info);
+    RadioLink atStart = ueProbe.linkFor(&ue, &info, bs.coord);
     atStart.startTime = t0;
     RadioLink atNow = atStart;
     atNow.startTime = simTime();
@@ -189,6 +189,7 @@ auto receivedFrame = [&] () {
             show(sinr) + " / " + show(sinrAtStart));
 
     AirFrame whatIf;
+    whatIf.setStartPosition(bs.coord);
     c.check("DL: a frame with no reception start is evaluated now", ueModel->getSINR(&ue, &whatIf, &info) == sinrAtNow);
 }
 
@@ -201,12 +202,11 @@ auto receivedFrame = [&] () {
     info.setFrameType(DATAPKT);
     info.setSourceId(peer.nodeId);
     info.setDestId(ue.nodeId);
-    info.setCoord(peer.coord);
     info.setD2dTxPower(peer.txPower);
     info.setCarrierFrequency(carrier);
     info.setGrantedBlocks(bands);
 
-    AirFrame *frame = receivedFrame();
+    AirFrame *frame = receivedFrame(peer.coord);
     std::vector<double> rsrp = ueModel->getRSRP_D2D(frame, &info, ue.nodeId, ue.coord);
     std::vector<double> sinr = (ueModel->*D2dAccess::sinrD2dPtr())(frame, &info, ue.nodeId, ue.coord, bs.nodeId);
     // no RSRP captured (one-to-many with the Distance capture factor): the desired signal is computed for the SINR

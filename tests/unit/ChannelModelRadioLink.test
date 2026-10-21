@@ -36,17 +36,15 @@ using namespace simu5g;
 using namespace simu5g::unittest;
 using inet::Coord;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -108,8 +106,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 //
 {
     // Downlink data, decoded at the UE: the base station sent it.
-    UserControlInfo info = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
-    RadioLink l = atUe.linkFor(&ueEndpoint, &info);
+    UserControlInfo info = controlInfo(DL, DATAPKT, enbId, ueId);
+    RadioLink l = atUe.linkFor(&ueEndpoint, &info, enbPos);
     c.check("DL data: the base station transmits to the UE",
             l.txId == enbId && l.rxId == ueId && l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == enbPos && l.rxCoord == uePos);
@@ -119,8 +117,8 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 }
 {
     // Uplink data, decoded at the base station: the UE sent it.
-    UserControlInfo info = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
-    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
+    UserControlInfo info = controlInfo(UL, DATAPKT, ueId, enbId);
+    RadioLink l = atEnb.linkFor(&enbEndpoint, &info, uePos);
     c.check("UL data: the UE transmits to the base station",
             l.txId == ueId && l.rxId == enbId && !l.txIsBaseStation && l.cellId == enbId);
     c.check("...from the sender's position to the decoder's own", l.txCoord == uePos && l.rxCoord == enbPos);
@@ -141,10 +139,10 @@ ChannelModelProbe atEnb(bs), atUe(ue);
 }
 {
     // Feedback for an uplink CQI is the uplink link.
-    UserControlInfo info = controlInfo(UL, FEEDBACKPKT, ueId, enbId, uePos);
-    UserControlInfo data = controlInfo(UL, DATAPKT, ueId, enbId, uePos);
-    RadioLink uplinkData = atEnb.linkFor(&enbEndpoint, &data);
-    RadioLink l = atEnb.linkFor(&enbEndpoint, &info);
+    UserControlInfo info = controlInfo(UL, FEEDBACKPKT, ueId, enbId);
+    UserControlInfo data = controlInfo(UL, DATAPKT, ueId, enbId);
+    RadioLink uplinkData = atEnb.linkFor(&enbEndpoint, &data, uePos);
+    RadioLink l = atEnb.linkFor(&enbEndpoint, &info, uePos);
     c.check("UL CQI: the same link as the uplink data it describes, mobile end included",
             sameLink(l, uplinkData));
 }
@@ -152,16 +150,16 @@ ChannelModelProbe atEnb(bs), atUe(ue);
     // A beacon names no destination: the link is its sender and the radio
     // that received it. The mobile end is still the UE the frame names,
     // which is none.
-    UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE, enbPos);
-    RadioLink l = atUe.linkFor(&ueEndpoint, &info);
+    UserControlInfo info = controlInfo(DL, BEACONPKT, enbId, NODEID_NONE);
+    RadioLink l = atUe.linkFor(&ueEndpoint, &info, enbPos);
     c.check("a beacon: the link is its sender and the receiving radio",
             l.txId == enbId && l.rxId == ueId && l.linkKey == LinkKey(enbId, ueId));
     c.check("...while the mobile end is the missing destination", l.stateNodeId == NODEID_NONE);
 }
 {
     // The two ends see the same link, at the level of the link itself.
-    UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId, enbPos);
-    RadioLink decoderView = atUe.linkFor(&ueEndpoint, &decode);
+    UserControlInfo decode = controlInfo(DL, DATAPKT, enbId, ueId);
+    RadioLink decoderView = atUe.linkFor(&ueEndpoint, &decode, enbPos);
     RadioLink cqiView = atEnb.whatIfLink(&ueEndpoint, dlCqiTransmission(&enbEndpoint, ueId));
     c.check("the link a DL CQI is computed on is the link the UE decodes on, seen from the other end",
             sameLink(cqiView, decoderView));

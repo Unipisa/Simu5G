@@ -186,8 +186,11 @@ class ChannelModelProbe
     bool& fading() { return model_->*Access::fadingPtr(); }
 
     // internal steps
-    // the link of a frame that did not arrive through the radio the evaluation is at: the local end where the radio is now
-    RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *info) { return (model_->*Access::linkForPtr())(radio, info, radio->getCoord()); }
+    // the link of a frame from a sender at senderPosition that did not arrive through the radio the evaluation is at: the local end where the radio is now
+    RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *info, const inet::Coord& senderPosition)
+    {
+        return (model_->*Access::linkForPtr())(radio, info, senderPosition, radio->getCoord());
+    }
     // the link of a what-if: the transmission to where the receiver is now
     RadioLink whatIfLink(IRadioEndpoint *receiver, const CellularTransmission& transmission) { return (model_->*Access::whatIfLinkPtr())(receiver, transmission); }
     RadioLink cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, inet::Coord coord)

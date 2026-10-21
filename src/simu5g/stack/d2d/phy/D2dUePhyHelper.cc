@@ -75,7 +75,7 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
         EV << NOW << " D2dUePhyHelper::storeAirFrame - Average RSRP from node " << newInfo->getSourceId() << ": " << rsrpMean << endl;
     }
     else { // Distance
-        Coord newSenderCoord = newInfo->getCoord();
+        Coord newSenderCoord = newFrame->getStartPosition();
         distance = myCoord.distance(newSenderCoord);
         EV << NOW << " D2dUePhyHelper::storeAirFrame - Distance from node " << newInfo->getSourceId() << ": " << distance << endl;
     }

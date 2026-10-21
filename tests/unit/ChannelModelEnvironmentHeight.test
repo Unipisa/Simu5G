@@ -22,17 +22,15 @@ using namespace simu5g;
 using namespace simu5g::unittest;
 using inet::Coord;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -102,8 +100,8 @@ const double d3D = std::sqrt(d2D * d2D + 2.5 * 2.5);
 
 wait(0.010);
 
-UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData);
+UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId);
+RadioLink atUe = ueProbe.linkFor(&ueEndpoint, &dlData, bsEndpoint.coord);
 RadioLink atBs = bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId));
 
 double first = ue->getAttenuation(atUe);

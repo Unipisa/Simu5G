@@ -51,17 +51,15 @@ or above BGUE_MIN_ID.
 using namespace simu5g;
 using namespace simu5g::unittest;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const inet::Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -318,16 +316,16 @@ const inet::Coord bsPos(0, 0, 25);
 {
     // A DL CQI at the base station and the UE's decoding are the same link,
     // evaluated from its two ends, at the same geometry and LOS state.
-    UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId, bsEndpoint.coord);
+    UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId);
     double cqiView = bs->getAttenuation(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)));
 
     // The path loss may draw on its own account (see the background UE below),
     // so "draws nothing" is measured against an identical evaluation at once.
     unsigned long before = ue->getRNG(0)->getNumbersDrawn();
-    double decoderView = ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data));
+    double decoderView = ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data, bsEndpoint.coord));
     long long decoderDraws = ue->getRNG(0)->getNumbersDrawn() - before;
     before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data));
+    ue->getAttenuation(ueProbe.linkFor(&ueEndpoint, &data, bsEndpoint.coord));
     long long pathLossDraws = ue->getRNG(0)->getNumbersDrawn() - before;
 
     c.check("every channel model on the carrier reads the same shadowing map, the medium's",

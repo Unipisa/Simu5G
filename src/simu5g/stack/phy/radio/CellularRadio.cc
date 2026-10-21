@@ -71,7 +71,10 @@ void CellularRadio::transmit(AirFrame *frame)
     auto request = check_and_cast<RadioTransmissionRequest *>(frame->removeControlInfo());
     // every frame that leaves the radio is a transmission on the medium, in the order they are created
     auto transmitter = check_and_cast<CellularTransmitter *>(getSubmodule("transmitter"));
-    radioMedium_->addTransmission(transmitter->createTransmission(*request, frame->getAdditionalInfo()));
+    CellularTransmission *transmission = transmitter->createTransmission(*request, frame->getAdditionalInfo());
+    // where the transmission starts travels with the frame, to every receiver
+    frame->setStartPosition(transmission->startPosition);
+    radioMedium_->addTransmission(transmission);
     if (request->broadcast)
         radioMedium_->sendToNeighbors(request->sender, this, frame, request->duration);
     else if (request->copyPerTarget) {

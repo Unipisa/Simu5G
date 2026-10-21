@@ -110,6 +110,7 @@ for (Band b = 0; b < ueModel->getNumBands(); b++)
 // the SINR of a DL data frame from the base station, decoded by the UE where it is now; a frame that arrived at arrivalPosition carries it
 auto decode = [&] (const inet::Coord *arrivalPosition) {
     AirFrame frame;
+    frame.setStartPosition(bs.coord);
     if (arrivalPosition != nullptr)
         frame.setArrivalPosition(*arrivalPosition);
     UserControlInfo info;
@@ -117,7 +118,6 @@ auto decode = [&] (const inet::Coord *arrivalPosition) {
     info.setFrameType(DATAPKT);
     info.setSourceId(bs.nodeId);
     info.setDestId(ue.nodeId);
-    info.setCoord(bs.coord);
     info.setTxPower(bs.txPower);
     info.setCarrierFrequency(carrier);
     info.setGrantedBlocks(bands);

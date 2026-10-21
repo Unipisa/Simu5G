@@ -38,17 +38,15 @@ using namespace simu5g;
 using namespace simu5g::unittest;
 using omnetpp::SimTime;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const inet::Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -229,7 +227,7 @@ wait(0.010);
 {
     // A DL CQI at the base station and the UE's decoding are the same link,
     // evaluated from its two ends, through the real entry point getRSRP().
-    UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId, bsEndpoint.coord);
+    UserControlInfo data = controlInfo(DL, DATAPKT, MacNodeId(1), ueId);
     const LinkKey link(MacNodeId(1), ueId);
 
     bs->getRSRP(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
@@ -238,10 +236,10 @@ wait(0.010);
     // account, so "draws nothing" is measured against an identical evaluation
     // at once.
     unsigned long before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data), 30.0);
+    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data, bsEndpoint.coord), 30.0);
     long long decoderDraws = ue->getRNG(0)->getNumbersDrawn() - before;
     before = ue->getRNG(0)->getNumbersDrawn();
-    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data), 30.0);
+    ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &data, bsEndpoint.coord), 30.0);
     long long repeatDraws = ue->getRNG(0)->getNumbersDrawn() - before;
 
     c.check("every channel model on the carrier reads the same Jakes map, the medium's",
@@ -259,13 +257,13 @@ wait(0.010);
 
     // The uplink of the same pair, received at the base station through the
     // same entry point: it draws no fading paths of its own either.
-    UserControlInfo ul = controlInfo(UL, DATAPKT, ueId, MacNodeId(1), ueEndpoint.coord);
+    UserControlInfo ul = controlInfo(UL, DATAPKT, ueId, MacNodeId(1));
     size_t entries = bsProbe.jakesMap().size();
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul), 30.0);
+    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul, ueEndpoint.coord), 30.0);
     long long uplinkDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     before = bs->getRNG(0)->getNumbersDrawn();
-    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul), 30.0);
+    bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ul, ueEndpoint.coord), 30.0);
     long long uplinkRepeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
     c.expectValue("...and the uplink is the same realization: a link has one, whichever direction",
             uplinkDraws, uplinkRepeatDraws);

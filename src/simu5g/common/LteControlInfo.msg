@@ -160,7 +160,6 @@ class UserControlInfo extends LteControlInfo {
 
     UserTxParams *userTxParams @owned;
     RbMap grantedBlocks;
-    inet::Coord coord;                                  // The playground position of the sending host
     FeedbackRequest feedbackReq;
 }
 

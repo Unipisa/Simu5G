@@ -86,10 +86,10 @@ static AirFrame *receivedFrame(Direction direction, MacNodeId sender, MacNodeId 
     info->setFrameType(DATAPKT);
     info->setSourceId(sender);
     info->setDestId(dest);
-    info->setCoord(senderPosition);
     info->setD2dTxPower(d2dTxPower);
     info->setCarrierFrequency(carrier);
     auto *frame = new AirFrame();
+    frame->setStartPosition(senderPosition);
     frame->setArrivalPosition(arrivalPosition);
     frame->setReceptionStartTime(receptionStart);
     frame->setControlInfo(info);

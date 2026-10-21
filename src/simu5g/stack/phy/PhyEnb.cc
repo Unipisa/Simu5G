@@ -99,8 +99,6 @@ AirFrame *PhyEnb::createBeaconMessage()
     cInfo->setIsNr(isNr_);
     beaconAirFrame->setControlInfo(cInfo);
     beaconAirFrame->setSchedulingPriority(airFramePriority_);
-    // current position
-    cInfo->setCoord(getCoord());
     return beaconAirFrame;
 }
 
@@ -248,7 +246,7 @@ void PhyEnb::requestFeedback(UserControlInfo *lteinfo, AirFrame *frame, Packet *
         throw cRuntimeError("PhyEnb::requestFeedback - channelModel is a null pointer");
 
     //get UE Position
-    Coord sendersPos = lteinfo->getCoord();
+    Coord sendersPos = frame->getStartPosition();
     cellInfo_->setUePosition(lteinfo->getSourceId(), sendersPos);
 
     std::vector<double> snr;

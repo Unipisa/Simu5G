@@ -245,8 +245,6 @@ void PhyBase::handleUpperMessage(cMessage *msg)
     NumerologyIndex numerologyIndex = binder_->getNumerologyIndexFromCarrierFreq(lteInfo->getCarrierFrequency());
     double slotDuration = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex);
 
-    // set current position
-    lteInfo->setCoord(getCoord());
     lteInfo->setTxPower(txPower_);
     stampExtraTxControlInfo(lteInfo.get());
     frame->setControlInfo(lteInfo.get()->dup());

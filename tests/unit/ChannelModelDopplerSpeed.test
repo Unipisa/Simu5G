@@ -24,17 +24,15 @@ only the base station's speed changes nothing.
 using namespace simu5g;
 using namespace simu5g::unittest;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const inet::Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -125,8 +123,8 @@ ChannelModelProbe bsProbe(bs), ueProbe(ue);
 // Away from t = 0, so that the fading of a moving link differs from a still one's.
 wait(0.050);
 
-UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
-UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
+UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId);
+UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId);
 
 // The received power per band of the three evaluations of the link, at the
 // given speeds of the two ends, all at this instant.
@@ -135,9 +133,9 @@ auto evaluate = [&] (double ueSpeed, double bsSpeed) {
     ueEndpoint.speed = ueSpeed;
     bsEndpoint.speed = bsSpeed;
     Evaluations e;
-    e.dlData = ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &dlData), 30.0);
+    e.dlData = ue->getRSRP(ueProbe.linkFor(&ueEndpoint, &dlData, bsEndpoint.coord), 30.0);
     e.dlCqi = bs->getRSRP(bsProbe.whatIfLink(&ueEndpoint, dlCqiTransmission(&bsEndpoint, ueId)), 30.0);
-    e.ulData = bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ulData), 30.0);
+    e.ulData = bs->getRSRP(bsProbe.linkFor(&bsEndpoint, &ulData, ueEndpoint.coord), 30.0);
     return e;
 };
 

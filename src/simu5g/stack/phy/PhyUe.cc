@@ -376,8 +376,6 @@ void PhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector f
 
     frame->setSchedulingPriority(airFramePriority_);
 
-    uinfo->setCoord(getCoord());
-
     //TODO access speed data Update channel index
     lastFeedback_ = NOW;
 

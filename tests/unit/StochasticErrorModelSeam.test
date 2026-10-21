@@ -99,11 +99,11 @@ struct Reception
 
 static void prepare(const Reception& r, AirFrame& frame, UserControlInfo& info)
 {
+    frame.setStartPosition(r.sender->coord);
     info.setDirection(r.dir);
     info.setFrameType(DATAPKT);
     info.setSourceId(r.sender->nodeId);
     info.setDestId(r.receiver->nodeId);
-    info.setCoord(r.sender->coord);
     if (r.dir == D2D || r.dir == D2D_MULTI)
         info.setD2dTxPower(r.sender->txPower);
     else

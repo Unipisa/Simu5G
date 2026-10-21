@@ -170,13 +170,13 @@ const simtime_t t = simTime();
 const inet::Coord nowPosition(100, 40, 1.5);
 ue.coord = nowPosition;
 
-// the report's control information, as the base station's radio passes it up
+// the report's control information, as the base station's radio passes it up (the frame carries where
+// the UE sent it from, reportPosition)
 UserControlInfo info;
 info.setDirection(UL);
 info.setFrameType(FEEDBACKPKT);
 info.setSourceId(ue.nodeId);
 info.setDestId(bs.nodeId);
-info.setCoord(reportPosition);
 info.setD2dTxPower(ue.txPower);
 info.setCarrierFrequency(carrier);
 info.setGrantedBlocks(bands);
@@ -208,13 +208,12 @@ info.setGrantedBlocks(bands);
     data.setFrameType(DATAPKT);
     data.setSourceId(bs.nodeId);
     data.setDestId(ue.nodeId);
-    data.setCoord(bs.coord);
     data.setTxPower(bs.txPower);
     data.setCarrierFrequency(carrier);
     data.setGrantedBlocks(bands);
     auto sinrOf = [&] (const RadioLink& link) { return model->getSINR(link, &data, model->getRSRP(link, bs.txPower)); };
 
-    RadioLink atNow = probe.linkFor(&ue, &data);
+    RadioLink atNow = probe.linkFor(&ue, &data, bs.coord);
     atNow.startTime = t;
     RadioLink atReportStart = atNow;
     atReportStart.startTime = tReport;
@@ -268,7 +267,6 @@ info.setGrantedBlocks(bands);
     data.setFrameType(DATAPKT);
     data.setSourceId(ue.nodeId);
     data.setDestId(peer.nodeId);
-    data.setCoord(nowPosition);
     data.setD2dTxPower(ue.txPower);
     data.setCarrierFrequency(carrier);
     data.setGrantedBlocks(bands);

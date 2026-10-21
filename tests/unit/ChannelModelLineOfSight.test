@@ -30,17 +30,15 @@ using namespace simu5g;
 using namespace simu5g::unittest;
 using inet::Coord;
 
-// The control information a packet from 'source' to 'dest' carries, with the
-// sender's position.
+// The control information a packet from 'source' to 'dest' carries.
 static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
-        MacNodeId dest, const Coord& senderPosition)
+        MacNodeId dest)
 {
     UserControlInfo info;
     info.setDirection(dir);
     info.setFrameType(type);
     info.setSourceId(source);
     info.setDestId(dest);
-    info.setCoord(senderPosition);
     return info;
 }
 
@@ -104,13 +102,13 @@ const LinkKey link1(MacNodeId(1), MacNodeId(1025)), link2(MacNodeId(2), MacNodeI
 
 {
     // The first evaluation of a link draws its state.
-    UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025), enb.coord);
+    UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025));
     const double d3D = enb.coord.distance(ue.coord);
     const double d2D = sqrt(pow(ue.coord.x - enb.coord.x, 2) + pow(ue.coord.y - enb.coord.y, 2));
     double p = atUe.pathLoss()->computeLosProbability(d3D, d2D);
     RngSnapshot snapshot(ueModel);
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info, enb.coord));
     bool expected = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= p;
     c.check("a link's first evaluation draws its LOS state against the strategy's LOS probability",
             atUe.losMap().count(link1) == 1 && atUe.losMap().at(link1).los == expected,
@@ -123,9 +121,9 @@ c.check("every channel model on the carrier reads the same map, the medium's",
 const bool los1 = atUe.losMap().at(link1).los;
 {
     // The other end of the link.
-    UserControlInfo info = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
+    UserControlInfo info = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1));
     long long before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&enb, &info));
+    bs->getAttenuation(atEnb.linkFor(&enb, &info, ue.coord));
     c.expectValue("the other end of the link reads the same state and draws nothing", drawn(bs) - before, 0);
 }
 {
@@ -135,9 +133,9 @@ const bool los1 = atUe.losMap().at(link1).los;
 }
 {
     // Another cell's link to the same UE.
-    UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(2), MacNodeId(1025), otherEnb.coord);
+    UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(2), MacNodeId(1025));
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info, otherEnb.coord));
     c.expectValue("another cell's link to the same UE is another link, drawn on its own",
             drawn(ueModel) - before, 1);
     c.check("...and the first link's state is untouched",
@@ -151,9 +149,9 @@ const bool los1 = atUe.losMap().at(link1).los;
             drawn(otherBs) - before, 0);
 }
 {
-    UserControlInfo info = controlInfo(DL, BEACONPKT, MacNodeId(1), NODEID_NONE, enb.coord);
+    UserControlInfo info = controlInfo(DL, BEACONPKT, MacNodeId(1), NODEID_NONE);
     long long before = drawn(ueModel);
-    ueModel->getAttenuation(atUe.linkFor(&ue, &info));
+    ueModel->getAttenuation(atUe.linkFor(&ue, &info, enb.coord));
     c.expectValue("a beacon is evaluated on the link between its sender and the receiver: no draw",
             drawn(ueModel) - before, 0);
 }
@@ -167,8 +165,8 @@ c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.
     const Coord decidedAt = atUe.losMap().at(link1).positionB;
     const Coord enbAt = atUe.losMap().at(link1).positionA;
     auto evaluateDl = [&]() {
-        UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025), enb.coord);
-        ueModel->getAttenuation(atUe.linkFor(&ue, &info));
+        UserControlInfo info = controlInfo(DL, DATAPKT, MacNodeId(1), MacNodeId(1025));
+        ueModel->getAttenuation(atUe.linkFor(&ue, &info, enb.coord));
     };
     auto moveTo = [&](double distance) { ue.coord = Coord(decidedAt.x + distance, decidedAt.y, decidedAt.z); };
 
@@ -201,9 +199,9 @@ c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.
             atUe.losMap().at(link1).los == expected, "p=" + std::to_string(p));
 
     // The base station evaluates the same link, the UE at its new position.
-    UserControlInfo ul = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1), ue.coord);
+    UserControlInfo ul = controlInfo(UL, DATAPKT, MacNodeId(1025), MacNodeId(1));
     before = drawn(bs);
-    bs->getAttenuation(atEnb.linkFor(&enb, &ul));
+    bs->getAttenuation(atEnb.linkFor(&enb, &ul, ue.coord));
     c.expectValue("...and it is decided for the link: the other end, at the same positions, holds it",
             drawn(bs) - before, 0);
 

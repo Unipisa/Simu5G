@@ -366,12 +366,13 @@ class StochasticChannelModel : public ChannelModelBase
 
     /*
      * Build the RadioLink described by a frame's control info (DL, UL, and a
-     * UL CQI), the local end the radio the evaluation is at, at the given
-     * position (see receptionPosition()). A DL CQI is a what-if (see
-     * whatIfLink()). A D2D link is built by d2dLink() -- its API takes the
-     * peer endpoint explicitly rather than deriving it.
+     * UL CQI), the sender at the given position (see
+     * transmissionStartPosition()), the local end the radio the evaluation is
+     * at, at the given position (see receptionPosition()). A DL CQI is a
+     * what-if (see whatIfLink()). A D2D link is built by d2dLink() -- its API
+     * takes the peer endpoint explicitly rather than deriving it.
      */
-    virtual RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const inet::Coord& localPosition);
+    virtual RadioLink linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const inet::Coord& senderPosition, const inet::Coord& localPosition);
 
     /*
      * Build the RadioLink of a what-if (see computeRsrp()): from the
@@ -420,6 +421,12 @@ class StochasticChannelModel : public ChannelModelBase
      * radio), or now for a frame that was never received (a what-if)
      */
     simtime_t receptionStartTime(const AirFrame *frame) const;
+
+    /*
+     * Where the transmitting radio was as the frame's transmission started
+     * (stamped by the radio). Throws for a frame no radio sent.
+     */
+    const inet::Coord& transmissionStartPosition(const AirFrame *frame) const;
 
     /*
      * Build the RadioLink for a UE<->serving-BS link expressed the old way: the

@@ -169,13 +169,21 @@ const Coord& StochasticChannelModel::receptionPosition(IRadioEndpoint *radio, co
     return arrivalPosition.isUnspecified() ? radio->getCoord() : arrivalPosition;
 }
 
+const Coord& StochasticChannelModel::transmissionStartPosition(const AirFrame *frame) const
+{
+    const Coord& startPosition = frame->getStartPosition();
+    if (startPosition.isUnspecified())
+        throw cRuntimeError("StochasticChannelModel: frame '%s' carries no start position: it was not sent by a radio", frame->getName());
+    return startPosition;
+}
+
 simtime_t StochasticChannelModel::receptionStartTime(const AirFrame *frame) const
 {
     simtime_t startTime = frame->getReceptionStartTime();
     return startTime < SIMTIME_ZERO ? simTime() : startTime;
 }
 
-RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const Coord& localPosition)
+RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo *lteInfo, const Coord& senderPosition, const Coord& localPosition)
 {
     RadioLink link;
     link.startTime = simTime();
@@ -183,7 +191,7 @@ RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo
 
     // The object associated with the packet: the eNodeB if the direction is DL,
     // the UE if it is UL.
-    Coord coord = lteInfo->getCoord();
+    const Coord& coord = senderPosition;
 
     MacNodeId ueId, eNbId;
     Coord ueCoord, enbCoord;
@@ -398,7 +406,7 @@ double StochasticChannelModel::computeAngularAttenuation(double hAngle, double v
 
 std::vector<double> StochasticChannelModel::getSINR(IRadioEndpoint *radio, AirFrame *frame, UserControlInfo *lteInfo)
 {
-    RadioLink link = linkFor(radio, lteInfo, receptionPosition(radio, frame));
+    RadioLink link = linkFor(radio, lteInfo, transmissionStartPosition(frame), receptionPosition(radio, frame));
     link.startTime = receptionStartTime(frame);
 
     EV << "------------ GET SINR ----------------" << endl;
@@ -659,7 +667,6 @@ UserControlInfo StochasticChannelModel::whatIfControlInfo(const CellularTransmis
         info.setD2dTxPower(transmission.txPower);
     else
         info.setTxPower(transmission.txPower);
-    info.setCoord(transmission.startPosition);
     return info;
 }
 
@@ -1282,7 +1289,7 @@ std::vector<double> StochasticChannelModel::getRSRP_D2D(AirFrame *frame, UserCon
 {
     EV << "------------ GET RSRP D2D----------------" << endl;
 
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
+    RadioLink link = d2dLink(lteInfo_1->getSourceId(), transmissionStartPosition(frame), destId, destCoord);
     link.startTime = receptionStartTime(frame);
 
     // Note the D2D-specific transmit power: a D2D transmission does not use the
@@ -1304,7 +1311,7 @@ std::vector<double> StochasticChannelModel::getSINR_D2D(AirFrame *frame, UserCon
 
     // The desired signal is already known; the core adds noise and interference,
     // asking computeInterferencePlusNoise() below for the D2D denominator.
-    RadioLink link = d2dLink(lteInfo_1->getSourceId(), lteInfo_1->getCoord(), destId, destCoord);
+    RadioLink link = d2dLink(lteInfo_1->getSourceId(), transmissionStartPosition(frame), destId, destCoord);
     link.startTime = receptionStartTime(frame);
     link.cellId = enbId;
 

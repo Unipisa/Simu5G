@@ -28,14 +28,13 @@ using namespace simu5g;
 using namespace simu5g::unittest;
 using inet::Coord;
 
-static UserControlInfo downlinkData(MacNodeId enb, MacNodeId ue, const Coord& enbPosition)
+static UserControlInfo downlinkData(MacNodeId enb, MacNodeId ue)
 {
     UserControlInfo info;
     info.setDirection(DL);
     info.setFrameType(DATAPKT);
     info.setSourceId(enb);
     info.setDestId(ue);
-    info.setCoord(enbPosition);
     return info;
 }
 
@@ -118,8 +117,8 @@ c.check("...and a node with no radio on the medium finds none", medium->findRadi
 //
 {
     const double txPower = 40; // dBm
-    UserControlInfo fromEnb = downlinkData(enbId, ueId, enbPos);
-    RadioLink link = atUe.linkFor(&ueEndpoint, &fromEnb);
+    UserControlInfo fromEnb = downlinkData(enbId, ueId);
+    RadioLink link = atUe.linkFor(&ueEndpoint, &fromEnb, enbPos);
 
     enbEndpoint.txDirection = OMNI;
     std::vector<double> omni = ue->getRSRP(link, txPower);
@@ -159,8 +158,8 @@ c.check("...and a node with no radio on the medium finds none", medium->findRadi
     ueEndpoint.cableLoss = 0;
 
     // The same geometry from a base station that has no radio on the medium.
-    UserControlInfo fromOther = downlinkData(otherEnbId, ueId, enbPos);
-    RadioLink otherLink = atUe.linkFor(&ueEndpoint, &fromOther);
+    UserControlInfo fromOther = downlinkData(otherEnbId, ueId);
+    RadioLink otherLink = atUe.linkFor(&ueEndpoint, &fromOther, enbPos);
     c.expectRejected("a link whose transmitter is not on the medium is rejected", [&] {
         ue->getRSRP(otherLink, txPower);
     });
