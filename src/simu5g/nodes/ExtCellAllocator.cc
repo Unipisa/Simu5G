@@ -73,7 +73,6 @@ void ExtCellAllocator::initialize(int stage)
             scheduleAt(NOW + TTI, ttiTick_);
         }
 
-        WATCH(id_);
         WATCH(bandStatus_);
         WATCH(prevBandStatus_);
     }
@@ -82,10 +81,6 @@ void ExtCellAllocator::initialize(int stage)
         // from where the radio is: the mobility, declared before the
         // allocator, has its position from this stage on
         registerTransmission(SimTime::getMaxTime() - NOW);
-    }
-    if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
-        // add this cell to the binder
-        id_ = binder_->addExtCell(this, carrierFrequency_);
     }
 }
 
@@ -107,7 +102,7 @@ void ExtCellAllocator::updateBandStatus()
     resetBandStatus();
 
     if (allocationType_ == RANDOM_ALLOC) {
-        EV << " ExtCell::updateBandStatus() - generating new random allocation for extCell " << id_ << " (carrier " << carrierFrequency_ << ")" << std::endl;
+        EV << " ExtCell::updateBandStatus() - generating new random allocation for extCell " << nodeId_ << " (carrier " << carrierFrequency_ << ")" << std::endl;
 
         // allocates each band with probability equal to bandUtilization_
         for (unsigned int band = 0; band < numBands_; ++band) {
@@ -116,7 +111,7 @@ void ExtCellAllocator::updateBandStatus()
         }
     }
     else {  // CONTIGUOUS ALLOC
-        EV << " ExtCell::updateBandStatus() - generating new contiguous allocation for extCell " << id_ << " (carrier " << carrierFrequency_ << ")" << std::endl;
+        EV << " ExtCell::updateBandStatus() - generating new contiguous allocation for extCell " << nodeId_ << " (carrier " << carrierFrequency_ << ")" << std::endl;
 
         // get the number of bands to be allocated
         int toAlloc = ceil((double)numBands_ * bandUtilization_);

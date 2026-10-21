@@ -26,20 +26,6 @@ void BackgroundScheduler::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        // set TX power and angle
-
-        txPower_ = par("txPower");
-
-        std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
-        switch (txDirection_) {
-            case OMNI: txAngle_ = 0.0;
-                break;
-            case ANISOTROPIC: txAngle_ = par("txAngle");
-                break;
-            default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
-        }
-
         isNr_ = par("isNr");
         numerologyIndex_ = par("numerologyIndex");
         carrierFrequency_ = GHz(par("carrierFrequency").doubleValue());
@@ -53,8 +39,6 @@ void BackgroundScheduler::initialize(int stage)
         ulPrevBandAllocation_.resize(numBands_, NODEID_NONE);
         ulBandAllocation_.resize(numBands_, NODEID_NONE);
 
-        WATCH(pos_);
-        WATCH(id_);
         WATCH(bandStatus_[UL]);
         WATCH(bandStatus_[DL]);
         WATCH(prevBandStatus_[UL]);
@@ -76,12 +60,6 @@ void BackgroundScheduler::initialize(int stage)
         ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex_);
         scheduleAt(NOW + ttiPeriod_, ttiTick_);
 
-        // register to get a notification when position changes
-        getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
-
-        // add this cell to the binder
-        id_ = binder_->addBackgroundScheduler(this, carrierFrequency_);
-
         bgTrafficManager_.reference(this, "trafficManagerModule", true);
         bgTrafficManager_->setCarrierFrequency(carrierFrequency_);
 
@@ -97,19 +75,6 @@ void BackgroundScheduler::handleMessage(cMessage *msg)
 
         scheduleAt(NOW + ttiPeriod_, msg);
         return;
-    }
-}
-
-void BackgroundScheduler::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
-{
-    if (signalID == inet::IMobility::mobilityStateChangedSignal) {
-        // this is a HACK to prevent the bgBaseStation from changing its position when its background UEs change theirs
-        // this would happen because the background UEs' mobility module is a submodule of the bgBaseStation
-        if (this->getParentModule() != source->getParentModule())
-            return;
-
-        inet::IMobility *mobility = check_and_cast<inet::IMobility *>(obj);
-        pos_ = mobility->getCurrentPosition();
     }
 }
 

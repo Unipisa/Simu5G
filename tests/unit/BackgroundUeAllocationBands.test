@@ -60,10 +60,8 @@ class RecordingBgManager : public IBackgroundTrafficManager
 
     void setCarrierFrequency(GHz carrierFrequency) override { unexpected("setCarrierFrequency"); }
     unsigned int getNumBands() override { unexpected("getNumBands"); }
-    double getBsTxPower() override { unexpected("getBsTxPower"); }
-    inet::Coord getBsCoord() override { unexpected("getBsCoord"); }
     void notifyBacklog(int index, Direction dir, bool rtx) override { unexpected("notifyBacklog"); }
-    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) override { unexpected("computeCqi"); }
+    Cqi computeCqi(int bgUeIndex, Direction dir) override { unexpected("computeCqi"); }
     Cqi computeCqiFromSinr(double sinr) override { unexpected("computeCqiFromSinr"); }
     TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override { unexpected("getTrafficGenerator"); }
     CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) override { unexpected("getBgUeRadio"); }

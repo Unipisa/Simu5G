@@ -50,7 +50,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 
     double getTtiPeriod() override;
     bool isSetBgTrafficManagerInfoInit() override;
-    std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) override;
+    std::vector<double> getSINR(int bgUeIndex, Direction dir) override;
 
   public:
 

@@ -31,8 +31,6 @@ void BackgroundTrafficManager::initialize(int stage)
     }
     if (stage == INITSTAGE_SIMU5G_BACKGROUNDTRAFFICMANAGER) {
         // Get the reference to the channel model for the given carrier
-        bsTxPower_ = phy_->getTxPwr();
-        bsCoord_ = phy_->getCoord();
         bsNodeId_ = mac_->getMacNodeId();
         channelModel_ = phy_->getChannelModel(carrierFrequency_);
         if (channelModel_ == nullptr)
@@ -50,13 +48,12 @@ unsigned int BackgroundTrafficManager::getNumBands()
     return channelModel_->getNumBands();
 }
 
-std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction dir)
 {
     // a CQI is a what-if on the medium: in DL a transmission of the base
     // station to the UE, at the UE's phantom radio; in UL one of the UE's
-    // phantom radio, at the base station. The UE's position and power are its
-    // radio's: bgUePos and bgUeTxPower, its mobility's position and its
-    // generator's power, are the same values.
+    // phantom radio, at the base station; the UE is where its radio is now, at
+    // its radio's power.
     MacNodeId bgUeId = getBgUeId(bgUeIndex);
     CellularPhantomRadio *bgUeRadio = getBgUeRadio(bgUeId);
     IRadioEndpoint *transmitter = dir == DL ? static_cast<IRadioEndpoint *>(phy_.get()) : bgUeRadio;

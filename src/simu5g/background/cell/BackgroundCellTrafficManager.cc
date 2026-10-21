@@ -41,10 +41,6 @@ void BackgroundCellTrafficManager::initialize(int stage)
         else
             bgAmc_ = new BackgroundCellAmc(binder_);
     }
-    if (stage == INITSTAGE_SIMU5G_BACKGROUNDTRAFFICMANAGER) {
-        bsTxPower_ = bgScheduler_->getTxPower();
-        bsCoord_ = bgScheduler_->getPosition();
-    }
 }
 
 bool BackgroundCellTrafficManager::isSetBgTrafficManagerInfoInit()
@@ -57,13 +53,12 @@ unsigned int BackgroundCellTrafficManager::getNumBands()
     return bgScheduler_->getNumBands();
 }
 
-std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Direction dir)
 {
     // a CQI is a what-if on the medium, as a real cell's background UE's: in DL
     // a transmission of the cell's phantom radio at the UE's, in UL one of the
-    // UE's phantom radio at the cell's. The UE's position and power are its
-    // radio's: bgUePos and bgUeTxPower, its mobility's position and its
-    // generator's power, are the same values.
+    // UE's phantom radio at the cell's; the UE is where its radio is now, at its
+    // radio's power.
     MacNodeId bgUeId = getBgUeId(bgUeIndex);
     CellularPhantomRadio *bgUeRadio = getBgUeRadio(bgUeId);
     CellularPhantomRadio *cellRadio = bgScheduler_->getRadio();

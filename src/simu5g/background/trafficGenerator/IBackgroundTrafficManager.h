@@ -39,17 +39,13 @@ class IBackgroundTrafficManager
     // Get the number of RBs
     virtual unsigned int getNumBands() = 0;
 
-    // Get the tx power of the BS
-    virtual double getBsTxPower() = 0;
 
-    // Get the position of the BS
-    virtual inet::Coord getBsCoord() = 0;
 
     // Invoked by the UE's traffic generator when new data is backlogged
     virtual void notifyBacklog(int index, Direction dir, bool rtx = false) = 0;
 
-    // Returns the CQI based on the given position and power
-    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0) = 0;
+    // Returns the CQI of the background UE in the direction, from a what-if at where its radio is now
+    virtual Cqi computeCqi(int bgUeIndex, Direction dir) = 0;
 
     // Returns the CQI based on the given SINR
     virtual Cqi computeCqiFromSinr(double sinr) = 0;

@@ -39,9 +39,6 @@ enum BandAllocationType {
  */
 class ExtCellAllocator : public cSimpleModule
 {
-    // ID among all the external cells
-    int id_;
-
     MacNodeId nodeId_ = NODEID_NONE; // the node id its transmissions on the radio medium name it by
 
     // the cell's phantom radio
@@ -91,8 +88,6 @@ class ExtCellAllocator : public cSimpleModule
     void handleMessage(cMessage *msg) override;
 
   public:
-
-    int getId() { return id_; }
 
     MacNodeId getNodeId() const { return nodeId_; }
 

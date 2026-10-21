@@ -73,10 +73,8 @@ class Binder : public cSimpleModule
     std::map<inet::L3Address, inet::L3Address> mecHostToUpfAddress_;
 
     // list of static external cells. Used for intercell interference evaluation
-    std::map<GHz, ExtCellList> extCellList_;
 
     // list of static external cells. Used for intercell interference evaluation
-    std::map<GHz, BackgroundSchedulerList> bgSchedulerList_;
 
     // list of all eNBs. Used for inter-cell interference evaluation
     std::vector<EnbInfo *> enbList_;
@@ -512,33 +510,6 @@ class Binder : public cSimpleModule
         return nodeInfoMap_.size();
     }
 
-    virtual int addExtCell(ExtCellAllocator *extCell, GHz carrierFrequency)
-    {
-        if (extCellList_.find(carrierFrequency) == extCellList_.end())
-            extCellList_[carrierFrequency] = ExtCellList();
-
-        extCellList_[carrierFrequency].push_back(extCell);
-        return extCellList_[carrierFrequency].size() - 1;
-    }
-
-    virtual ExtCellList getExtCellList(GHz carrierFrequency)
-    {
-        return extCellList_[carrierFrequency];
-    }
-
-    virtual int addBackgroundScheduler(BackgroundScheduler *bgScheduler, GHz carrierFrequency)
-    {
-        if (bgSchedulerList_.find(carrierFrequency) == bgSchedulerList_.end())
-            bgSchedulerList_[carrierFrequency] = BackgroundSchedulerList();
-
-        bgSchedulerList_[carrierFrequency].push_back(bgScheduler);
-        return bgSchedulerList_[carrierFrequency].size() - 1;
-    }
-
-    virtual const BackgroundSchedulerList& getBackgroundSchedulerList(GHz carrierFrequency)
-    {
-        return bgSchedulerList_[carrierFrequency];
-    }
 
     virtual void addEnbInfo(EnbInfo *info)
     {

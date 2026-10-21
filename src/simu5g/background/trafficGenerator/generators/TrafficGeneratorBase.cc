@@ -199,10 +199,10 @@ void TrafficGeneratorBase::updateMeasurements()
     }
     else {
         if (trafficEnabled_[DL])
-            cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, getCoord());
+            cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL);
 
         if (trafficEnabled_[UL])
-            cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, getCoord(), txPower_);
+            cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL);
     }
 
     positionUpdated_ = false;

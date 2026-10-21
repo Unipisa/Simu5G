@@ -74,12 +74,6 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // carrier frequency for these bg UEs
     GHz carrierFrequency_;
 
-    // tx power of the e/gNodeB
-    double bsTxPower_;
-
-    // position of the e/gNodeB
-    inet::Coord bsCoord_;
-
     // node id of the e/gNodeB; NODEID_NONE for a background cell, whose scheduler sends the transmissions
     MacNodeId bsNodeId_ = NODEID_NONE;
 
@@ -109,7 +103,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     virtual double getTtiPeriod() = 0;
     virtual bool isSetBgTrafficManagerInfoInit() = 0;
-    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) = 0;
+    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir) = 0;
 
     // define functions for interactions with the NIC
 
@@ -118,17 +112,13 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // set carrier frequency
     void setCarrierFrequency(GHz carrierFrequency) override { carrierFrequency_ = carrierFrequency; }
 
-    // get the tx power of the BS
-    double getBsTxPower() override { return bsTxPower_; }
 
-    // get the position of the BS
-    inet::Coord getBsCoord() override { return bsCoord_; }
 
     // invoked by the UE's traffic generator when new data is backlogged
     void notifyBacklog(int index, Direction dir, bool rtx = false) override;
 
     // returns the CQI based on the given position and power
-    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0) override;
+    Cqi computeCqi(int bgUeIndex, Direction dir) override;
 
     // returns the CQI based on the given sinr
     Cqi computeCqiFromSinr(double sinr) override;

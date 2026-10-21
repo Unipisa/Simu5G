@@ -118,9 +118,9 @@ void BackgroundTrafficManagerBase::notifyBacklog(int index, Direction dir, bool 
     }
 }
 
-Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir)
 {
-    std::vector<double> snr = getSINR(bgUeIndex, dir, bgUePos, bgUeTxPower);
+    std::vector<double> snr = getSINR(bgUeIndex, dir);
 
     // convert the SNR to CQI and compute the mean
     double meanSinr = 0;

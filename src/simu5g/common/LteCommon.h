@@ -422,8 +422,6 @@ struct BgTrafficManagerInfo
     std::string str() const;
 };
 
-typedef std::vector<ExtCellAllocator *> ExtCellList;
-typedef std::vector<BackgroundScheduler *> BackgroundSchedulerList;
 
 /*****************
 *  PHY Support  *

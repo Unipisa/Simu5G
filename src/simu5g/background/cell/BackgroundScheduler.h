@@ -31,15 +31,9 @@ using namespace omnetpp;
 typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
 typedef std::priority_queue<ScoreDesc> ScoreList;
 
-class BackgroundScheduler : public cSimpleModule, public cListener
+class BackgroundScheduler : public cSimpleModule
 {
   protected:
-    // base station coordinates
-    inet::Coord pos_;
-
-    // id among all the background cells
-    int id_;
-
     // the node id its transmissions on the radio medium name it by
     MacNodeId nodeId_ = NODEID_NONE;
 
@@ -47,15 +41,6 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 
     // the base station's phantom radio
     inet::ModuleRefByPar<CellularPhantomRadio> radio_;
-
-    // tx power [dBm]
-    double txPower_;
-
-    // tx direction
-    TxDirectionType txDirection_;
-
-    // tx angle [deg]
-    double txAngle_;
 
     // if true, this is a NR base station
     // if false, this is an LTE base station
@@ -111,25 +96,12 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 
   public:
 
-    // This module is subscribed to position changes.
-    void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
-
     // the base station's phantom radio
     CellularPhantomRadio *getRadio() { return radio_; }
-
-    const inet::Coord getPosition() const { return pos_; }
-
-    int getId() const { return id_; }
 
     MacNodeId getNodeId() const { return nodeId_; }
 
     double getTtiPeriod() const { return ttiPeriod_; }
-
-    double getTxPower() const { return txPower_; }
-
-    TxDirectionType getTxDirection() const { return txDirection_; }
-
-    double getTxAngle() const { return txAngle_; }
 
     bool isNr() const { return isNr_; }
 
