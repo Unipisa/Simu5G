@@ -390,18 +390,10 @@ typedef std::pair<unsigned char, CwList> UnitList;
 *********************/
 struct EnbInfo
 {
-    bool init;         // initialization flag
     bool isNr;        // eNodeB or gNodeB
     EnbType type;     // MICRO_ENB or MACRO_ENB
-    double txPwr;
-    TxDirectionType txDirection;
-    double txAngle;
     MacNodeId id;
-    IRadioEndpoint *phy = nullptr;  // the cell's PHY as a channel model sees it
-    LteMacEnb *mac = nullptr;
-    StochasticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> eNodeB;
-    int x2;
     std::string str() const;
 };
 
@@ -411,7 +403,6 @@ struct UeInfo
     double txPwr;
     MacNodeId id;
     MacNodeId cellId;
-    StochasticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> ue;
     IRadioEndpoint *phy = nullptr;  // the UE's PHY as a channel model sees it
     std::string str() const;

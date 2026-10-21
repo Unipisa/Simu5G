@@ -52,7 +52,6 @@ class CellularRadioMedium : public cSimpleModule
     double maxInterferenceDistance = 0; // the range of a broadcast
     long nextTransmissionId = 0;
     std::map<GHz, std::vector<const CellularTransmission *>> transmissions; // per carrier, in creation order; the ones not yet over
-    std::map<const cComponent *, ChannelState> channelStates; // per channel model evaluating links
     std::map<GHz, ChannelState::LosMap> losMaps; // per carrier: whether each link is in line of sight
     std::map<GHz, ChannelState::ShadowFadingMap> shadowingMaps; // per carrier: the last shadowing sample of each link
     std::map<GHz, ChannelState::JakesFadingMap> jakesFadingMaps; // per carrier: the Jakes fading paths of each link
@@ -158,16 +157,6 @@ class CellularRadioMedium : public cSimpleModule
      * getDataTransmissionsDuring().
      */
     virtual std::vector<const CellularTransmission *> getUplinkTransmissionsDuring(GHz carrierFrequency, simtime_t from, simtime_t to) const;
-
-    /**
-     * The channel state the given channel model evaluates links against,
-     * created empty on first use. The reference stays valid until
-     * removeChannelState() is called for the same channel model.
-     */
-    virtual ChannelState& getChannelState(const cComponent *channelModel);
-
-    /** Drops the channel state of the given channel model, if it has any. */
-    virtual void removeChannelState(const cComponent *channelModel);
 
     /**
      * Whether each link on the carrier is in line of sight, and where its ends

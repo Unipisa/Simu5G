@@ -135,7 +135,6 @@ void LteMacEnb::initialize(int stage)
         info->id = nodeId_;            // local MAC ID
         info->isNr = isNr_;            // eNB or gNB
         info->type = MACRO_ENB;        // eNB Type
-        info->init = false;            // flag for PHY initialization
         info->eNodeB = getContainingNode(this);  // reference to the eNodeB module
         binder_->addEnbInfo(info);
     }

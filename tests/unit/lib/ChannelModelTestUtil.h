@@ -155,8 +155,6 @@ class ChannelModelProbe
   private:
     struct Access : StochasticChannelModel
     {
-        using ChannelStateAccessor = ChannelState& (StochasticChannelModel::*)();
-        static ChannelStateAccessor channelStatePtr() { return &Access::channelState; }
         static auto losMapPtr() { return &Access::losMap; }
         static auto shadowingMapPtr() { return &Access::shadowingMap; }
         static auto jakesFadingMapPtr() { return &Access::jakesFadingMap; }
@@ -177,8 +175,7 @@ class ChannelModelProbe
 
     StochasticChannelModel *model() const { return model_; }
 
-    // state: the model's channel state, which the radio medium keeps
-    ChannelState& channelState() { return (model_->*Access::channelStatePtr())(); }
+    // state, which the radio medium keeps
     // the LOS state of the links on the model's carrier, which the radio medium keeps once per link
     ChannelState::LosMap& losMap() { return (model_->*Access::losMapPtr())(); }
     // the shadowing of the links on the model's carrier, which the radio medium keeps once per link

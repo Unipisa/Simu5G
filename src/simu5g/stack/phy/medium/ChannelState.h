@@ -63,21 +63,13 @@ inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
 }
 
 /**
- * The channel state a channel model evaluates links against, and updates as it
- * evaluates them: per node, the recent positions its speed is derived from.
- *
- * The radio medium keeps one of these for every channel model that evaluates
- * links (CellularRadioMedium::getChannelState()). Each is that model's own: two
- * models evaluating the same link hold two independent entries for it. Whether
- * a link is in line of sight, its shadowing and its Jakes fading paths are not
- * part of it: the medium keeps those once per link
+ * The types of the channel state the radio medium keeps once per link and
+ * carrier, shared by every channel model evaluating the link: whether it is in
+ * line of sight, its shadowing and its Jakes fading paths
  * (CellularRadioMedium::getLosMap(), getShadowingMap(), getJakesFadingMap()).
  */
 struct ChannelState
 {
-    /** A timestamped position: when it was recorded, and where. */
-    typedef std::pair<simtime_t, inet::Coord> Position;
-
     /** The Jakes fading paths of one band: an angle of arrival and a delay spread per path. */
     struct JakesFadingData
     {

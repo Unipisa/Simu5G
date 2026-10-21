@@ -617,7 +617,7 @@ std::string EnbInfo::str() const
     std::ostringstream oss;
     oss << "EnbInfo[id=" << id << ", module=" << (eNodeB ? eNodeB->getFullName() : "null")
         << ", type=" << (isNr ? "NR" : "LTE") << "/" << (type == MACRO_ENB ? "MACRO" : "MICRO")
-        << ", init=" << (init ? "Y" : "N") << ", txPwr=" << txPwr << "dBm]";
+        << "]";
     return oss.str();
 }
 

@@ -50,8 +50,7 @@ class CellularTransmission;
  * The radio medium keeps the state the evaluations carry from one to the next:
  * whether each link is in line of sight, its shadowing and its Jakes fading
  * paths, once per link and shared by every channel model evaluating it
- * (losMap(), shadowingMap(), jakesFadingMap()), and this model's own position
- * histories (channelState()).
+ * (losMap(), shadowingMap(), jakesFadingMap()).
  *
  * The propagation formulas proper live in a PathLossModel strategy (pathLoss_)
  * that this class owns and delegates to from computePathLoss, computeLosProbability,
@@ -111,7 +110,6 @@ class StochasticChannelModel : public ChannelModelBase
 
     bool enable_extCell_los_;
 
-    typedef ChannelState::Position Position;
     typedef ChannelState::JakesFadingData JakesFadingData;
     typedef ChannelState::JakesFadingVector JakesFadingVector;
     typedef ChannelState::JakesFadingMap JakesFadingMap;
@@ -119,7 +117,6 @@ class StochasticChannelModel : public ChannelModelBase
     typedef ChannelState::ShadowingSample ShadowingSample;
     typedef ChannelState::ShadowFadingMap ShadowFadingMap;
 
-    ChannelState *channelState_ = nullptr; // this model's channel state, kept by the radio medium; see channelState()
     LosMap *losMap_ = nullptr; // the LOS state of the links on this model's carrier, kept by the radio medium; see losMap()
     ShadowFadingMap *shadowingMap_ = nullptr; // the shadowing of the links on this model's carrier, kept by the radio medium; see shadowingMap()
     JakesFadingMap *jakesFadingMap_ = nullptr; // the Jakes fading paths of the links on this model's carrier, kept by the radio medium; see jakesFadingMap()
@@ -345,13 +342,6 @@ class StochasticChannelModel : public ChannelModelBase
      * (pathLoss_), chosen by the pathLossType parameter.
      */
     virtual PathLossModel *createPathLossModel();
-
-    /*
-     * This model's channel state, which the radio medium keeps. Resolved on
-     * first use, since the medium is not known before INITSTAGE_SIMU5G_POSTLOCAL.
-     */
-    ChannelState& channelState();
-    const ChannelState& channelState() const;
 
     /*
      * Whether each link on this model's carrier is in line of sight, by link

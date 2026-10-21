@@ -36,9 +36,6 @@ Define_Module(StochasticChannelModel);
 StochasticChannelModel::~StochasticChannelModel()
 {
     delete pathLoss_;
-    // radioMedium_ is unset if the medium has already been deleted
-    if (channelState_ != nullptr && radioMedium_)
-        radioMedium_->removeChannelState(this);
 }
 
 PathLossModel *StochasticChannelModel::createPathLossModel()
@@ -56,19 +53,6 @@ PathLossModel *StochasticChannelModel::createPathLossModel()
     }
     else
         throw cRuntimeError("Unrecognized value in 'pathLossType' parameter: \"%s\"", pathLossType.c_str());
-}
-
-ChannelState& StochasticChannelModel::channelState()
-{
-    if (channelState_ == nullptr)
-        channelState_ = &radioMedium_->getChannelState(this);
-    return *channelState_;
-}
-
-const ChannelState& StochasticChannelModel::channelState() const
-{
-    // finding the medium's record on first use does not change the state
-    return const_cast<StochasticChannelModel *>(this)->channelState();
 }
 
 StochasticChannelModel::LosMap& StochasticChannelModel::losMap()
