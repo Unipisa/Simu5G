@@ -131,23 +131,8 @@ class StochasticChannelModel : public ChannelModelBase
     // also used to recompute the probability of LOS
     double correlationDistance_;
 
-    // Antenna gain of eNodeB
-    double antennaGainEnB_;
-
-    // Antenna gain of UE
-    double antennaGainUe_;
-
     // Thermal noise
     double thermalNoise_;
-
-    // Cable loss
-    double cableLoss_;
-
-    // UE noise figure
-    double ueNoiseFigure_;
-
-    // eNodeB noise figure
-    double bsNoiseFigure_;
 
     // Enable disable fading
     bool fading_;
@@ -450,15 +435,14 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr);
 
     /*
-     * The antenna gain of a node's radio, or gainIfNoRadio if the node is not
-     * a radio on the medium: a background cell or UE, whose link budget is
-     * still the model's own parameters.
+     * The antenna gain of a node's radio; throws if the node has no radio on
+     * the medium.
      */
-    double antennaGainOf(MacNodeId nodeId, double gainIfNoRadio) const;
+    double antennaGainOf(MacNodeId nodeId) const;
 
     /*
-     * The cable loss of a node's radio as a receiver, or the model's own
-     * cableLoss if the node is not a radio on the medium.
+     * The cable loss of a node's radio as a receiver; throws if the node has
+     * no radio on the medium.
      */
     double cableLossOf(MacNodeId nodeId) const;
 

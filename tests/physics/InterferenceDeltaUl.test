@@ -18,7 +18,7 @@ noise figure:
 
     S = ueTxPower - PL(d_victim)      + Gtx + Grx - cableLoss
     I = interfererTxPower - PL(d_interferer) + Gtx + Grx - cableLoss
-    N = thermalNoise + bsNoiseFigure
+    N = thermalNoise + BS noise figure
 
     SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
 
@@ -118,12 +118,12 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 **.eNodeBTxPower = 40dBm
 *.ue[1].**.ueTxPower = 23dBm
 **.ueTxPower = 26dBm
-**.antennGainEnB = 18dBi
-**.antennaGainUe = 0dBi
+*.gnb*.cellularNic.radio.antenna.gain = 18dBi
+*.ue[*].cellularNic.*adio.antenna.gain = 0dBi
 **.cableLoss = 2dB
 **.thermalNoise = -104.5dBm
-**.ueNoiseFigure = 7dBm
-**.bsNoiseFigure = 5dBm
+*.ue[*].cellularNic.*adio.receiver.noiseFigure = 7dB
+*.gnb*.cellularNic.radio.receiver.noiseFigure = 5dB
 
 ############### Traffic: a trickle from the victim, a flood from the other cell ##############
 *.ue[*].numApps = 1

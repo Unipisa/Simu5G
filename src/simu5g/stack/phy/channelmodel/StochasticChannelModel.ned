@@ -70,18 +70,8 @@ simple StochasticChannelModel extends ChannelModelBase
         // Target BLER used to compute feedback
         double targetBler = default(0.01);
 
-        // Antenna gain of the UE
-        double antennaGainUe @unit(dBi) = default(0dBi);
-        // Antenna gain of the eNodeB
-        double antennGainEnB @unit(dBi) = default(18dBi);
         // Thermal noise for 10 MHz of bandwidth
         double thermalNoise @unit(dBm) = default(-104.5dBm);
-        // UE noise figure
-        double ueNoiseFigure @unit(dBm) = default(7dBm);
-        // eNodeB noise figure
-        double bsNoiseFigure @unit(dBm) = default(5dBm);
-        // Cable loss
-        double cableLoss @unit(dB) = default(2dB);
 
         // Whether LOS/NLOS is drawn per link from the scenario's LOS probability; when false, it is fixed to fixedLos
         bool dynamicLos = default(false);

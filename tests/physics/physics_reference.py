@@ -356,17 +356,21 @@ class Budget:
     interference check needs exactly the same arithmetic for the interferer as
     the link-budget check needs for the wanted signal."""
 
-    def __init__(self):
+    def __init__(self, bs='*.gnb*', ue='*.ue[*]'):
+        # bs, ue: the node patterns the ini states the radios' keys on
         self.plr = pathloss_reference()
+        self.bs_gain = f'{bs}.cellularNic.radio.antenna.gain'
+        self.ue_gain = f'{ue}.cellularNic.*adio.antenna.gain'
+        ue_noise_figure = f'{ue}.cellularNic.*adio.receiver.noiseFigure'
         self.cfg = config_values([
-            '**.eNodeBTxPower', '**.antennGainEnB', '**.antennaGainUe', '**.cableLoss',
-            '**.thermalNoise', '**.ueNoiseFigure', '**.nodebHeight', '**.ueHeight',
+            '**.eNodeBTxPower', self.bs_gain, self.ue_gain, '**.cableLoss',
+            '**.thermalNoise', ue_noise_figure, '**.nodebHeight', '**.ueHeight',
             '*.carrierAggregation.componentCarrier[0].carrierFrequency',
         ])
         self.hBS = self.cfg['**.nodebHeight']
         self.hUT = self.cfg['**.ueHeight']
         self.fc = self.cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
-        self.noise = self.cfg['**.thermalNoise'] + self.cfg['**.ueNoiseFigure']
+        self.noise = self.cfg['**.thermalNoise'] + self.cfg[ue_noise_figure]
 
     def received_power(self, d2D, tx_power=None):
         """dBm at the UE, for a base station d2D metres away, transmitting at
@@ -376,7 +380,7 @@ class Budget:
             tx_power = self.cfg['**.eNodeBTxPower']
         return (tx_power
                 - self.plr.t901_umi_los(d3D, d2D, self.fc, self.hBS, self.hUT)
-                + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
+                + self.cfg[self.bs_gain] + self.cfg[self.ue_gain]
                 - self.cfg['**.cableLoss'])
 
     def background_received_power(self, d3D, d2D, tx_power):
@@ -384,11 +388,11 @@ class Budget:
 
         Same budget and same propagation study as a real base station's, but
         NLOS, which is what enableExtCellLos = false selects; left true, the
-        interferer would borrow the serving link's LOS state. That is the
+        interferer's link would take a LOS state of its own. That is the
         model's choice, so the checks built on it characterise the model; no
         specification defines these phantom links."""
         return (tx_power - self.plr.t901_umi_nlos(d3D, d2D, self.fc, self.hBS, self.hUT)
-                + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
+                + self.cfg[self.bs_gain] + self.cfg[self.ue_gain]
                 - self.cfg['**.cableLoss'])
 
     def over_noise(self, signal_dbm, interference_dbm=None):
@@ -459,7 +463,7 @@ def grade_interference_delta_ul(grader):
     scheduled in every TTI, so the uplink SINR the victim's base station
     computes spans two predictable endpoints."""
     budget = Budget()
-    cfg = config_values(['**.ueTxPower', '*.ue[1].**.ueTxPower', '**.bsNoiseFigure',
+    cfg = config_values(['**.ueTxPower', '*.ue[1].**.ueTxPower', '*.gnb*.cellularNic.radio.receiver.noiseFigure',
                          '*.gnb1.mobility.initialX', '*.ue[0].mobility.initialX',
                          '*.ue[1].mobility.initialX', '*.gnb1.mobility.initialZ',
                          '*.ue[0].mobility.initialZ', '*.ue[1].mobility.initialZ'])
@@ -476,7 +480,7 @@ def grade_interference_delta_ul(grader):
         return budget.received_power(d2D, ue_power)
 
     def over_bs_noise(signal_dbm, interference_dbm=None):
-        noise = budget.cfg['**.thermalNoise'] + cfg['**.bsNoiseFigure']
+        noise = budget.cfg['**.thermalNoise'] + cfg['*.gnb*.cellularNic.radio.receiver.noiseFigure']
         denominator = 10 ** (noise / 10.0)
         if interference_dbm is not None:
             denominator += 10 ** (interference_dbm / 10.0)
@@ -594,7 +598,7 @@ def grade_background_cell_floor(grader):
 def grade_ext_cell_floor(grader):
     """One real cell, one external cell occupying every band. The interference
     is a constant, so with or without it the SINR is one closed-form value."""
-    budget = Budget()
+    budget = Budget(bs='*.eNodeB*', ue='*.ue*')
     pos = config_values([
         '*.eNodeB1.mobility.initialX', '*.eNodeB1.mobility.initialZ',
         '*.ue11.mobility.initialX', '*.ue11.mobility.initialY', '*.ue11.mobility.initialZ',
@@ -644,14 +648,15 @@ def grade_d2d_link_budget(grader):
     ends and the UE's noise figure."""
     plr = pathloss_reference()
     cfg = config_values([
-        '**.d2dTxPower', '**.antennaGainUe', '**.cableLoss', '**.thermalNoise',
-        '**.ueNoiseFigure', '**.nodebHeight', '**.ueHeight',
+        '**.d2dTxPower', '*.ueD2D*[*].cellularNic.*adio.antenna.gain', '**.cableLoss',
+        '**.thermalNoise', '*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure',
+        '**.nodebHeight', '**.ueHeight',
         '*.carrierAggregation.componentCarrier[0].carrierFrequency',
         '*.ueD2DTx[0].mobility.initialZ', '*.ueD2DRx[0].mobility.initialZ',
     ])
     hBS, hUT = cfg['**.nodebHeight'], cfg['**.ueHeight']
     fc = cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
-    noise = cfg['**.thermalNoise'] + cfg['**.ueNoiseFigure']
+    noise = cfg['**.thermalNoise'] + cfg['*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure']
 
     # Tripwire: both UEs stand at the height the formula assumes, so the
     # distance the model measures between them is the horizontal one.
@@ -674,7 +679,7 @@ def grade_d2d_link_budget(grader):
         grader.check_absolute('single-value', params,
                               row['rcvdSinrD2D:max'] - row['rcvdSinrD2D:min'], 0.0, 1e-9, " dB")
         received = (cfg['**.d2dTxPower'] - plr.t901_umi_los(d, d, fc, hBS, hUT)
-                    + 2 * cfg['**.antennaGainUe'] - cfg['**.cableLoss'])
+                    + 2 * cfg['*.ueD2D*[*].cellularNic.*adio.antenna.gain'] - cfg['**.cableLoss'])
         observed = row['rcvdSinrD2D:mean']
         grader.check_absolute('d2d-link-budget', params, observed, received - noise, 1e-9, " dB")
         if previous is not None:
@@ -689,11 +694,11 @@ def grade_link_reciprocity(grader):
     the link -- as long as the channel does the same thing to both ends."""
     budget = Budget()
     powers = config_values(['**.eNodeBTxPower', '**.ueTxPower',
-                            '**.ueNoiseFigure', '**.bsNoiseFigure'])
+                            '*.ue[*].cellularNic.*adio.receiver.noiseFigure', '*.gnb*.cellularNic.radio.receiver.noiseFigure'])
     # Antenna gains and cable loss appear in both directions and cancel; what
     # is left is the transmit powers and the noise figures.
     expected = ((powers['**.eNodeBTxPower'] - powers['**.ueTxPower'])
-                - (powers['**.ueNoiseFigure'] - powers['**.bsNoiseFigure']))
+                - (powers['*.ue[*].cellularNic.*adio.receiver.noiseFigure'] - powers['*.gnb*.cellularNic.radio.receiver.noiseFigure']))
 
     table = scalar_table('module =~ "*.ue[0].*.nrRadio.receiver" '
                          'AND (name =~ "measuredSinrDl:mean" OR name =~ "measuredSinrUl:mean")',

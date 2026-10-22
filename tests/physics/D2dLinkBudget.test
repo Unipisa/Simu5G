@@ -14,7 +14,7 @@ D2D mode, fixed transmission parameters, D2D interference off and every
 random ingredient off. The SINR of a D2D reception is then a sum of
 configured constants and one path loss:
 
-    SINR = d2dTxPower - PL(d) + 2 Gue - cableLoss - (thermalNoise + ueNoiseFigure)
+    SINR = d2dTxPower - PL(d) + 2 Gue - cableLoss - (thermalNoise + UE noise figure)
 
 TR 38.901 has no UE-to-UE link, but other specifications do: TR 36.843
 A.2.1.2 (D2D channel models, both antenna heights 1.5 m) and TR 37.885 Table
@@ -117,12 +117,11 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 **.eNodeBTxPower = 40dBm
 **.ueTxPower = 26dBm
 **.d2dTxPower = 20dBm
-**.antennGainEnB = 18dBi
-**.antennaGainUe = 3dBi
+*.gnb.cellularNic.radio.antenna.gain = 18dBi
 *.ueD2D*[*].cellularNic.*adio.antenna.gain = 3dBi
 **.cableLoss = 2dB
 **.thermalNoise = -104.5dBm
-**.ueNoiseFigure = 7dBm
+*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure = 7dB
 
 ############### Traffic: a CBR flow over the D2D link ##############
 *.ueD2D*[0].numApps = 1

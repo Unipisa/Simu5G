@@ -76,12 +76,12 @@ seed-set = 0
 **.numBands = 6
 **.eNodeBTxPower = 40dBm
 **.ueTxPower = 26dBm
-**.antennGainEnB = 18dBi
-**.antennaGainUe = 0dBi
+*.gnb*.cellularNic.radio.antenna.gain = 18dBi
+*.ue[*].cellularNic.*adio.antenna.gain = 0dBi
 **.cableLoss = 2dB
 **.thermalNoise = -104.5dBm
-**.ueNoiseFigure = 7dBm
-**.bsNoiseFigure = 5dBm
+*.ue[*].cellularNic.*adio.receiver.noiseFigure = 7dB
+*.gnb*.cellularNic.radio.receiver.noiseFigure = 5dB
 
 *.ue[*].numApps = 2
 *.server.numApps = 2

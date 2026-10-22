@@ -91,12 +91,7 @@ void StochasticChannelModel::initialize(int stage)
 
         correlationDistance_ = par("correlationDistance");
 
-        antennaGainUe_ = par("antennaGainUe");
-        antennaGainEnB_ = par("antennGainEnB");
         thermalNoise_ = par("thermalNoise");
-        cableLoss_ = par("cableLoss");
-        ueNoiseFigure_ = par("ueNoiseFigure");
-        bsNoiseFigure_ = par("bsNoiseFigure");
         dynamicLos_ = par("dynamicLos");
         fixedLos_ = par("fixedLos");
 
@@ -841,16 +836,14 @@ bool StochasticChannelModel::isReceptionSuccessful(IRadioEndpoint *radio, AirFra
     return receiver->decide(*packetErrorRate);
 }
 
-double StochasticChannelModel::antennaGainOf(MacNodeId nodeId, double gainIfNoRadio) const
+double StochasticChannelModel::antennaGainOf(MacNodeId nodeId) const
 {
-    IRadioEndpoint *radio = radioMedium_->findRadio(nodeId);
-    return radio != nullptr ? radio->getAntennaGain() : gainIfNoRadio;
+    return radioMedium_->getRadio(nodeId)->getAntennaGain();
 }
 
 double StochasticChannelModel::cableLossOf(MacNodeId nodeId) const
 {
-    IRadioEndpoint *radio = radioMedium_->findRadio(nodeId);
-    return radio != nullptr ? radio->getCableLoss() : cableLoss_;
+    return radioMedium_->getRadio(nodeId)->getCableLoss();
 }
 
 void StochasticChannelModel::emitRcvdSinr(IRadioEndpoint *radio, Direction dir, MacNodeId ueId, GHz carrierFrequency, double sinr)
@@ -1011,7 +1004,7 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         // else, antenna is omni-directional
         //=============== END ANGULAR ATTENUATION =================
 
-        return transmission.txPower - angularAtt - cableLossOf(ueId) + antennaGainOf(id, antennaGainEnB_) + antennaGainOf(ueId, antennaGainUe_);
+        return transmission.txPower - angularAtt - cableLossOf(ueId) + antennaGainOf(id) + antennaGainOf(ueId);
     };
 
     // a reception: the other cells' DL data transmissions of the slot just completed, on its bands;
@@ -1145,7 +1138,7 @@ bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, Ma
         EV << NOW << " StochasticChannelModel::computeUplinkInterference - Interference from UE: " << ueId << "(dir " << dirToA(interferer.dir) << ") on band[" << band << "]" << endl;
 
         // get rx power from this UE
-        double rxPwr = interferer.txPwr - cableLossOf(eNbId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(eNbId, antennaGainEnB_);
+        double rxPwr = interferer.txPwr - cableLossOf(eNbId) + antennaGainOf(ueId) + antennaGainOf(eNbId);
         (*interference)[band] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
@@ -1364,7 +1357,7 @@ bool StochasticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId s
         EV << NOW << " StochasticChannelModel::computeD2DInterference - Interference from UE: " << ueId << "(dir " << dirToA(interferer.dir) << ") on band[" << band << "]" << endl;
 
         // get tx power from this UE
-        double rxPwr = interferer.txPwr - cableLossOf(destId) + antennaGainOf(ueId, antennaGainUe_) + antennaGainOf(destId, antennaGainUe_);
+        double rxPwr = interferer.txPwr - cableLossOf(destId) + antennaGainOf(ueId) + antennaGainOf(destId);
         (*interference)[band] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
