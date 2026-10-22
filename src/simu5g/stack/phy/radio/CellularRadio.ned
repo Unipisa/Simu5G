@@ -27,6 +27,7 @@ module CellularRadio
 {
     parameters:
         string radioMediumModule = default("radioMedium"); // The network's radio medium
+        bool insideBuilding = default(false); // Whether the radio is inside a building, which counts on a UE's radio: a link's building penetration loss is its UE end's. Its distance from the wall (uniformly in [0, 25] m) and the random term of its penetration loss (standard normal, scaled by the study's sigma_P) are drawn once
         @class(CellularRadio);
         @display("i=device/antennatower");
     gates:

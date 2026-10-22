@@ -78,18 +78,14 @@ void PhyBase::initialize(int stage)
         radioInGate_ = findGate("radioIn");
         radioOutGate_ = findGate("radioOut");
         radio_ = getModuleByPath(par("radioModule"));
-        check_and_cast<CellularRadio *>(radio_.get())->setEndpoint(this);
+        cellularRadio_ = check_and_cast<CellularRadio *>(radio_.get());
+        cellularRadio_->setEndpoint(this);
 
         // Initialize and watch statistics
         ueTxPower_ = par("ueTxPower");
         eNodeBtxPower_ = par("eNodeBTxPower");
         microTxPower_ = par("microTxPower");
         isNr_ = par("isNr");
-        insideBuilding_ = par("insideBuilding");
-        if (insideBuilding_) {
-            insideDistance_ = uniform(0.0, 25.0);
-            penetrationLossDeviate_ = normal(0.0, 1.0);
-        }
 
         WATCH(numAirFrameReceived_);
         WATCH(numAirFrameNotReceived_);
@@ -152,12 +148,17 @@ double PhyBase::getSpeed()
 
 bool PhyBase::isInsideBuilding()
 {
-    return insideBuilding_;
+    return cellularRadio_->isInsideBuilding();
 }
 
 double PhyBase::getInsideDistance()
 {
-    return insideDistance_;
+    return cellularRadio_->getInsideDistance();
+}
+
+double PhyBase::getPenetrationLossDeviate()
+{
+    return cellularRadio_->getPenetrationLossDeviate();
 }
 
 void PhyBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)

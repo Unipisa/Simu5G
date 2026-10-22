@@ -39,6 +39,9 @@ class CellularRadio : public cSimpleModule
     int upperLayerOutGateId_ = -1;
     inet::ModuleRefByPar<CellularRadioMedium> radioMedium_;
     IRadioEndpoint *endpoint_ = nullptr; // the PHY the radio sends and receives frames for
+    bool insideBuilding_ = false; // whether the radio is inside a building, and how far from its wall
+    double insideDistance_ = 0.0;
+    double penetrationLossDeviate_ = 0.0; // the standard-normal deviate of its building penetration loss
 
   protected:
     virtual void initialize(int stage) override;
@@ -49,6 +52,13 @@ class CellularRadio : public cSimpleModule
   public:
     /** Sets the PHY the radio sends and receives frames for, whose position is the radio's. */
     virtual void setEndpoint(IRadioEndpoint *endpoint) { endpoint_ = endpoint; }
+
+    /** Whether the radio is inside a building. */
+    bool isInsideBuilding() const { return insideBuilding_; }
+    /** How far inside its building the radio is, in m (drawn once). */
+    double getInsideDistance() const { return insideDistance_; }
+    /** The standard-normal deviate of its building penetration loss (drawn once). */
+    double getPenetrationLossDeviate() const { return penetrationLossDeviate_; }
 };
 
 } // namespace simu5g
