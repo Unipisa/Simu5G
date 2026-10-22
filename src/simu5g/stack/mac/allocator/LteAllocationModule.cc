@@ -160,11 +160,6 @@ unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const 
     return 0;
 }
 
-unsigned int LteAllocationModule::getAllocatedBlocks(Plane plane, const Remote antenna, const Band band)
-{
-    return allocatedRbsPerBand_[plane][antenna][band].allocated_;
-}
-
 unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const Plane plane, const Band band)
 {
     ensureNodeInitialized(nodeId);

@@ -230,11 +230,6 @@ class LteAllocationModule
         return allocatedRbsPerBand_[plane][antenna][band].ueAllocatedRbsMap_[nodeId];
     }
 
-    /*
-     * Returns the amount of blocks allocated in a Band
-     */
-    virtual unsigned int getAllocatedBlocks(Plane plane, const Remote antenna, const Band band);
-
     unsigned int getBytes(const Remote antenna, const Band band, const MacNodeId nodeId)
     {
         Plane plane = MAIN_PLANE;

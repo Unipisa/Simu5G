@@ -92,7 +92,6 @@ class PhyTransmissionInd extends inet::TagBase {
     double d2dTxPower = NaN;                            // D2D transmission power
     unsigned int totalGrantedBlocks = 0;                // Total granted resource blocks
     unsigned int grantId = 0;                           // Grant identifier
-    inet::Coord coord;                                  // Playground position of the sending host
     RbMap grantedBlocks;                                // Resource blocks granted on all Remotes, all Bands
     FeedbackRequest feedbackReq;                        // Feedback request information
 }

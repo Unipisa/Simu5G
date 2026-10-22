@@ -284,23 +284,10 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
     return (!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir];
 }
 
-inet::Coord TrafficGeneratorBase::getCoord()
-{
-    if (mobility_ != nullptr)
-        pos_ = mobility_->getCurrentPosition();
-    return pos_;
-}
-
-double TrafficGeneratorBase::getSpeed()
-{
-    return mobility_ != nullptr ? mobility_->getCurrentVelocity().length() : 0.0;
-}
-
 void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal) {
-        mobility_ = check_and_cast<inet::IMobility *>(obj);
-        pos_ = mobility_->getCurrentPosition();
+        pos_ = check_and_cast<inet::IMobility *>(obj)->getCurrentPosition();
         positionUpdated_ = true;
     }
 }

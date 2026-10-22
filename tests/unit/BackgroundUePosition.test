@@ -2,8 +2,8 @@
 
 A background UE's position is its mobility's at the instant it is read, as
 a PHY's is: not the one the mobility last reported, which INET's mobility
-does every updateInterval. So is its phantom radio's, the position the
-radio medium evaluates the UE's links at.
+does every updateInterval. A background UE's position is its phantom
+radio's, the position the radio medium evaluates the UE's links at.
 
 Checked with a background UE moving at 10 m/s along x from x = 500 m, its
 mobility reporting every 100 ms, read between two reports and after the
@@ -11,7 +11,6 @@ first: at 50 ms and at 130 ms it is at 500.5 m and 501.3 m.
 
 %includes:
 #include "SchedulerTestUtil.h"
-#include "simu5g/background/trafficGenerator/generators/TrafficGeneratorBase.h"
 #include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 
 %global:
@@ -69,24 +68,21 @@ sim-time-limit = 1s
 %activity:
 Checker c;
 cModule *bgUe = getSimulation()->getSystemModule()->getModuleByPath("bgCell.bgTrafficGenerator.bgUE[0]");
-auto *generator = check_and_cast<TrafficGeneratorBase *>(bgUe->getSubmodule("generator"));
 auto *radio = check_and_cast<CellularPhantomRadio *>(bgUe->getSubmodule("radio"));
-auto position = [&] () { return generator->getCoord(); };
+auto position = [&] () { return radio->getCoord(); };
 
 wait(0.050);
 inet::Coord p = position();
 c.expectNear("between two mobility reports, a background UE is where its mobility has moved it", p.x, 500.5, 1e-9);
 c.check("...on its line of motion", p.y == 400 && p.z == 1.5);
-c.expectNear("...and so is its radio", radio->getCoord().x, 500.5, 1e-9);
 
 wait(0.080);
 c.expectNear("...and after a report, too", position().x, 501.3, 1e-9);
-c.expectNear("...the radio too", radio->getCoord().x, 501.3, 1e-9);
 
 c.summary();
 
 %contains: stdout
-modelchecks=5 modelfailures=0
+modelchecks=3 modelfailures=0
 
 %not-contains: stdout
 FAILED
