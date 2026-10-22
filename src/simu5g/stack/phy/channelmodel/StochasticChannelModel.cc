@@ -1272,7 +1272,7 @@ RadioLink StochasticChannelModel::d2dLink(MacNodeId srcId, Coord srcCoord, MacNo
     // The channel state is keyed on the *link*, so a UE's several D2D peers each
     // get their own LOS state, shadowing realization and fading process.
     //
-    // The node whose position history defines the speed is the transmitter.
+    // The transmitter is the link's mobile end, whose speed the Doppler shift takes.
     link.linkKey = LinkKey(link.txId, link.rxId);
     link.stateNodeId = srcId;
 

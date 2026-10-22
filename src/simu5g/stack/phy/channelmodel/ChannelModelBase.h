@@ -70,7 +70,9 @@ struct RadioLink
     LinkKey linkKey;
 
     // stateNodeId is the link's mobile end -- the UE, or a D2D link's
-    // transmitter. It keys the Rayleigh fading and distinguishes background UEs.
+    // transmitter. It distinguishes background UEs' links, which have no
+    // shadowing. (The Rayleigh fading takes it but ignores it: its value is the
+    // trace's, the same for every node.)
     MacNodeId stateNodeId = NODEID_NONE;
 
     // ---- radios ----
@@ -105,22 +107,23 @@ struct RadioLink
 };
 
 /**
- * Abstract base for the channel models a PHY layer can be equipped with.
+ * Abstract base for the channel models of the radio medium.
  *
- * This is not a propagation model: it is the interface to the entire PHY link
- * model. A channel model is asked for received power (getRSRP), for per-band
- * SINR (getSINR, and computeSinr for a what-if), and for the reception decision itself
- * (isReceptionSuccessful), so it owns propagation, fading, interference and
- * the SINR-to-error mapping alike. Path loss (getAttenuation,
+ * This is not a propagation model: it is the interface to the PHY link model
+ * up to the SINR. A channel model is asked for received power (getRSRP), for
+ * per-band SINR (getSINR, and computeSinr for a what-if), and to run a
+ * reception (isReceptionSuccessful), whose packet error rate and decision are
+ * the receiving radio's error model's and receiver's; it owns propagation,
+ * fading and interference. Path loss (getAttenuation,
  * computePathLoss) is one ingredient among those, not the subject of the
  * class.
  *
  * The class and interface names are RAT-neutral: the concrete models differ
  * in which 3GPP propagation study supplies their formulas (the pathLossType
  * parameter), not in whether they serve an LTE or an NR carrier, and any of
- * them can be plugged into the channelModelType slot of any NIC through the
- * IChannelModel interface -- the gNodeB NIC, for instance, selects the
- * Tr38901ChannelModel preset there by default. Everything
+ * them can be plugged into the medium's channelModelType or nrChannelModelType
+ * slot through the IChannelModel interface -- the NR slot, for instance,
+ * selects the Tr38901ChannelModel preset by default. Everything
  * technology-dependent -- carrier frequency, bandwidth, numerology -- is
  * read from the ComponentCarrier module rather than encoded in the class.
  *

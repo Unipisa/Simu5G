@@ -5,10 +5,11 @@ The interference floor an external cell imposes, against the closed form.
 An ExtCell is not a node: it is a transmit power, a position and a band
 allocation policy, with a phantom radio -- an antenna and a transmitter with
 no protocol stack behind it -- that registers its transmissions with the
-radio medium. The UE's channel model takes them into its downlink
-interference with every other transmission of the slot. The fingerprint suite
-barely sees it: in the lte/multicell Interference-* family, switching it off
-moves only the statistics hash. This grades the floor it adds.
+radio medium. The medium's channel model, evaluating at the UE, takes them
+into the downlink interference with every other transmission of the slot.
+The fingerprint suite barely sees it: in the lte/multicell Interference-*
+family, switching it off moves only the statistics hash. This grades the
+floor it adds.
 
 Worth having separately from BackgroundCellFloor, which covers a background
 cell, because an external cell's transmissions are not a scheduler's: with

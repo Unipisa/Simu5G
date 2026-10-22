@@ -3,11 +3,10 @@
 What a UE in another cell costs an uplink, against the closed form.
 
 The uplink mirror of InterferenceDelta. computeUplinkInterference walks the
-UEs other cells scheduled on the same bands and adds each one's received
-power at the victim's base station. It is a different walk from the
-downlink one -- over the Binder's uplink transmission map rather than over
-the other cells' band status -- and it is the only place where a base
-station's channel model evaluates a link to a UE it does not serve.
+uplink transmissions of other cells' UEs on the same bands, as the radio
+medium has them, and adds each one's received power at the victim's base
+station. It is the only place where a link from a UE to a base station that
+does not serve it is evaluated.
 
 The scenario is two cells, a victim UE in the first and an interfering UE
 in the second, run with uplinkInterference off and on. Every random
@@ -23,10 +22,10 @@ noise figure:
     SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
 
 where d_interferer is the distance from the interfering UE to the victim's
-base station. The walk has two branches, and each has its own statistic:
-measuredSinrUl, the SINR the victim's base station computes for its CQI,
-reads the current TTI's transmission map; rcvdSinrUl, the SINR of a data
-reception, reads the previous TTI's. Either counts a band only if the other
+base station. Two statistics come out of the walk: measuredSinrUl, the SINR
+the victim's base station computes for its CQI, from the transmissions of
+the slot completed last; rcvdSinrUl, the SINR of a data reception, from those
+of the slot the reception completes. Either counts a band only if the other
 cell scheduled the interferer on it. As in InterferenceDelta the reported
 SINR therefore spans two endpoints, and both are asserted for both
 statistics:

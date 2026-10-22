@@ -491,9 +491,8 @@ def grade_interference_delta_ul(grader):
     quiet = over_bs_noise(signal)
     loaded = over_bs_noise(signal, interferer)
 
-    # Two statistics, because the walk has two branches: the base station's
-    # CQI computation (measuredSinrUl) reads the current TTI's transmission
-    # map, a data reception (rcvdSinrUl) the previous TTI's.
+    # Two statistics: the base station's CQI computation (measuredSinrUl) and
+    # a data reception (rcvdSinrUl).
     table = scalar_table('module =~ "*.ue[0].*.nrRadio.receiver" '
                          'AND (name =~ "measuredSinrUl:*" OR name =~ "rcvdSinrUl:*")',
                          itervars=('uli',))

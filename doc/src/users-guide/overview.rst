@@ -186,9 +186,12 @@ a given CC, the corresponding AirFrame is subjected to channel
 effects (e.g. path loss, shadowing etc.) that depend on that
 CC. This means that different channel models have to be applied
 to compute the SINR at the receiving side. For this reason,
-each gNB/UE is equipped with a vector of channelModel modules,
-and each of them is associated with one of the CCs available in
-the carrierAggregation module.
+the network's radio medium (radioMedium) has one channel model
+per CC and radio access technology -- channelModel[] for LTE,
+nrChannelModel[] for NR -- each associated with one of the CCs
+available in the carrierAggregation module, and the links of a
+node's LTE or NR radio on a CC are evaluated by the model of
+that CC and technology.
 
 Simu5G's PHY model has been validated in compliance with the
 guidelines reported in `3GPP -

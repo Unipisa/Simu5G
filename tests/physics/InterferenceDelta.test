@@ -20,7 +20,8 @@ LinkBudget test grades, evaluated at their two distances:
 
 The interfering cell is loaded, but a scheduler does not fill every band in
 every TTI, and the model only counts a band that the interferer actually
-occupied (computeDownlinkInterference checks getDlBandStatus). The reported
+occupied (computeDownlinkInterference counts the bands of the interferer's
+transmissions in the slot). The reported
 SINR is therefore not one number -- which is what makes the extremes the
 right thing to assert, and makes them exact:
 

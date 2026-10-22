@@ -46,15 +46,17 @@ follows module order, so exchanging two UEs hands each of them the other's
 random numbers. The interference path makes it worse -- it draws more, in
 cell-evaluation order -- but it is a contributor rather than the mechanism.
 
-Recorded as an expected failure rather than fixed. Whether the model ought to
-keep per-cell channel state or one shared per-link realization is a modelling
-question -- the same one that decides a good part of the data layout of any
-refactoring of the medium -- and it is not this test's to answer. What the
-test is for is that the answer stops being a matter of belief: the deviation
-is measured, named and visible, so nobody assumes an order-independence the
-model does not have, and so the day it is fixed something says so.
+Recorded as an expected failure rather than fixed. The channel state is one
+realization per link, kept by the radio medium, but a link's realization is
+drawn when the link is first evaluated, from the shared stream, so the order
+of the draws still follows module order. Making it index-independent needs
+draws that do not depend on evaluation order (a stream per link, or seeds
+derived from the link), which is not this test's to decide. What the test is
+for is that the deviation is measured, named and visible, so nobody assumes an
+order-independence the model does not have, and so the day it is fixed
+something says so.
 
-%expected-failure: draws from a shared random stream are taken in module order, so results depend on UE index
+%expected-failure: draws taken in evaluation order make results depend on UE index
 
 %extraargs: -c ModuleOrderPermutation
 

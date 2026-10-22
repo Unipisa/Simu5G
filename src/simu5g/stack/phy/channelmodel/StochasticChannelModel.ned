@@ -13,8 +13,10 @@
 package simu5g.stack.phy.channelmodel;
 
 //
-// The full PHY link model: everything between a transmitted air frame and the
-// decision on whether it was received. The channel impairments are modeled
+// The radio medium's channel model of one carrier and RAT (see
+// ~CellularRadioMedium): everything between a transmitted air frame and the
+// SINR it arrives with, which the receiving radio's error model and receiver
+// turn into the decision on whether it was received. The channel impairments are modeled
 // statistically -- drawn from the distributions of a 3GPP propagation study,
 // rather than computed from the geometry of an actual environment -- which is
 // what sets this model apart from ~IdealChannelModel, where there are no
@@ -26,12 +28,12 @@ package simu5g.stack.phy.channelmodel;
 //   with the formulas of the 3GPP propagation study selected by pathLossType
 //   (TR 36.814, TR 36.873 or TR 38.901);
 // - multipath fading, Jakes or Rayleigh;
-// - the antenna pattern attenuation and the link budget (antenna gains, cable
-//   loss, noise figures, thermal noise);
+// - the antenna pattern attenuation and the link budget (the radios' antenna
+//   gains, cable loss and noise figure; thermal noise);
 // - interference from other cells: downlink, uplink, external cells and
 //   background cells;
-// - the assembly of all of the above into a per-band SINR, and the mapping of
-//   that SINR onto a block error probability that decides reception.
+// - the assembly of all of the above into a per-band SINR, at a reception or
+//   in a what-if (a CQI, a cell-selection probe).
 //
 // Only the path loss, LOS probability, shadowing and angular attenuation come
 // from the selected propagation study; everything else is the same whichever

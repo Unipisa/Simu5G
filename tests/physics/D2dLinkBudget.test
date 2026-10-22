@@ -5,8 +5,8 @@ The D2D link budget, against the closed form.
 A D2D transmission takes a path of its own through the channel model:
 StochasticChannelModel builds a UE-to-UE link (d2dLink), evaluates it with
 the D2D transmit power rather than the power the UE uses towards its base
-station, applies the UE's antenna gain at both ends, and decides the
-reception at the receiving UE (getSINR_D2D). None of it was graded --
+station, applies the UE's antenna gain at both ends, and computes the SINR
+of the reception at the receiving UE (getSINR_D2D). None of it was graded --
 LinkBudget covers the downlink, InterferenceDeltaUl the uplink.
 
 The scenario is one D2D pair served by one gNB, with the flow started in

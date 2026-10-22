@@ -39,11 +39,11 @@ class CellularTransmission;
  *   antenna gains, the receiver's cable loss and noise figure; thermal noise);
  * - interference from other cells -- downlink, uplink, external cells and
  *   background cells;
- * - the assembly of all of the above into a per-band SINR, and the mapping of
- *   that SINR onto a block error probability (with HARQ reduction) that decides
- *   reception;
- * - the mobility the correlated quantities need: the position history and
- *   speed of a node, and where a link's ends were when its LOS state and its
+ * - the assembly of all of the above into a per-band SINR, which the
+ *   receiving radio's error model maps onto a packet error rate and its
+ *   receiver decides the reception against;
+ * - the mobility the correlated quantities need: a node's speed, from its
+ *   mobility, and where a link's ends were when its LOS state and its
  *   shadowing were last drawn;
  * - the SINR statistics.
  *
