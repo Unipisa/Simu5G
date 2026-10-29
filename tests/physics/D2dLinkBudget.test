@@ -1,0 +1,140 @@
+%description:
+
+The D2D link budget, against the closed form.
+
+A D2D transmission takes a path of its own through the channel model:
+D2dChannelModel builds a UE-to-UE link (d2dLink), evaluates it with the
+D2D transmit power rather than the power the UE uses towards its base
+station, applies the UE's antenna gain at both ends, and decides the
+reception at the receiving UE (getSINR_D2D). None of it was graded --
+LinkBudget covers the downlink, InterferenceDeltaUl the uplink.
+
+The scenario is one D2D pair served by one gNB, with the flow started in
+D2D mode, fixed transmission parameters, D2D interference off and every
+random ingredient off. The SINR of a D2D reception is then a sum of
+configured constants and one path loss:
+
+    SINR = d2dTxPower - PL(d) + 2 Gue - cableLoss - (thermalNoise + ueNoiseFigure)
+
+TR 38.901 has no UE-to-UE link. The model evaluates one with its configured
+scenario and heights, as a UMi link here, and that is graded. The distances
+are kept below the breakpoint distance, where the UMi LOS formula does not
+depend on the antenna heights beyond fixing the breakpoint itself: past it,
+the answer would depend on which heights a UE-to-UE link ought to take,
+which neither the specification nor this test decides. A tripwire asserts
+that the sweep stays below it.
+
+The SINR is read from rcvdSinrD2D, recorded at the receiving UE for every
+D2D reception. With nothing varying, every reception at one distance has
+to report the same value, and the value has to fall with distance.
+
+%extraargs: -c D2dLinkBudget
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config D2dLinkBudget]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone_D2D
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+**.rcvdSinrD2D.result-recording-modes = mean,count,min,max
+
+############### D2D: one pair, the flow started in D2D mode ##############
+**.ue*[*].hasD2D = true
+*.gnb.hasD2D = true
+*.numUeCell = 0
+*.numUeD2DTx = 1
+*.numUeD2DRx = 1
+*.ue*[*].servingNodeId = 0
+*.ue*[*].nrServingNodeId = 1
+*.ueD2D*[*].cellularNic.d2dInitialMode = true
+**.amcMode = "D2D"
+# Fixed transmission parameters: the CQI the pair transmits with is then not
+# an output of the link it is graded on.
+**.usePreconfiguredTxParams = true
+**.d2dCqi = 7
+**.gnb.cellularNic.phy.enableD2DCqiReporting = false
+
+############### The sweep ##############
+# All below the UMi breakpoint distance (120 m for these heights at 2 GHz).
+**.d2dDistance = ${d = 10, 25, 50, 100}
+
+############### Geometry ##############
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 10m
+*.ueD2DTx[0].mobility.initialX = 290m
+*.ueD2DTx[0].mobility.initialY = 350m
+*.ueD2DTx[0].mobility.initialZ = 1.5m
+*.ueD2DRx[0].mobility.initialX = 290m + ${d}m
+*.ueD2DRx[0].mobility.initialY = 350m
+*.ueD2DRx[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.d2dInterference = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### The budget terms, stated rather than inherited ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.ueTxPower = 26dBm
+**.d2dTxPower = 20dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 3dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+
+############### Traffic: a CBR flow over the D2D link ##############
+*.ueD2D*[0].numApps = 1
+*.ueD2DTx[0].app[0].typename = "CbrSender"
+*.ueD2DTx[0].app[0].packetSize = 100B
+*.ueD2DTx[0].app[0].samplingTime = 0.01s
+*.ueD2DTx[0].app[0].localPort = 3088
+*.ueD2DTx[0].app[0].startTime = 0.1s
+*.ueD2DTx[0].app[0].destAddress = "ueD2DRx[0]"
+*.ueD2DTx[0].app[0].destPort = 1000
+*.ueD2DRx[0].app[0].typename = "CbrReceiver"
+*.ueD2DRx[0].app[0].localPort = 1000
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=16 failures=0
+
+%not-contains: verdict.txt
+FAILED

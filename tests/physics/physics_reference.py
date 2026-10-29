@@ -626,6 +626,51 @@ def grade_ext_cell_floor(grader):
                                       quiet - loaded, 1e-9, " dB")
 
 
+def grade_d2d_link_budget(grader):
+    """One D2D pair, nothing random: the SINR of every D2D reception is the D2D
+    transmit power over one path loss, with the UE's antenna gain at both
+    ends and the UE's noise figure."""
+    plr = pathloss_reference()
+    cfg = config_values([
+        '**.d2dTxPower', '**.antennaGainUe', '**.cableLoss', '**.thermalNoise',
+        '**.ueNoiseFigure', '**.nodebHeight', '**.ueHeight',
+        '*.carrierAggregation.componentCarrier[0].carrierFrequency',
+        '*.ueD2DTx[0].mobility.initialZ', '*.ueD2DRx[0].mobility.initialZ',
+    ])
+    hBS, hUT = cfg['**.nodebHeight'], cfg['**.ueHeight']
+    fc = cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
+    noise = cfg['**.thermalNoise'] + cfg['**.ueNoiseFigure']
+
+    # Tripwire: both UEs stand at the height the formula assumes, so the
+    # distance the model measures between them is the horizontal one.
+    grader.check_true('geometry-is-consistent', 'both UEs at ueHeight',
+                      cfg['*.ueD2DTx[0].mobility.initialZ'] == hUT
+                      and cfg['*.ueD2DRx[0].mobility.initialZ'] == hUT)
+
+    # The UMi breakpoint for the configured heights. Below it the LOS formula
+    # does not involve the heights; past it, a UE-to-UE link would be graded
+    # on heights TR 38.901 does not define for it.
+    breakpoint = plr._dbp_effective(fc, hBS, hUT)
+
+    table = scalar_table('module =~ "*.ueD2DRx[0].cellularNic.nrChannelModel[*]" '
+                         'AND name =~ "rcvdSinrD2D:*"', itervars=('d',))
+    previous = None
+    for d, row in table.iterrows():
+        params = f"d={d:g}m"
+        grader.check_true('below-breakpoint', params, d < breakpoint,
+                          f"{d:g} m < {breakpoint:.1f} m")
+        grader.check_absolute('single-value', params,
+                              row['rcvdSinrD2D:max'] - row['rcvdSinrD2D:min'], 0.0, 1e-9, " dB")
+        received = (cfg['**.d2dTxPower'] - plr.t901_umi_los(d, d, fc, hBS, hUT)
+                    + 2 * cfg['**.antennaGainUe'] - cfg['**.cableLoss'])
+        observed = row['rcvdSinrD2D:mean']
+        grader.check_absolute('d2d-link-budget', params, observed, received - noise, 1e-9, " dB")
+        if previous is not None:
+            grader.check_true('budget-falls-with-distance', params, observed < previous,
+                              f"{observed:.4f} dB < {previous:.4f} dB at the previous distance")
+        previous = observed
+
+
 def grade_link_reciprocity(grader):
     """The downlink and uplink budgets of one link differ only by constants,
     so their SINRs must differ by that constant whatever the channel does to
@@ -661,6 +706,7 @@ GRADERS = {
     'ExtCellFloor': grade_ext_cell_floor,
     'LinkReciprocity': grade_link_reciprocity,
     'CarrierSymmetry': grade_carrier_symmetry,
+    'D2dLinkBudget': grade_d2d_link_budget,
 }
 
 
