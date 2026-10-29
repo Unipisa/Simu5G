@@ -579,6 +579,53 @@ def grade_background_cell_floor(grader):
                                   quiet - loaded, 1e-9, " dB")
 
 
+def grade_ext_cell_floor(grader):
+    """One real cell, one external cell occupying every band. The interference
+    is a constant, so with or without it the SINR is one closed-form value."""
+    budget = Budget()
+    pos = config_values([
+        '*.eNodeB1.mobility.initialX', '*.eNodeB1.mobility.initialZ',
+        '*.ue11.mobility.initialX', '*.ue11.mobility.initialZ',
+        '*.extCell[0].positionX', '*.extCell[0].positionZ', '*.extCell[0].txPower',
+    ])
+    grader.check_absolute('geometry-is-consistent', 'formula vs coordinates',
+                          pos['*.eNodeB1.mobility.initialZ'] - pos['*.ue11.mobility.initialZ'],
+                          budget.hBS - budget.hUT, 0.0, " m")
+
+    d_serving = abs(pos['*.ue11.mobility.initialX'] - pos['*.eNodeB1.mobility.initialX'])
+    # The external-cell path takes the straight distance between the two
+    # positions, heights included, and uses it as both the 3D and the 2D one.
+    d_ext = math.hypot(pos['*.extCell[0].positionX'] - pos['*.ue11.mobility.initialX'],
+                       pos['*.extCell[0].positionZ'] - pos['*.ue11.mobility.initialZ'])
+
+    signal = budget.received_power(d_serving)
+    interferer = budget.background_received_power(d_ext, pos['*.extCell[0].txPower'])
+    quiet = budget.over_noise(signal)
+    loaded = budget.over_noise(signal, interferer)
+
+    # Both branches of the walk: the CQI computation reads the current TTI's
+    # band status, a data reception the previous TTI's.
+    table = scalar_table('module =~ "*.ue11.cellularNic.channelModel[*]" '
+                         'AND (name =~ "measuredSinrDl:*" OR name =~ "rcvdSinrDl:*")',
+                         itervars=('eci',))
+    for eci, row in table.iterrows():
+        on = str(eci) == 'true'
+        for stat in ('measuredSinrDl', 'rcvdSinrDl'):
+            params = f"{stat} extCellInterference={'true' if on else 'false'}"
+            grader.check_absolute('single-value', params,
+                                  row[f'{stat}:max'] - row[f'{stat}:min'], 0.0, 1e-9, " dB")
+            if not on:
+                grader.check_absolute('quiet-sinr', params,
+                                      row[f'{stat}:min'], quiet, 1e-9, " dB")
+            else:
+                grader.check_absolute('loaded-ext-cell-sinr', params,
+                                      row[f'{stat}:min'], loaded, 1e-9, " dB")
+                other = table.loc[[v for v in table.index if str(v) != str(eci)][0]]
+                grader.check_absolute('ext-cell-floor', params,
+                                      other[f'{stat}:min'] - row[f'{stat}:min'],
+                                      quiet - loaded, 1e-9, " dB")
+
+
 def grade_link_reciprocity(grader):
     """The downlink and uplink budgets of one link differ only by constants,
     so their SINRs must differ by that constant whatever the channel does to
@@ -611,6 +658,7 @@ GRADERS = {
     'GeometryInvariance': grade_geometry_invariance,
     'ModuleOrderPermutation': grade_module_order_permutation,
     'BackgroundCellFloor': grade_background_cell_floor,
+    'ExtCellFloor': grade_ext_cell_floor,
     'LinkReciprocity': grade_link_reciprocity,
     'CarrierSymmetry': grade_carrier_symmetry,
 }

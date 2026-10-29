@@ -1,0 +1,147 @@
+%description:
+
+The interference floor an external cell imposes, against the closed form.
+
+An ExtCell is not a node: it is a transmit power, a position and a band
+allocation policy, which the UE's channel model turns into interference in
+computeExtCellInterference. The fingerprint suite barely sees it: in the
+lte/multicell Interference-* family, switching it off moves only the
+statistics hash. This grades the floor it adds.
+
+Worth having separately from BackgroundCellFloor, which covers a background
+cell, because the external-cell path is not the same code: it reads the
+cell's band status rather than a background scheduler's allocation, and it
+has no load of its own to vary. With FULL_ALLOC the cell occupies every band
+in every TTI, so the interference is a constant and the SINR one number --
+there are no idle TTIs to reach, unlike InterferenceDelta and
+BackgroundCellFloor:
+
+    S = txPower   - PL_38901(d_serving) + Gtx + Grx - cableLoss
+    I = extPower  - PL_36814(d_extCell) + Gtx + Grx - cableLoss
+    N = thermalNoise + noiseFigure
+
+The interferer's path loss is computeExtCellPathLoss's: always the TR 36.814
+formulas, whatever propagation study the model itself is configured with,
+and the straight distance between the two positions, heights included, as
+both the 3D and the 2D one. enableExtCellLos is switched off, so the link is
+NLOS by configuration rather than by borrowing the serving link's LOS state.
+
+Both of the walk's branches are asserted: the CQI computation reads the
+cell's band status of the current TTI (measuredSinrDl), a data reception the
+previous TTI's (rcvdSinrDl). With extCellInterference off each statistic is
+the quiet budget; on, each is the loaded budget, and in both cases a single
+value.
+
+%extraargs: -c ExtCellFloor
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config ExtCellFloor]
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+network = simu5g.simulations.lte.networks.MultiCell
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+**.vector-recording = false
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+**.rcvdSinrDl.result-recording-modes = mean,count,min,max
+
+############### The sweep: the one thing that varies ##############
+**.extCellInterference = ${eci = false, true}
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+
+############### Geometry: the victim 100 m from its cell, 500 m from the external cell ##############
+# The other cell and its UEs are far away and idle; downlink interference is
+# off in any case.
+*.eNodeB1.mobility.initialX = 300m
+*.eNodeB1.mobility.initialY = 300m
+*.eNodeB1.mobility.initialZ = 25m
+*.eNodeB2.mobility.initialX = 1900m
+*.eNodeB2.mobility.initialY = 1900m
+*.eNodeB2.mobility.initialZ = 25m
+**.ue1*.servingNodeId = 1
+**.ue2*.servingNodeId = 2
+*.ue11.mobility.initialX = 400m
+*.ue11.mobility.initialY = 300m
+*.ue11.mobility.initialZ = 1.5m
+*.ue12.mobility.initialX = 300m
+*.ue12.mobility.initialY = 400m
+*.ue12.mobility.initialZ = 1.5m
+*.ue2*.mobility.initialX = 1900m
+*.ue2*.mobility.initialY = 1800m
+*.ue2*.mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 2000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and nothing else ##############
+**.cellularNic.channelModelType = "Tr38901ChannelModel"
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.enableExtCellLos = false
+
+############### The budget terms, stated rather than inherited ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+**.eNodeBTxPower = 40dBm
+**.antennGainEnB = 18dBi
+**.antennaGainUe = 0dBi
+**.cableLoss = 2dB
+**.thermalNoise = -104.5dBm
+**.ueNoiseFigure = 7dBm
+
+############### One external cell, occupying every band ##############
+*.numExtCells = 1
+*.extCell[0].positionX = 900m
+*.extCell[0].positionY = 300m
+*.extCell[0].positionZ = 25m
+*.extCell[0].txPower = 40dBm
+*.extCell[0].txDirection = "OMNI"
+*.extCell[0].carrierFrequency = 2GHz
+*.extCell[0].numBands = 6
+*.extCell[0].bandAllocationType = "FULL_ALLOC"
+
+############### Traffic: a trickle to the victim ##############
+*.ue*.numApps = 1
+*.server.numApps = 1
+*.ue*.app[0].typename = "CbrReceiver"
+*.ue*.app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue11"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.02s
+*.server.app[0].startTime = 0.1s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=11 failures=0
+
+%not-contains: verdict.txt
+FAILED
