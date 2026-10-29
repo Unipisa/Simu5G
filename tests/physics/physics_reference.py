@@ -439,6 +439,67 @@ def grade_interference_delta(grader):
                                   quiet - loaded, 1e-9, " dB")
 
 
+def grade_interference_delta_ul(grader):
+    """The uplink mirror of grade_interference_delta: two cells, a victim UE in
+    the first, an interfering UE in the second. The interferer is not
+    scheduled in every TTI, so the uplink SINR the victim's base station
+    computes spans two predictable endpoints."""
+    budget = Budget()
+    cfg = config_values(['**.ueTxPower', '**.bsNoiseFigure',
+                         '*.gnb1.mobility.initialX', '*.ue[0].mobility.initialX',
+                         '*.ue[1].mobility.initialX', '*.gnb1.mobility.initialZ',
+                         '*.ue[0].mobility.initialZ', '*.ue[1].mobility.initialZ'])
+    grader.check_absolute('geometry-is-consistent', 'formula vs coordinates',
+                          cfg['*.gnb1.mobility.initialZ'] - cfg['*.ue[0].mobility.initialZ'],
+                          budget.hBS - budget.hUT, 0.0, " m")
+    grader.check_absolute('geometry-is-consistent', 'interferer at UE height',
+                          cfg['*.ue[1].mobility.initialZ'], budget.hUT, 0.0, " m")
+
+    def received_at_gnb1(ue_x):
+        """dBm at the victim's base station from a UE ue_x along the x axis.
+        The same budget as the downlink one, with the UE's transmit power."""
+        d2D = abs(ue_x - cfg['*.gnb1.mobility.initialX'])
+        return (budget.received_power(d2D)
+                - budget.cfg['**.eNodeBTxPower'] + cfg['**.ueTxPower'])
+
+    def over_bs_noise(signal_dbm, interference_dbm=None):
+        noise = budget.cfg['**.thermalNoise'] + cfg['**.bsNoiseFigure']
+        denominator = 10 ** (noise / 10.0)
+        if interference_dbm is not None:
+            denominator += 10 ** (interference_dbm / 10.0)
+        return signal_dbm - 10 * math.log10(denominator)
+
+    signal = received_at_gnb1(cfg['*.ue[0].mobility.initialX'])
+    interferer = received_at_gnb1(cfg['*.ue[1].mobility.initialX'])
+    quiet = over_bs_noise(signal)
+    loaded = over_bs_noise(signal, interferer)
+
+    # Two statistics, because the walk has two branches: the base station's
+    # CQI computation (measuredSinrUl) reads the current TTI's transmission
+    # map, a data reception (rcvdSinrUl) the previous TTI's.
+    table = scalar_table('module =~ "*.ue[0].*.nrChannelModel[*]" '
+                         'AND (name =~ "measuredSinrUl:*" OR name =~ "rcvdSinrUl:*")',
+                         itervars=('uli',))
+    for uli, row in table.iterrows():
+        on = str(uli) == 'true'
+        for stat in ('measuredSinrUl', 'rcvdSinrUl'):
+            params = f"{stat} uplinkInterference={'true' if on else 'false'}"
+            if not on:
+                grader.check_absolute('no-interference-is-flat', params,
+                                      row[f'{stat}:max'] - row[f'{stat}:min'],
+                                      0.0, 1e-9, " dB")
+                grader.check_absolute('quiet-sinr', params,
+                                      row[f'{stat}:min'], quiet, 1e-9, " dB")
+            else:
+                grader.check_absolute('idle-interferer-costs-nothing', params,
+                                      row[f'{stat}:max'], quiet, 1e-9, " dB")
+                grader.check_absolute('loaded-interferer-sinr', params,
+                                      row[f'{stat}:min'], loaded, 1e-9, " dB")
+                grader.check_absolute('interference-delta-ul', params,
+                                      row[f'{stat}:max'] - row[f'{stat}:min'],
+                                      quiet - loaded, 1e-9, " dB")
+
+
 def grade_link_budget(grader):
     """With fading, shadowing and all interference off, an omnidirectional
     antenna and a fixed LOS state, the reported SINR is a sum of constants and
@@ -546,6 +607,7 @@ GRADERS = {
     'HarqResidualLoss': grade_harq_residual_loss,
     'LinkBudget': grade_link_budget,
     'InterferenceDelta': grade_interference_delta,
+    'InterferenceDeltaUl': grade_interference_delta_ul,
     'GeometryInvariance': grade_geometry_invariance,
     'ModuleOrderPermutation': grade_module_order_permutation,
     'BackgroundCellFloor': grade_background_cell_floor,
