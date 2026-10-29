@@ -12,13 +12,16 @@ measured points (BLERvsSINR_15CQI_TU.h), not a closed form, so what is
 checked here are the properties the table and its lookup have to have to
 mean anything, and the model's own stated contracts.
 
-Deliberately included is one thing that is arguably a defect. The test
+Deliberately included are two things that are arguably defects. The test
 asserts the behaviour as it is today, so that a refactoring which changes it
 fails a named check that says what changed, rather than only a fingerprint:
-PhyPisaData's minSnr()/maxSnr() do not agree with the table they are
-commented as coming from. The checks below locate the real saturation
-points by probing rather than by trusting either the constants or the
-table, and then state the disagreement.
+
+ - PhyPisaData's minSnr()/maxSnr() do not agree with the table they are
+   commented as coming from. The checks below locate the real saturation
+   points by probing rather than by trusting either the constants or the
+   table, and then state the disagreement.
+ - For CQI 11-15 the table's last point is an error floor, not zero, and
+   the lookup returns zero there anyway.
 
 The one property that ought to hold and does not -- BLER falling monotonically
 with SINR -- is split out into BlerCurveMonotonicity.test, which records it as
@@ -28,6 +31,7 @@ an expected failure.
 #include "SchedulerTestUtil.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/common/blerCurves/BLERvsSINR_15CQI_TU.h"
 #include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
 
 %global:
@@ -145,6 +149,39 @@ PhyPisaData pisa;
             pisa.maxSnr() > firstErrorFree,
             "maxSnr=" + std::to_string(pisa.maxSnr()) + " errorFreeFrom=" + std::to_string(firstErrorFree));
 }
+{
+    // What the lookup does at each curve's last tabulated point. GetBLER_TU
+    // returns 0 for any SINR at or above SINR_15_CQI_TU[row][15] and never
+    // reads BLER_15_CQI_TU[row][15]. For CQI 11-15 that value is not 0: the
+    // table ends on an error floor, and the lookup turns it into a cliff --
+    // CQI 11, for one, goes from 0.06 at 20 dB to 0 at 21 dB, where the table
+    // says 0.02. Pinned as the model's current contract, so that holding the
+    // floor (or replacing the curves) fails here and says so.
+    bool tableHasFloor = true;
+    bool floorBelowLastPoint = true;
+    bool cliffAtLastPoint = true;
+    std::string detail;
+    for (int cqi = 11; cqi <= 15; cqi++) {
+        int row = cqi - 1;
+        // the first integer SINR at or above the last point: the error model
+        // samples the curve at integer SINR only (see above)
+        int lastPoint = (int)std::ceil(SINR_15_CQI_TU[row][15]);
+        double tabulated = BLER_15_CQI_TU[row][15];
+        double below = pisa.getBler(cqi, lastPoint - 1);
+        double at = pisa.getBler(cqi, lastPoint);
+        if (!(tabulated > 0.0))
+            tableHasFloor = false;
+        if (!(below > 0.0))
+            floorBelowLastPoint = false;
+        if (at != 0.0)
+            cliffAtLastPoint = false;
+        detail += " cqi" + std::to_string(cqi) + ": " + std::to_string(below) + "@" + std::to_string(lastPoint - 1)
+                + "dB -> " + std::to_string(at) + "@" + std::to_string(lastPoint) + "dB (table " + std::to_string(tabulated) + ")";
+    }
+    c.check("the table ends on a non-zero BLER for CQI 11-15", tableHasFloor, detail);
+    c.check("...which the lookup still reports one step below the last point", floorBelowLastPoint, detail);
+    c.check("...and replaces with 0 at the last point itself", cliffAtLastPoint, detail);
+}
 
 //
 // --- the other half: the CQI derived from those curves ---
@@ -204,7 +241,7 @@ PhyPisaData pisa;
 c.summary();
 
 %contains: stdout
-modelchecks=18 modelfailures=0
+modelchecks=21 modelfailures=0
 
 %not-contains: stdout
 FAILED
