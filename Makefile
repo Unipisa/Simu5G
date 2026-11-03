@@ -1,7 +1,7 @@
 FEATURETOOL = opp_featuretool
 FEATURES_H = src/simu5g/common/features.h
 
-.PHONY: all clean cleanall makefiles checkenvir checkmakefiles dist neddoc tests unittests moduletests
+.PHONY: all clean cleanall makefiles checkenvir checkmakefiles dist tests unittests moduletests
 
 all: makefiles $(FEATURES_H)
 	@cd src && $(MAKE)
@@ -42,7 +42,3 @@ $(FEATURES_H): $(wildcard .oppfeaturestate) .oppfeatures
 
 dist:
 	releng/makedist
-
-neddoc:
-	#@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/simulations,/*/tests,/*/showcases" .
-	@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/tests" .

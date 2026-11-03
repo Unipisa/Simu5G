@@ -140,4 +140,5 @@ In the Simu5G root directory:
 Generating the documentation
 ----------------------------
 
-`make neddoc` generates the NED reference documentation of the model.
+`make html` in `doc/src` builds the documentation website, including the NED
+reference documentation of the model; see `doc/src/README`.

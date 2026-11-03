@@ -18,7 +18,6 @@ if [ "$BUILDID" = "" ]; then
 fi
 
 FILENAME=$SIMU5G_ROOT/simu5g-$VERSION-src.tgz
-FILENAME_DOC=$SIMU5G_ROOT/simu5g-$VERSION-doc.tgz
 DIRNAME=Simu5G-$VERSION
 
 rm -rf $SIMU5G_ROOT/out/$DIRNAME
@@ -27,16 +26,6 @@ mkdir -p $SIMU5G_ROOT/out/$DIRNAME
 git checkout-index -a -f --prefix=$SIMU5G_ROOT/out/$DIRNAME/ || { echo --- error copying repo ---; exit 1;}
 
 echo "simu5g-$BUILDID" > $SIMU5G_ROOT/out/$DIRNAME/Version_build
-
-echo 'ATTENTION! doc/neddoc/ must contain freshly generated content, type "make neddoc" and re-run "makedist" if it does not'
-
-echo Creating $FILENAME_DOC.
-# switch to doc dir
-cd $SIMU5G_ROOT/doc
-# patching files
-sed -i -e "s/@VERSION@/$VERSION/g" neddoc/index.html
-# create archive
-tar cfz $FILENAME_DOC neddoc || { echo --- error creating simu5g-x.y.z-doc.tgz ---; exit 1;}
 
 # switch to the destination dir
 cd $SIMU5G_ROOT/out/$DIRNAME
