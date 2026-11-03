@@ -6,17 +6,8 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 import os
-import sys
 import re
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('_themes'))
 
 
 # -- Project information -----------------------------------------------------
@@ -40,8 +31,6 @@ needs_sphinx = '7.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-#    'IPython.sphinxext.ipython_console_highlighting',
-#    'IPython.sphinxext.ipython_directive',
     'sphinx.ext.mathjax',
     'sphinx.ext.extlinks',
     'sphinx.ext.ifconfig',
@@ -49,28 +38,10 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.graphviz',
     'sphinx.ext.imgconverter',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
-    #'sphinxcontrib.images',
-    'tools.doxylink',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-#
-source_suffix = [ '.rst',
-  '.md',
-]
-
-# Source parsers
-source_parsers = {
-   '.md': 'recommonmark.parser.CommonMarkParser',
-}
 
 # The root toctree document.
 root_doc = 'index'
@@ -96,68 +67,13 @@ exclude_patterns = [
 # graphviz options
 graphviz_output_format = 'svg'
 
-# -- python auto doc generator configuration ----------------------------------
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
-autoclass_content = "both"  # Add __init__ doc (ie. params) to class summaries
-autosummary_imported_members = False
-autosummary_ignore_module_all = True
-html_show_sourcelink = False  # Remove 'view source code' from top of page (for html, not python)
-autodoc_inherit_docstrings = True  # If no docstring, inherit from base class
-set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
-#autodoc_typehints = "description" # Sphinx-native method. Not as good as sphinx_autodoc_typehints
-add_module_names = False # Remove namespaces from class/method signatures
-
-# Exclusions
-# To exclude a module, use autodoc_mock_imports. Note this may increase build time, a lot.
-# (Also, when installing on readthedocs.org, we omit installing Tensorflow and
-# Tensorflow Probability so mock them here instead.)
-autodoc_mock_imports = []
-
-# To exclude a class, function, method or attribute, use autodoc-skip-member. (Note this can also
-# be used in reverse, ie. to re-include a particular member that has been excluded.)
-# 'Private' and 'special' members (_ and __) are excluded using the Jinja2 templates; from the main
-# doc by the absence of specific autoclass directives (ie. :private-members:), and from summary
-# tables by explicit 'if-not' statements. Re-inclusion is effective for the main doc though not for
-# the summary tables.
-def autodoc_skip_member_callback(app, what, name, obj, skip, options):
-    exclusions = ('')
-    inclusions = ('')
-    if name in exclusions:
-        return True
-    elif name in inclusions:
-        return False
-    elif obj.__doc__ == None: # skip everything that does not have an explicit docstring
-        return True
-    else:
-        return skip
-
-# Napoleon settings
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = False
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-napoleon_preprocess_types = False
-napoleon_type_aliases = None
-napoleon_attr_annotations = True
-
 # -- Options for HTML output -------------------------------------------------
 # disable page source generation
 html_copy_source = False
-html_show_source_link = False
+html_show_sourcelink = False
 
 # base URL (also used to generate CNAME file by the ghpages extension)
 html_baseurl = 'https://simu5g.org'
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme_path = ['_themes']
 
 extensions.append("sphinx_immaterial")
 html_theme = "sphinx_immaterial"
@@ -332,58 +248,12 @@ extlinks = {
   'wiki': ('https://en.wikipedia.org/wiki/%s', '')
 }
 
-# image extension config
-images_config = {
-    'override_image_directive': True,
-#    'backend': 'LightBox2',
-#    'default_image_width': '100%',
-#    'default_image_height': 'auto',
-#    'default_group': 'None',
-#    'download': True,
-    'default_show_title': False
-}
-
-# -- Doxylink config ---------------------------------------------------------
-
-doxylink = {
-#        'cpp' : ('doxytags.xml', 'https://doc.omnetpp.org/simu5g/api-current/doxy/'),
-#        'ned' : ('nedtags.xml', 'https://doc.omnetpp.org/simu5g/api-current/neddoc/'),
-#        'msg' : ('msgtags.xml', 'https://doc.omnetpp.org/simu5g/api-current/neddoc/'),
-}
-
 # -- Extension configuration -------------------------------------------------
 rst_prolog = open('_templates/prolog.inc', 'r').read()
 
 # whether to show TODO items
 todo_include_todos = False
 todo_emit_warnings = False
-
-def opp_preprocess(app, docname, source):
-    """
-    Render our pages as a jinja template for fancy templating goodness.
-    """
-    # Make sure we're outputting HTML
-    if app.builder.format != 'html':
-        return
-    src = source[0]
-
-    # implicitly import global macros in into the opp namespace at the beginning of each source file
-    src = "{% import 'global-macros.inc' as opp %}\n" + src
-
-    # run the templating engine on the source file
-    rendered = app.builder.templates.render_string(
-        src, app.config.html_context
-    )
-    source[0] = rendered
-
-#################################x
-# inline highlight extension
-
-# Use defaults provided by highlight directive for code role.
-# inline_highlight_respect_highlight = False
-
-# Highlight also normal literals like :code:`literal`
-inline_highlight_literals = True
 
 # ###########################################################################
 # The name of the Pygments (syntax highlighting) style to use.
@@ -565,17 +435,3 @@ class FingerprintLexer(RegexLexer):
         return text[0] == '[' and text[npos-1] == ']'
 
 lexers['fp'] = FingerprintLexer(startinline=True)
-
-#######################################################################
-# -- setup the customizations
-import tools.video
-import tools.audio
-
-def setup(app):
-    app.connect("source-read", opp_preprocess)
-    app.add_directive('youtube', tools.video.Youtube)
-    app.add_directive('vimeo', tools.video.Vimeo)
-    app.add_directive('video', tools.video.Video)
-    app.add_directive('video_noloop', tools.video.Video_noloop)
-    app.add_directive('audio', tools.audio.Audio)
-    app.connect("autodoc-skip-member", autodoc_skip_member_callback) # Entry point to autodoc-skip-member
