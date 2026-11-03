@@ -1,5 +1,6 @@
 # ignore generated files
 doc/src/_build
+doc/src/neddoc
 src/Makefile
 *_m.h
 *_m.cc

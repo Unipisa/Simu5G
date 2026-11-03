@@ -20,9 +20,6 @@
 .. role:: cpp(code)
    :class: literal-cpp
 
-.. role:: ned(code)
-   :class: literal-ned
-
 .. role:: gate(code)
    :class: literal-ned
 

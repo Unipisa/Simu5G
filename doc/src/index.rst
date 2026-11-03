@@ -14,6 +14,12 @@
    doc
 
 .. toctree::
+   :caption: NED Documentation
+   :hidden:
+
+   neddoc/index
+
+.. toctree::
    :hidden:
 
    install

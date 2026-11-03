@@ -5,12 +5,8 @@
 References
 ----------
 
-.. raw:: html
-   
-   <ul>
-      <li><a href="/neddoc" target="_blank">NED Documentation</a></li>
-      <li><a href="https://github.com/Unipisa/Simu5G/blob/master/WHATSNEW.md" target="_blank">Release Notes</a></li>
-   </ul>
+- :doc:`NED Documentation <neddoc/index>`
+- `Release Notes <https://github.com/Unipisa/Simu5G/blob/master/WHATSNEW.md>`__
 
 User's Guide
 ------------

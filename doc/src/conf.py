@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.graphviz',
     'sphinx.ext.imgconverter',
+    'omnetpp_neddoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -76,15 +77,14 @@ html_show_sourcelink = False
 html_baseurl = 'https://simu5g.org'
 
 extensions.append("sphinx_immaterial")
+extensions.append("omnetpp_immaterial")
 html_theme = "sphinx_immaterial"
 html_css_files = ['sphinx-omnetpp.css',]
 html_logo = '_static/hero-banner.png'
 html_title = 'Simu5G: Simulator for 5G New Radio Networks'
 
-# When building on github, we can use links without the .html suffix as github correctly displays those pages without the .html suffix
-# During development, we need to use the .html suffix as local development does not work without it
-if os.getenv("GITHUB_ACTIONS") == "true":
-    html_link_suffix = '' 
+# the sidebar entries of the NED reference scroll sideways instead of wrapping
+omnetpp_nav_nowrap = ['/neddoc/']
 
 # material theme options (see theme.conf for more information)
 html_theme_options = {
@@ -251,187 +251,12 @@ extlinks = {
 # -- Extension configuration -------------------------------------------------
 rst_prolog = open('_templates/prolog.inc', 'r').read()
 
+# the NED reference, generated into neddoc/ by the doc-builder action
+neddoc_dir = 'neddoc'
+
 # whether to show TODO items
 todo_include_todos = False
 todo_emit_warnings = False
 
-# ###########################################################################
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "default"
-
-from pygments.lexers.c_cpp import CLexer, CppLexer
-from pygments.lexer import RegexLexer, include, bygroups, using, this, inherit, default, words
-from pygments.token import Name, Keyword, Comment, Text, Operator, String, Number, Punctuation, Error
-from sphinx.highlighting import lexers
-from pygments.formatters import HtmlFormatter
-
-#####
-class NedLexer(RegexLexer):
-    name = 'ned'
-    filenames = ['*.ned']
-
-    #: optional Comment or Whitespace
-    _ws = r'(?:\s|//.*?\n|/[*].*?[*]/)+'
-
-    # The trailing ?, rather than *, avoids a geometric performance drop here.
-    #: only one /* */ style comment
-    _ws1 = r'\s*(?:/[*].*?[*]/\s*)?'
-
-    tokens = {
-        'whitespace': [
-            (r'\n', Text),
-            (r'\s+', Text),
-            (r'\\\n', Text),  # line continuation
-            (r'//(\n|[\w\W]*?[^\\]\n)', Comment.Single),
-            (r'/(\\\n)?[*][\w\W]*?[*](\\\n)?/', Comment.Multiline),
-            # Open until EOF, so no ending delimeter
-            (r'/(\\\n)?[*][\w\W]*', Comment.Multiline),
-        ],
-        'statements': [
-            (r'(L?)(")', bygroups(String.Affix, String), 'string'),
-            (r"(L?)(')(\\.|\\[0-7]{1,3}|\\x[a-fA-F0-9]{1,2}|[^\\\'\n])(')",
-             bygroups(String.Affix, String.Char, String.Char, String.Char)),
-            (r'(true|false)\b', Name.Builtin),
-            (r'(<-->|-->|<--|\.\.)', Keyword),
-            (r'(bool|double|int|xml)\b', Keyword.Type),
-            (r'(inout|input|output)\b', Keyword.Type),
-            (r'(\d+\.\d*|\.\d+|\d+)[eE][+-]?\d+[LlUu]*', Number.Float),
-            (r'(\d+\.\d*|\.\d+|\d+[fF])[fF]?', Number.Float),
-            (r'0x[0-9a-fA-F]+[LlUu]*', Number.Hex),
-            (r'#[0-9a-fA-F]+[LlUu]*', Number.Hex),
-            (r'0[0-7]+[LlUu]*', Number.Oct),
-            (r'\d+[LlUu]*', Number.Integer),
-            (r'\*/', Error),
-            (r'[~!%^&*+=|?:<>/-]', Operator),
-            (r'[()\[\],.]', Punctuation),
-            (words(("channel", "channelinterface", "simple", "module", "network", "moduleinterface"), suffix=r'\b'), Keyword),
-            (words(("parameters", "gates", "types", "submodules", "connections"), suffix=r'\b'), Keyword),
-            (words(("volatile", "allowunconnected", "extends", "for", "if", "import", "like", "package", "property"), suffix=r'\b'), Keyword),
-            (words(("sizeof", "const", "default", "ask", "this", "index", "typename", "xmldoc"), suffix=r'\b'), Keyword),
-            (words(("acos", "asin", "atan", "atan2", "bernoulli","beta", "binomial", "cauchy", "ceil", "chi_square", "cos", "erlang_k", "exp","exponential", "fabs", "floor", "fmod", "gamma_d", "genk_exponential","genk_intuniform", "genk_normal", "genk_truncnormal", "genk_uniform", "geometric","hypergeometric", "hypot", "intuniform", "log", "log10", "lognormal", "max", "min","negbinomial", "normal", "pareto_shifted", "poisson", "pow", "simTime", "sin", "sqrt","student_t", "tan", "triang", "truncnormal", "uniform", "weibull", "xml", "xmldoc"), suffix=r'\b'), Name.Builtin),
-            ('@[a-zA-Z_]\w*', Name.Builtin),
-            ('[a-zA-Z_]\w*', Name),
-        ],
-        'root': [
-            include('whitespace'),
-            # functions
-            (r'((?:[\w*\s])+?(?:\s|[*]))'  # return arguments
-             r'([a-zA-Z_]\w*)'             # method name
-             r'(\s*\([^;]*?\))'            # signature
-             r'([^;{]*)(\{)',
-             bygroups(using(this), Name.Function, using(this), using(this),
-                      Punctuation),
-             'function'),
-            # function declarations
-            (r'((?:[\w*\s])+?(?:\s|[*]))'  # return arguments
-             r'([a-zA-Z_]\w*)'             # method name
-             r'(\s*\([^;]*?\))'            # signature
-             r'([^;]*)(;)',
-             bygroups(using(this), Name.Function, using(this), using(this),
-                      Punctuation)),
-            default('statement'),
-        ],
-        'statement': [
-            include('whitespace'),
-            include('statements'),
-            ('[{}]', Punctuation),
-            (';', Punctuation, '#pop'),
-        ],
-        'function': [
-            include('whitespace'),
-            include('statements'),
-            (';', Punctuation),
-            (r'\{', Punctuation, '#push'),
-            (r'\}', Punctuation, '#pop'),
-        ],
-        'string': [
-            (r'"', String, '#pop'),
-            (r'\\([\\abfnrtv"\']|x[a-fA-F0-9]{2,4}|'
-             r'u[a-fA-F0-9]{4}|U[a-fA-F0-9]{8}|[0-7]{1,3})', String.Escape),
-            (r'[^\\"\n]+', String),  # all other characters
-            (r'\\\n', String),  # line continuation
-            (r'\\', String),  # stray backslash
-        ]
-    }
-
-lexers['ned'] = NedLexer(startinline=True)
-
-#####
-class MsgLexer(CppLexer):
-    name = 'msg'
-    filenames = ['*.msg']
-    mimetypes = ['text/x-msg']
-
-    tokens = {
-        'statements': [
-            (words(("import","cplusplus", "namespace", "struct", "message",
-                "packet", "class", "noncobject", "enum", "extends"), suffix=r'\b'), Keyword),
-            (words(("properties", "fields"), suffix=r'\b'), Keyword),
-            (r'(abstract|readonly|bool|char|short|int|long|double|unsigned|string)\b', Keyword.Type),
-            (r'[~!%^&*+=|?:<>/@-]', Operator),
-            inherit,
-        ],
-    }
-
-lexers['msg'] = MsgLexer(startinline=True)
-
-#####
-class IniLexer(RegexLexer):
-    name = 'ini'
-    filenames = ['*.ini']
-    mimetypes = ['text/x-ini']
-
-    tokens = {
-        'root': [
-            (r'[;#].*$', Comment.Single),
-            (r'\s+', Text),
-            (r'\[.*?\]', Keyword),
-            (r'(.*?)([ \t]*)(=)([ \t]*)([^#\n]*(?:\n[ \t].+)*)',
-             bygroups(Name.Attribute, Text, Operator, Text, String)),
-        ],
-    }
-
-    def analyse_text(text):
-        npos = text.find('\n')
-        if npos < 3:
-            return False
-        return text[0] == '[' and text[npos-1] == ']'
-
-lexers['ini'] = IniLexer(startinline=True)
-
-#######################################################################
-
-from pygments.style import Style
-from pygments.token import Keyword, Name, Comment, String, Error, \
-     Number, Operator, Generic, Whitespace
-
-class FpStyle(Style):
-        default_style = "default"
-        style = {
-                Text: '#ffffff'
-}
-
-class FingerprintLexer(RegexLexer):
-    name = 'fp'
-    filenames = ['*.fp']
-    mimetypes = ['text/x-fp']
-    pygments_style = "FpStyle"
-
-    tokens = {
-        'root': [
-            #(r'.*: ', Text),
-            #(r'PASS', Keyword),
-            #(r'FAILED', String),
-            (r'(.* : )(PASS)?(FAILED)?(ERROR)?',
-             bygroups(Name.Entity, Name.Builtin, String, String)),
-            (r'.*?\n', Name.Entity),
-        ],
-    }
-
-    def analyse_text(text):
-        npos = text.find('\n')
-        if npos < 3:
-            return False
-        return text[0] == '[' and text[npos-1] == ']'
-
-lexers['fp'] = FingerprintLexer(startinline=True)

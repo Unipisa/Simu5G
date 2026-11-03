@@ -1,12 +1,11 @@
-# Workflow for building and deploying a Sphinx site to GitHub Pages
-name: Build and deploy sphinx docs to GitHub Pages from site branch
+# Builds the website (doc/src) with the NED documentation of the latest release, and deploys it to
+# GitHub Pages. See doc/src/README.
+name: Build and deploy the website to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["deployed-website"]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       doc_version:
@@ -14,69 +13,93 @@ on:
         required: false
         type: string
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Do not cancel an in-progress deployment, but skip the runs queued between it and the latest one.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Sphinx Build
-        uses: ammaraskar/sphinx-action@7.1.2
-        with:
-          docs-folder: doc/src
-          build-command: make html
-          # Run before the build command, you can use this to install system level dependencies, for example with "apt-get update -y && apt-get install -y perl"
-          pre-build-command: doc/src/tools/setup-build-process.sh
-      
-      # The NED documentation is not generated here; it is taken from the
-      # -doc.tgz asset of a release (created by releng/makedist).
-      - name: Set doc version
+      - name: Checkout the website
+        uses: actions/checkout@v7
+
+      - name: Determine the release
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
+          DOC_VERSION: ${{ inputs.doc_version }}
         run: |
-          DOC_VERSION='${{ github.event.inputs.doc_version }}'
           if [ -z "$DOC_VERSION" ]; then
             DOC_VERSION=$(gh release view --repo Unipisa/Simu5G --json tagName --jq '.tagName' | sed -e 's/^v//')
           fi
-          echo "Using NED documentation of release v$DOC_VERSION"
-          echo "DOC_VERSION=$DOC_VERSION" >> $GITHUB_ENV
+          echo "Using the NED documentation of release v$DOC_VERSION"
+          echo "version=$DOC_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Download NED documentation of the release
-        run: |
-          wget https://github.com/Unipisa/Simu5G/releases/download/v${{ env.DOC_VERSION }}/simu5g-${{ env.DOC_VERSION }}-doc.tgz
-          tar xzf simu5g-${{ env.DOC_VERSION }}-doc.tgz
-          sudo mkdir -p doc/src/_build/html/neddoc
-          sudo cp -r neddoc/* doc/src/_build/html/neddoc/
-          sudo chown -R $USER:$USER doc/src/_build/html/neddoc
-        
-      - name: Upload github pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Checkout the release
+        uses: actions/checkout@v7
         with:
-          path: "doc/src/_build/html/"
+          repository: Unipisa/Simu5G
+          ref: v${{ steps.release.outputs.version }}
+          path: release
 
-  # Deployment job
+      # the INET version that the CI of the release builds against
+      - name: Determine the INET version
+        id: inet
+        run: |
+          ref=$(awk '/repository: inet-framework\/inet/ { inet = 1 } inet && /ref:/ { print $2; exit }' \
+                release/.github/workflows/fingerprint-tests.yml)
+          if ! [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::no INET version (ref: vX.Y.Z) in the fingerprint-tests.yml of the release"
+            exit 1
+          fi
+          echo "Using INET $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "doc-url=https://inet.omnetpp.org/docs/$(echo "${ref#v}" | cut -d. -f1,2)/api/types" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout INET
+        uses: actions/checkout@v7
+        with:
+          repository: inet-framework/inet
+          ref: ${{ steps.inet.outputs.ref }}
+          path: inet
+          sparse-checkout: src
+
+      - name: Insert the version into the NED documentation
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: grep -rlZ --include='*.ned' '@VERSION@' release | xargs -0r sed -i -e "s/@VERSION@/$VERSION/g"
+
+      - name: Build the website
+        uses: omnetpp/doc-builder@v1
+        with:
+          project-dir: release
+          sphinx-source: doc/src
+          ned-dir: neddoc
+          title: Simu5G NED Documentation
+          ned-path: inet/src
+          external-docs: inet=${{ steps.inet.outputs.doc-url }}
+          # the comments link to types with ~, not every word that happens to be a type name
+          docgen-args: --no-automatic-hyperlinks
+          # GitHub Pages serves the pages also without the .html suffix
+          sphinx-args: >-
+            -D html_link_suffix=
+            -D release=${{ steps.release.outputs.version }}
+            -D version=${{ steps.release.outputs.version }}
+
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Deploy uploaded artifact to GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

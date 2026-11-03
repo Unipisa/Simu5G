@@ -4,19 +4,23 @@ Simu5G Framework Documentation
 Building the documentation website
 ----------------------------------
 
-The Simu5G documentation is built with the Sphinx tool (sphinx-doc.org).
-A pipenv environment is set up automatically containing all the necessary python packages.
+The Simu5G documentation is built with the Sphinx tool (sphinx-doc.org), by the
+doc-builder action of the omnetpp/doc-builder repository
+(https://github.com/omnetpp/doc-builder/tree/v1), in the OMNeT++
+doc-builder container image (ghcr.io/omnetpp/doc-builder) of the same repository. The action generates
+the NED documentation with opp_docgen into neddoc/ as reStructuredText, and then
+builds the site from this directory.
 
-To build the documentation, you have to install `pipenv` first:
-$ sudo apt install pipenv
+To build the website locally, you need podman (or docker: ENGINE=docker), and
+checkouts of omnetpp/doc-builder and INET next to the Simu5G checkout (or set
+DOC_BUILDER_DIR and INET_DIR). The build runs in the common parent directory of
+Simu5G and INET (ROOT), which is mounted into the container.
 
-After that, you can use the following targets (dependencies will be installed
-automatically on the first use)
-
-- Use 'make server' to run a local web server to preview the documentation at
-  http://localhost:8000/
-- Use 'make html' or 'make pdf' to build the documentation.
-- Use 'make clean all' to build both the html and pdf version from scratch.
+- Use 'make html' to build the website into _build/html, with the NED
+  documentation of this working tree.
+- Use 'make pdf' to also build the PDF of the User's Guide.
+- Use 'make serve' to preview the built website at http://localhost:8000/
+- Use 'make clean' to remove the generated files.
 
 Deploying the website
 ---------------------
@@ -27,17 +31,15 @@ branch of that repository:
 
 $ git push <unipisa-remote> <commit>:deployed-website
 
-The push triggers the "Build and deploy sphinx docs to GitHub Pages from site
-branch" workflow (.github/workflows/sphinx-doc-build-deploy.yml), which runs
-'make html' in doc/src and publishes doc/src/_build/html/. The workflow file
-is taken from the pushed commit itself. Pages is only configured on the
-Unipisa/Simu5G repository; pushing a 'deployed-website' branch to a fork does
-not deploy anything.
+The push triggers the "Build and deploy the website to GitHub Pages" workflow
+(.github/workflows/sphinx-doc-build-deploy.yml). The workflow file is taken from
+the pushed commit itself. Pages is only configured on the Unipisa/Simu5G
+repository; pushing a 'deployed-website' branch to a fork does not deploy
+anything.
 
-The NED documentation (neddoc/) is NOT built by the workflow. It is downloaded
-from the simu5g-X.Y.Z-doc.tgz asset of the vX.Y.Z GitHub release on
-Unipisa/Simu5G, and copied next to the generated pages. The version is
-determined as follows:
+The pages are built from doc/src of the pushed commit, but the NED documentation
+is generated from the NED files of the latest Simu5G release, checked out from
+its vX.Y.Z tag:
 
 - on a push, it is the latest release of Unipisa/Simu5G, as reported by
   'gh release view' (drafts and pre-releases excluded), with the leading 'v'
@@ -45,17 +47,14 @@ determined as follows:
 - when the workflow is started manually from the Actions tab, the optional
   'doc_version' input overrides that; leave it empty for the latest release.
 
-The release must actually carry the -doc.tgz asset, otherwise the download
-fails and the deployment is aborted (rather than silently publishing the NED
-documentation of some other version). The asset is created by 'releng/makedist'
-from doc/neddoc/, and has to be uploaded to the release manually.
+The INET release that the NED documentation links to is the one the
+fingerprint-tests workflow of the release checks out (its 'ref: vX.Y.Z'). The
+workflow replaces @VERSION@ in the NED files of the release with X.Y.Z, and
+passes X.Y.Z to Sphinx as 'release' and 'version'.
 
-Note that the version of the NED documentation and the version displayed on the
-pages have different sources: the latter comes from 'git describe' on the
-deployed commit (see 'release' and 'version' in conf.py). They agree when the
-deployed commit is a release, and differ otherwise.
+So after a new release is published, merge it into 'deployed-website' and push,
+or start the workflow manually.
 
 The 'deployed-website' branch may carry commits that are not on the main
 branches (e.g. site-only doc fixes). Merge the new content into it rather than
 force-pushing over it, or bring those commits over first.
-
