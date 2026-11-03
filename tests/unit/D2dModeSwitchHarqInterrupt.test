@@ -1,0 +1,204 @@
+%description:
+
+The H-ARQ interruption of a D2D mode switch at the transmitting UE
+(D2dUeMacHelper::macHandleD2DModeSwitch, tx side). When the notification asks
+for it, and the switch changes the direction (IM <-> DM), the UE drops every
+H-ARQ TX process towards both possible receivers -- the D2D peer (sidelink)
+and the serving cell (uplink) -- on every carrier, once per switch.
+
+The eNB purges its uplink RX H-ARQ buffer of the switching UE whenever that UE
+has any uplink connection, so the UE side must not depend on recognizing an
+"old" connection: the UE's uplink DRB, when the eNB established it as the
+reverse leg of a downlink flow, carries no D2D peer ids. A process left
+waiting for feedback the eNB will never send is later reused while not empty.
+
+The H-ARQ buffers here are recording stand-ins: they hold no processes and
+only log which process forceDropProcess() was called for.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
+#include <inet/common/packet/Packet.h>
+#include "simu5g/stack/d2d/mac/D2dUeMacHelper.h"
+#include "simu5g/stack/d2d/rrc/D2DModeSwitchNotification_m.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using namespace omnetpp;
+
+const MacNodeId CELL = MacNodeId(1);
+const MacNodeId PEER = MacNodeId(1026);
+const int NUM_PROC = 8;
+
+// logs every forceDropProcess() call, owns no processes
+class RecordingHarqBufferTx : public LteHarqBufferTx
+{
+  public:
+    std::vector<unsigned char> dropped;
+
+    RecordingHarqBufferTx(LteMacBase *owner) : LteHarqBufferTx(nullptr, NUM_PROC, owner) {}
+
+    void forceDropProcess(unsigned char acid) override { dropped.push_back(acid); }
+
+    // every process dropped, each exactly once
+    bool droppedAllOnce() const
+    {
+        std::vector<unsigned char> sorted = dropped;
+        std::sort(sorted.begin(), sorted.end());
+        if ((int)sorted.size() != NUM_PROC)
+            return false;
+        for (int i = 0; i < NUM_PROC; i++)
+            if (sorted[i] != i)
+                return false;
+        return true;
+    }
+};
+
+class StubD2dUeMac : public StubUeMac
+{
+  public:
+    D2dUeMacHelper helper{this};
+    int upperPacketsSent = 0;
+
+    StubD2dUeMac()
+    {
+        cellId_ = CELL;
+        harqProcesses_ = NUM_PROC;
+    }
+
+    // an uplink connection whose flow names the D2D peer, as one the UE established itself
+    MacCid addPeerConnection(unsigned short lcid, Direction dir)
+    {
+        MacCid cid(PEER, LogicalCid(lcid));
+        LogicalChannelConfig cfg;
+        cfg.rlcMode = UM;
+        cfg.snFieldLength = 12;
+        cfg.lcg = Lcg(0);
+        configureLogicalChannel(cid, cfg);
+        simu5g::FlowDescriptor flow;
+        flow.setSourceId(nodeId_);
+        flow.setDestId(dir == D2D ? PEER : CELL);
+        flow.setDirection(dir);
+        flow.setD2dTxPeerId(nodeId_);
+        flow.setD2dRxPeerId(PEER);
+        createOutgoingConnection(cid, flow);
+        return cid;
+    }
+
+    RecordingHarqBufferTx *addHarqBuffer(GHz carrier, MacNodeId dest)
+    {
+        auto *buffer = new RecordingHarqBufferTx(this);
+        harqTxBuffers_[carrier][dest] = buffer;  // the MAC deletes it
+        return buffer;
+    }
+
+    void sendUpperPackets(cPacket *pkt) override
+    {
+        upperPacketsSent++;
+        delete pkt;
+    }
+};
+
+void switchMode(StubD2dUeMac *mac, LteD2DMode oldMode, LteD2DMode newMode, bool interruptHarq)
+{
+    auto notification = inet::makeShared<D2DModeSwitchNotification>();
+    notification->setTxSide(true);
+    notification->setPeerId(PEER);
+    notification->setOldMode(oldMode);
+    notification->setNewMode(newMode);
+    notification->setInterruptHarq(interruptHarq);
+    notification->setClearRlcBuffer(false);
+    // the handler takes ownership of the packet
+    mac->helper.macHandleD2DModeSwitch(new inet::Packet("D2DModeSwitchNotification", notification));
+}
+
+std::string drops(const RecordingHarqBufferTx *buffer)
+{
+    return "drops=" + std::to_string(buffer->dropped.size());
+}
+
+%activity:
+Checker c;
+const GHz F1 = GHz(2.0);
+const GHz F2 = GHz(3.5);
+
+{
+    // the defect: the UE's only uplink connection is the eNB-established DRB,
+    // whose flow carries no D2D peer ids, so no "old" connection is recognized
+    StubD2dUeMac *mac = new StubD2dUeMac();
+    mac->addConnection(1, Lcg(0), UL);
+    RecordingHarqBufferTx *ul = mac->addHarqBuffer(F1, CELL);
+    RecordingHarqBufferTx *sl = mac->addHarqBuffer(F1, PEER);
+    switchMode(mac, IM, DM, true);
+    c.check("IM->DM drops every uplink process, also with no recognizable old connection",
+            ul->droppedAllOnce(), drops(ul));
+    c.check("IM->DM drops every sidelink process, also with no recognizable old connection",
+            sl->droppedAllOnce(), drops(sl));
+    delete mac;
+}
+{
+    // every carrier, both receivers, once per switch -- however many old connections
+    StubD2dUeMac *mac = new StubD2dUeMac();
+    mac->addPeerConnection(1, UL);
+    mac->addPeerConnection(2, UL);
+    RecordingHarqBufferTx *ul1 = mac->addHarqBuffer(F1, CELL);
+    RecordingHarqBufferTx *sl1 = mac->addHarqBuffer(F1, PEER);
+    RecordingHarqBufferTx *ul2 = mac->addHarqBuffer(F2, CELL);
+    RecordingHarqBufferTx *sl2 = mac->addHarqBuffer(F2, PEER);
+    switchMode(mac, IM, DM, true);
+    c.check("first carrier: every uplink process dropped once", ul1->droppedAllOnce(), drops(ul1));
+    c.check("first carrier: every sidelink process dropped once", sl1->droppedAllOnce(), drops(sl1));
+    c.check("second carrier: every uplink process dropped once", ul2->droppedAllOnce(), drops(ul2));
+    c.check("second carrier: every sidelink process dropped once", sl2->droppedAllOnce(), drops(sl2));
+    delete mac;
+}
+{
+    // the opposite direction is the same switch
+    StubD2dUeMac *mac = new StubD2dUeMac();
+    mac->addPeerConnection(1, D2D);
+    RecordingHarqBufferTx *ul = mac->addHarqBuffer(F1, CELL);
+    RecordingHarqBufferTx *sl = mac->addHarqBuffer(F1, PEER);
+    switchMode(mac, DM, IM, true);
+    c.check("DM->IM drops every uplink process once", ul->droppedAllOnce(), drops(ul));
+    c.check("DM->IM drops every sidelink process once", sl->droppedAllOnce(), drops(sl));
+    delete mac;
+}
+{
+    // no interruption asked for: H-ARQ is left alone
+    StubD2dUeMac *mac = new StubD2dUeMac();
+    mac->addConnection(1, Lcg(0), UL);
+    mac->addPeerConnection(2, UL);
+    RecordingHarqBufferTx *ul = mac->addHarqBuffer(F1, CELL);
+    RecordingHarqBufferTx *sl = mac->addHarqBuffer(F1, PEER);
+    switchMode(mac, IM, DM, false);
+    c.check("without interruptHarq no process is dropped",
+            ul->dropped.empty() && sl->dropped.empty(), drops(ul) + " " + drops(sl));
+    delete mac;
+}
+{
+    // a notification that keeps the direction is no switch
+    StubD2dUeMac *mac = new StubD2dUeMac();
+    mac->addPeerConnection(1, D2D);
+    RecordingHarqBufferTx *ul = mac->addHarqBuffer(F1, CELL);
+    RecordingHarqBufferTx *sl = mac->addHarqBuffer(F1, PEER);
+    switchMode(mac, DM, DM, true);
+    c.check("DM->DM drops no process",
+            ul->dropped.empty() && sl->dropped.empty(), drops(ul) + " " + drops(sl));
+    delete mac;
+}
+
+c.summary();
+
+%inifile: omnetpp.ini
+[General]
+network = Test
+# the stub MAC has no NED type, so there are no @signal declarations to check its emit() against
+check-signals = false
+
+%contains: stdout
+modelchecks=10 modelfailures=0
+
+%not-contains: stdout
+FAILED
