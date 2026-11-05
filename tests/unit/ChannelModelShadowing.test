@@ -5,14 +5,22 @@ and how it evolves -- the second of the two stateful mechanisms a refactoring
 of the medium has to move, after Jakes fading.
 
 The model keeps one shadowing value per link and updates it with a first-order
-recurrence the specification does not give but the model states: once the UE
-has travelled more than the correlation distance since the last update,
+recurrence: once the UE has travelled more than the correlation distance since
+the last update,
 
     att = a * old + sqrt(1 - a^2) * N(0, sigma),   a = exp(-0.5 * space / dcorr)
 
 and below that distance the previous value is returned unchanged. The draws
 are replayed from an RngSnapshot, so the recurrence is graded exactly rather
 than statistically, including the strict inequality at the boundary.
+
+Both the 0.5 and the hold below dcorr are a known deviation, pinned here as a
+defect and not endorsed: TR 38.901 7.4.4 gives the autocorrelation
+R(dx) = exp(-dx/d_cor), which the recurrence realizes only with
+a = exp(-dx/d_cor) at every displacement. ChannelModelShadowingCorrelation
+asserts the specification as an expected failure. The pins are here so that
+any change to the model's update fails by name; when the model follows the
+specification, change them together with that test.
 
 sigma is not the model's to choose: it comes from the path-loss strategy's
 getShadowingStdDev() for the link's LOS state, which PathLossShadowing grades
@@ -161,8 +169,8 @@ const double d3D = 200.0, d2D = 198.6;
     double within = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
     wait(3.0);                                   // 50 m in all: exactly dcorr
     double atBoundary = bs->computeShadowing(d3D, d2D, key, MacNodeId(1103), 10.0, false);
-    c.check("below the correlation distance the value is held", within == first);
-    c.check("exactly at the correlation distance it is still held (the test is strict)",
+    c.check("PINNED DEFECT: below the correlation distance the value is held", within == first);
+    c.check("PINNED DEFECT: exactly at the correlation distance it is still held (the test is strict)",
             atBoundary == first, "dcorr=" + std::to_string(dcorr));
 
     // Past it: the recurrence, graded from the replayed draw.
@@ -175,7 +183,7 @@ const double d3D = 200.0, d2D = 198.6;
     double space = (simTime() - stamped).dbl() * 10.0;
     double a = exp(-0.5 * (space / dcorr));
     double expected = a * old + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
-    c.expectNear("past it, att = a*old + sqrt(1-a^2)*N(0,sigma), a = exp(-0.5*space/dcorr)",
+    c.expectNear("PINNED DEFECT: past it, att = a*old + sqrt(1-a^2)*N(0,sigma), a = exp(-0.5*space/dcorr)",
             updated, expected, 0);
     c.check("...and the update restarts the distance count from now",
             bsProbe.shadowingMap().at(key).first == simTime());
