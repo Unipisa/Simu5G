@@ -1,0 +1,109 @@
+%description:
+
+ModuleOrderPermutation with a deterministic channel: no shadowing, no fading,
+and a fixed LOS state, so that no random number is drawn for the channel.
+Interference stays on.
+
+The scenario is run twice, with the two UEs' positions exchanged, and every
+recorded scalar of one run has to equal the correspondingly relabelled scalar
+of the other. With a deterministic channel it does -- 0 differing, including
+with interference on, as ModuleOrderPermutation's own measurement says. That
+file is an expected failure (with a stochastic channel the draws follow module
+order), so on its own it would also absorb a regression of this deterministic
+case; this file is the passing half that guards it.
+
+%extraargs: -c ModuleOrderPermutation
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config ModuleOrderPermutation]
+network = simu5g.simulations.nr.networks.MultiCell_Standalone
+sim-time-limit = 5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+
+# As in GeometryInvariance: the runs are compared against each other, so they
+# have to draw the same random numbers. seed-set follows the run number
+# otherwise.
+seed-set = 0
+
+############### The permutation ##############
+**.swapped = ${swap = 0, 1}
+
+############### Geometry: two UEs, one per cell, positions exchanged ##############
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb1.mobility.initialZ = 25m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb2.mobility.initialZ = 25m
+*.numUe = 2
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+**.dynamicCellAssociation = true
+**.enableHandover = false
+*.ue[0].mobility.initialX = (${swap} == 0 ? 350m : 700m)
+*.ue[0].mobility.initialY = (${swap} == 0 ? 450m : 560m)
+*.ue[1].mobility.initialX = (${swap} == 0 ? 700m : 350m)
+*.ue[1].mobility.initialY = (${swap} == 0 ? 560m : 450m)
+*.ue[*].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1500m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: interference on, state on ##############
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.fadingType = "JAKES"
+**.shadowing = false
+**.downlinkInterference = true
+**.uplinkInterference = true
+**.bgCellInterference = false
+**.extCellInterference = false
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+
+############### Traffic: identical for both UEs, so only position tells them apart ##############
+*.ue[*].numApps = 1
+*.server.numApps = 2
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[*].typename = "CbrSender"
+*.server.app[*].destAddress = "ue[" + string(ancestorIndex(0)) + "]"
+*.server.app[*].destPort = 3000
+*.server.app[*].localPort = 3088 + ancestorIndex(0)
+*.server.app[*].packetSize = 100B
+*.server.app[*].samplingTime = 0.01s
+*.server.app[*].startTime = 0.1s
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=1 failures=0
+
+%not-contains: verdict.txt
+FAILED

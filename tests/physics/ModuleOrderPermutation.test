@@ -2,9 +2,13 @@
 
 Whether a UE's results depend on its index.
 
-They should not. Which slot of a module vector a UE occupies is a property of
-how the network was written down, not of the radio environment, so swapping
-two UEs' positions ought to swap their results and change nothing else. The
+Which slot of a module vector a UE occupies is a property of how the network
+was written down, not of the radio environment. Physically that requires only
+the distribution of the results to be invariant when two UEs are swapped; that
+each realization is invariant -- swapping two UEs' positions swaps their
+results and changes nothing else -- is a reproducibility property, which holds
+only if each link draws from random numbers of its own (common random numbers).
+That stronger property is what this test asserts. The
 scenario is run twice, with the two UEs' positions exchanged, and every
 recorded scalar of one run is compared against the correspondingly relabelled
 scalar of the other.
@@ -31,6 +35,7 @@ one more draw taken in evaluation order, and how many scalars two orderings
 happen to agree on is not a meaningful quantity. The decomposition above is.
 
 So the model is index-independent whenever the channel is deterministic --
+ModuleOrderPermutationDeterministic asserts that case, and passes --
 including with interference enabled, which is worth stating because the
 obvious suspect is the cross-cell state mutation in
 computeDownlinkInterference, and on this evidence that is not by itself the
