@@ -7,15 +7,11 @@ is the same key from either end (ChannelModelBase.h), and the per-link
 shadowing, LOS and fading state is indexed by it. Reciprocity is what makes
 that worth doing.
 
-Without shadowing the two directions agree exactly. The downlink and uplink
-budgets differ only by constants -- the two transmit powers and the two noise
-figures, since the antenna gains and the cable loss appear in both -- so
-
-    SINR_DL - SINR_UL = (eNodeBTxPower - ueTxPower) - (ueNoiseFigure - bsNoiseFigure)
-
-which the model reproduces to the last digit. That check is worth having on
-its own: it is the only assertion in this directory on the uplink budget, and
-it says that both directions traverse the same path loss.
+Without shadowing the two directions agree exactly: the downlink and uplink
+budgets differ only by constants, so SINR_DL - SINR_UL is a constant. That
+check is LinkReciprocityBudget.test (run 0 of this configuration), which
+passes; this file runs only run 1, so that its expected failure covers nothing
+but the shadowing.
 
 With shadowing the same difference has to stay the same constant, because
 shadowing is a property of the link and not of the direction of travel. It
@@ -36,7 +32,7 @@ the test is for is that the answer stops being a matter of belief.
 
 %expected-failure: shadowing is drawn per direction, so a link is not reciprocal
 
-%extraargs: -c LinkReciprocity
+%extraargs: -c LinkReciprocity -r 1
 
 %file: demo.xml
 <config>
@@ -125,7 +121,7 @@ seed-set = 0
 %postrun-command: ../../physics_reference.py --grade results >verdict.txt
 
 %contains: verdict.txt
-graded=2 failures=0
+graded=1 failures=0
 
 %not-contains: verdict.txt
 FAILED
