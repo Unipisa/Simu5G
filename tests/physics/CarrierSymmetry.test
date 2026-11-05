@@ -110,7 +110,7 @@ seed-set = 0
 %postrun-command: ../../physics_reference.py --grade results >verdict.txt
 
 %contains: verdict.txt
-graded=1 failures=0
+graded=2 failures=0
 
 %not-contains: verdict.txt
 FAILED

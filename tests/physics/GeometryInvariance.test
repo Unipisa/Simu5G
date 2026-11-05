@@ -131,7 +131,7 @@ constraint = ($dx == 0) || ($rot == 0)
 %postrun-command: ../../physics_reference.py --grade results >verdict.txt
 
 %contains: verdict.txt
-graded=2 failures=0
+graded=3 failures=0
 
 %not-contains: verdict.txt
 FAILED

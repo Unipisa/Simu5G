@@ -231,6 +231,19 @@ def differing_scalars(table, reference, other):
     return table[~agree]
 
 
+def check_recorded(grader, table, reference, label):
+    """A tripwire for the invariance and permutation checks: they compare
+    recorded results, and two runs that recorded nothing agree perfectly --
+    a recorded nan and another recorded nan count as agreeing. So the
+    reference run has to have measured something: at least one SINR statistic
+    that is a number. A run in which no UE attached fails here, by name,
+    instead of passing the comparison vacuously."""
+    sinr = [value for (module, name), value in table[reference].items()
+            if 'Sinr' in name and value == value]
+    grader.check_true('recorded', label, len(sinr) > 0,
+                      f"{len(sinr)} SINR statistics of the reference run are numbers")
+
+
 def check_runs_identical(grader, table, reference, other, ref_name, label):
     """One verdict for "this transformation changed nothing", naming what it
     did change when it changed something."""
@@ -253,6 +266,7 @@ def grade_geometry_invariance(grader):
     reference = (0.0, 0.0)
     if reference not in table.columns:
         raise LookupError("the untransformed run is missing from the results")
+    check_recorded(grader, table, reference, 'the untransformed run')
     check_runs_identical(grader, table, reference, (1000.0, 0.0),
                          'the untransformed run', 'translated by 1000 m')
     check_runs_identical(grader, table, reference, (0.0, 90.0),
@@ -305,6 +319,7 @@ def grade_carrier_symmetry(grader):
     relabel = lambda module: pattern.sub(
         lambda hit: f"{hit.group(1)}[{1 - int(hit.group(2))}]", module)
 
+    check_recorded(grader, table, 0.0, 'the unswapped run')
     check_relabelled_runs(
         grader, table, 0.0, 1.0, relabel, 'the unswapped run',
         'carrier indices exchanged',
@@ -312,8 +327,9 @@ def grade_carrier_symmetry(grader):
         # exchanged with, and it is pinned to componentCarrier[0] by default --
         # which this configuration does swap the frequency of. It records
         # nothing in a standalone NR scenario, but it is excluded by name
-        # rather than by being quietly unmatched.
-        ignore=('.cellularNic.channelModel[',))
+        # rather than by being quietly unmatched. Only the UE's: the gNB's
+        # channelModel[0] and [1] are its per-carrier models and are compared.
+        ignore=('.ue[0].cellularNic.channelModel[',))
 
 
 def grade_module_order_permutation(grader):
@@ -336,6 +352,7 @@ def grade_module_order_permutation(grader):
     relabel = lambda module: pattern.sub(
         lambda hit: f"ue[{1 - int(hit.group(1))}]", module)
 
+    check_recorded(grader, table, 0.0, 'the unswapped run')
     check_relabelled_runs(grader, table, 0.0, 1.0, relabel,
                           'the unswapped run', 'two UEs exchanged')
 
