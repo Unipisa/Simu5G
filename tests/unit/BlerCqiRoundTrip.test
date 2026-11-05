@@ -196,6 +196,24 @@ PhyPisaData pisa;
     c.check("the table starts below BLER 1 for CQI 14 and 15", belowOne);
     c.check("PINNED DEFECT: ...and the lookup gives 1 at their first point anyway", lookupOne);
 }
+{
+    // The non-monotonic points of the table (BlerCurveMonotonicity asserts the
+    // property as an expected failure, which cannot count them): exactly these
+    // three adjacent pairs rise, and the error model's 1 dB sampling sees two.
+    std::string pairs;
+    for (int row = 0; row < 15; row++)
+        for (int i = 0; i < 15; i++)
+            if (BLER_15_CQI_TU[row][i + 1] > BLER_15_CQI_TU[row][i])
+                pairs += " cqi" + std::to_string(row + 1) + "@" + std::to_string(SINR_15_CQI_TU[row][i]);
+    c.check("PINNED DEFECT: the table rises at exactly CQI 1 from -1.5, CQI 4 from 4, CQI 5 from -3 dB",
+            pairs == " cqi1@-1.500000 cqi4@4.000000 cqi5@-3.000000", "rising pairs:" + pairs);
+    int sampled = 0;
+    for (int cqi = 1; cqi <= 15; cqi++)
+        for (int s = -30; s < 50; s++)
+            if (pisa.getBler(cqi, s + 1) > pisa.getBler(cqi, s))
+                sampled++;
+    c.expectValue("PINNED DEFECT: ...of which the 1 dB lookup sees two", sampled, 2);
+}
 
 //
 // --- the other half: the CQI derived from those curves ---
@@ -255,7 +273,7 @@ PhyPisaData pisa;
 c.summary();
 
 %contains: stdout
-modelchecks=23 modelfailures=0
+modelchecks=25 modelfailures=0
 
 %not-contains: stdout
 FAILED

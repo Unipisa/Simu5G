@@ -11,7 +11,9 @@ well defined if they are ordered.
 
 BLERvsSINR_15CQI_TU.h is a table of measured points rather than a formula, so
 these look like measurement noise or transcription slips that were never
-filtered out. Three adjacent pairs in BLER_15_CQI_TU go the wrong way:
+filtered out. Three adjacent pairs in BLER_15_CQI_TU go the wrong way. The
+error model samples the curves at integer SINR only, and sees two of them:
+the CQI 1 pair lies between integer points.
 
     CQI  1   SINR -1.5 -> -0.5    BLER 0     -> 0.004
     CQI  4   SINR  4.0 ->  5.0    BLER 0.008 -> 0.02
@@ -28,14 +30,18 @@ Fixing it means deciding what the curves ought to be, which is a modelling
 question and not a refactoring one; until then, asserting it here keeps the
 fact visible and stops anyone concluding the curves are ordered.
 
-When this is fixed, drop the %expected-failure line and move the check into
-BlerCqiRoundTrip.test, next to the other properties of the curves.
+BlerCqiRoundTrip pins the three offending pairs, so that a change to the
+table fails there by name: an expected-failure test cannot tell three
+offenders from thirty. When the curves are fixed, update that pin, drop
+the %expected-failure line and move these checks into BlerCqiRoundTrip.test,
+next to the other properties of the curves.
 
 %expected-failure: the shipped BLER curves are non-monotonic at three points
 
 %includes:
 #include "SchedulerTestUtil.h"
 #include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/common/blerCurves/BLERvsSINR_15CQI_TU.h"
 
 %global:
 using namespace simu5g;
@@ -54,10 +60,18 @@ for (int cqi = 1; cqi <= 15; cqi++)
 c.check("BLER is non-increasing in SINR, for every CQI", offenders == 0,
         "sampled 1 dB steps where BLER rises: " + std::to_string(offenders));
 
+int tableOffenders = 0;
+for (int row = 0; row < 15; row++)
+    for (int i = 0; i < 15; i++)
+        if (BLER_15_CQI_TU[row][i + 1] > BLER_15_CQI_TU[row][i])
+            tableOffenders++;
+c.check("the tabulated BLER is non-increasing in SINR, for every CQI", tableOffenders == 0,
+        "adjacent tabulated pairs where BLER rises: " + std::to_string(tableOffenders));
+
 c.summary();
 
 %contains: stdout
-modelchecks=1 modelfailures=0
+modelchecks=2 modelfailures=0
 
 %not-contains: stdout
 FAILED
