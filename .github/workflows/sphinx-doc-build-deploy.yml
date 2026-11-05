@@ -1,5 +1,5 @@
-# Builds the website (doc/src) with the NED documentation of the latest release, and deploys it to
-# GitHub Pages. See doc/src/README.
+# Builds the website (doc/src) with the NED and C++ references of the latest release, and deploys it
+# to GitHub Pages. See doc/src/README.
 name: Build and deploy the website to GitHub Pages
 
 on:
@@ -79,7 +79,8 @@ jobs:
           project-dir: release
           sphinx-source: doc/src
           ned-dir: neddoc
-          title: Simu5G NED Documentation
+          title: Simu5G
+          doxygen: true
           ned-path: inet/src
           external-docs: inet=${{ steps.inet.outputs.doc-url }}
           # the comments link to types with ~, not every word that happens to be a type name

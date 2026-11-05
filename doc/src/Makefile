@@ -12,7 +12,7 @@ INET_DOC_URL  := https://inet.omnetpp.org/docs/$(shell echo "$(INET_VERSION:v%=%
 
 DOC_BUILDER   = cd $(ROOT) && $(DOC_BUILDER_DIR)/doc-builder.sh \
                 --project-dir $(SIMU5G_DIR) --sphinx-source $(SIMU5G_DIR)/doc/src --ned-dir neddoc \
-                --title "Simu5G NED Documentation" --ned-path $(abspath $(INET_DIR))/src \
+                --title Simu5G --doxygen=true --ned-path $(abspath $(INET_DIR))/src \
                 --external-docs inet=$(INET_DOC_URL) --docgen-args --no-automatic-hyperlinks --output-dir $(abspath $(BUILDDIR))/html
 
 .PHONY: all html pdf serve clean checkdirs

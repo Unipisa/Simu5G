@@ -1,12 +1,13 @@
 :hide-toc:
 :hide-footer:
 
+.. title:: Documentation
 
-References
-----------
+.. toctree::
 
-- :doc:`NED Documentation <neddoc/index>`
-- `Release Notes <https://github.com/Unipisa/Simu5G/blob/master/WHATSNEW.md>`__
+   NED Reference <neddoc/index>
+   C++ Reference <api/index>
+   Release Notes <https://github.com/Unipisa/Simu5G/blob/master/WHATSNEW.md>
 
 User's Guide
 ------------

@@ -83,8 +83,15 @@ html_css_files = ['sphinx-omnetpp.css',]
 html_logo = '_static/hero-banner.png'
 html_title = 'Simu5G: Simulator for 5G New Radio Networks'
 
-# the sidebar entries of the NED reference scroll sideways instead of wrapping
-omnetpp_nav_nowrap = ['/neddoc/']
+# the sidebar entries of the NED and C++ references scroll sideways instead of wrapping
+omnetpp_nav_nowrap = ['/neddoc/', '/api/']
+# the other tabs are single pages, which need no menu
+omnetpp_nav_no_menu = ['Home', 'FAQ']
+# the commit of the website that the pages are built from, in the footer; with a '+' if the tree has uncommitted changes
+omnetpp_commit = os.popen('git rev-parse --short=10 HEAD').read().strip()
+if omnetpp_commit and os.popen('git status --porcelain').read():
+    omnetpp_commit += '+'
+omnetpp_commit = omnetpp_commit or None
 
 # material theme options (see theme.conf for more information)
 html_theme_options = {

@@ -8,8 +8,9 @@ The Simu5G documentation is built with the Sphinx tool (sphinx-doc.org), by the
 doc-builder action of the omnetpp/doc-builder repository
 (https://github.com/omnetpp/doc-builder/tree/v1), in the OMNeT++
 doc-builder container image (ghcr.io/omnetpp/doc-builder) of the same repository. The action generates
-the NED documentation with opp_docgen into neddoc/ as reStructuredText, and then
-builds the site from this directory.
+the NED documentation with opp_docgen into neddoc/ and the C++ reference with
+doxygen into api/, as reStructuredText, and then builds the site from this
+directory.
 
 To build the website locally, you need podman (or docker: ENGINE=docker), and
 checkouts of omnetpp/doc-builder and INET next to the Simu5G checkout (or set
@@ -37,9 +38,9 @@ the pushed commit itself. Pages is only configured on the Unipisa/Simu5G
 repository; pushing a 'deployed-website' branch to a fork does not deploy
 anything.
 
-The pages are built from doc/src of the pushed commit, but the NED documentation
-is generated from the NED files of the latest Simu5G release, checked out from
-its vX.Y.Z tag:
+The pages are built from doc/src of the pushed commit, but the NED and C++
+references are generated from the sources of the latest Simu5G release, checked
+out from its vX.Y.Z tag:
 
 - on a push, it is the latest release of Unipisa/Simu5G, as reported by
   'gh release view' (drafts and pre-releases excluded), with the leading 'v'
