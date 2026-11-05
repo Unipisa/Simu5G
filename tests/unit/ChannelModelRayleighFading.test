@@ -1,0 +1,85 @@
+%description:
+
+A defect of StochasticChannelModel::rayleighFading(), recorded rather than
+fixed: every link on a band fades by the same value.
+
+Small-scale fading is a property of a link -- of the scatterers between two
+particular antennas -- so the fading of two different links is two
+independent random variables. With a continuous distribution, two independent
+realizations differ on every band with probability 1.
+
+rayleighFading(id, band) ignores the link: it returns the band-th entry of the
+one table PhyPisaData fills at the Binder's construction, so every node, and
+every link of every node, sees the same value on a band. Configurations that
+select fadingType = RAYLEIGH (channelmodel Rayleigh-38901, for one) therefore
+fade all their links in lockstep.
+
+ChannelModelJakesFading pins what the function does today, so that any change
+to it fails there by name; when the fading is per link, update that pin and
+drop the %expected-failure line here.
+
+%expected-failure: Rayleigh fading is one value per band shared by every link
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# The fading parameters, stated rather than inherited.
+**.fading = true
+**.fadingType = "RAYLEIGH"
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+StubEndpoint bsEndpoint;
+bs->setPhy(&bsEndpoint);
+const int bands = bs->getNumBands();
+
+// Two links of the base station, to two different UEs.
+int sameBands = 0;
+for (int band = 0; band < bands; band++)
+    if (bs->rayleighFading(MacNodeId(1025), band) == bs->rayleighFading(MacNodeId(1026), band))
+        sameBands++;
+c.check("two different links fade independently: different values on every band", sameBands == 0,
+        std::to_string(sameBands) + " of " + std::to_string(bands) + " bands identical");
+
+c.summary();
+
+%contains: stdout
+modelchecks=1 modelfailures=0
+
+%not-contains: stdout
+FAILED

@@ -27,7 +27,9 @@ rayleighFading() is pinned as a set of tripwires, because what it does is
 surprising and ought to fail loudly if it changes: it is a lookup in the one
 table PhyPisaData shares across the whole simulation, indexed by band alone,
 so every node on a band gets the same value, the value never changes over time,
-and no random number is drawn.
+and no random number is drawn. That every link on a band shares one value is a
+defect -- fading belongs to a link -- and is labelled PINNED DEFECT;
+ChannelModelRayleighFading asserts independent links as an expected failure.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -275,7 +277,7 @@ wait(0.010);
             timeInvariant = false;
 
     c.check("Rayleigh fading is the shared PhyPisaData table, indexed by band", isTheTable);
-    c.check("...so every node on a band sees the same value", sharedAcrossNodes);
+    c.check("PINNED DEFECT: ...so every node on a band sees the same value", sharedAcrossNodes);
     c.check("...the value never changes over time", timeInvariant);
     c.expectValue("...and no random number is drawn",
             (long long)(bs->getRNG(0)->getNumbersDrawn() - drawnBefore), 0);
