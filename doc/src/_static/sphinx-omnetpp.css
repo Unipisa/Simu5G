@@ -77,6 +77,15 @@ figure img {
     border-radius: 0.2rem;
     box-shadow: var(--md-shadow-z2);
 }
+
+.md-logo img {
+    border-radius: 0.15rem;
+}
+
+.md-typeset img[src$="hero-banner.png"] {
+    border-radius: 0.4rem;
+}
+
 /* custom hero image */
 .md-hero__inner {
     margin-top: 0;
