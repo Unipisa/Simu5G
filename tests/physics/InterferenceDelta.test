@@ -13,7 +13,7 @@ signal and the interferer's contribution are the same closed-form budget the
 LinkBudget test grades, evaluated at their two distances:
 
     S = txPower - PL(d_serving)     + Gtx + Grx - cableLoss
-    I = txPower - PL(d_interferer)  + Gtx + Grx - cableLoss
+    I = interfererTxPower - PL(d_interferer) + Gtx + Grx - cableLoss
     N = thermalNoise + noiseFigure
 
     SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
@@ -33,6 +33,11 @@ Both are predicted, so the check does not depend on how the load happened to
 fall, only on the two endpoints being reached. With interference off the two
 extremes collapse onto one value, which is also what proves the machinery is
 genuinely off rather than merely quiet.
+
+The interferer transmits at a different power from the server (37 dBm against 40 dBm), so that an
+interferer evaluated with the serving transmitter's power -- or the other way
+round -- moves the loaded SINR by that difference and fails against a 1e-9
+tolerance. With equal powers that mix-up would have passed.
 
 %extraargs: -c InterferenceDelta
 
@@ -105,6 +110,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 *.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
 *.carrierAggregation.componentCarrier[0].numBands = 6
 **.numBands = 6
+*.gnb2.**.eNodeBTxPower = 37dBm
 **.eNodeBTxPower = 40dBm
 **.antennGainEnB = 18dBi
 **.antennaGainUe = 0dBi

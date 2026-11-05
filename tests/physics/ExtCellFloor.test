@@ -32,6 +32,11 @@ previous TTI's (rcvdSinrDl). With extCellInterference off each statistic is
 the quiet budget; on, each is the loaded budget, and in both cases a single
 value.
 
+The interferer transmits at a different power from the server (37 dBm against 40 dBm), so that an
+interferer evaluated with the serving transmitter's power -- or the other way
+round -- moves the loaded SINR by that difference and fails against a 1e-9
+tolerance. With equal powers that mix-up would have passed.
+
 %extraargs: -c ExtCellFloor
 
 %file: demo.xml
@@ -117,7 +122,7 @@ seed-set = 0
 *.extCell[0].positionX = 900m
 *.extCell[0].positionY = 300m
 *.extCell[0].positionZ = 25m
-*.extCell[0].txPower = 40dBm
+*.extCell[0].txPower = 37dBm
 *.extCell[0].txDirection = "OMNI"
 *.extCell[0].carrierFrequency = 2GHz
 *.extCell[0].numBands = 6

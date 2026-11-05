@@ -37,6 +37,11 @@ configuration rather than by borrowing the serving link's LOS state -- which
 is what computeExtCellPathLoss does otherwise, and which would make the
 expected value depend on a draw belonging to a different link.
 
+The interferer transmits at a different power from the server (37 dBm against 40 dBm), so that an
+interferer evaluated with the serving transmitter's power -- or the other way
+round -- moves the loaded SINR by that difference and fails against a 1e-9
+tolerance. With equal powers that mix-up would have passed.
+
 %extraargs: -c BackgroundCellFloor
 
 %file: demo.xml
@@ -106,7 +111,7 @@ seed-set = 0
 *.bgCell[0].mobility.initialY = 300m
 *.bgCell[0].mobility.initialZ = 25m
 *.bgCell[0].bgScheduler.isNr = true
-*.bgCell[0].bgScheduler.txPower = 40dBm
+*.bgCell[0].bgScheduler.txPower = 37dBm
 *.bgCell[0].bgScheduler.txDirection = "OMNI"
 *.bgCell[0].bgScheduler.numBands = 6
 *.bgCell[0].bgTrafficGenerator.numBgUes = 10

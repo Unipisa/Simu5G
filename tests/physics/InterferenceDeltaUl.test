@@ -17,7 +17,7 @@ LinkBudget grades, with the UE's transmit power and the base station's
 noise figure:
 
     S = ueTxPower - PL(d_victim)      + Gtx + Grx - cableLoss
-    I = ueTxPower - PL(d_interferer)  + Gtx + Grx - cableLoss
+    I = interfererTxPower - PL(d_interferer) + Gtx + Grx - cableLoss
     N = thermalNoise + bsNoiseFigure
 
     SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
@@ -37,6 +37,11 @@ statistics:
    scheduled on every band.
 
 With interference off the two extremes collapse onto one value.
+
+The interferer transmits at a different power from the server (23 dBm against 26 dBm), so that an
+interferer evaluated with the serving transmitter's power -- or the other way
+round -- moves the loaded SINR by that difference and fails against a 1e-9
+tolerance. With equal powers that mix-up would have passed.
 
 %extraargs: -c InterferenceDeltaUl
 
@@ -111,6 +116,7 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 *.carrierAggregation.componentCarrier[0].numBands = 6
 **.numBands = 6
 **.eNodeBTxPower = 40dBm
+*.ue[1].**.ueTxPower = 23dBm
 **.ueTxPower = 26dBm
 **.antennGainEnB = 18dBi
 **.antennaGainUe = 0dBi

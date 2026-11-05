@@ -375,10 +375,13 @@ class Budget:
         self.fc = self.cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
         self.noise = self.cfg['**.thermalNoise'] + self.cfg['**.ueNoiseFigure']
 
-    def received_power(self, d2D):
-        """dBm at the UE, for a base station d2D metres away."""
+    def received_power(self, d2D, tx_power=None):
+        """dBm at the UE, for a base station d2D metres away, transmitting at
+        tx_power dBm (the configured **.eNodeBTxPower if not given)."""
         d3D = math.sqrt(d2D ** 2 + (self.hBS - self.hUT) ** 2)
-        return (self.cfg['**.eNodeBTxPower']
+        if tx_power is None:
+            tx_power = self.cfg['**.eNodeBTxPower']
+        return (tx_power
                 - self.plr.t901_umi_los(d3D, d2D, self.fc, self.hBS, self.hUT)
                 + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
                 - self.cfg['**.cableLoss'])
@@ -404,10 +407,12 @@ class Budget:
             denominator += 10 ** (interference_dbm / 10.0)
         return signal_dbm - 10 * math.log10(denominator)
 
-    def sinr(self, d_serving, d_interferer=None):
+    def sinr(self, d_serving, d_interferer=None, interferer_power=None):
         """dB, for a base station d_serving away, over noise alone or over
-        noise plus one more base station d_interferer away."""
-        interference = None if d_interferer is None else self.received_power(d_interferer)
+        noise plus one more base station d_interferer away, transmitting at
+        interferer_power dBm (the serving power if not given)."""
+        interference = (None if d_interferer is None
+                        else self.received_power(d_interferer, interferer_power))
         return self.over_noise(self.received_power(d_serving), interference)
 
 
@@ -418,7 +423,7 @@ def grade_interference_delta(grader):
     budget = Budget()
     pos = config_values(['*.gnb1.mobility.initialX', '*.gnb2.mobility.initialX',
                          '*.ue[0].mobility.initialX', '*.gnb1.mobility.initialZ',
-                         '*.ue[0].mobility.initialZ'])
+                         '*.ue[0].mobility.initialZ', '*.gnb2.**.eNodeBTxPower'])
     d_serving = abs(pos['*.ue[0].mobility.initialX'] - pos['*.gnb1.mobility.initialX'])
     d_interferer = abs(pos['*.ue[0].mobility.initialX'] - pos['*.gnb2.mobility.initialX'])
 
@@ -427,7 +432,7 @@ def grade_interference_delta(grader):
                           budget.hBS - budget.hUT, 0.0, " m")
 
     quiet = budget.sinr(d_serving)
-    loaded = budget.sinr(d_serving, d_interferer)
+    loaded = budget.sinr(d_serving, d_interferer, pos['*.gnb2.**.eNodeBTxPower'])
 
     table = scalar_table('module =~ "*.ue[0].*.nrChannelModel[*]" '
                          'AND name =~ "measuredSinrDl:*"', itervars=('dli',))
@@ -462,7 +467,7 @@ def grade_interference_delta_ul(grader):
     scheduled in every TTI, so the uplink SINR the victim's base station
     computes spans two predictable endpoints."""
     budget = Budget()
-    cfg = config_values(['**.ueTxPower', '**.bsNoiseFigure',
+    cfg = config_values(['**.ueTxPower', '*.ue[1].**.ueTxPower', '**.bsNoiseFigure',
                          '*.gnb1.mobility.initialX', '*.ue[0].mobility.initialX',
                          '*.ue[1].mobility.initialX', '*.gnb1.mobility.initialZ',
                          '*.ue[0].mobility.initialZ', '*.ue[1].mobility.initialZ'])
@@ -472,12 +477,11 @@ def grade_interference_delta_ul(grader):
     grader.check_absolute('geometry-is-consistent', 'interferer at UE height',
                           cfg['*.ue[1].mobility.initialZ'], budget.hUT, 0.0, " m")
 
-    def received_at_gnb1(ue_x):
-        """dBm at the victim's base station from a UE ue_x along the x axis.
-        The same budget as the downlink one, with the UE's transmit power."""
+    def received_at_gnb1(ue_x, ue_power):
+        """dBm at the victim's base station from a UE ue_x along the x axis,
+        transmitting at ue_power dBm. The same budget as the downlink one."""
         d2D = abs(ue_x - cfg['*.gnb1.mobility.initialX'])
-        return (budget.received_power(d2D)
-                - budget.cfg['**.eNodeBTxPower'] + cfg['**.ueTxPower'])
+        return budget.received_power(d2D, ue_power)
 
     def over_bs_noise(signal_dbm, interference_dbm=None):
         noise = budget.cfg['**.thermalNoise'] + cfg['**.bsNoiseFigure']
@@ -486,8 +490,8 @@ def grade_interference_delta_ul(grader):
             denominator += 10 ** (interference_dbm / 10.0)
         return signal_dbm - 10 * math.log10(denominator)
 
-    signal = received_at_gnb1(cfg['*.ue[0].mobility.initialX'])
-    interferer = received_at_gnb1(cfg['*.ue[1].mobility.initialX'])
+    signal = received_at_gnb1(cfg['*.ue[0].mobility.initialX'], cfg['**.ueTxPower'])
+    interferer = received_at_gnb1(cfg['*.ue[1].mobility.initialX'], cfg['*.ue[1].**.ueTxPower'])
     quiet = over_bs_noise(signal)
     loaded = over_bs_noise(signal, interferer)
 
