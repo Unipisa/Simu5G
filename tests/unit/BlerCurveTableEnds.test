@@ -1,0 +1,65 @@
+%description:
+
+A deviation of the BLER lookup from the table it reads, recorded rather than
+fixed: GetBLER_TU (BLERvsSINR_15CQI_TU.h) does not return the tabulated BLER at
+the two ends of a curve.
+
+The curves are measured points, and the table is the only oracle there is: at
+a tabulated SINR, the lookup ought to give the tabulated BLER. At the ends it
+does not, because the saturation branches take over at the end points
+themselves:
+
+ - SINR <= the first point gives 1.0, whatever the table says there. CQI 14
+   and 15 tabulate 0.98 and 0.964 at their first points.
+ - SINR >= the last point gives 0.0, and the last column of BLER_15_CQI_TU is
+   never read. CQI 11-15 tabulate an error floor there (0.02, 0.008, 0.02,
+   0.004, 0.02), so the lookup falls from the interpolated value to 0 at the
+   last point: a cliff, and an optimistic one.
+
+Whether the table's floor should continue beyond its last point is a
+modelling question; that the lookup reproduces the table at the table's own
+points is not. BlerCqiRoundTrip pins what the lookup does today, so that any
+change to it fails there by name; when the lookup honours the end points,
+update those pins and drop the %expected-failure line here.
+
+%expected-failure: the BLER lookup saturates at the curves' end points instead of returning the tabulated BLER there
+
+%includes:
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/blerCurves/BLERvsSINR_15CQI_TU.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+Checker c;
+
+std::string firstDetail, lastDetail;
+bool firstOk = true, lastOk = true;
+for (int cqi = 1; cqi <= 15; cqi++) {
+    int row = cqi - 1;
+    double atFirst = GetBLER_TU(SINR_15_CQI_TU[row][0], cqi);
+    double atLast = GetBLER_TU(SINR_15_CQI_TU[row][15], cqi);
+    if (atFirst != BLER_15_CQI_TU[row][0]) {
+        firstOk = false;
+        firstDetail += " cqi" + std::to_string(cqi) + ": " + std::to_string(atFirst) + " (table "
+                + std::to_string(BLER_15_CQI_TU[row][0]) + ")";
+    }
+    if (atLast != BLER_15_CQI_TU[row][15]) {
+        lastOk = false;
+        lastDetail += " cqi" + std::to_string(cqi) + ": " + std::to_string(atLast) + " (table "
+                + std::to_string(BLER_15_CQI_TU[row][15]) + ")";
+    }
+}
+c.check("at each curve's first tabulated SINR the lookup gives the tabulated BLER", firstOk, firstDetail);
+c.check("at each curve's last tabulated SINR the lookup gives the tabulated BLER", lastOk, lastDetail);
+
+c.summary();
+
+%contains: stdout
+modelchecks=2 modelfailures=0
+
+%not-contains: stdout
+FAILED

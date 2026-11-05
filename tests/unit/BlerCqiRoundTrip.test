@@ -21,11 +21,17 @@ fails a named check that says what changed, rather than only a fingerprint:
    points by probing rather than by trusting either the constants or the
    table, and then state the disagreement.
  - For CQI 11-15 the table's last point is an error floor, not zero, and
-   the lookup returns zero there anyway.
+   the lookup returns zero there anyway. At the other end, CQI 14 and 15
+   tabulate 0.98 and 0.964 at their first points, and the lookup returns 1.
 
-The one property that ought to hold and does not -- BLER falling monotonically
-with SINR -- is split out into BlerCurveMonotonicity.test, which records it as
-an expected failure.
+The two lookup defects are pinned here as PINNED DEFECT checks, not endorsed:
+the table is the oracle, and BlerCurveTableEnds asserts it as an expected
+failure. The pins make any change to the lookup fail by name; when the lookup
+honours the end points, change them together with that test.
+
+The other property that ought to hold and does not -- BLER falling
+monotonically with SINR -- is asserted by BlerCurveMonotonicity.test as an
+expected failure, and the offending table points are pinned here.
 
 %includes:
 #include "SchedulerTestUtil.h"
@@ -180,7 +186,15 @@ PhyPisaData pisa;
     }
     c.check("the table ends on a non-zero BLER for CQI 11-15", tableHasFloor, detail);
     c.check("...which the lookup still reports one step below the last point", floorBelowLastPoint, detail);
-    c.check("...and replaces with 0 at the last point itself", cliffAtLastPoint, detail);
+    c.check("PINNED DEFECT: ...and replaces with 0 at the last point itself", cliffAtLastPoint, detail);
+}
+{
+    // The same at the other end: GetBLER_TU returns 1 for any SINR at or below
+    // SINR_15_CQI_TU[row][0], where CQI 14 and 15 tabulate less than that.
+    bool belowOne = BLER_15_CQI_TU[13][0] < 1.0 && BLER_15_CQI_TU[14][0] < 1.0;
+    bool lookupOne = GetBLER_TU(SINR_15_CQI_TU[13][0], 14) == 1.0 && GetBLER_TU(SINR_15_CQI_TU[14][0], 15) == 1.0;
+    c.check("the table starts below BLER 1 for CQI 14 and 15", belowOne);
+    c.check("PINNED DEFECT: ...and the lookup gives 1 at their first point anyway", lookupOne);
 }
 
 //
@@ -241,7 +255,7 @@ PhyPisaData pisa;
 c.summary();
 
 %contains: stdout
-modelchecks=21 modelfailures=0
+modelchecks=23 modelfailures=0
 
 %not-contains: stdout
 FAILED
