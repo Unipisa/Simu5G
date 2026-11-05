@@ -394,7 +394,9 @@ class Budget:
         whatever study the channel model itself is configured with, and passes
         the plain distance between the two nodes as both the 3D and the 2D
         one. NLOS, which is what enableExtCellLos = false selects; left true,
-        the interferer would borrow the serving link's LOS state."""
+        the interferer would borrow the serving link's LOS state. All of this
+        is the model's choice, so the checks built on it characterise the
+        model; no specification defines these phantom links."""
         return (tx_power - self.plr.t814_umi_nlos(distance, self.fc)
                 + self.cfg['**.antennGainEnB'] + self.cfg['**.antennaGainUe']
                 - self.cfg['**.cableLoss'])

@@ -1,5 +1,7 @@
 This folder contains physics tests: small simulations of the shipped model
-whose results are graded against values derived from first principles.
+whose results are graded against closed-form values computed from the
+scenario's parameters -- never against a previous run. What each closed form
+rests on, specification or model convention, is listed below.
 
 Why this is separate from the fingerprint suite
 -----------------------------------------------
@@ -15,6 +17,35 @@ model ought to produce and grades the run against it, so a refactoring that
 changes a fingerprint can be accepted with evidence rather than with a
 judgement call -- and one that breaks the physics fails a named assertion that
 says which quantity moved and by how much.
+
+What the expected values rest on
+--------------------------------
+
+Three kinds of ingredient, and only the first is a specification:
+
+ - The 3GPP formulas, transcribed verbatim in ../unit/pathloss_reference.py:
+   path loss and breakpoint distance, LOS probability, shadowing standard
+   deviation and O2I penetration loss, from TR 38.901 and TR 36.814.
+ - The model's own conventions, taken as given rather than derived. The noise
+   floor is N = thermalNoise + noise figure, a configured constant that does
+   not follow the bandwidth (the default -104.5 dBm is kTB for 50 resource
+   blocks of 180 kHz; the 6-band scenarios here would be -113.7 dBm at 15 kHz
+   subcarrier spacing). Each band receives the transmitter's full power, not a
+   share of it. HARQ residual loss and the error model are graded against the
+   model's own error-rate parameters. A check that rests on these says that
+   the model computes consistently with its convention, not that the
+   convention is right.
+ - Characterisation, where the model makes a choice no specification makes or
+   where a different one applies: D2dLinkBudget (a UE-to-UE link evaluated as
+   a UMi link), BackgroundCellFloor and ExtCellFloor (the external and
+   background cells' path loss). Their descriptions say so. They are
+   regression tests of the model's choice.
+
+Most scenarios here use URBAN_MICROCELL with a 25 m base station, outside the
+formulas' stated applicability (TR 38.901 Table 7.4.1-1 and TR 36.814 Table
+B.1.2.1-1: hBS = 10 m). The formulas are still evaluated verbatim at those
+heights, by the model and by the grader alike, so the comparison is exact; it
+is the scenario, not the check, that a specification would not cover.
 
 Why this is separate from tests/unit
 ------------------------------------
