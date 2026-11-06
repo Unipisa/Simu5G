@@ -1,0 +1,138 @@
+%description:
+
+The per-link channel state is per carrier.
+
+The radio medium keeps a link's LOS state, its shadowing sample and its Jakes
+fading paths once per link -- and per carrier: the same pair of radios on two
+carriers is two channels, whose realizations are independent (TR 38.901
+draws the large- and small-scale parameters per frequency band unless a
+multi-frequency procedure correlates them, which the model does not
+implement). A medium that kept one map for all carriers, or a channel model
+that looked up another carrier's map, would make the two carriers share one
+realization; every other test of the per-link state uses a single carrier
+and would not notice.
+
+Checked with two base-station channel models on two carriers evaluating the
+same downlink: each carrier has its own maps, each evaluation fills only its
+own carrier's, and the second carrier draws a realization of its own.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
+        MacNodeId dest, const inet::Coord& senderPosition)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCoord(senderPosition);
+    return info;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        modelA: Tr38901ChannelModel;
+        modelB: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 2
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+*.carrierAggregation.componentCarrier[1].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[1].numBands = 10
+*.modelA.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.modelB.componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Every per-link ingredient on, so that each one has state to keep.
+**.dynamicLos = true
+**.shadowing = true
+**.fading = true
+**.fadingType = "JAKES"
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *modelA = harnessModule<StochasticChannelModel>(this, "modelA");
+auto *modelB = harnessModule<StochasticChannelModel>(this, "modelB");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+modelA->setPhy(&bsEndpoint);
+modelB->setPhy(&bsEndpoint);
+const MacNodeId bsId = MacNodeId(1), ueId = MacNodeId(1025);
+bsEndpoint.nodeId = bsId;
+ueEndpoint.nodeId = ueId;
+bsEndpoint.coord = inet::Coord(0, 0, 25);
+ueEndpoint.coord = inet::Coord(120, 45, 1.5);
+bsEndpoint.txPower = 40.0;
+ueEndpoint.txPower = 23.0;
+StubRadioRegistration bsRadio(medium, bsId, &bsEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe probeA(modelA), probeB(modelB);
+const LinkKey link(bsId, ueId);
+
+c.check("the two models are on two carriers", modelA->getCarrierFrequency() != modelB->getCarrierFrequency());
+c.check("each carrier has its own LOS, shadowing and Jakes maps",
+        &probeA.losMap() != &probeB.losMap() && &probeA.shadowingMap() != &probeB.shadowingMap()
+        && &probeA.jakesMap() != &probeB.jakesMap());
+
+// Away from t = 0, as for every Jakes evaluation.
+wait(0.010);
+
+// A DL CQI of the same link, at the base station, on each carrier.
+UserControlInfo cqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
+
+modelA->getRSRP(probeA.linkFor(&cqi), 30.0);
+c.check("an evaluation on the first carrier fills that carrier's state for the link",
+        probeA.losMap().count(link) == 1 && probeA.shadowingMap().count(link) == 1 && probeA.jakesMap().count(link) == 1);
+c.check("...and none of the other carrier's",
+        probeB.losMap().count(link) == 0 && probeB.shadowingMap().count(link) == 0 && probeB.jakesMap().count(link) == 0);
+
+// The second carrier draws a realization of its own: its first evaluation
+// draws more than an identical one right after it.
+unsigned long before = modelB->getRNG(0)->getNumbersDrawn();
+modelB->getRSRP(probeB.linkFor(&cqi), 30.0);
+long long firstDraws = modelB->getRNG(0)->getNumbersDrawn() - before;
+before = modelB->getRNG(0)->getNumbersDrawn();
+modelB->getRSRP(probeB.linkFor(&cqi), 30.0);
+long long repeatDraws = modelB->getRNG(0)->getNumbersDrawn() - before;
+c.check("the same link on the second carrier draws a realization of its own",
+        firstDraws > repeatDraws && probeB.losMap().count(link) == 1 && probeB.shadowingMap().count(link) == 1
+        && probeB.jakesMap().count(link) == 1,
+        "first=" + std::to_string(firstDraws) + " repeat=" + std::to_string(repeatDraws));
+
+c.summary();
+
+%contains: stdout
+modelchecks=5 modelfailures=0
+
+%not-contains: stdout
+FAILED
