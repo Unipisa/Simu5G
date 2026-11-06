@@ -1,0 +1,147 @@
+%description:
+
+Where a reception is evaluated: at the position the receiving radio had as
+the frame began to arrive.
+
+A frame is decoded at the end of its transmission, one slot after it began.
+A radio medium takes both ends of a link as they were at the start, as INET's
+does, so a UE that moves during the slot is evaluated where it was when the
+frame reached it: the receiving radio records that position on the frame
+(AirFrame::arrivalPosition), and the channel model takes the receiver's end
+of the link from there. A frame built locally to ask what a reception would
+be has no arrival position, and is evaluated where the radio is now.
+
+No other test moves a radio between a transmission's start and its decoding,
+so a model that took the receiver's current position would pass them.
+
+Checked with a DL data frame decoded at a UE that moved 10 m since the frame
+began to arrive. Every random ingredient and every interference is off, so
+each SINR is one number per band: the reception's SINR has to be the one of
+a UE standing at the arrival position, and differ from the one at the UE's
+position at decoding time.
+
+%includes:
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        ueModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# one number per band
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *ueModel = harnessModule<StochasticChannelModel>(this, "ueModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const GHz carrier = ueModel->getCarrierFrequency();
+
+StubEndpoint bs, ue;
+ueModel->setPhy(&ue);
+bs.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+bs.coord = inet::Coord(0, 0, 25);
+bs.txPower = 40.0;
+ue.txPower = 23.0;
+bs.channelModels[carrier] = ueModel;
+ue.channelModels[carrier] = ueModel;
+StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+
+const inet::Coord arrival(100, 20, 1.5);
+const inet::Coord decoding(110, 20, 1.5);
+
+RbMap bands;
+for (Band b = 0; b < ueModel->getNumBands(); b++)
+    bands[MACRO][b] = 1;
+
+// the SINR of a DL data frame from the base station, decoded by the UE where it is now; a frame that arrived at arrivalPosition carries it
+auto decode = [&] (const inet::Coord *arrivalPosition) {
+    AirFrame frame;
+    if (arrivalPosition != nullptr)
+        frame.setArrivalPosition(*arrivalPosition);
+    UserControlInfo info;
+    info.setDirection(DL);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(bs.nodeId);
+    info.setDestId(ue.nodeId);
+    info.setCoord(bs.coord);
+    info.setTxPower(bs.txPower);
+    info.setCarrierFrequency(carrier);
+    info.setGrantedBlocks(bands);
+    return ueModel->getSINR(&frame, &info);
+};
+
+wait(SimTime(1, SIMTIME_MS));
+
+// the UE stood at the arrival position, then moved 10 m before the decoding
+ue.coord = arrival;
+std::vector<double> atArrival = decode(nullptr);
+ue.coord = decoding;
+std::vector<double> atDecoding = decode(nullptr);
+std::vector<double> received = decode(&arrival);
+
+c.check("the two positions give two SINRs", atArrival != atDecoding, show(atArrival) + " / " + show(atDecoding));
+c.check("a reception is evaluated where the receiver was as the frame began to arrive", received == atArrival, show(received));
+c.check("a frame with no arrival position is evaluated where the receiver is now", decode(nullptr) == atDecoding);
+
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED
