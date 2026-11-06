@@ -133,3 +133,53 @@ per link by the medium, and redrawn by how far the link's ends have moved.
   choice can be uninitialized until "PhyBase: refactor: whether a node is inside a
   building is the PHY's parameter"; the D2D conflict graph's path loss depends on
   evaluation order until "the conflict graph's path loss is evaluated outdoors".
+
+## Piece 5a: interference from the medium's transmissions (16 commits + 3 test commits)
+
+Commits: "StochasticChannelModel: fix: DL data interference takes the
+interfering cell's occupancy on the victim's carrier, from the radio medium"
+to "channel models: external and background cells' interference takes the
+model's own path loss". Piece 5 of the plan was split in two; this half moves
+every interference computation onto the transmissions registered with the
+medium, makes a CQI measure the slot completed last, and puts the external and
+background cells on the medium.
+
+- **The fingerprint suite passes at the piece's tip.**
+- **The interference changes move no distribution the A/B can see.** Replicated
+  A/B against piece 4's tip, 16 configurations (the lte/multicell interference
+  family, lte/x2, nr/test_numerology with two numerologies, nr/standalone_multicell,
+  nr/bgTraffic, the nr tutorial's background traffic, dual connectivity with
+  several cells, multi-carrier, D2D reuse, indoor and tall UEs), 30 seeds per
+  side: 7631 statistics tested, none significant. The null control flagged one
+  counter in one configuration (nr/test_multiCarrier MultiCarrier-CBR-DL, the
+  UE's received MAC PDUs, 8 statistics counting the same thing); a third seed
+  range (60-89) compares clean with both, so it was a low sample of a
+  heavy-tailed counter, not a dependence on more than the seed.
+- **Five refactorings were not identical in every state** and were re-marked or
+  amended before acceptance: two are latent fixes (the DL occupancy of a cell
+  with several carriers; uplink frames whose sender did not record them in the
+  Binder's map), two change behavior in states no row reaches (background UEs
+  of a cell with several carriers; external and background cells whose ticks
+  are not the carrier's slots), and one introduced a latent defect -- a
+  background UE's DL allocation radiated omnidirectionally by a sectorial base
+  station -- whose fix, from piece 7, was folded into it.
+- **Test gaps were closed, each checked by mutation:** the medium's
+  transmissions of a slot and what it keeps (RadioMediumTransmissionRegistry),
+  the slot a CQI measures (ChannelModelCqiSlot, on 0.25 ms slots), and the
+  position a reception is evaluated at (ChannelModelReceptionPosition).
+- **The new tests pass at 42 commits:** at their own commits, and at every
+  later commit that changes the interfaces they use, up to the branch tip. The
+  full unit and physics suites, at the piece's tip and at the commit the fix
+  was folded into, show no failure beyond the recorded expected failures, each
+  failing on its checks.
+- **Deferred to piece 7,** where the phantom radios give these links their
+  final shape: a test of the background UEs' registration through the
+  scheduler, and of the external-cell path loss's geometry and indoor rule.
+- **Recorded, to be fixed after the merge** (model-deviations.md, items
+  18-21): a background UE on a cell's second carrier occupies the wrong bands;
+  a transmission between slot boundaries prunes the slot completed last
+  (pinned, with an expected failure); a background UE's uplink allocation is
+  on the medium only if its cell evaluates uplink interference; the handover
+  beacon's RSSI counts the background cells but not the real ones.
+- **The A/B tool was fixed** (tests/abtest/run.sh failed every run with a
+  relative output directory, as in its README's example).
