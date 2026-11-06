@@ -44,6 +44,8 @@ bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrier
                 throw cRuntimeError("LteSchedulerEnbDl::checkEligibility(): abnormal codeword id %d", (int)cw);
             return true;
         }
+        // all H-ARQ processes are busy: a new MAC PDU would be deleted in LteMacEnb::macPduMake()
+        return false;
     }
     return true;
 }
