@@ -1,0 +1,68 @@
+This folder contains the tests of Simu5G and the tools used to validate a
+change to the model.
+
+ - fingerprint/  Fingerprint tests: every example simulation, run for a short
+                 time, against a recorded hash of what it did. A change
+                 detector, not an oracle.
+ - unit/         Unit tests: classes exercised without a running simulation,
+                 including verbatim transcriptions of the 3GPP formulas.
+ - module/       Module tests: small simulations checked by their outcome,
+                 including the configurations that must be rejected.
+ - physics/      Physics tests: small simulations graded against closed-form
+                 values computed from the scenario's parameters.
+ - abtest/       A replicated A/B comparison of two versions of the code,
+                 statistic by statistic, over many seeds.
+ - doc/          Records of how larger changes were validated and accepted.
+
+Each subfolder has a README of its own on how to run its tests and how to
+write new ones. The statistical baselines (the run-0 scalars of every example
+configuration) are kept in a separate git repository, checked out as
+statistics/ in the project root.
+
+Validating a model change
+-------------------------
+
+No single suite says whether a change is right. Each answers one question,
+and the kind of change decides which questions matter.
+
+ - A refactoring must not change behavior in any state. The fingerprint suite
+   is the check: every row identical. A change that only moves the module
+   tree moves the module-id ingredients (tplx, tilx) and nothing else. When a
+   refactoring moves the event structure or the traffic timing (tplx, ~tNl)
+   but not the results (sz), compare per-reception traces of the two versions:
+   identical inputs and decisions for every reception show that only events
+   moved. Remember that the suite covers only what its rows exercise; a
+   refactoring is also reviewed for states no row reaches.
+
+ - A change that re-deals the random draws without changing the model -- an
+   RNG draw added or removed, state keyed differently -- moves almost every
+   fingerprint and baseline, and says nothing by itself. What it must not
+   change are the distributions of the results. Run abtest/ on the
+   configurations it moves: no statistic may differ beyond what the null
+   control (the same code, other seeds) shows.
+
+ - A fix, or an intended change of the model, comes with a test that fails
+   before it and passes after it, placed in the history before the fix. The
+   A/B comparison then shows what the change does to the results, and that
+   nothing else moved; narrow down any unexplained difference to its commit.
+
+ - Every new check must be able to fail. Break the mechanism it guards -- a
+   mutant of the code under test, for example the sum of two distances where
+   the larger one belongs -- and confirm that the check, and preferably only
+   the check, fails.
+
+ - A test against a specification is a verbatim transcription of it. Where
+   the model deviates, the deviation is recorded twice: a passing check that
+   pins today's behavior, labelled "PINNED DEFECT:", and a separate test with
+   %expected-failure that asserts the specification. opp_test reports an
+   expected-failure test that starts to pass as a plain PASS, which is why
+   the pin is needed; and it reports a test that aborts at startup as the
+   same EXPECTEDFAIL, so check that an expected failure fails on its checks
+   (its test.out holds modelchecks=N modelfailures=M with M > 0, and no
+   error).
+
+ - The statistical baselines record the run-0 results at every move of the
+   development branch. They are a record, not an oracle: a commit that only
+   re-deals the random draws moves all of them.
+
+doc/ holds the records of changes that were validated this way.

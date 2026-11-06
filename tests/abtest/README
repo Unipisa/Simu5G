@@ -1,0 +1,61 @@
+This folder contains a replicated A/B comparison of two builds of Simu5G:
+whether a change moves the distributions of the simulation results, and
+which statistics it moves.
+
+Why it is needed
+----------------
+
+A change that re-deals the random draws -- a draw added or removed, channel
+state keyed per link instead of per model -- moves nearly every fingerprint
+and every run-0 baseline, whether or not the model changed. One run per
+version cannot tell a perturbation from a change of the model. Many runs per
+version can: a perturbation leaves each statistic's distribution where it
+was, a change of the model moves some of them.
+
+How it works
+------------
+
+run.sh runs each configuration 30 times per side (seed sets 0..29) at two
+Simu5G roots, A and B -- typically two git worktrees, each built in debug
+mode -- and a third time at A with other seed sets (30..59): the null
+control, A2.
+
+compare.py then compares two sides statistic by statistic: for every scalar,
+and for the count, mean, sum, min and max of every statistic, a two-sided
+Mann-Whitney U test of the 30 values against the 30 of the other side, and the
+Benjamini-Hochberg correction over the tests of a configuration (false
+discovery rate 5%). It prints per configuration how many statistics were
+tested, identical or skipped, how many have p < 0.05 before correction, and
+the significant ones after it, with the effect size in pooled standard
+deviations.
+
+    ./run.sh /path/to/rootA /path/to/rootB configs.txt out
+    ./compare.py out A B      # the change
+    ./compare.py out A A2     # the null control
+
+configs.txt has one "<dir>|<config>|<sim-time-limit>" line per configuration,
+for example
+
+    simulations/channelmodel|UMa-38901|20s
+    simulations/nr/standalone|VoIP-DL|5s
+
+Choose the configurations the change moves (the fingerprint suite says which)
+and the ones that exercise what it touches; keep the simulated time short
+enough for 90 runs of each.
+
+Reading the result
+------------------
+
+ - The null control has to come out clean: no significant statistic in any
+   configuration. If it does not, the configuration is too noisy for 30 runs
+   or a statistic depends on more than the seed, and its A/B result means
+   nothing.
+
+ - With a clean control, a significant statistic is a change of the model, to
+   be explained: by the change's purpose, or narrowed down to the commit that
+   causes it by running the same configurations at the commits in between.
+
+ - Identical statistics are not evidence that a change does nothing to them:
+   a configuration whose results do not depend on what changed shows none.
+
+Requirements: python3 with numpy and scipy.
