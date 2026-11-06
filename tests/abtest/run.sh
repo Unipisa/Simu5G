@@ -21,6 +21,7 @@ set -e
 A=$1; B=$2; CONFIGS=$3; OUT=$4; N=${5:-30}; J=${6:-8}
 [ -n "$OUT" ] || { echo "usage: run.sh <rootA> <rootB> <configs> <outdir> [<seeds> [<jobs>]]"; exit 1; }
 mkdir -p "$OUT"
+OUT=$(cd "$OUT" && pwd)  # the runs write from their configurations' directories
 REPEAT=$((2 * N))
 
 runone() { # <root> <side> <dir> <config> <simtime> <run>
