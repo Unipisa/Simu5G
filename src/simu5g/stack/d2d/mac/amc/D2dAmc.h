@@ -64,7 +64,7 @@ class D2dAmc : public Base, public ID2dAmc, public cListener
         }
     }
 
-    void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override
+    void receiveSignal(cComponent *source, simsignal_t signalID, intval_t nodeId, cObject *details) override
     {
         ASSERT(signalID == Binder::nodeUnregisteredSignal_);
         d2dHelper_.purgeDepartedNode(MacNodeId(nodeId));
