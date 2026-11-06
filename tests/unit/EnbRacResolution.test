@@ -1,0 +1,178 @@
+%description:
+
+The eNB MAC's resolution of buffered RAC requests
+(LteMacEnb::resolveRacCollisions()).
+
+A RAC request is buffered when it arrives and resolved later, so that two UEs
+that chose the same preamble collide. In between, the UE can leave the cell:
+a handover detaches it. A request from a UE the cell no longer serves gets no
+response and is not signalled to the uplink scheduler, which would otherwise
+keep it pending and look the UE's transmission parameters up through a
+serving node it no longer has.
+
+Checked with the real resolution on a MAC whose uplink scheduler and lower
+layer are stubs: two UEs send requests on different preambles while the cell
+serves both, one of them is handed over to another cell, and the requests are
+resolved.
+
+%includes:
+#include <algorithm>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/packet/LteRac_m.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnbUl.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using namespace inet;
+
+// An uplink scheduler that records which UEs a RAC was signalled for.
+class RacRecordingScheduler : public LteSchedulerEnbUl
+{
+  public:
+    std::vector<MacNodeId> signalled;
+    void initialize(int stage) override {}
+    void signalRac(MacNodeId nodeId, GHz carrierFrequency) override { signalled.push_back(nodeId); }
+};
+Define_Module(RacRecordingScheduler);
+
+// A RAC request from 'ue' on 'preamble'.
+static Packet *racRequest(MacNodeId ue, int preamble)
+{
+    auto pkt = new Packet("RacRequest");
+    auto rac = makeShared<LteRac>();
+    rac->setPreambleIndex(preamble);
+    pkt->insertAtFront(rac);
+    auto uinfo = pkt->addTag<UserControlInfo>();
+    uinfo->setSourceId(ue);
+    uinfo->setDestId(MacNodeId(1));
+    uinfo->setDirection(UL);
+    uinfo->setCarrierFrequency(GHz(2.0));
+    return pkt;
+}
+
+// An eNB MAC with the real RAC buffering and resolution, and a lower layer
+// that records what it is sent.
+class RacTestMac : public LteMacEnb
+{
+  public:
+    std::vector<Packet *> sent;
+
+    // A RAC request arriving from 'ue', buffered by the real macHandleRac()
+    void receiveRac(MacNodeId ue, int preamble)
+    {
+        Enter_Method("receiveRac");
+        macHandleRac(racRequest(ue, preamble));
+    }
+    // The real resolution of the buffered requests
+    void resolve()
+    {
+        Enter_Method("resolve");
+        resolveRacCollisions();
+    }
+
+    ~RacTestMac() override
+    {
+        for (auto *pkt : sent)
+            delete pkt;
+    }
+
+  protected:
+    void initialize(int stage) override
+    {
+        if (stage == INITSTAGE_LOCAL) {
+            nodeId_ = MacNodeId(1);
+            binder_.reference(this, "binderModule", true);
+            enbSchedulerUl_ = check_and_cast<LteSchedulerEnbUl *>(getSubmodule("schedulerUl"));
+        }
+    }
+    void handleMessage(cMessage *msg) override { throw cRuntimeError("unexpected message"); }
+    void finish() override {}
+    void sendLowerPackets(cPacket *pkt) override { sent.push_back(check_and_cast<Packet *>(pkt)); }
+};
+Define_Module(RacTestMac);
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+
+simple RacRecordingScheduler
+{
+    @class(RacRecordingScheduler);
+}
+
+module RacTestMac
+{
+    parameters:
+        @class(RacTestMac);
+        string binderModule = "binder";
+    submodules:
+        schedulerUl: RacRecordingScheduler;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        mac: RacTestMac;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+cModule *network = getSimulation()->getSystemModule();
+Binder *binder = check_and_cast<Binder *>(network->getSubmodule("binder"));
+RacTestMac *mac = check_and_cast<RacTestMac *>(network->getSubmodule("mac"));
+RacRecordingScheduler *scheduler = check_and_cast<RacRecordingScheduler *>(mac->getSubmodule("schedulerUl"));
+
+const MacNodeId cell = MacNodeId(1), otherCell = MacNodeId(2);
+const MacNodeId stays = MacNodeId(1025), leaves = MacNodeId(1026);
+binder->registerServingNode(cell, stays);
+binder->registerServingNode(cell, leaves);
+
+mac->receiveRac(stays, 3);
+mac->receiveRac(leaves, 7);
+
+// The second UE is handed over to the other cell before the resolution.
+binder->unregisterServingNode(cell, leaves);
+binder->registerServingNode(otherCell, leaves);
+
+mac->resolve();
+
+auto signalledFor = [&](MacNodeId ue) {
+    return std::count(scheduler->signalled.begin(), scheduler->signalled.end(), ue);
+};
+auto responsesTo = [&](MacNodeId ue) {
+    int n = 0;
+    for (auto *pkt : mac->sent)
+        if (pkt->getTag<UserControlInfo>()->getDestId() == ue)
+            n++;
+    return n;
+};
+
+c.check("a request from a UE the cell still serves is signalled to the uplink scheduler and answered",
+        signalledFor(stays) == 1 && responsesTo(stays) == 1);
+c.check("a request from a UE that has left the cell since is not signalled to the uplink scheduler",
+        signalledFor(leaves) == 0, std::to_string(signalledFor(leaves)) + " signalled");
+c.check("...and gets no response", responsesTo(leaves) == 0, std::to_string(responsesTo(leaves)) + " responses");
+
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED
