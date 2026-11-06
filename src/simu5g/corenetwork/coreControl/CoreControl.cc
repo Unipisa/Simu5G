@@ -74,7 +74,7 @@ void CoreControl::initialUeMessage(MacNodeId legId, ConnectionControlEnb *bs, Se
     }
 }
 
-void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
+void CoreControl::receiveSignal(cComponent *source, simsignal_t signalID, intval_t nodeId, cObject *details)
 {
     Enter_Method_Silent("receiveSignal");
     MacNodeId id = MacNodeId(nodeId);

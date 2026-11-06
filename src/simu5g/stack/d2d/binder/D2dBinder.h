@@ -105,7 +105,7 @@ class D2dBinder : public cSimpleModule, public cListener
      * UE's map as well; a departed id left behind is later handed to getD2DCapability(),
      * which asserts that both of its arguments are registered UEs.
      */
-    void receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details) override;
+    void receiveSignal(cComponent *source, simsignal_t signalID, intval_t nodeId, cObject *details) override;
 
   public:
     /**

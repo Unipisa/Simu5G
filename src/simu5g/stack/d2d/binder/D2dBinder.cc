@@ -34,7 +34,7 @@ void D2dBinder::initialize()
     WATCH(d2dPeeringMap_);
 }
 
-void D2dBinder::receiveSignal(cComponent *source, simsignal_t signalID, long nodeId, cObject *details)
+void D2dBinder::receiveSignal(cComponent *source, simsignal_t signalID, intval_t nodeId, cObject *details)
 {
     ASSERT(signalID == Binder::nodeUnregisteredSignal_);
     MacNodeId id = MacNodeId(nodeId);
