@@ -1,0 +1,159 @@
+%description:
+
+Which cells an attached UE takes as its handover candidate
+(ConnectionControlUe::beaconReceived()).
+
+Simu5G models only the handover over X2 (Xn in NR): the source cell forwards
+the UE's data to the target over X2, and the target completes the handover
+towards the source over X2. A handover to a cell the serving cell has no X2
+link to can do neither, and when the UE is later served by the source cell
+again, the source forwards its first downlink packet over the missing link.
+So an attached UE does not take such a cell as its candidate, however strong
+its beacon; a cell with an X2 link to the serving cell is a candidate as
+before, and a UE that is not attached may pick any cell.
+
+Checked with the real beacon handling on a UE whose PHY is a stub that gives
+each cell's beacon a fixed RSSI: the serving cell 1 has an X2 link to cell 3
+and none to cell 2.
+
+%includes:
+#include <map>
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
+#include "simu5g/stack/phy/PhyUe.h"
+#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/rrc/ConnectionControlUe.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// A UE PHY that gives each cell's beacon a fixed RSSI. Never initialize()d.
+class BeaconRssiPhy : public PhyUe
+{
+  public:
+    std::map<MacNodeId, double> rssi;
+    double computeReceivedBeaconPacketRssi(AirFrame *frame, UserControlInfo *lteInfo) override { return rssi.at(lteInfo->getSourceId()); }
+};
+
+// The UE's connection control with the real beacon handling, attached to a
+// serving cell without the rest of the UE around it.
+class TestConnectionControl : public ConnectionControlUe
+{
+  public:
+    MacNodeId candidate() const { return candidateServingNodeId_; }
+    bool handoverEvaluationScheduled() const { return handoverStarter_->isScheduled(); }
+
+    void attach(MacNodeId cell, double rssi)
+    {
+        Enter_Method("attach");
+        servingNodeId_ = candidateServingNodeId_ = cell;
+        servingNodeRssi_ = candidateServingNodeRssi_ = rssi;
+        cancelEvent(handoverStarter_);
+    }
+    void detach()
+    {
+        Enter_Method("detach");
+        servingNodeId_ = candidateServingNodeId_ = NODEID_NONE;
+        servingNodeRssi_ = candidateServingNodeRssi_ = -999.0;
+        cancelEvent(handoverStarter_);
+    }
+    // A beacon from 'cell', as the PHY delivers it
+    void beaconFrom(MacNodeId cell)
+    {
+        Enter_Method("beaconFrom");
+        auto *frame = new AirFrame("beacon");
+        auto *lteInfo = new UserControlInfo();
+        lteInfo->setSourceId(cell);
+        beaconReceived(frame, lteInfo);
+    }
+
+  protected:
+    void initialize(int stage) override
+    {
+        if (stage == inet::INITSTAGE_LOCAL) {
+            binder_.reference(this, "binderModule", true);
+            nodeId_ = MacNodeId(1025);
+            enableHandover_ = true;
+            minRssi_ = -99.0;
+            hysteresisFactor_ = 0;  // no hysteresis
+            hysteresisThreshold_ = 0;
+            handoverStarter_ = new cMessage("handoverStarter");
+        }
+    }
+    void handleMessage(cMessage *msg) override {}  // the handover evaluation is not under test
+    void finish() override {}
+};
+Define_Module(TestConnectionControl);
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.rrc.ConnectionControlUe;
+
+simple TestConnectionControl extends ConnectionControlUe
+{
+    @class(TestConnectionControl);
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        connectionControl: TestConnectionControl;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.connectionControl.isNr = true
+*.connectionControl.macNodeId = 1025
+*.connectionControl.sessionType = "IPv4"
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+cModule *network = getSimulation()->getSystemModule();
+Binder *binder = check_and_cast<Binder *>(network->getSubmodule("binder"));
+auto *cc = check_and_cast<TestConnectionControl *>(network->getSubmodule("connectionControl"));
+BeaconRssiPhy phy;
+cc->setPhy(&phy);
+
+const MacNodeId serving = MacNodeId(1), noX2 = MacNodeId(2), withX2 = MacNodeId(3);
+binder->setX2PeerAddress(serving, withX2, inet::L3Address(inet::Ipv4Address("10.0.0.3")));
+phy.rssi[serving] = -80;
+phy.rssi[noX2] = -60;
+phy.rssi[withX2] = -60;
+
+cc->attach(serving, -80);
+cc->beaconFrom(noX2);
+c.check("an attached UE does not take a cell its serving cell has no X2 link to as its candidate, however strong",
+        cc->candidate() == serving && !cc->handoverEvaluationScheduled(),
+        "candidate " + std::to_string(num(cc->candidate())));
+
+cc->attach(serving, -80);
+cc->beaconFrom(withX2);
+c.check("...but takes a stronger cell its serving cell has an X2 link to",
+        cc->candidate() == withX2 && cc->handoverEvaluationScheduled());
+
+cc->detach();
+cc->beaconFrom(noX2);
+c.check("a UE that is not attached takes any cell as its candidate", cc->candidate() == noX2);
+
+cc->setPhy(nullptr);
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED
