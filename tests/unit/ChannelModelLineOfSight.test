@@ -219,12 +219,24 @@ c.expectValue("...and the carrier holds exactly the two links", (long long)atUe.
     evaluateDl();
     c.expectValue("what counts is how far an end is from where it was, not how far it went",
             drawn(ueModel) - before, 0);
+
+    // Both ends move, the base station by 30 m and the UE by 45 m: the
+    // farther-moved end decides, so the state is held (the sum of the two, 75 m,
+    // or their norm, 54 m, would decide it again).
+    const Coord enbFrom = enb.coord;
+    enb.coord = Coord(enbFrom.x - 30, enbFrom.y, enbFrom.z);
+    ue.coord = Coord(movedTo.x + 45, movedTo.y, movedTo.z);
+    before = drawn(ueModel);
+    evaluateDl();
+    c.expectValue("when both ends have moved, the farther-moved one decides: 30 m and 45 m hold the state",
+            drawn(ueModel) - before, 0);
+    enb.coord = enbFrom;
 }
 
 c.summary();
 
 %contains: stdout
-modelchecks=16 modelfailures=0
+modelchecks=17 modelfailures=0
 
 %not-contains: stdout
 FAILED
