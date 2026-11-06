@@ -1,0 +1,185 @@
+%description:
+
+Which slot a downlink CQI measures the other cells' interference in.
+
+A data reception that ends at a slot boundary takes the interference of the
+slot just completed. A CQI is computed whenever a UE's report is due, at a
+boundary or between two, and it takes the interference of the slot completed
+last: at a boundary the one that has just ended, not the one starting at the
+same instant -- whose transmissions exist or not depending on whether the
+interfering schedulers have already run in that instant -- and between two
+boundaries still the one completed last, not the one under way. Its value on
+a band is then what a reception of that slot gets there.
+
+No other test computes a CQI with an interferer, so a CQI that measured the
+slot under way, the transmissions of the current instant, or slots of the
+1 ms TTI instead of the carrier's would pass them.
+
+Checked on a carrier of numerology 2 (0.25 ms slots), with the instants off
+the 1 ms grid: an interfering base station sends on bands 0 and 1 in the slot
+[0.50 ms, 0.75 ms) and on band 2 in the next one, and the serving model
+computes the UE's CQI interference at, and between, the boundaries around
+them. Every random ingredient is off, so each interference value is one
+number.
+
+%includes:
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// the protected downlink interference computation of a channel model
+struct DlInterferenceAccess : StochasticChannelModel
+{
+    static auto computePtr() { return &DlInterferenceAccess::computeDownlinkInterference; }
+};
+
+// the other cells' DL interference at the UE, per band, as the model computes it for a CQI or for a reception on the given bands
+static std::vector<double> dlInterference(StochasticChannelModel *model, MacNodeId servingId, IRadioEndpoint *ue, bool isCqi, const RbMap& rbmap)
+{
+    std::vector<double> interference(model->getNumBands(), 0.0);
+    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), isCqi, model->getCarrierFrequency(), rbmap, &interference);
+    return interference;
+}
+
+// a DL data transmission of the base station on the given bands, for one slot, starting now
+static CellularTransmission *dlData(IRadioEndpoint *bs, GHz carrier, std::vector<Band> bands, simtime_t slot)
+{
+    auto *transmission = new CellularTransmission();
+    transmission->transmitter = bs;
+    transmission->sourceId = bs->getMacNodeId();
+    transmission->cellId = bs->getMacNodeId();
+    transmission->direction = DL;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = carrier;
+    for (Band b : bands)
+        transmission->grantedBlocks[MACRO][b] = 1;
+    transmission->txPower = bs->getTxPwr();
+    transmission->startPosition = bs->getCoord();
+    transmission->startTime = simTime();
+    transmission->duration = slot;
+    return transmission;
+}
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        servingModel: Tr38901ChannelModel;
+        interfererModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[0].numerologyIndex = 2
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# one number per interference value
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = true
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *servingModel = harnessModule<StochasticChannelModel>(this, "servingModel");
+auto *interfererModel = harnessModule<StochasticChannelModel>(this, "interfererModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const GHz carrier = servingModel->getCarrierFrequency();
+const simtime_t slot = SimTime(250, SIMTIME_US);
+
+StubEndpoint servingBs, interferingBs, ue;
+servingModel->setPhy(&ue);
+interfererModel->setPhy(&interferingBs);
+servingBs.nodeId = MacNodeId(1);
+interferingBs.nodeId = MacNodeId(2);
+ue.nodeId = MacNodeId(1025);
+servingBs.coord = inet::Coord(0, 0, 25);
+interferingBs.coord = inet::Coord(400, 0, 25);
+ue.coord = inet::Coord(150, 30, 1.5);
+servingBs.txPower = interferingBs.txPower = 40.0;
+ue.txPower = 23.0;
+servingBs.channelModels[carrier] = servingModel;
+interferingBs.channelModels[carrier] = interfererModel;
+ue.channelModels[carrier] = servingModel;
+StubRadioRegistration servingRadio(medium, servingBs.nodeId, &servingBs);
+StubRadioRegistration interferingRadio(medium, interferingBs.nodeId, &interferingBs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+
+RbMap everyBand;
+for (Band b = 0; b < servingModel->getNumBands(); b++)
+    everyBand[MACRO][b] = 1;
+auto cqi = [&] () { return dlInterference(servingModel, servingBs.nodeId, &ue, true, everyBand); };
+auto reception = [&] () { return dlInterference(servingModel, servingBs.nodeId, &ue, false, everyBand); };
+auto quiet = [] (const std::vector<double>& v) { for (double x : v) if (x != 0) return false; return true; };
+
+// 0.50 ms, a boundary: the interferer's transmission of [0.50 ms, 0.75 ms), on bands 0 and 1
+wait(2 * slot);
+medium->addTransmission(dlData(&interferingBs, carrier, {0, 1}, slot));
+auto v = cqi();
+c.check("at a boundary, a CQI does not see the slot that starts then", quiet(v), show(v));
+
+// 0.625 ms, between two boundaries
+wait(slot / 2);
+v = cqi();
+c.check("between two boundaries, a CQI does not see the slot under way", quiet(v), show(v));
+
+// 0.75 ms, the next boundary: the interferer's next transmission, on band 2, then the CQI
+wait(slot / 2);
+medium->addTransmission(dlData(&interferingBs, carrier, {2}, slot));
+auto atBoundary = cqi();
+c.check("at the next boundary, a CQI sees the slot just completed, on the bands it occupied",
+        atBoundary[0] > 0 && atBoundary[1] > 0 && atBoundary[2] == 0 && atBoundary[3] == 0, show(atBoundary));
+auto received = reception();
+c.check("...with the interference a reception of that slot gets there",
+        received[0] == atBoundary[0] && received[1] == atBoundary[1], show(received));
+
+// 0.875 ms, between two boundaries: still the slot completed last, [0.50 ms, 0.75 ms)
+wait(slot / 2);
+v = cqi();
+c.check("for the whole of the next slot, a CQI measures the slot completed last", v == atBoundary, show(v));
+
+c.summary();
+
+%contains: stdout
+modelchecks=5 modelfailures=0
+
+%not-contains: stdout
+FAILED
