@@ -259,9 +259,19 @@ wait(0.010);
             cqiView == decoderView,
             "cqi=" + std::to_string(cqiView) + " decoder=" + std::to_string(decoderView));
 
-    double uplinkView = bs->jakesFading(bsProbe.jakesMap(), LinkKey(ueId, MacNodeId(1)), 3.0, 4);
-    c.check("...and the uplink is the same realization: a link has one, whichever direction",
-            uplinkView == decoderView);
+    // The uplink of the same pair, received at the base station through the
+    // same entry point: it draws no fading paths of its own either.
+    UserControlInfo ul = controlInfo(UL, DATAPKT, ueId, MacNodeId(1), ueEndpoint.coord);
+    size_t entries = bsProbe.jakesMap().size();
+    before = bs->getRNG(0)->getNumbersDrawn();
+    bs->getRSRP(bsProbe.linkFor(&ul), 30.0);
+    long long uplinkDraws = bs->getRNG(0)->getNumbersDrawn() - before;
+    before = bs->getRNG(0)->getNumbersDrawn();
+    bs->getRSRP(bsProbe.linkFor(&ul), 30.0);
+    long long uplinkRepeatDraws = bs->getRNG(0)->getNumbersDrawn() - before;
+    c.expectValue("...and the uplink is the same realization: a link has one, whichever direction",
+            uplinkDraws, uplinkRepeatDraws);
+    c.check("...and no new entry", bsProbe.jakesMap().size() == entries && bsProbe.jakesMap().count(link) == 1);
 }
 {
     // A background UE has no radio on the medium; its realization lives in the
@@ -310,7 +320,7 @@ wait(0.010);
 c.summary();
 
 %contains: stdout
-modelchecks=21 modelfailures=0
+modelchecks=22 modelfailures=0
 
 %not-contains: stdout
 FAILED
