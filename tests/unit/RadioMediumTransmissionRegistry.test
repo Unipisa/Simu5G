@@ -1,0 +1,178 @@
+%description:
+
+The radio medium's transmission registry: which transmissions are a slot's.
+
+Every interference computation asks the medium for the transmissions of one
+slot of one carrier: a data reception for those of the slot just completed, a
+CQI for those of the slot completed last. The medium answers with the data
+transmissions that overlap the slot -- started before its end, ended after its
+start -- in the order they were created, and keeps the transmissions of the
+slot before the newest one, so that the slot completed last can still be
+asked about while the next one is under way. A transmission that never ends
+(an external cell occupying every band) belongs to every slot.
+
+No other test reaches the registry: the unit tests of the channel models
+register nothing, and the physics tests' interferers are steady. An off-by-one
+at either end of the slot, a lost carrier or frame-type filter, or a pruning
+that drops the slot completed last would pass them.
+
+Checked on a carrier with 1 ms slots, with transmissions registered at slot
+boundaries as the radios register them.
+
+A deviation is pinned here: a transmission registered between slot boundaries
+-- a beacon, which takes no air time, when the beacon interval is not a
+multiple of the slot -- prunes every transmission that ended before it,
+including those of the slot completed last. RadioMediumTransmissionRegistryOffGrid
+states what the medium should keep, as an expected failure.
+
+%includes:
+#include <algorithm>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static const GHz carrier1 = GHz(2.0);
+static const GHz carrier2 = GHz(3.5);
+
+// a transmission starting now
+static CellularTransmission *transmissionNow(MacNodeId source, Direction dir, LtePhyFrameType type, GHz carrier, simtime_t duration)
+{
+    auto *transmission = new CellularTransmission();
+    transmission->sourceId = source;
+    transmission->direction = dir;
+    transmission->frameType = type;
+    transmission->carrierFrequency = carrier;
+    transmission->startTime = simTime();
+    transmission->duration = duration;
+    return transmission;
+}
+
+// the ids of the transmissions, in the order given
+static std::vector<long> idsOf(const std::vector<const CellularTransmission *>& transmissions)
+{
+    std::vector<long> ids;
+    for (auto t : transmissions)
+        ids.push_back(t->id);
+    return ids;
+}
+
+static std::string show(const std::vector<long>& ids)
+{
+    std::string s = "[";
+    for (long id : ids)
+        s += (s.size() > 1 ? " " : "") + std::to_string(id);
+    return s + "]";
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+auto *medium = check_and_cast<CellularRadioMedium *>(getParentModule()->getSubmodule("radioMedium"));
+const MacNodeId bs1 = MacNodeId(1), bs2 = MacNodeId(2), ue = MacNodeId(1025), d2dUe = MacNodeId(1026);
+
+// t = 0: an external cell's transmission on every band, which never ends
+auto *forever = transmissionNow(bs2, DL, DATAPKT, carrier1, SimTime::getMaxTime());
+medium->addTransmission(forever);
+
+// slot [1 ms, 2 ms): DL and UL data, a D2D frame, a feedback frame, and data on another carrier
+wait(slot);
+auto *dl = transmissionNow(bs1, DL, DATAPKT, carrier1, slot);
+auto *ul = transmissionNow(ue, UL, DATAPKT, carrier1, slot);
+auto *d2d = transmissionNow(d2dUe, D2D, DATAPKT, carrier1, slot);
+auto *feedback = transmissionNow(ue, UL, FEEDBACKPKT, carrier1, slot);
+auto *otherCarrier = transmissionNow(bs1, DL, DATAPKT, carrier2, slot);
+for (auto t : {dl, ul, d2d, feedback, otherCarrier})
+    medium->addTransmission(t);
+const std::vector<long> slot1 = {forever->id, dl->id, ul->id, d2d->id};
+c.check("transmissions get their ids in the order they are added",
+        forever->id < dl->id && dl->id < ul->id && ul->id < d2d->id && d2d->id < feedback->id && feedback->id < otherCarrier->id);
+
+// slot [2 ms, 3 ms): the next DL transmission, added as the slot starts
+wait(slot);
+auto *next = transmissionNow(bs1, DL, DATAPKT, carrier1, slot);
+medium->addTransmission(next);
+
+auto during = [&] (GHz carrier, simtime_t from, simtime_t to) { return idsOf(medium->getDataTransmissionsDuring(carrier, from, to)); };
+auto uplinkDuring = [&] (GHz carrier, simtime_t from, simtime_t to) { return idsOf(medium->getUplinkTransmissionsDuring(carrier, from, to)); };
+
+std::vector<long> got = during(carrier1, slot, 2 * slot);
+c.check("a slot's data transmissions are the ones lasting it, in creation order", got == slot1, show(got));
+c.check("...not the feedback frame of the slot",
+        std::find(got.begin(), got.end(), feedback->id) == got.end());
+c.check("...nor the transmission that starts as the slot ends", std::find(got.begin(), got.end(), next->id) == got.end());
+c.check("...nor the data of another carrier", std::find(got.begin(), got.end(), otherCarrier->id) == got.end());
+got = during(carrier2, slot, 2 * slot);
+c.check("the other carrier has its own transmissions", got == std::vector<long>{otherCarrier->id}, show(got));
+
+got = during(carrier1, 0, slot);
+c.check("a transmission is in no slot before the one it starts in", got == std::vector<long>{forever->id}, show(got));
+got = during(carrier1, 2 * slot, 3 * slot);
+c.check("...and in no slot after the one it ends in", got == (std::vector<long>{forever->id, next->id}), show(got));
+
+got = uplinkDuring(carrier1, slot, 2 * slot);
+c.check("a slot's uplink transmissions are its UL and D2D data, in creation order", got == (std::vector<long>{ul->id, d2d->id}), show(got));
+
+// slot [3 ms, 4 ms) begins: the slot completed last, [2 ms, 3 ms), is kept
+wait(slot);
+auto *third = transmissionNow(bs1, DL, DATAPKT, carrier1, slot);
+medium->addTransmission(third);
+wait(slot / 2);
+got = during(carrier1, 2 * slot, 3 * slot);
+c.check("the slot completed last is kept while the next one is under way", got == (std::vector<long>{forever->id, next->id}), show(got));
+
+// slot [4 ms, 5 ms) begins: [1 ms, 2 ms) is two slots back and is pruned
+wait(slot / 2);
+medium->addTransmission(transmissionNow(bs1, DL, DATAPKT, carrier1, slot));
+got = during(carrier1, slot, 2 * slot);
+c.check("a slot two slots back is gone, but for the transmission that never ends", got == std::vector<long>{forever->id}, show(got));
+got = during(carrier1, 5000 * slot, 5001 * slot);
+c.check("the transmission that never ends is in every slot", got == std::vector<long>{forever->id}, show(got));
+
+// between two slot boundaries, at 4.5 ms: a beacon, which takes no air time
+wait(slot / 2);
+medium->addTransmission(transmissionNow(bs1, DL, BEACONPKT, carrier1, 0));
+got = during(carrier1, 3 * slot, 4 * slot);
+c.check("PINNED DEFECT: a transmission between slot boundaries prunes the slot completed last",
+        got == std::vector<long>{forever->id}, show(got));
+
+c.summary();
+
+%contains: stdout
+modelchecks=13 modelfailures=0
+
+%not-contains: stdout
+FAILED

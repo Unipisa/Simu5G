@@ -1,0 +1,104 @@
+%description:
+
+A defect of the radio medium's transmission registry, recorded rather than
+fixed: a transmission registered between two slot boundaries prunes the slot
+completed last.
+
+When a transmission is added, the medium drops every transmission of its
+carrier that ended before the slot preceding it, which it takes as starting
+one of the new transmission's own durations before its start. For a
+transmission of one slot added at a slot boundary that is the slot completed
+last, which is kept. A beacon takes no air time: added between two
+boundaries -- whenever the beacon interval is not a multiple of the slot --
+it keeps nothing that ended before itself, so the transmissions of the slot
+completed last are gone, and a CQI computed in the rest of the slot sees none
+of their interference.
+
+The check below states what the medium should keep: the slot completed last,
+whatever is added in the slot under way. RadioMediumTransmissionRegistry pins
+what it does today. When the medium keeps the slot, update that pin and drop
+the %expected-failure line here.
+
+%expected-failure: a transmission between slot boundaries prunes the slot completed last
+
+%includes:
+#include <algorithm>
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static const GHz carrier = GHz(2.0);
+
+// a transmission starting now
+static CellularTransmission *transmissionNow(MacNodeId source, LtePhyFrameType type, simtime_t duration)
+{
+    auto *transmission = new CellularTransmission();
+    transmission->sourceId = source;
+    transmission->direction = DL;
+    transmission->frameType = type;
+    transmission->carrierFrequency = carrier;
+    transmission->startTime = simTime();
+    transmission->duration = duration;
+    return transmission;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+auto *medium = check_and_cast<CellularRadioMedium *>(getParentModule()->getSubmodule("radioMedium"));
+const MacNodeId bs = MacNodeId(1);
+
+// slot [1 ms, 2 ms), then slot [2 ms, 3 ms), each with a DL data transmission added as it starts
+wait(slot);
+auto *completedLast = transmissionNow(bs, DATAPKT, slot);
+medium->addTransmission(completedLast);
+wait(slot);
+medium->addTransmission(transmissionNow(bs, DATAPKT, slot));
+
+// at 2.5 ms, a beacon
+wait(slot / 2);
+medium->addTransmission(transmissionNow(bs, BEACONPKT, 0));
+
+auto got = medium->getDataTransmissionsDuring(carrier, slot, 2 * slot);
+c.check("the slot completed last is kept, whatever is added in the slot under way",
+        std::find(got.begin(), got.end(), completedLast) != got.end());
+
+c.summary();
+
+%contains: stdout
+modelchecks=1 modelfailures=0
+
+%not-contains: stdout
+FAILED
