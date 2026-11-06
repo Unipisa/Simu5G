@@ -87,9 +87,10 @@ html_title = 'Simu5G: Simulator for 5G New Radio Networks'
 omnetpp_nav_nowrap = ['/neddoc/', '/api/']
 # the other tabs are single pages, which need no menu
 omnetpp_nav_no_menu = ['Home', 'FAQ']
-# the commit of the website that the pages are built from, in the footer; with a '+' if the tree has uncommitted changes
+# the commit of the website that the pages are built from, in the footer; with a '+' if tracked files have
+# uncommitted changes (untracked ones are not counted: the output of the build, _site/, is among them)
 omnetpp_commit = os.popen('git rev-parse --short=10 HEAD').read().strip()
-if omnetpp_commit and os.popen('git status --porcelain').read():
+if omnetpp_commit and os.popen('git status --porcelain --untracked-files=no').read():
     omnetpp_commit += '+'
 omnetpp_commit = omnetpp_commit or None
 
