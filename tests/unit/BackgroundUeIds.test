@@ -1,0 +1,101 @@
+%description:
+
+The node ids of background UEs, across background traffic managers.
+
+A background UE has no node of its own: its traffic manager (one per
+background cell, and one per base station that carries background traffic)
+maps the UE's index to a node id and back. The id is what everything else
+keys the UE by -- the per-link channel state, the uplink transmissions it is
+recorded in -- so two background UEs of different managers must not share
+one: they are different transmitters at different positions, and a shared id
+makes them share their channel state.
+
+Checked with two background cells of three background UEs each: every
+manager maps its indices to ids and back, and no id is used by both.
+
+%includes:
+#include <set>
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.BackgroundCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bgCell[2]: BackgroundCell;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 10ms
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.bgCell[*].bgScheduler.numBands = 6
+*.bgCell[*].bgTrafficGenerator.numBgUes = 3
+**.mobility.initFromDisplayString = false
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxZ = 30m
+*.bgCell[0].mobility.initialX = 250m
+*.bgCell[1].mobility.initialX = 750m
+*.bgCell[*].mobility.initialY = 500m
+*.bgCell[*].mobility.initialZ = 25m
+*.bgCell[*].bgTrafficGenerator.bgUE[*].mobility.initialX = 500m
+*.bgCell[*].bgTrafficGenerator.bgUE[*].mobility.initialY = 400m
+*.bgCell[*].bgTrafficGenerator.bgUE[*].mobility.initialZ = 1.5m
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+cModule *network = getSimulation()->getSystemModule();
+const int numBgUes = 3;
+
+std::set<MacNodeId> seen;
+bool roundTrip = true, disjoint = true;
+std::string detail;
+for (int cell = 0; cell < 2; cell++) {
+    auto *manager = check_and_cast<IBackgroundTrafficManager *>(
+            network->getSubmodule("bgCell", cell)->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
+    for (int i = 0; i < numBgUes; i++) {
+        MacNodeId id = manager->getBgUeId(i);
+        if (manager->getBgUeIndex(id) != i)
+            roundTrip = false;
+        if (!seen.insert(id).second) {
+            disjoint = false;
+            detail += " bgCell[" + std::to_string(cell) + "] bgUE[" + std::to_string(i) + "]=" + std::to_string(num(id));
+        }
+    }
+}
+c.check("each manager maps a background UE's index to its id and back", roundTrip);
+c.check("no node id is used by background UEs of two managers", disjoint, "shared:" + detail);
+
+c.summary();
+
+%contains: stdout
+modelchecks=2 modelfailures=0
+
+%not-contains: stdout
+FAILED
