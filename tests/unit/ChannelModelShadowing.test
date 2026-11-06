@@ -287,6 +287,22 @@ const inet::Coord bsPos(0, 0, 25);
             reverse == updated && bs->getRNG(0)->getNumbersDrawn() == drawn
             && bsProbe.shadowingMap().count(key) == 1);
 }
+{
+    // Both ends move past the correlation distance, by 60 m and 80 m: the
+    // farther-moved end decides, so the recurrence takes space = 80 m (not the
+    // nearer end's 60 m, their sum of 140 m or the 100 m of their norm).
+    const MacNodeId tx = MacNodeId(1112), rx = MacNodeId(1113);
+    const inet::Coord txPos(500, 100, 1.5), rxPos(520, 100, 1.5);
+    const inet::Coord txMoved(440, 100, 1.5), rxMoved(600, 100, 1.5);
+    double first = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(tx, txPos, rx, rxPos));
+    double sigma = pathLoss->getShadowingStdDev(d3D, d2D, false);
+    RngSnapshot snapshot(bs);
+    double updated = bs->computeShadowing(d3D, d2D, false, d2dLinkBetween(tx, txMoved, rx, rxMoved));
+    double a = exp(-0.5 * (80.0 / dcorr));
+    double expected = a * first + sqrt(1 - pow(a, 2)) * omnetpp::normal(snapshot.rng(), 0, sigma);
+    c.expectNear("PINNED DEFECT: when both ends have moved, the farther-moved one decides: the recurrence takes its 80 m",
+            updated, expected, 0);
+}
 
 //
 // --- whose value: per link, seen from either end ---
@@ -361,7 +377,7 @@ const inet::Coord bsPos(0, 0, 25);
 c.summary();
 
 %contains: stdout
-modelchecks=25 modelfailures=0
+modelchecks=26 modelfailures=0
 
 %not-contains: stdout
 FAILED
