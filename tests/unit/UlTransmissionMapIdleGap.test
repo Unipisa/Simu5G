@@ -1,0 +1,108 @@
+%description:
+
+The Binder's uplink transmission map is rotated once per slot, also after an
+idle gap.
+
+The map keeps, per carrier, the uplink transmissions of the current slot and
+of the previous one. Every eNB MAC asks the Binder to rotate it at each of
+its time steps, and the Binder rotates it only at the first of those calls in
+a time step (getLastUpdateUlTransmissionInfo()), so that what one cell stores
+in the slot is not shifted away by another cell's call later in the same
+slot. When no uplink transmission has been stored for more than two slots,
+there is nothing to rotate, but the call still counts as the time step's
+update.
+
+Checked with two cells ticking in the same slot after an idle gap: the first
+cell's call finds nothing to rotate, a transmission is stored, and the second
+cell's call must leave it in the current-slot map, where the decoding of that
+slot finds it at the slot's end.
+
+%includes:
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// Whether the map has a transmission of 'ue' on 'band'.
+static bool holds(const std::vector<std::vector<UeAllocationInfo>> *map, unsigned int band, MacNodeId ue)
+{
+    if (map == nullptr || band >= map->size())
+        return false;
+    for (const auto& info : (*map)[band])
+        if (info.nodeId == ue)
+            return true;
+    return false;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+Binder *binder = check_and_cast<Binder *>(getSimulation()->getSystemModule()->getSubmodule("binder"));
+
+const GHz carrier = GHz(2.0);
+binder->registerCarrier(carrier, 6, 0);  // 1 ms slots
+const MacNodeId ueA = MacNodeId(1025), ueB = MacNodeId(1026);
+
+// What an eNB MAC does at each of its time steps.
+auto macTick = [&] {
+    if (binder->getLastUpdateUlTransmissionInfo() < simTime())
+        binder->initAndResetUlTransmissionInfo();
+};
+auto store = [&](MacNodeId ue) {
+    RbMap rbMap;
+    rbMap[MACRO][0] = 1;
+    binder->storeUlTransmissionMap(carrier, MACRO, rbMap, ue, MacCellId(1), static_cast<PhyBase *>(nullptr), UL);
+};
+
+// One transmission at 1 ms, then an idle gap: the MAC ticks every slot up to 9 ms.
+wait(SimTime(1, SIMTIME_MS));
+macTick();
+store(ueA);
+for (int ms = 2; ms <= 9; ms++) {
+    wait(SimTime(1, SIMTIME_MS));
+    macTick();
+}
+
+// t = 10 ms: two cells tick in the same slot, and a transmission is stored in between.
+wait(SimTime(1, SIMTIME_MS));
+macTick();
+store(ueB);
+macTick();
+c.check("a transmission stored after the first update of the slot stays in the current-slot map",
+        holds(binder->getUlTransmissionMap(carrier, CURR_TTI), 0, ueB));
+
+// t = 11 ms: the slot has ended, and the transmission is the previous slot's.
+wait(SimTime(1, SIMTIME_MS));
+macTick();
+c.check("...and at the next slot it is in the previous-slot map",
+        holds(binder->getUlTransmissionMap(carrier, PREV_TTI), 0, ueB));
+
+c.summary();
+
+%contains: stdout
+modelchecks=2 modelfailures=0
+
+%not-contains: stdout
+FAILED
