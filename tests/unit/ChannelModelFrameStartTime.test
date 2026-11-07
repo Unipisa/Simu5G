@@ -1,0 +1,244 @@
+%description:
+
+When a received frame is faded: at the instant it began to arrive, not at the
+instant it is decoded.
+
+Jakes fading is a function of time, and a frame is decoded at the end of its
+transmission, one slot after it began. The receiving radio stamps the frame
+with the start of its reception (AirFrame::receptionStartTime), and every
+entry point that evaluates a received frame -- the DL/UL data path's
+getRSRP() and getSINR(), and the D2D path's getRSRP_D2D() and getSINR_D2D()
+-- evaluates the frame's link at that stamp. So the value of a reception does
+not depend on the slot length or on when it is decoded.
+
+Other tests grade the fading at a start time they pass in, or evaluate a link
+they built themselves; a frame-based entry point that left the link at the
+decoding instant would pass them.
+
+Checked with a moving receiver (DL) and a moving D2D transmitter, 30 m/s at
+3.5 GHz, so the fading moves by a measurable amount within a quarter of a
+millisecond. Every other random ingredient and every interference is off. A
+frame stamped t0 and decoded at t0 + 0.25 ms (the end of a numerology-2 slot)
+has to give exactly the value of the model's own link evaluated with start
+time t0, and differ from the value at the decoding instant. A frame with no
+stamp (a what-if) is evaluated at the decoding instant.
+
+%includes:
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/d2d/phy/channelmodel/D2dChannelModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+// the largest per-band difference of two vectors of the same size
+static double maxDiff(const std::vector<double>& a, const std::vector<double>& b)
+{
+    double d = 0;
+    for (size_t i = 0; i < a.size() && i < b.size(); i++)
+        d = std::max(d, std::fabs(a[i] - b[i]));
+    return d;
+}
+
+// The D2D model's own link builder, which is protected. Never instantiated:
+// see ChannelModelProbe for the technique.
+struct D2dLinkAccess : D2dChannelModel
+{
+    static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        ueModel: Tr38901ChannelModel;
+        d2dModel: Tr38901D2dChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Jakes fading is the only random ingredient
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = true
+**.fadingType = "JAKES"
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+**.d2dInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *ueModel = harnessModule<StochasticChannelModel>(this, "ueModel");
+auto *d2dModel = harnessModule<D2dChannelModel>(this, "d2dModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const GHz carrier = ueModel->getCarrierFrequency();
+
+// a base station, a UE that receives, and a D2D peer that transmits to the UE
+StubEndpoint bs, ue, peer;
+ueModel->setPhy(&ue);
+d2dModel->setPhy(&ue);
+bs.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+peer.nodeId = MacNodeId(1026);
+bs.coord = inet::Coord(0, 0, 25);
+ue.coord = inet::Coord(100, 20, 1.5);
+peer.coord = inet::Coord(130, 60, 1.5);
+bs.txPower = 40.0;
+ue.txPower = 23.0;
+peer.txPower = 23.0;
+ue.speed = 30.0;     // m/s: the DL link's mobile end
+peer.speed = 30.0;   // m/s: the D2D link's mobile end
+bs.channelModels[carrier] = ueModel;
+ue.channelModels[carrier] = ueModel;
+StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration peerRadio(medium, peer.nodeId, &peer);
+ChannelModelProbe ueProbe(ueModel);
+
+RbMap bands;
+for (Band b = 0; b < ueModel->getNumBands(); b++)
+    bands[MACRO][b] = 1;
+
+const double minDiffDb = 0.01;
+
+// the frame began to arrive at t0 and is decoded one numerology-2 slot later
+wait(SimTime(10, SIMTIME_MS));
+const simtime_t t0 = simTime();
+wait(SimTime(250, SIMTIME_US));
+
+// a frame as the UE's radio passes it up: stamped with where and when it began to arrive
+auto receivedFrame = [&] () {
+    auto *frame = new AirFrame();
+    frame->setArrivalPosition(ue.coord);
+    frame->setReceptionStartTime(t0);
+    return frame;
+};
+
+//
+// DL data
+//
+{
+    UserControlInfo info;
+    info.setDirection(DL);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(bs.nodeId);
+    info.setDestId(ue.nodeId);
+    info.setCoord(bs.coord);
+    info.setTxPower(bs.txPower);
+    info.setCarrierFrequency(carrier);
+    info.setGrantedBlocks(bands);
+
+    AirFrame *frame = receivedFrame();
+    std::vector<double> rsrp = ueModel->getRSRP(frame, &info);
+    std::vector<double> sinr = ueModel->getSINR(frame, &info);
+    delete frame;
+
+    RadioLink atStart = ueProbe.linkFor(&info);
+    atStart.startTime = t0;
+    RadioLink atNow = atStart;
+    atNow.startTime = simTime();
+    std::vector<double> rsrpAtStart = ueModel->getRSRP(atStart, bs.txPower);
+    std::vector<double> rsrpAtNow = ueModel->getRSRP(atNow, bs.txPower);
+    std::vector<double> sinrAtStart = ueModel->getSINR(atStart, &info, rsrpAtStart);
+
+    c.check("DL: the fading at the frame's start and at its decoding differ measurably",
+            maxDiff(rsrpAtStart, rsrpAtNow) > minDiffDb,
+            show(rsrpAtStart) + " / " + show(rsrpAtNow));
+    c.check("DL: a received frame's RSRP is that at its reception start", rsrp == rsrpAtStart, show(rsrp));
+    c.check("DL: a received frame's SINR is that at its reception start", sinr == sinrAtStart,
+            show(sinr) + " / " + show(sinrAtStart));
+
+    AirFrame whatIf;
+    c.check("DL: a frame with no reception start is evaluated now", ueModel->getRSRP(&whatIf, &info) == rsrpAtNow);
+}
+
+//
+// D2D
+//
+{
+    UserControlInfo info;
+    info.setDirection(D2D);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(peer.nodeId);
+    info.setDestId(ue.nodeId);
+    info.setCoord(peer.coord);
+    info.setD2dTxPower(peer.txPower);
+    info.setCarrierFrequency(carrier);
+    info.setGrantedBlocks(bands);
+
+    AirFrame *frame = receivedFrame();
+    std::vector<double> rsrp = d2dModel->getRSRP_D2D(frame, &info, ue.nodeId, ue.coord);
+    std::vector<double> sinr = d2dModel->getSINR_D2D(frame, &info, ue.nodeId, ue.coord, bs.nodeId);
+    // no RSRP captured (one-to-many with the Distance capture factor): the desired signal is computed for the SINR
+    std::vector<double> sinrUncaptured = d2dModel->getSINR_D2D(frame, &info, ue.nodeId, ue.coord, bs.nodeId, std::vector<double>());
+    delete frame;
+
+    RadioLink atStart = (d2dModel->*D2dLinkAccess::d2dLinkPtr())(peer.nodeId, peer.coord, ue.nodeId, ue.coord);
+    atStart.startTime = t0;
+    atStart.cellId = bs.nodeId;
+    RadioLink atNow = atStart;
+    atNow.startTime = simTime();
+    std::vector<double> rsrpAtStart = d2dModel->getRSRP(atStart, peer.txPower);
+    std::vector<double> rsrpAtNow = d2dModel->getRSRP(atNow, peer.txPower);
+    std::vector<double> sinrAtStart = d2dModel->getSINR(atStart, &info, rsrpAtStart);
+
+    c.check("D2D: the fading at the frame's start and at its decoding differ measurably",
+            maxDiff(rsrpAtStart, rsrpAtNow) > minDiffDb,
+            show(rsrpAtStart) + " / " + show(rsrpAtNow));
+    c.check("D2D: a received frame's RSRP is that at its reception start", rsrp == rsrpAtStart, show(rsrp));
+    c.check("D2D: a received frame's SINR is that at its reception start", sinr == sinrAtStart,
+            show(sinr) + " / " + show(sinrAtStart));
+    c.check("D2D: ...also when the SINR computes the desired signal itself", sinrUncaptured == sinrAtStart,
+            show(sinrUncaptured));
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=8 modelfailures=0
+
+%not-contains: stdout
+FAILED
