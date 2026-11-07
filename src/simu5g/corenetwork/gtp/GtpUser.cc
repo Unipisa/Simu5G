@@ -163,7 +163,7 @@ void GtpUser::handleMessage(cMessage *msg)
         EV << "GtpUser::handleMessage - message from trafficFlowFilter" << endl;
 
         // forward the encapsulated IP datagram
-        handleFromTrafficFlowFilter(check_and_cast<Packet *>(msg));
+        tunnelDatagram(check_and_cast<Packet *>(msg));
     }
     else if (msg->arrivedOn("socketIn")) {
         EV << "GtpUser::handleMessage - message from UDP layer" << endl;
@@ -175,7 +175,7 @@ void GtpUser::handleMessage(cMessage *msg)
     }
 }
 
-void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
+void GtpUser::tunnelDatagram(Packet *datagram)
 {
     /*
      * when we get here, it means that the packet is entering the core network and it may need to be tunneled to some destination,
@@ -207,7 +207,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
     // at a base station: the UE the datagram came from over the air (see Ip2Nic)
     MacNodeId sourceUe = isBaseStation(ownerType_) ? datagram->removeTag<UplinkUeTag>()->getUeNodeId() : NODEID_NONE;
 
-    EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with tft[" << tft << "] qfi[" << qfi << "]" << endl;
+    EV << "GtpUser::tunnelDatagram - Received a tftMessage with tft[" << tft << "] qfi[" << qfi << "]" << endl;
 
     // the downlink of a UE's session goes on the session's tunnel, which the path
     // switch keeps pointing at the base station the downlink enters the RAN at
@@ -228,7 +228,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     if (tft == TFT_REMOVED_DESTINATION) {
         // the destination has been removed from the simulation. Delete datagram
-        EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Deleting packet." << endl;
+        EV << "GtpUser::tunnelDatagram - Destination has been removed from the simulation. Deleting packet." << endl;
         delete datagram;
         return;
     }
@@ -258,7 +258,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         if (tft == TFT_EXTERNAL_DESTINATION) { // send to the gateway
             if (gwAddress_.isUnspecified())
                 throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
-            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
+            EV << "GtpUser::tunnelDatagram - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
             // a base station sends into the uplink tunnel of the UE's session, whose
             // anchor is the gateway; a MEC host's UPF relays traffic of no session
@@ -275,7 +275,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             L3Address destAddr = datagram->getTag<IpHeaderFieldsTag>()->getDestAddress();
 
             // retrieve the address of the UPF included within the MEC host
-            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
+            EV << "GtpUser::tunnelDatagram - tunneling to " << destAddr.str() << endl;
             tunnelPeerAddress = binder_->getUpfFromMecHost(destAddr);
             // a base station sends into the UE's session's uplink tunnel to the MEC
             // host; a UPF relays traffic of no session
@@ -294,7 +294,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             // an Ethernet frame enters the session without its FCS (TS 23.501 5.6.10.2)
             if (ethernetFrame)
                 datagram->removeAtBack<EthernetFcs>(ETHER_FCS_BYTES);
-            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << *dlTunnel << endl;
+            EV << "GtpUser::tunnelDatagram - tunneling to " << *dlTunnel << endl;
             tunnelPeerAddress = dlTunnel->address;
             teid = dlTunnel->teid;
             if (ownerType_ != PGW)

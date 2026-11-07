@@ -96,8 +96,10 @@ class GtpUser : public cSimpleModule
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
 
-    // receive an IP Datagram from the traffic filter, encapsulates it in a GTP-U packet then forwards it to the proper next hop
-    void handleFromTrafficFlowFilter(inet::Packet *datagram);
+    // a datagram (IP datagram or Ethernet frame) from the traffic flow filter: by the
+    // filter's outcome, deletes it, delivers it locally, or encapsulates it into a
+    // G-PDU and sends it through the tunnel to its next GTP-U hop
+    void tunnelDatagram(inet::Packet *datagram);
 
     // receive a GTP-U packet from Udp, reads the TEID and decides whether performing label switching or removal
     void handleFromUdp(inet::Packet *gtpMsg);
