@@ -1,0 +1,97 @@
+%description:
+INET's flow measurement works across the 5G system: the packet-level region tags with
+which a FlowMeasurementStarter marks a flow (Packet::regionTags) travel with the frame
+through the GTP-U tunnel and the radio stack, so a FlowMeasurementRecorder behind the UE
+records the flow's elapsed time (GitHub issue #309). dnStation, a host on the UPF's N6
+Ethernet LAN, sends a measured flow to the device behind ue[0], a UE in Ethernet bridge
+mode.
+
+Checks: the frames reach the device, and the device's recorder records elapsed-time
+samples of the flow.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: test.ned
+import inet.node.ethernet.Eth1G;
+import inet.node.inet.StandardHost;
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+network EthernetFlowMeasurementTestNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        dnStation: StandardHost {
+            @display("p=650,75");
+        }
+        device: StandardHost {
+            @display("p=650,400");
+        }
+    connections:
+        upf.dnEthg <--> Eth1G <--> dnStation.ethg++;
+        device.ethg++ <--> Eth1G <--> ue[0].ethg++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = EthernetFlowMeasurementTestNetwork
+
+# the results the test checks
+*.device.app[0].sink.**.scalar-recording = true
+*.device.app[0].measurementRecorder.**.scalar-recording = true
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+# ue[0]: an Ethernet session in bridge mode, with the device behind it
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[0].ethernetMode = "bridge"
+*.ue[0].numEthInterfaces = 1
+
+# dnStation and the device: raw Ethernet hosts
+*.dnStation.hasIpv4 = false
+*.device.hasIpv4 = false
+*.dnStation.eth[*].typename = "LayeredEthernetInterface"
+*.device.eth[*].typename = "LayeredEthernetInterface"
+*.dnStation.ethernet.typename = "EthernetLayer"
+*.device.ethernet.typename = "EthernetLayer"
+*.dnStation.ethernet.hasSocketSupport = true
+*.device.ethernet.hasSocketSupport = true
+*.dnStation.llc.typename = ""
+*.device.llc.typename = ""
+*.dnStation.eth[*].bitrate = 1Gbps
+*.device.eth[*].bitrate = 1Gbps
+*.ue[0].eth[*].bitrate = 1Gbps
+
+# the downlink flow "dl", measured from dnStation's application to the device's
+*.dnStation.numApps = 1
+*.dnStation.app[0].typename = "EthernetSourceApp"
+*.dnStation.app[0].io.interface = "eth0"
+*.dnStation.app[0].io.remoteAddress = "device"
+*.dnStation.app[0].source.packetLength = 100B
+*.dnStation.app[0].source.productionInterval = 20ms
+*.dnStation.app[0].source.initialProductionOffset = 0.1s
+*.dnStation.app[0].measurementStarter.typename = "FlowMeasurementStarter"
+*.dnStation.app[0].measurementStarter.flowName = "dl"
+*.dnStation.app[0].measurementStarter.measure = "elapsedTime"
+*.device.numApps = 1
+*.device.app[0].typename = "EthernetSinkApp"
+*.device.app[0].io.interface = "eth0"
+*.device.app[0].io.localAddress = "device"
+*.device.app[0].io.steal = true
+*.device.app[0].measurementRecorder.typename = "FlowMeasurementRecorder"
+*.device.app[0].measurementRecorder.flowName = "dl"
+*.device.app[0].measurementRecorder.measure = "elapsedTime"
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: results/General-#0.sca
+scalar EthernetFlowMeasurementTestNetwork\.device\.app\[0\]\.sink packets:count [1-9]\d*
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: results/General-#0.sca
+statistic EthernetFlowMeasurementTestNetwork\.device\.app\[0\]\.measurementRecorder dl:meanBitElapsedTimePerPacket:histogram\n(?:attr .*\n)*field count [1-9]\d*
+%#--------------------------------------------------------------------------------------------------------------
