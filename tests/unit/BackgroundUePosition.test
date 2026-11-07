@@ -1,0 +1,87 @@
+%description:
+
+A background UE's position is its mobility's at the instant it is read, as
+a PHY's is: not the one the mobility last reported, which INET's mobility
+does every updateInterval.
+
+Checked with a background UE moving at 10 m/s along x from x = 500 m, its
+mobility reporting every 100 ms, read between two reports and after the
+first: at 50 ms and at 130 ms it is at 500.5 m and 501.3 m.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/background/trafficGenerator/generators/TrafficGeneratorBase.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.BackgroundCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bgCell: BackgroundCell;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.bgCell.bgScheduler.numBands = 6
+*.bgCell.bgTrafficGenerator.numBgUes = 1
+**.mobility.initFromDisplayString = false
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxZ = 30m
+*.bgCell.mobility.initialX = 250m
+*.bgCell.mobility.initialY = 500m
+*.bgCell.mobility.initialZ = 25m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.typename = "LinearMobility"
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.speed = 10mps
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialMovementHeading = 0deg
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.updateInterval = 100ms
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialX = 500m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialY = 400m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialZ = 1.5m
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+cModule *bgUe = getSimulation()->getSystemModule()->getModuleByPath("bgCell.bgTrafficGenerator.bgUE[0]");
+auto *generator = check_and_cast<TrafficGeneratorBase *>(bgUe->getSubmodule("generator"));
+auto position = [&] () { return generator->getCoord(); };
+
+wait(0.050);
+inet::Coord p = position();
+c.expectNear("between two mobility reports, a background UE is where its mobility has moved it", p.x, 500.5, 1e-9);
+c.check("...on its line of motion", p.y == 400 && p.z == 1.5);
+
+wait(0.080);
+c.expectNear("...and after a report, too", position().x, 501.3, 1e-9);
+
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED
