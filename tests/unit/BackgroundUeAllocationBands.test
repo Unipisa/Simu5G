@@ -1,0 +1,160 @@
+%description:
+
+The bands a background UE's allocation is recorded on
+(LteSchedulerEnb::scheduleGrantBackground() and scheduleBgRtx()).
+
+The eNB scheduler allocates blocks to a background UE on the bands of the
+band-limit vector it is given, and hands the allocation, as an RbMap from
+band to block count, to the background traffic manager, which registers it
+with the radio medium as the UE's transmission. Background UEs have no radio,
+so that map is the medium's only record of which bands they occupy: the
+interference they cause is computed on those bands. Each entry of
+the map is therefore keyed by the band the blocks were allocated on, the band
+the band-limit element names, and not by the element's position in the
+vector. The two coincide when the vector lists every band in order, so the
+checks use a vector that holds a single band other than band 0.
+
+Checked with the real scheduler on a never-initialize()d eNB MAC whose
+background traffic manager is a stub that records the maps it is given: a new
+transmission and a retransmission, each on a fresh downlink scheduler, with
+a band-limit vector holding only band 3. For each, the recorded map has the
+allocated blocks on band 3 and none on band 0, and it holds, over all bands,
+as many blocks as the allocator holds for the UE on band 3.
+
+%includes:
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "MacTestStubs.h"
+#include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModule.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnbDl.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+[[noreturn]] static void unexpected(const char *method)
+{
+    throw omnetpp::cRuntimeError("RecordingBgManager: unexpected call to %s()", method);
+}
+
+// A background traffic manager with one backlogged UE that records the
+// allocation maps registered with it.
+class RecordingBgManager : public IBackgroundTrafficManager
+{
+  public:
+    unsigned int newDataBytes = 100;
+    unsigned int rtxBytes = 8;
+    unsigned int bytesPerBlock = 10;
+    int registrations = 0;
+    RbMap registered;
+
+    unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx) override { return rtx ? rtxBytes : newDataBytes; }
+    unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) override { return bytesPerBlock; }
+    unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx) override { return 0; }
+    void registerTransmission(MacNodeId bgUeId, Direction dir, GHz carrierFrequency, const RbMap& allocatedRbMap) override
+    {
+        registrations++;
+        registered = allocatedRbMap;
+    }
+
+    void setCarrierFrequency(GHz carrierFrequency) override { unexpected("setCarrierFrequency"); }
+    unsigned int getNumBands() override { unexpected("getNumBands"); }
+    double getBsTxPower() override { unexpected("getBsTxPower"); }
+    inet::Coord getBsCoord() override { unexpected("getBsCoord"); }
+    void notifyBacklog(int index, Direction dir, bool rtx) override { unexpected("notifyBacklog"); }
+    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) override { unexpected("computeCqi"); }
+    Cqi computeCqiFromSinr(double sinr) override { unexpected("computeCqiFromSinr"); }
+    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override { unexpected("getTrafficGenerator"); }
+    MacNodeId getBgUeId(int bgUeIndex) override { unexpected("getBgUeId"); }
+    int getBgUeIndex(MacNodeId bgUeId) override { unexpected("getBgUeIndex"); }
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() override { unexpected("getBgUesBegin"); }
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd() override { unexpected("getBgUesEnd"); }
+    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx) override { unexpected("getBackloggedUesBegin"); }
+    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir, bool rtx) override { unexpected("getBackloggedUesEnd"); }
+    std::list<int>::const_iterator getWaitingForRacUesBegin() override { unexpected("getWaitingForRacUesBegin"); }
+    std::list<int>::const_iterator getWaitingForRacUesEnd() override { unexpected("getWaitingForRacUesEnd"); }
+    void racHandled(MacNodeId bgUeId) override { unexpected("racHandled"); }
+};
+
+// An eNB MAC whose background traffic manager is the recording stub.
+class TestEnbMac : public StubEnbMac
+{
+  public:
+    RecordingBgManager manager;
+    IBackgroundTrafficManager *getBackgroundTrafficManager(GHz carrierFrequency) override { return &manager; }
+};
+
+// A downlink scheduler set up by hand on the given MAC, with its own allocator.
+class TestSchedulerEnbDl : public LteSchedulerEnbDl
+{
+  public:
+    void setup(LteMacEnb *mac, unsigned int numBands)
+    {
+        mac_ = mac;
+        direction_ = DL;
+        allocator_ = new LteAllocationModule(mac, DL);
+        allocator_->init(numBands, numBands);
+    }
+    LteAllocationModule *allocator() { return allocator_; }
+
+  protected:
+    void initialize(int stage) override {}
+};
+
+%activity:
+Checker c;
+const unsigned int numBands = 6;
+const Band band = Band(3);
+const MacNodeId bgUe = MacNodeId(4097);
+const GHz carrier = GHz(2.0);
+
+// Checks the map the scheduler registered for one allocation.
+auto checkRecorded = [&](const std::string& what, TestEnbMac *mac, TestSchedulerEnbDl *scheduler, unsigned int allocatedBytes) {
+    RecordingBgManager& m = mac->manager;
+    c.check(what + ": the allocation is made and registered once", allocatedBytes > 0 && m.registrations == 1,
+            std::to_string(allocatedBytes) + " bytes, " + std::to_string(m.registrations) + " registrations");
+    std::map<Band, unsigned int> bands = m.registered[MACRO];
+    unsigned int onBand = bands.count(band) ? bands.at(band) : 0;
+    unsigned int onBand0 = bands.count(Band(0)) ? bands.at(Band(0)) : 0;
+    c.check(what + ": the registered map has the blocks on the band they were allocated on", onBand > 0,
+            std::to_string(onBand) + " blocks on band 3");
+    c.check(what + ": ...and none on band 0, which the band limits do not list", onBand0 == 0,
+            std::to_string(onBand0) + " blocks on band 0");
+    unsigned int total = 0;
+    for (auto [b, blocks] : bands)
+        total += blocks;
+    c.expectValue(what + ": the registered map holds the blocks the allocator holds for the UE on band 3",
+            total, scheduler->allocator()->getBlocks(MACRO, band, bgUe));
+};
+
+{
+    TestEnbMac *mac = new TestEnbMac();
+    TestSchedulerEnbDl *scheduler = new TestSchedulerEnbDl();
+    scheduler->setup(mac, numBands);
+    BandLimitVector bandLim = { BandLimit(band) };
+    bool terminate = false, active = true, eligible = true;
+    unsigned int bytes = scheduler->scheduleGrantBackground(MacCid(bgUe, LogicalCid(0)), 1000, terminate, active, eligible, carrier, &bandLim);
+    checkRecorded("new data", mac, scheduler, bytes);
+    delete scheduler;
+    delete mac;
+}
+
+{
+    TestEnbMac *mac = new TestEnbMac();
+    TestSchedulerEnbDl *scheduler = new TestSchedulerEnbDl();
+    scheduler->setup(mac, numBands);
+    BandLimitVector bandLim = { BandLimit(band) };
+    unsigned int bytes = scheduler->scheduleBgRtx(bgUe, carrier, Codeword(0), &bandLim);
+    checkRecorded("retransmission", mac, scheduler, bytes);
+    delete scheduler;
+    delete mac;
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=8 modelfailures=0
+
+%not-contains: stdout
+FAILED
