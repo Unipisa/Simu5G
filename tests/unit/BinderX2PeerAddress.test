@@ -1,0 +1,77 @@
+%description:
+
+The Binder's X2 peer table (Binder::getX2PeerAddress(), hasX2Peer()):
+asking for the X2 address of a base station that is no X2 peer is an error,
+named after the missing link, and leaves the table as it was. A base station
+sends over X2 to its X2 peers only; a lookup that misses means that the
+network lacks the X2 link (e.g. a dual connectivity network whose secondary
+node has no X2 client to its master), and the error has to say so, not
+leave an unspecified address for the X2 tunnel to fail on later.
+
+Checked with base station 1 having an X2 link to base station 3, and none
+to 2; base station 2 has no X2 links at all.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+Binder *binder = check_and_cast<Binder *>(getSimulation()->getSystemModule()->getSubmodule("binder"));
+const X2NodeId bs1 = MacNodeId(1), bs2 = MacNodeId(2), bs3 = MacNodeId(3);
+const inet::L3Address address3(inet::Ipv4Address("10.0.0.3"));
+binder->setX2PeerAddress(bs1, bs3, address3);
+
+c.check("the X2 address of a peer is the one set", binder->getX2PeerAddress(bs1, bs3) == address3);
+
+auto lookupThrows = [&] (X2NodeId src, X2NodeId dest, std::string& message) {
+    try {
+        binder->getX2PeerAddress(src, dest);
+        return false;
+    }
+    catch (cRuntimeError& e) {
+        message = e.what();
+        return true;
+    }
+};
+std::string message;
+c.check("asking for the X2 address of a base station that is no peer is an error",
+        lookupThrows(bs1, bs2, message), message);
+c.check("...and the error names the missing link",
+        message.find("base station 1 has no X2 link to 2") != std::string::npos, message);
+message.clear();
+c.check("...also for a base station that has no X2 links at all", lookupThrows(bs2, bs1, message), message);
+c.check("...and a failed lookup adds no link to the table",
+        !binder->hasX2Peer(bs1, bs2) && !binder->hasX2Peer(bs2, bs1) && binder->hasX2Peer(bs1, bs3));
+
+c.summary();
+
+%contains: stdout
+modelchecks=5 modelfailures=0
+
+%not-contains: stdout
+FAILED
