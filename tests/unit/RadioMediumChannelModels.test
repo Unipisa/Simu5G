@@ -1,0 +1,77 @@
+%description:
+
+The radio medium's channel models: one per component carrier and RAT, and
+the one a radio evaluates its links with is that of its carrier and its
+RAT. An LTE and an NR radio on the same carrier use different models (the
+two RATs' models are configured differently, e.g. an NR UE's unused LTE
+leg), and a carrier the network does not have has no model.
+
+Checked with two carriers, 2 GHz and 3.5 GHz, through
+CellularRadioMedium::getChannelModel().
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 2
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[1].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[*].numBands = 6
+*.radioMedium.numCarriers = 2
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto model = [&] (const char *name, int k) { return check_and_cast<ChannelModelBase *>(medium->getSubmodule(name, k)); };
+
+c.check("an LTE radio on the first carrier evaluates with the LTE model of that carrier",
+        medium->getChannelModel(GHz(2.0), false) == model("channelModel", 0));
+c.check("...on the second carrier, with that carrier's",
+        medium->getChannelModel(GHz(3.5), false) == model("channelModel", 1));
+c.check("an NR radio on the first carrier evaluates with the NR model of that carrier",
+        medium->getChannelModel(GHz(2.0), true) == model("nrChannelModel", 0));
+c.check("...on the second carrier, with that carrier's",
+        medium->getChannelModel(GHz(3.5), true) == model("nrChannelModel", 1));
+c.check("...so the two RATs on one carrier have different models",
+        medium->getChannelModel(GHz(2.0), false) != medium->getChannelModel(GHz(2.0), true));
+c.check("each model is on its own carrier",
+        model("channelModel", 1)->getCarrierFrequency() == GHz(3.5) && model("nrChannelModel", 1)->getCarrierFrequency() == GHz(3.5));
+c.check("a carrier the network does not have has no model, for either RAT",
+        medium->getChannelModel(GHz(28.0), false) == nullptr && medium->getChannelModel(GHz(28.0), true) == nullptr);
+
+c.summary();
+
+%contains: stdout
+modelchecks=7 modelfailures=0
+
+%not-contains: stdout
+FAILED
