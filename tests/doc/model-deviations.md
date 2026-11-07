@@ -88,6 +88,7 @@ piece 5a pin item 19.
 18. **A background UE on a cell's second carrier occupies the wrong bands.**
    - What the model does: a background UE's allocation is keyed as the scheduler allocates, by the cell-wide band index (CellInfo lists every band of the cell for each carrier, -2 outside it), and the background traffic manager registers it with the medium unchanged. A radio's frame is registered with carrier-local band indices (LteSchedulerEnb::readRbOccupation() subtracts the carrier's first band). On dev the DL interference read the cell's band status, also cell-wide, with the victim carrier's band index.
    - Effect: with carriers of 6 and 10 bands, a background UE on cell band 6+j is taken as occupying band 6+j of the second carrier: the wrong band for j < 4, none for j >= 4. No row has background UEs on a cell's second carrier.
+   - With uplink interference on, Binder::storeUlTransmissionMap() writes the same cell-wide band into a vector sized by the carrier's bands: for j >= 4 past its end, which is undefined behavior. The map is deleted later in the branch.
    - Fix shape: subtract the carrier's first band when the allocation is registered.
 19. **A transmission between two slot boundaries prunes the slot completed last.**
    - What the model does: when a transmission is added, the medium drops every transmission of its carrier that ended before the new one's start minus its duration. A beacon takes no air time, so one sent between two boundaries drops the slot completed last, and a CQI computed in the rest of that slot sees none of its interference.
@@ -118,17 +119,34 @@ Recorded, not fixed in the branch, like the items of pieces 4 and 5a.
 24. **The Jakes phase is the speed times the absolute time, and only one end's speed counts.**
    - What the model does: StochasticChannelModel::jakesFading() sums the paths with phase 2*pi*(cos(aoa)*v*f/c*t - tau*f), with v the speed at the evaluation and t the absolute simulation time. The phase that has accumulated up to t is not the integral of the Doppler frequency, so every change of speed (waypoints, TraCI steps, GaussMarkovMobility) jumps the phase by an amount growing with t, which re-randomizes the fading, and a UE that stops returns to the same static value whatever its path. The speed is that of the link's mobile end, the UE, or the transmitter of a D2D link: a moving base station's and a D2D receiver's are ignored, and the two directions of a D2D pair share one realization at two different speeds. On dev the phase was the same; the speed was an estimate.
    - What the physics says: a path's phase advances by the integral of its Doppler frequency over time, and the Doppler frequency has a term for each moving end.
-   - Fix shape: keep the accumulated phase per link and path, advanced by the Doppler frequency over the time since the last evaluation; take the velocities of both ends.
+   - The speed is read when the link is evaluated, while from "a link's Jakes fading is that at the start of the transmission evaluated on it" on the fading is taken at the transmission's start: when the speed changes in between (a reception decoded at its slot end after a waypoint, a TraCI step), a reception's fading depends on when it is evaluated.
+   - Fix shape: keep the accumulated phase per link and path, advanced by the Doppler frequency over the time since the last evaluation, up to the transmission's start; take the velocities of both ends.
 25. **The distance statistic is weighted by the reads of the position.**
    - What the model does: a UE's PHY emits its distance (and serving cell) statistics on the mobility's mobilityStateChanged signal. From "positions are the mobility's, at the instant they are read" on, the mobility emits that signal whenever anyone reads the position, so the mean of the distance is an average over the reads, not over time, and an unrelated module that reads the position more often changes it.
    - Fix shape: record the statistic time-weighted (timeavg), or emit it on a timer.
 
+## Found in piece 6a (2026-11-07): fix after the full merge
+
+Recorded, not fixed in the branch, like the items of the earlier pieces.
+
+26. **The UMa environment height's probability of 1 m: TR 36.873 leaves out the distance, TR 38.901 draws at 18 m.**
+   - What the model does: Tr36873PathLossModel::drawEnvironmentHeight() takes C(d2D, hUT) as ((hUT-13)/10)^1.5, without the distance term g(d2D), so the probability of h_E = 1 m is the same at every distance: 0.52 at hUT = 22.5 m. The same file's UMa LOS probability has the distance term. Tr38901PathLossModel takes g(d2D) = 0 only for d2D < 18 m, so at exactly 18 m it draws, and about 5 links in 1000 get an h_E other than 1 m.
+   - What the specification says: TR 36.873 Table 7.2-1 NOTE 4 draws h_E = 1 m with probability 1/(1+C(d2D, hUT)), with the C of Table 7.2-2, which has the distance term: 0.98 at 30 m, 0.63 at 100 m and 0.29 at 200 m for hUT = 22.5 m, and 1 at 18 m or less. TR 38.901 Table 7.4.1-1 NOTE 1 has g(d2D) = 0 for d2D <= 18 m.
+   - Reached in channelmodel TallUe-36873 (the only row with UEs above 13 m under TR 36.873); the 18 m boundary in no row.
+   - Recorded in tests/unit/Tr36873EnvironmentHeightDistance and Tr38901EnvironmentHeightBoundary as expected failures; PathLossEnvironmentHeight pins the TR 36.873 distribution.
+   - Fix shape: the C of the LOS probability in the TR 36.873 draw; d2D <= 18 m in the TR 38.901 one.
+27. **A link's LOS state and h_E are drawn per cell and per carrier, not per site and UE.**
+   - What the model does: the medium keeps a link's LOS sample, and with it h_E, per (cell, UE) pair and per carrier (CellularRadioMedium::getLosMap() per carrier frequency). A UE served on two carriers of one cell has two independent LOS states and h_E values, and the cells of one site (sectors) draw independently.
+   - What the specification says: TR 38.901 7.6.5, "Propagation conditions generated in Step 2 are the same for all the frequencies"; Table 7.6.3.4-1 makes the LOS/NLOS state site-specific, and NOTE 1 of Table 7.4.1-1 determines h_E "for every link between BS sites and UTs".
+   - Reached in the rows that serve a UE on two carriers of one cell (e.g. nr/test_multiCarrier), and in any network with co-sited cells.
+   - Fix shape: key the LOS sample by site and UE, shared by every carrier.
+
 ## Fixed later in the branch, re-check only
 
-- **The O2I loss's random term redrawn at every evaluation:** drawn once per UE from "the random term of a UE's building penetration loss is drawn once, the UE's own"; see item 14 for the per-radio residue.
+- **The O2I loss's random term redrawn at every evaluation:** accepted with piece 6a. Drawn once per UE from "the random term of a UE's building penetration loss is drawn once, the UE's own"; see item 14 for the per-radio residue.
 
 - **Shadowing per direction (LinkReciprocity):** made per link by "a link's shadowing is kept once per link, shared by every channel model evaluating it".
-- **Jakes fading evaluated at now - 1 ms:** fixed by "a link's Jakes fading is that at the start of the transmission evaluated on it".
+- **Jakes fading evaluated at now - 1 ms:** accepted with piece 6a, fixed by "a link's Jakes fading is that at the start of the transmission evaluated on it"; see item 24 for the speed read at the evaluation. The background cells' channel model keeps now - 1 ms until it is deleted later in the branch.
 - **The Doppler speed from a two-sample estimate:** accepted with piece 5b. The estimate becomes the real speed with "positions are the mobility's, at the instant they are read", and the speed is the mobility's from "the Doppler speed is the mobile end's, from its mobility"; see items 22 and 24 for what remains.
 
 ## Not a deviation

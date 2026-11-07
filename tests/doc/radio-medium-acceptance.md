@@ -264,3 +264,77 @@ carrier and RAT), and a one-to-many D2D frame interferes at its own power.
   trajectory depends on how often its position is read; the Jakes phase is
   the speed times the absolute time, and only one end's speed counts; the
   distance statistic is weighted by the reads of the position.
+
+## Piece 6a: four small fixes, the path-loss draws and the Jakes fading at a transmission's start (12 commits + 6 test commits)
+
+Commits: "Binder: fix: asking for the X2 address of a base station that is no
+X2 peer is an error" to "unit tests: test: a link's value does not depend on
+when or how often it is evaluated". The first half of piece 6 of the plan:
+four fixes that the fingerprint suite does not reach, the UMa environment
+height drawn once per link with its LOS state, the random term of a UE's
+building penetration loss drawn once per UE, and the Jakes fading of a link
+taken at the start of the transmission evaluated on it.
+
+- **The fingerprint suite passes at the piece's tip.** The test commits leave
+  the sources as they were.
+- **One configuration moves, and as intended.** Replicated A/B against dev, 15
+  configurations (the channelmodel rows UMa-38901, TallUe-38901,
+  TallUe-36873, Penetration-36873, PenetrationLow-38901, PenetrationHigh-38901
+  and Penetration-MultiCarrier-38901, nr standalone VoIP-DL, background
+  traffic, standalone multicell, numerology DL and UL, dual connectivity
+  multicell and split bearer, nr D2D with dynamic LOS), 30 seeds per side: 3152
+  statistics tested, significant ones only in channelmodel
+  PenetrationHigh-38901 (18 within the configuration, 10 over all). The
+  first-transmission DL H-ARQ error rate goes from 0.50 to 0.33, the MAC
+  packet loss from 0.106 to 0.035, the VoIP frame delay from 0.09 to 0.36 s.
+  On dev the random term of the high-loss penetration loss (sigma_P = 6.5 dB)
+  was drawn at every evaluation, so a CQI and the reception after it saw two
+  independent terms, and about half of the first transmissions failed: those
+  where the reception's term came out worse than the CQI's. Drawn once per
+  UE, the CQI and the reception agree. The delay grows in most runs, not in a
+  few (the median of the 30 run means goes from 0.04 to 0.26 s), with fewer
+  MAC PDUs sent (963 to 668 on average); why was not analyzed further. With
+  the low-loss model (sigma_P = 4.4 dB) nothing is significant.
+- **The cause is the intended commit.** Within the piece only "the random
+  term of a UE's building penetration loss is drawn once, the UE's own" moves
+  the PenetrationHigh-38901 fingerprint row, so the changes were not bisected
+  further. The UMa environment height (not drawn where its outcome is
+  certain, then drawn with the link's LOS state) and the Jakes fading at the
+  transmission's start move no distribution.
+- **The null control is clean:** 3385 statistics, none significant, in no
+  configuration.
+- **The A/B found a crash on dev:** one run of dev's side, nr/test_numerology
+  MultiCell-CBR-UL at numerology 2, seed 29, aborts at 4.025 s: a UE between
+  two cells of a handover (serving cell 0) makes a MAC PDU and asks for the
+  MAC of cell 0. The run was left out of the comparison (29 runs on that
+  side). The piece does not cause it; it is to be fixed on its own.
+- **The fixes have their tests first,** each failing at the commit before the
+  fix: BinderX2PeerAddress (a lookup that misses throws and leaves the peer
+  table as it was), MulticastDestIds (the counter the inspector shows holds the
+  next id, 32768 first) and BackgroundUeAllocationBands (the real scheduler,
+  given a band-limit vector holding only band 3, records the blocks on band 3).
+  The LteMaxCi fix has no test: the check it corrects had no effect, and only a
+  real UE with the id 4097 reaches the difference (the 2049th NR UE gets it, an
+  id clash to be fixed on its own). The four messages were reworded to the
+  Fault/Fix/Test form.
+- **Test gaps were closed, each checked by mutation:** the UMa environment
+  height's distribution, graded against TR 38.901 from draws, and the path
+  loss at a given h_E (PathLossEnvironmentHeight), and that a link's path loss
+  is computed at the h_E kept for it, at either end
+  (ChannelModelEnvironmentHeight); an indoor UE's penetration-loss deviate on
+  each of its links, at either end (ChannelModelPenetrationDeviate); and a
+  received frame faded at the start of its reception, downlink and D2D
+  (ChannelModelFrameStartTime). ChannelModelLinkEvaluation also checks that a
+  later start time changes the fading only, and says that its geometry does not
+  show h_E.
+- **The new tests pass at every later commit,** 51 of them, up to the branch
+  tip, in versions that follow the interface changes; each fix test fails at
+  the commit before its fix only, as intended. The full unit and physics suites
+  at the piece's tip show no failure beyond the recorded expected failures,
+  each failing on its checks.
+- **Recorded, to be fixed after the merge** (model-deviations.md): items 26
+  (the UMa h_E's probability of 1 m: TR 36.873 leaves out the distance, TR
+  38.901 draws at 18 m; two new expected failures) and 27 (a link's LOS state
+  and h_E per cell and carrier, not per site and UE), the Doppler speed read at
+  the evaluation rather than at the transmission's start (item 24), and the
+  Binder's uplink map written past its end on a second carrier (item 18).
