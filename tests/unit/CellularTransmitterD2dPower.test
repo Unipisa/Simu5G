@@ -1,0 +1,85 @@
+%description:
+
+The power a transmission is recorded at on the radio medium: the power its
+frame is sent at.
+
+A UE's frame carries two powers in its control information, the cellular
+transmit power and the D2D one. Every interference computation takes an
+interfering transmission's power from its record on the medium, so the
+transmitter has to record the power the frame is really sent at: the
+cellular power for an uplink frame, the D2D power for a D2D frame, one-to-one
+and one-to-many alike.
+
+Checked with one UE's control information carrying 23 dBm cellular and
+15 dBm D2D power, through the transmitter, for an uplink, a one-to-one D2D
+and a one-to-many D2D data frame.
+
+%includes:
+#include <string>
+#include <memory>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.stack.phy.radio.CellularTransmitter;
+
+network Harness
+{
+    submodules:
+        transmitter: CellularTransmitter;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *transmitter = harnessModule<CellularTransmitter>(this, "transmitter");
+
+StubEndpoint ue;
+ue.nodeId = MacNodeId(1025);
+ue.coord = inet::Coord(100, 20, 1.5);
+
+RadioTransmissionRequest request;
+request.sender = &ue;
+request.cellId = MacNodeId(1);
+request.duration = SimTime(1, SIMTIME_MS);
+
+// the power the transmitter records for a data frame of the UE in the given direction
+auto recordedPower = [&] (Direction dir) {
+    UserControlInfo info;
+    info.setSourceId(ue.nodeId);
+    info.setDestId(MacNodeId(1026));
+    info.setDirection(dir);
+    info.setFrameType(DATAPKT);
+    info.setTxPower(23.0);
+    info.setD2dTxPower(15.0);
+    std::unique_ptr<CellularTransmission> transmission(transmitter->createTransmission(request, info));
+    return transmission->txPower;
+};
+
+double ul = recordedPower(UL), d2d = recordedPower(D2D), d2dMulti = recordedPower(D2D_MULTI);
+c.check("an uplink frame is recorded at the cellular power", ul == 23.0, std::to_string(ul));
+c.check("a one-to-one D2D frame is recorded at the D2D power", d2d == 15.0, std::to_string(d2d));
+c.check("a one-to-many D2D frame is recorded at the D2D power", d2dMulti == 15.0, std::to_string(d2dMulti));
+
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED
