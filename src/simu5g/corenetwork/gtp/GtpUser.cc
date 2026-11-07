@@ -301,16 +301,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
                 container = DL_PDU_SESSION_INFORMATION;
         }
 
-        // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
-        auto header = makeGtpUserHeader(teid, qfi, container, datagram->getDataLength());
-        auto gtpPacket = new Packet(datagram->getName());
-        gtpPacket->insertAtFront(header);
-        auto data = datagram->peekData();
-        gtpPacket->insertAtBack(data);
-
-        delete datagram;
-
-        socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
+        // encapsulate the datagram into a G-PDU
+        encapsulate(datagram, makeGtpUserHeader(teid, qfi, container, datagram->getDataLength()));
+        socket_.sendTo(datagram, tunnelPeerAddress, tunnelPeerPort_);
     }
 }
 
@@ -342,10 +335,13 @@ void GtpUser::handleFromUdp(Packet *pkt)
         return;
     }
 
-    // re-create the original datagram of the session and send it to the local network
-    auto originalPacket = new Packet(pkt->getName());
+    // the G-PDU's payload is the datagram of the session: the packet keeps its region
+    // tags (e.g. INET's flow measurement), which belong to its data, and drops the
+    // headers and the packet tags of the transport
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
-    originalPacket->insertAtBack(pkt->peekData());
+    pkt->trim();
+    pkt->clearTags();
+    Packet *originalPacket = pkt;
 
     // The tunnel names the session the T-PDU belongs to, and so what it carries (a
     // base station knows every tunnel ending here); a relay between a MEC host's UPF
@@ -359,10 +355,6 @@ void GtpUser::handleFromUdp(Packet *pkt)
     // relies on QfiReq being present on the gNB DL path, and maps QFI 0 to the
     // default DRB.
     originalPacket->addTagIfAbsent<QfiReq>()->setQfi(gtpUserMsg->getQfi());
-    // remove any pending socket indications
-    auto sockInd = pkt->removeTagIfPresent<SocketInd>();
-
-    delete pkt;
 
     if (isBaseStation(ownerType_)) {
         // the tunnel names the session, and so the UE, the datagram is for
@@ -456,17 +448,19 @@ void GtpUser::tunnelDownlink(Packet *datagram, const FTeid& tunnel, Qfi qfi)
 {
     EV << "GtpUser::tunnelDownlink - tunneling to " << tunnel << endl;
 
-    // send the message to the BS through GTP tunneling
-    // * create a new GtpUserMessage
-    // * encapsulate the datagram within the GtpUserMsg
-    auto header = makeGtpUserHeader(tunnel.teid, qfi, ownerType_ == PGW ? PDU_SESSION_CONTAINER_NONE : DL_PDU_SESSION_INFORMATION, datagram->getDataLength());
-    auto gtpMsg = new Packet(datagram->getName());
-    gtpMsg->insertAtFront(header);
-    auto data = datagram->peekData();
-    gtpMsg->insertAtBack(data);
-    delete datagram;
+    // send the datagram to the BS through GTP tunneling, encapsulated into a G-PDU
+    encapsulate(datagram, makeGtpUserHeader(tunnel.teid, qfi, ownerType_ == PGW ? PDU_SESSION_CONTAINER_NONE : DL_PDU_SESSION_INFORMATION, datagram->getDataLength()));
+    socket_.sendTo(datagram, tunnel.address, tunnelPeerPort_);
+}
 
-    socket_.sendTo(gtpMsg, tunnel.address, tunnelPeerPort_);
+void GtpUser::encapsulate(Packet *datagram, const Ptr<GtpUserMsg>& header)
+{
+    // the datagram keeps its region tags (e.g. INET's flow measurement), which belong
+    // to its data, and drops the headers already processed and the packet tags of the
+    // side it came from
+    datagram->trim();
+    datagram->clearTags();
+    datagram->insertAtFront(header);
 }
 
 void GtpUser::tunnelUplinkOverN6(Packet *payload, const SessionRef& session)

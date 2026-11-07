@@ -110,6 +110,9 @@ class GtpUser : public cSimpleModule
     // a session
     void tunnelDownlink(inet::Packet *datagram, const FTeid& tunnel, Qfi qfi);
 
+    // encapsulate a datagram into a G-PDU with the given GTP-U header, for sending
+    void encapsulate(inet::Packet *datagram, const inet::Ptr<GtpUserMsg>& header);
+
     // At an anchor UPF: send the uplink payload of an Unstructured session to the data
     // network over the session's N6 tunnel, in a UDP/IP datagram this node originates
     // (TS 29.561 9.2)
