@@ -152,6 +152,7 @@ void NrRlcAmTxEntity::handleMessage(cMessage *msg)
         auto pdcpTag = pkt->addTagIfAbsent<PdcpTrackingTag>();
         pdcpTag->setPdcpSequenceNumber(sequenceNumber);
         pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+        pdcpTag->setRlcArrivalTime(NOW);
 
         enque(pkt);
     }

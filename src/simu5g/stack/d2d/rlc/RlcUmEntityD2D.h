@@ -320,7 +320,7 @@ class LteRlcUmRxEntityD2D : public RlcUmRxEntityD2D<LteRlcUmRxEntity>
     void onFirstPduEnqueued(unsigned int pduSno) override;
     bool consumeReassemblyReset(unsigned int pduSno) override;
     void emitPduStats(Direction dir, double tputSample, simtime_t creationTime) override;
-    void emitSduStats(Direction dir, double tputSample, simtime_t creationTime) override;
+    void emitSduStats(Direction dir, double tputSample, simtime_t arrivalTime) override;
 };
 
 /**

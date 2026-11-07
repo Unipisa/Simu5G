@@ -197,12 +197,13 @@ void NrRlcAmRxEntity::passUpNr(int seqNum)
     ci->setDestId(dstId);
     ci->setDirection(dir);
     ci->setDrbId(ackFlowControlInfo_->getDrbId());
-    sdu->removeTagIfPresent<PdcpTrackingTag>();
+    simtime_t arrivalTime = sdu->removeTag<PdcpTrackingTag>()->getRlcArrivalTime();
 
-    // This bearer's delay and throughput of the reassembled SDU
+    // This bearer's delay (since the SDU entered the TX entity) and throughput of the
+    // reassembled SDU
     totalRcvdBytes_ += sdu->getByteLength();
     double tput = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-    emitRxStatistics(false, tput, NOW - sdu->getCreationTime());
+    emitRxStatistics(false, tput, NOW - arrivalTime);
 
     // How far the reordering window is stretched: the span between the next SDU
     // awaited in sequence and the highest one received, i.e. how much is being held

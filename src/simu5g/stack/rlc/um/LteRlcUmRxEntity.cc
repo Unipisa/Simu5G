@@ -269,18 +269,17 @@ void LteRlcUmRxEntity::moveRxWindow(int pos)
 
 void LteRlcUmRxEntity::toPdcpLte(Packet *pktAux)
 {
-    // Remove leftover tag added on the TX side.
-    pktAux->removeTagIfPresent<PdcpTrackingTag>();
+    // Remove the tag added on the TX side; the SDU delay counts from its arrival time
+    simtime_t arrivalTime = pktAux->removeTag<PdcpTrackingTag>()->getRlcArrivalTime();
 
     auto lteInfo = pktAux->getTag<FlowControlInfo>();
     unsigned int length = pktAux->getByteLength();
-    simtime_t ts = pktAux->getCreationTime();
 
     // emit statistics (throughput and delay only - no packet loss)
     totalRcvdBytes_ += length;
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
-    emitSduStats(static_cast<Direction>(lteInfo->getDirection()), tputSample, ts);
+    emitSduStats(static_cast<Direction>(lteInfo->getDirection()), tputSample, arrivalTime);
 
     EV << NOW << " LteRlcUmRxEntity::toPdcp Created PDCP PDU with length " << pktAux->getByteLength() << " bytes" << endl;
     EV << NOW << " LteRlcUmRxEntity::toPdcp Send packet to upper layer" << endl;
@@ -288,10 +287,10 @@ void LteRlcUmRxEntity::toPdcpLte(Packet *pktAux)
     send(pktAux, "out");
 }
 
-void LteRlcUmRxEntity::emitSduStats(Direction dir, double tputSample, simtime_t creationTime)
+void LteRlcUmRxEntity::emitSduStats(Direction dir, double tputSample, simtime_t arrivalTime)
 {
     emit(rlcThroughputSignal_[dir_], tputSample);
-    emit(rlcDelaySignal_[dir_], (NOW - creationTime).dbl());
+    emit(rlcDelaySignal_[dir_], (NOW - arrivalTime).dbl());
 }
 
 bool LteRlcUmRxEntity::consumeReassemblyReset(unsigned int pduSno)

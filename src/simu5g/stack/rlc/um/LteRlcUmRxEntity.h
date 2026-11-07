@@ -90,9 +90,10 @@ class LteRlcUmRxEntity : public RlcUmRxEntityBase
 
     /*
      * Hook that emits the direction-indexed per-SDU statistics (throughput and
-     * delay) when an SDU is delivered to PDCP.
+     * delay) when an SDU is delivered to PDCP. arrivalTime is when the SDU entered
+     * the RLC TX entity.
      */
-    virtual void emitSduStats(Direction dir, double tputSample, simtime_t creationTime);
+    virtual void emitSduStats(Direction dir, double tputSample, simtime_t arrivalTime);
 
     virtual void moveRxWindow(int pos);
     virtual void reassemble(unsigned int index);

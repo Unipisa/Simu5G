@@ -16,10 +16,13 @@ import inet.common.TagBase;
 namespace simu5g;
 
 //
-// Tag to track PDCP metadata across protocol layers.
+// Tag that carries the metadata of an RLC SDU from the RLC TX entity to the RX entity:
+// its PDCP sequence number, its length, and when it entered the TX entity. The RX
+// entity measures the SDU delay of the RLC layer from the latter.
 //
 class PdcpTrackingTag extends inet::TagBase
 {
     unsigned int pdcpSequenceNumber = 0;    // Original PDCP sequence number
     unsigned int originalPacketLength = 0;  // Original packet size (before any RLC processing)
+    simtime_t rlcArrivalTime;               // When the SDU entered the RLC TX entity
 }

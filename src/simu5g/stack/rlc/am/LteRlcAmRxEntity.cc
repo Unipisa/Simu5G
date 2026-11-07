@@ -258,11 +258,12 @@ void LteRlcAmRxEntity::deliverSdu(Packet *sdu)
     ci->setDestId(ackFlowControlInfo_->getSourceId());
     ci->setDirection(dir);
     ci->setDrbId(ackFlowControlInfo_->getDrbId());
-    sdu->removeTagIfPresent<PdcpTrackingTag>();
+    simtime_t arrivalTime = sdu->removeTag<PdcpTrackingTag>()->getRlcArrivalTime();
 
+    // the SDU delay counts from when the SDU entered the TX entity
     totalRcvdBytes_ += sdu->getByteLength();
     double tput = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-    emitRxStatistics(false, tput, NOW - sdu->getCreationTime());
+    emitRxStatistics(false, tput, NOW - arrivalTime);
 
     // How far the receiving window is stretched: the span between the next PDU
     // awaited in sequence and the highest one received.

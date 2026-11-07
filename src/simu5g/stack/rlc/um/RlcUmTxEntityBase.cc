@@ -64,11 +64,13 @@ void RlcUmTxEntityBase::handleSdu(inet::Packet *pkt)
 {
     EV << NOW << " RlcUmTxEntity::handleSdu - Received SDU from upper layer, size " << pkt->getByteLength() << "\n";
 
-    // Add PDCP tracking information (SN + original length), read back in rlcPduMake().
+    // Add PDCP tracking information (SN, original length, arrival time), read back in
+    // rlcPduMake() and by the RX entity
     auto pdcpHeader = pkt->peekAtFront<LtePdcpHeader>();
     auto pdcpTag = pkt->addTag<PdcpTrackingTag>();
     pdcpTag->setPdcpSequenceNumber(pdcpHeader->getSequenceNumber());
     pdcpTag->setOriginalPacketLength(pkt->getByteLength());
+    pdcpTag->setRlcArrivalTime(NOW);
 
     // give the hook a chance to consume the SDU (e.g. hold it during a D2D mode switch)
     if (interceptSdu(pkt))

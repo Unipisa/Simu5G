@@ -162,12 +162,13 @@ void NrRlcUmRxEntity::toPdcpNr(Packet *pktAux)
 {
     // Set the receive-side flow info for PDCP routing and drop the TX-internal tag.
     *pktAux->addTagIfAbsent<FlowControlInfo>() = *flowControlInfo_;
-    pktAux->removeTagIfPresent<PdcpTrackingTag>();
+    simtime_t arrivalTime = pktAux->removeTag<PdcpTrackingTag>()->getRlcArrivalTime();
 
-    // This bearer's delay and throughput of the reassembled SDU
+    // This bearer's delay (since the SDU entered the TX entity) and throughput of the
+    // reassembled SDU
     totalRcvdBytesNr_ += pktAux->getByteLength();
     double tput = (double)totalRcvdBytesNr_ / (NOW - getSimulation()->getWarmupPeriod());
-    emitRxStatistics(false, tput, NOW - pktAux->getCreationTime());
+    emitRxStatistics(false, tput, NOW - arrivalTime);
 
     emit(sentPacketToUpperLayerSignal_, pktAux);
 

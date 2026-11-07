@@ -89,14 +89,14 @@ void LteRlcUmRxEntityD2D::emitPduStats(Direction dir, double tputSample, simtime
     }
 }
 
-void LteRlcUmRxEntityD2D::emitSduStats(Direction dir, double tputSample, simtime_t creationTime)
+void LteRlcUmRxEntityD2D::emitSduStats(Direction dir, double tputSample, simtime_t arrivalTime)
 {
     if (dir == D2D || dir == D2D_MULTI) { // UE in DM
         emit(rlcThroughputD2DSignal_, tputSample);
-        emit(rlcDelayD2DSignal_, (NOW - creationTime).dbl());
+        emit(rlcDelayD2DSignal_, (NOW - arrivalTime).dbl());
     }
     else { // UE in IM
-        LteRlcUmRxEntity::emitSduStats(dir, tputSample, creationTime);
+        LteRlcUmRxEntity::emitSduStats(dir, tputSample, arrivalTime);
     }
 }
 
