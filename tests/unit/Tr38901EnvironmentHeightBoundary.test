@@ -1,0 +1,48 @@
+%description:
+
+A deviation of the TR 38.901 UMa environment height from the specification
+at one distance, recorded rather than fixed (model deviation 26). In TR
+38.901 v16.1.0 Table 7.4.1-1 NOTE 1, g(d2D) = 0 for d2D <= 18 m, so at
+d2D = 18 m C(d2D, hUT) = 0 and h_E is 1 m with certainty.
+Tr38901PathLossModel::drawEnvironmentHeight() takes g = 0 only for
+d2D < 18 m: at exactly 18 m it draws, and at hUT = 22.5 m about 5 links in
+1000 get an h_E other than 1 m.
+
+When fixed, drop the %expected-failure line and fold the checks into
+PathLossEnvironmentHeight.
+
+%expected-failure: the TR 38.901 h_E draw takes g(d2D) > 0 at d2D = 18 m
+
+%includes:
+#include "PathLossTestUtil.h"
+#include "simu5g/stack/phy/channelmodel/Tr38901PathLossModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+CaseRecorder probe(this, 1e-6);
+ScenarioParams p;
+p.scenario = URBAN_MACROCELL;
+p.hNodeB = 25;
+p.hUe = 22.5;
+p.carrierFrequencyGHz = 0.8;
+Tr38901PathLossModel m;
+p.apply(m, this);
+
+long before = getRNG(0)->getNumbersDrawn();
+int notOne = 0;
+for (int i = 0; i < 40000; i++)
+    if (m.drawEnvironmentHeight(18) != 1)
+        notOne++;
+probe.expectValue("no number is drawn at d2D = 18 m, where C = 0", getRNG(0)->getNumbersDrawn() - before, 0);
+probe.expectValue("...and h_E is 1 m", notOne, 0);
+
+probe.summary();
+
+%contains: stdout
+modelchecks=2 modelfailures=0
+
+%not-contains: stdout
+FAILED

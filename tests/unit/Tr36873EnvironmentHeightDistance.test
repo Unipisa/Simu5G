@@ -1,0 +1,56 @@
+%description:
+
+A deviation of the TR 36.873 UMa environment height from the specification,
+recorded rather than fixed (model deviation 26). TR 36.873 v12.7.0 Table
+7.2-1 NOTE 4 draws h_E = 1 m with probability 1/(1+C(d2D, hUT)), with the
+C(d2D, hUT) of Table 7.2-2, which has a distance term; so does the model's
+own UMa LOS probability. Tr36873PathLossModel::drawEnvironmentHeight() takes
+C without it, ((hUT-13)/10)^1.5, so the probability of 1 m does not depend on
+the distance: at hUT = 22.5 m it is 0.52 everywhere, where the specification
+gives 0.98 at 30 m, 0.63 at 100 m and 0.29 at 200 m.
+
+Graded from the frequencies of 40000 draws, as in PathLossEnvironmentHeight,
+which pins the current distribution. When fixed, drop the %expected-failure
+line, fold the cases into PathLossEnvironmentHeight and drop the pin there.
+
+%expected-failure: the TR 36.873 h_E draw leaves out the distance term of C(d2D, hUT)
+
+%includes:
+#include <map>
+#include "PathLossTestUtil.h"
+#include "simu5g/stack/phy/channelmodel/Tr36873PathLossModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+CaseRecorder probe(this, 1e-6);
+const int N = 40000;
+const double heValues[] = { 1, 12, 15, 18, 21 };
+
+ScenarioParams p;
+p.scenario = URBAN_MACROCELL;
+p.hNodeB = 25;
+p.hUe = 22.5;
+p.carrierFrequencyGHz = 0.8;
+Tr36873PathLossModel m;
+p.apply(m, this);
+
+for (double d : { 30.0, 100.0, 200.0 }) {
+    std::map<double, int> counts;
+    for (int i = 0; i < N; i++)
+        counts[m.drawEnvironmentHeight(d)]++;
+    for (double v : heValues)
+        probe.record("t873_p_he", p, { { "d2D", d }, { "hE", v } }, counts[v] / (double)N, 0.01);
+}
+
+probe.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=15 failures=0
+
+%not-contains: verdict.txt
+FAILED

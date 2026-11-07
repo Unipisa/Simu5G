@@ -1,0 +1,144 @@
+%description:
+
+A link's effective environment height h_E (TR 38.901 v16.1.0 Table 7.4.1-1
+NOTE 1): drawn once with the link's LOS state and kept with it in the
+medium, and the h_E every evaluation of the link computes its path loss at,
+at either end.
+
+Checked with the TR 38.901 UMa model at 0.8 GHz, a 25 m base station and a
+UE 22.5 m high and 2000 m away, where h_E moves the breakpoint distance to
+either side of the link. Shadowing, fading and indoor loss are off, so a
+link's attenuation is its path loss, graded against pathloss_reference.py at
+the h_E and LOS state kept for the link: the one drawn, then 12 and 21 m set
+in its place, in LOS and NLOS, evaluated at the UE and at the base station.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "PathLossTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The control information a packet from 'source' to 'dest' carries, with the
+// sender's position.
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
+        MacNodeId dest, const Coord& senderPosition)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCoord(senderPosition);
+    return info;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 0.8GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 22.5m
+**.dynamicLos = true
+**.shadowing = false
+**.fading = false
+
+%no-default-inifile: 1
+
+%activity:
+CaseRecorder probe(this, 1e-6);
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+bs->setPhy(&bsEndpoint);
+ue->setPhy(&ueEndpoint);
+const MacNodeId bsId = MacNodeId(1);
+const MacNodeId ueId = MacNodeId(1025);
+bsEndpoint.nodeId = bsId;
+ueEndpoint.nodeId = ueId;
+bsEndpoint.coord = Coord(0, 0, 25);
+ueEndpoint.coord = Coord(1600, 1200, 22.5);   // d2D = 2000 m
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+StubRadioRegistration bsRadio(medium, bsId, &bsEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe bsProbe(bs), ueProbe(ue);
+
+ScenarioParams p;
+p.scenario = URBAN_MACROCELL;
+p.hNodeB = 25;
+p.hUe = 22.5;
+p.carrierFrequencyGHz = 0.8;
+const double d2D = 2000;
+const double d3D = std::sqrt(d2D * d2D + 2.5 * 2.5);
+
+wait(0.010);
+
+UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
+UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
+RadioLink atUe = ueProbe.linkFor(&dlData);
+RadioLink atBs = bsProbe.linkFor(&dlCqi);
+
+double first = ue->getAttenuation(atUe);
+ChannelState::LosSample& sample = medium->getLosMap(GHz(0.8))[atUe.linkKey];
+double drawn = sample.environmentHeight;
+probe.expectValue("the link's kept h_E is 1 m or one of uniform(12,15,...,21)",
+        drawn == 1 || drawn == 12 || drawn == 15 || drawn == 18 || drawn == 21 ? 1 : 0, 1);
+probe.record(sample.los ? "t901_uma_los_he" : "t901_uma_nlos_he", p,
+        { { "d3D", d3D }, { "d2D", d2D }, { "los", (double)sample.los }, { "hE", drawn } }, first);
+
+for (double hE : { 12.0, 21.0 }) {
+    for (bool los : { true, false }) {
+        sample.environmentHeight = hE;
+        sample.los = los;
+        const char *ref = los ? "t901_uma_los_he" : "t901_uma_nlos_he";
+        probe.record(ref, p, { { "d3D", d3D }, { "d2D", d2D }, { "los", (double)los }, { "hE", hE } }, ue->getAttenuation(atUe));
+        probe.record(ref, p, { { "d3D", d3D }, { "d2D", d2D }, { "los", (double)los }, { "hE", hE } }, bs->getAttenuation(atBs));
+    }
+}
+
+probe.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=9 failures=0
+
+%contains: stdout
+modelchecks=1 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED

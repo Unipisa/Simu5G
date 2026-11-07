@@ -76,6 +76,30 @@ def _dbp_effective(fc, hBS, hUT):
     return 4 * (hBS - 1) * (hUT - 1) * (fc * 1e9) / C
 
 
+def _dbp_he(fc, hBS, hUT, hE):
+    # UMa breakpoint: d'BP = 4 h'BS h'UT fc/c, with h'BS = hBS - hE and
+    # h'UT = hUT - hE, hE the effective environment height
+    return 4 * (hBS - hE) * (hUT - hE) * (fc * 1e9) / C
+
+
+def _he_values(hUT):
+    # The values of "a discrete uniform distribution uniform(12,15,...,(hUT-1.5))".
+    # Graded only where hUT - 1.5 is on the 3 m grid, where the set is unambiguous.
+    top = hUT - 1.5
+    assert top >= 12 and (top - 12) % 3 == 0, f"uniform(12,15,...,{top:g}) is not on the 3 m grid"
+    return [12 + 3 * k for k in range(int(round((top - 12) / 3)) + 1)]
+
+
+def _p_he(c, hUT, hE):
+    # P(hE): 1 m with probability 1/(1+C), and chosen from uniform(12,15,...,(hUT-1.5))
+    # otherwise
+    p1 = 1 / (1 + c)
+    if hE == 1:
+        return p1
+    values = _he_values(hUT)
+    return (1 - p1) / len(values) if hE in values else 0.0
+
+
 def _dbp_actual(fc, hBS, hUT):
     # RMa/SMa breakpoint: dBP = 2 pi hBS hUT fc/c, with the actual heights
     return 2 * pi * hBS * hUT * (fc * 1e9) / C
@@ -223,6 +247,15 @@ def t873_uma_los(d3D, d2D, fc, hBS, hUT):
     return t873_umi_los(d3D, d2D, fc, hBS, hUT)
 
 
+def t873_uma_los_he(d3D, d2D, fc, hBS, hUT, hE):
+    # Same functional form as 3D-UMi LOS, with d'BP = 4 h'BS h'UT fc/c and
+    # h'BS = hBS - hE, h'UT = hUT - hE (Table 7.2-1 NOTE 4)
+    dbp = _dbp_he(fc, hBS, hUT, hE)
+    if d2D < dbp:
+        return 22 * log10(d3D) + 28 + 20 * log10(fc)
+    return 40 * log10(d3D) + 28 + 20 * log10(fc) - 9 * log10(dbp ** 2 + (hBS - hUT) ** 2)
+
+
 def t873_uma_nlos(d3D, d2D, fc, hBS, hUT, W, h):
     # PL = max(PL_LOS,
     #          161.04 - 7.1 log10(W) + 7.5 log10(h)
@@ -280,6 +313,22 @@ def t873_p_los_uma(d2D, hUT):
     cc = 0 if hUT <= 13 else ((hUT - 13) / 10) ** 1.5
     return (18 / d2D + math.exp(-d2D / 63) * (1 - 18 / d2D)) * \
            (1 + cc * 1.25 * (d2D / 100) ** 3 * math.exp(-d2D / 150))
+
+
+def _t873_c(d2D, hUT):
+    # C(d2D, hUT) of Table 7.2-2, the factor of the UMa LOS probability above:
+    # 0 for hUT <= 13 m; ((hUT-13)/10)^1.5 (5/4) (d2D/100)^3 exp(-d2D/150) for
+    # 13 < hUT <= 23 m and d2D > 18 m; 0 for d2D <= 18 m
+    if hUT <= 13 or d2D <= 18:
+        return 0.0
+    return ((hUT - 13) / 10) ** 1.5 * 1.25 * (d2D / 100) ** 3 * math.exp(-d2D / 150)
+
+
+def t873_p_he(d2D, hUT, hE):
+    # Table 7.2-1 NOTE 4: "hE=1m with a probability equal to 1/(1+C(d2D, hUT))
+    # and chosen from a discrete uniform distribution uniform(12,15,...,(hUT-1.5))
+    # otherwise. The function C(d2D, hUT) is defined in Table 7.2-2."
+    return _p_he(_t873_c(d2D, hUT), hUT, hE)
 
 
 def t873_p_los_rma(d2D):
@@ -348,6 +397,36 @@ def t901_uma_los(d3D, d2D, fc, hBS, hUT):
     if d2D < dbp:
         return 28 + 22 * log10(d3D) + 20 * log10(fc)
     return 28 + 40 * log10(d3D) + 20 * log10(fc) - 9 * log10(dbp ** 2 + (hBS - hUT) ** 2)
+
+
+def t901_uma_los_he(d3D, d2D, fc, hBS, hUT, hE):
+    # As t901_uma_los, with dBP = 4 h'BS h'UT fc/c, h'BS = hBS - hE and
+    # h'UT = hUT - hE (Table 7.4.1-1 NOTE 1)
+    dbp = _dbp_he(fc, hBS, hUT, hE)
+    if d2D < dbp:
+        return 28 + 22 * log10(d3D) + 20 * log10(fc)
+    return 28 + 40 * log10(d3D) + 20 * log10(fc) - 9 * log10(dbp ** 2 + (hBS - hUT) ** 2)
+
+
+def t901_uma_nlos_he(d3D, d2D, fc, hBS, hUT, hE):
+    # PL = max(PL_LOS, 13.54 + 39.08 log10(d3D) + 20 log10(fc) - 0.6 (hUT - 1.5))
+    return max(t901_uma_los_he(d3D, d2D, fc, hBS, hUT, hE),
+               13.54 + 39.08 * log10(d3D) + 20 * log10(fc) - 0.6 * (hUT - 1.5))
+
+
+def _t901_c(d2D, hUT):
+    # Table 7.4.1-1 NOTE 1:
+    # C(d2D, hUT) = 0 for hUT < 13 m; ((hUT-13)/10)^1.5 g(d2D) for 13 m <= hUT <= 23 m
+    # g(d2D) = 0 for d2D <= 18 m; (5/4) (d2D/100)^3 exp(-d2D/150) for 18 m < d2D
+    g = 0.0 if d2D <= 18 else 1.25 * (d2D / 100) ** 3 * math.exp(-d2D / 150)
+    return 0.0 if hUT < 13 else ((hUT - 13) / 10) ** 1.5 * g
+
+
+def t901_p_he(d2D, hUT, hE):
+    # Table 7.4.1-1 NOTE 1: "For UMa hE=1m with a probability equal to
+    # 1/(1+C(d2D, hUT)) and chosen from a discrete uniform distribution
+    # uniform(12,15,...,(hUT-1.5)) otherwise."
+    return _p_he(_t901_c(d2D, hUT), hUT, hE)
 
 
 def t901_uma_nlos(d3D, d2D, fc, hBS, hUT):

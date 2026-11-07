@@ -1,0 +1,144 @@
+%description:
+
+The effective environment height h_E of the UMa path loss: its draw
+(PathLossModel::drawEnvironmentHeight()) and its use in the breakpoint
+distance (computePathLoss() at the h_E the link was given), checked against
+3GPP TR 38.901 v16.1.0 Table 7.4.1-1 NOTE 1 and TR 36.873 v12.7.0
+Table 7.2-1 NOTE 4.
+
+h_E is 1 m with probability 1/(1+C(d2D, hUT)) and chosen from
+uniform(12,15,...,(hUT-1.5)) otherwise. Its distribution is graded from the
+frequencies of 40000 draws, at hUT = 22.5 m (the set is then 12, 15, 18 and
+21 m), at three distances, to within 0.01; where the outcome is certain, no
+number is drawn. The path loss is graded at h_E = 1, 12 and 21 m on both
+sides of the breakpoint distance, which h_E moves.
+
+The TR 36.873 draw leaves out the distance term of C(d2D, hUT) (model
+deviation 26): its distribution is graded in
+Tr36873EnvironmentHeightDistance, an expected failure, and pinned here.
+
+%includes:
+#include <map>
+#include "PathLossTestUtil.h"
+#include "simu5g/stack/phy/channelmodel/Tr36873PathLossModel.h"
+#include "simu5g/stack/phy/channelmodel/Tr38901PathLossModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%activity:
+CaseRecorder probe(this, 1e-6);
+const int N = 40000;
+const double heValues[] = { 1, 12, 15, 18, 21 };
+
+auto pathLossAt = [] (PathLossModel& m, double d3D, double d2D, bool los, double hE) {
+    m.setEnvironmentHeight(hE);
+    return m.computePathLoss(d3D, d2D, los);
+};
+// the frequency of each h_E value over N draws at d2D; returns the number of other values drawn
+auto frequencies = [&] (PathLossModel& m, double d2D, std::map<double, double>& freq) {
+    std::map<double, int> counts;
+    for (int i = 0; i < N; i++)
+        counts[m.drawEnvironmentHeight(d2D)]++;
+    int others = N;
+    for (double v : heValues) {
+        freq[v] = counts[v] / (double)N;
+        others -= counts[v];
+    }
+    return others;
+};
+auto drawsOf = [&] (PathLossModel& m, double d2D, double& hE) {
+    long before = getRNG(0)->getNumbersDrawn();
+    hE = m.drawEnvironmentHeight(d2D);
+    return (double)(getRNG(0)->getNumbersDrawn() - before);
+};
+
+ScenarioParams p;
+p.scenario = URBAN_MACROCELL;
+p.hNodeB = 25;
+p.hUe = 22.5;
+p.carrierFrequencyGHz = 0.8;
+
+// --- TR 38.901 ---------------------------------------------------------
+Tr38901PathLossModel m901;
+p.apply(m901, this);
+for (double d : { 30.0, 100.0, 200.0 }) {
+    std::map<double, double> freq;
+    int others = frequencies(m901, d, freq);
+    for (double v : heValues)
+        probe.record("t901_p_he", p, { { "d2D", d }, { "hE", v } }, freq[v], 0.01);
+    probe.expectValue("TR 38.901: no h_E outside 1 m and uniform(12,15,...,21) at d2D=" + std::to_string((int)d), others, 0);
+}
+
+double hE;
+probe.expectValue("TR 38.901: no draw at d2D = 17 m, where C = 0", drawsOf(m901, 17, hE), 0);
+probe.expectValue("...and h_E is 1 m", hE, 1);
+
+// d'BP = 4 (25-hE) (22.5-hE) fc/c: 1456 m at hE = 12 m, 64 m at hE = 21 m, 5504 m at hE = 1 m
+for (double hE : { 1.0, 12.0, 21.0 }) {
+    for (double d2D : { 500.0, 2000.0 }) {
+        double d3D = std::sqrt(d2D * d2D + 2.5 * 2.5);
+        probe.record("t901_uma_los_he", p, { { "d3D", d3D }, { "d2D", d2D }, { "los", 1 }, { "hE", hE } }, pathLossAt(m901, d3D, d2D, true, hE));
+        probe.record("t901_uma_nlos_he", p, { { "d3D", d3D }, { "d2D", d2D }, { "los", 0 }, { "hE", hE } }, pathLossAt(m901, d3D, d2D, false, hE));
+    }
+}
+
+p.hUe = 12.9;
+p.apply(m901, this);
+probe.expectValue("TR 38.901: no draw at hUT = 12.9 m, where C = 0", drawsOf(m901, 100, hE), 0);
+probe.expectValue("...and h_E is 1 m", hE, 1);
+
+p.hUe = 22.5;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.apply(m901, this);
+probe.expectValue("TR 38.901: no draw in UMi, where h_E is 1 m", drawsOf(m901, 100, hE), 0);
+probe.expectValue("...and h_E is 1 m", hE, 1);
+
+// --- TR 36.873 ---------------------------------------------------------
+p = ScenarioParams();
+p.scenario = URBAN_MACROCELL;
+p.hNodeB = 25;
+p.hUe = 22.5;
+p.carrierFrequencyGHz = 0.8;
+Tr36873PathLossModel m873;
+p.apply(m873, this);
+
+// deviation 26: P(1 m) = 1/(1 + ((hUT-13)/10)^1.5) at every distance
+const double pinned = 1 / (1 + std::pow((22.5 - 13) / 10, 1.5));
+for (double d : { 30.0, 100.0, 200.0 }) {
+    std::map<double, double> freq;
+    int others = frequencies(m873, d, freq);
+    probe.expectValue("TR 36.873 (pin, deviation 26): P(h_E = 1 m) does not depend on d2D, at d2D=" + std::to_string((int)d),
+            std::fabs(freq[1] - pinned) <= 0.01 ? 1 : 0, 1);
+    probe.expectValue("TR 36.873: no h_E outside 1 m and uniform(12,15,...,21) at d2D=" + std::to_string((int)d), others, 0);
+}
+
+for (double hE : { 1.0, 12.0, 21.0 }) {
+    for (double d2D : { 500.0, 2000.0 }) {
+        double d3D = std::sqrt(d2D * d2D + 2.5 * 2.5);
+        probe.record("t873_uma_los_he", p, { { "d3D", d3D }, { "d2D", d2D }, { "los", 1 }, { "hE", hE } }, pathLossAt(m873, d3D, d2D, true, hE));
+    }
+}
+
+p.hUe = 12.9;
+p.apply(m873, this);
+probe.expectValue("TR 36.873: no draw at hUT = 12.9 m, where C = 0", drawsOf(m873, 100, hE), 0);
+probe.expectValue("...and h_E is 1 m", hE, 1);
+
+probe.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=33 failures=0
+
+%contains: stdout
+modelchecks=17 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
