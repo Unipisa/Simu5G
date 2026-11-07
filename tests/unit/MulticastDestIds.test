@@ -1,0 +1,66 @@
+%description:
+
+The ids the Binder gives multicast destinations
+(Binder::getOrAssignDestIdForMulticastAddress()): they start at
+MULTICAST_DEST_MIN_ID, 32768, and go up by one per address; an address
+asked for again gets its first id, and an id maps back to its address. The
+counter of the next id, which the Binder's inspector shows, holds that id:
+32768 before the first allocation.
+
+Checked with two IPv4 multicast addresses.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "simu5g/common/binder/Binder.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+Binder *binder = check_and_cast<Binder *>(getSimulation()->getSystemModule()->getSubmodule("binder"));
+cObject *counter = binder->findObject("multicastDestIdCounter_", false);
+c.check("the Binder's inspector shows the multicast id counter", counter != nullptr);
+if (counter != nullptr)
+    c.check("...and before the first allocation it holds the first id, 32768", counter->str() == "32768", counter->str());
+
+const inet::Ipv4Address group1("224.0.0.10"), group2("224.0.0.11");
+MacNodeId id1 = binder->getOrAssignDestIdForMulticastAddress(group1);
+MacNodeId id2 = binder->getOrAssignDestIdForMulticastAddress(group2);
+c.expectValue("the first multicast address gets the id 32768", num(id1), 32768);
+c.expectValue("...the second the next one", num(id2), 32769);
+c.check("...and both are multicast destination ids", isMulticastDestId(id1) && isMulticastDestId(id2));
+c.check("an address asked for again gets its first id", binder->getOrAssignDestIdForMulticastAddress(group1) == id1);
+c.check("...and an id maps back to its address",
+        binder->getAddressForMulticastDestId(id1) == group1 && binder->getAddressForMulticastDestId(id2) == group2);
+if (counter != nullptr)
+    c.check("the counter then holds the next id", counter->str() == "32770", counter->str());
+
+c.summary();
+
+%contains: stdout
+modelchecks=8 modelfailures=0
+
+%not-contains: stdout
+FAILED
