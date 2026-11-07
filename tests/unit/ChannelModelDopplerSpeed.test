@@ -1,0 +1,175 @@
+%description:
+
+Whose speed the Doppler shift of a link's Jakes fading takes: the link's
+mobile end's -- the UE of a cellular link -- whichever end evaluates it and
+in whichever direction. The base station's speed does not enter.
+
+A link has one fading realization, so a link evaluated at the same instant
+and at the same UE speed fades alike from its three evaluations: the UE
+decoding a downlink frame, the base station computing a downlink CQI, and
+the base station decoding the UE's uplink frame. A model that took the
+receiver's speed, the transmitter's or the evaluating radio's would fade at
+least one of them at the base station's speed.
+
+Checked through the entry point getRSRP(), with the path loss made
+deterministic (UMi, fixed LOS, no shadowing): changing only the UE's speed
+changes the received power on some band by the fading alone, and changing
+only the base station's speed changes nothing.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// The control information a packet from 'source' to 'dest' carries, with the
+// sender's position.
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
+        MacNodeId dest, const inet::Coord& senderPosition)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCoord(senderPosition);
+    return info;
+}
+
+static std::vector<double> minus(const std::vector<double>& a, const std::vector<double>& b)
+{
+    std::vector<double> d;
+    for (size_t i = 0; i < a.size(); i++)
+        d.push_back(a[i] - b[i]);
+    return d;
+}
+
+static bool nonzero(const std::vector<double>& v)
+{
+    for (double x : v)
+        if (fabs(x) > 1e-6)
+            return true;
+    return false;
+}
+
+static double maxDifference(const std::vector<double>& a, const std::vector<double>& b)
+{
+    double m = a.size() == b.size() ? 0.0 : INFINITY;
+    for (size_t i = 0; i < a.size() && i < b.size(); i++)
+        m = std::max(m, fabs(a[i] - b[i]));
+    return m;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# A deterministic path loss, so that a change of the received power is the fading's.
+**.scenario = "URBAN_MICROCELL"
+**.fixedLos = true
+**.shadowing = false
+**.fading = true
+**.fadingType = "JAKES"
+**.numFadingPaths = 6
+**.delayRms = 363ns
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+bs->setPhy(&bsEndpoint);
+ue->setPhy(&ueEndpoint);
+ueEndpoint.channelModels[ue->getCarrierFrequency()] = ue;
+const MacNodeId bsId = MacNodeId(1), ueId = MacNodeId(1025);
+bsEndpoint.nodeId = bsId;
+ueEndpoint.nodeId = ueId;
+bsEndpoint.coord = inet::Coord(0, 0, 10);
+ueEndpoint.coord = inet::Coord(60, 25, 1.5);
+bsEndpoint.txPower = 40.0;
+ueEndpoint.txPower = 23.0;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+StubRadioRegistration bsRadio(medium, bsId, &bsEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe bsProbe(bs), ueProbe(ue);
+
+// Away from t = 0, so that the fading of a moving link differs from a still one's.
+wait(0.050);
+
+UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
+UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
+UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
+
+// The received power per band of the three evaluations of the link, at the
+// given speeds of the two ends, all at this instant.
+struct Evaluations { std::vector<double> dlData, dlCqi, ulData; };
+auto evaluate = [&] (double ueSpeed, double bsSpeed) {
+    ueEndpoint.speed = ueSpeed;
+    bsEndpoint.speed = bsSpeed;
+    Evaluations e;
+    e.dlData = ue->getRSRP(ueProbe.linkFor(&dlData), 30.0);
+    e.dlCqi = bs->getRSRP(bsProbe.linkFor(&dlCqi), 30.0);
+    e.ulData = bs->getRSRP(bsProbe.linkFor(&ulData), 30.0);
+    return e;
+};
+
+Evaluations still = evaluate(0.0, 0.0);
+Evaluations ueMoving = evaluate(30.0, 0.0);
+Evaluations bothMoving = evaluate(30.0, 40.0);
+Evaluations bsMoving = evaluate(0.0, 40.0);
+
+c.check("a UE decoding a downlink frame fades at the UE's speed", nonzero(minus(ueMoving.dlData, still.dlData)));
+c.check("a base station computing a downlink CQI fades it at the UE's speed", nonzero(minus(ueMoving.dlCqi, still.dlCqi)));
+c.check("a base station decoding an uplink frame fades it at the UE's speed", nonzero(minus(ueMoving.ulData, still.ulData)));
+
+c.expectNear("...the same fading, from all three ends and directions (DL CQI vs DL data)",
+        maxDifference(minus(ueMoving.dlCqi, still.dlCqi), minus(ueMoving.dlData, still.dlData)), 0.0, 1e-9);
+c.expectNear("...(UL data vs DL data)",
+        maxDifference(minus(ueMoving.ulData, still.ulData), minus(ueMoving.dlData, still.dlData)), 0.0, 1e-9);
+
+c.expectNear("the base station's speed does not enter: DL data, UE moving",
+        maxDifference(bothMoving.dlData, ueMoving.dlData), 0.0, 1e-12);
+c.expectNear("...DL CQI, UE moving", maxDifference(bothMoving.dlCqi, ueMoving.dlCqi), 0.0, 1e-12);
+c.expectNear("...UL data, UE moving", maxDifference(bothMoving.ulData, ueMoving.ulData), 0.0, 1e-12);
+c.expectNear("...DL data, UE still", maxDifference(bsMoving.dlData, still.dlData), 0.0, 1e-12);
+c.expectNear("...DL CQI, UE still", maxDifference(bsMoving.dlCqi, still.dlCqi), 0.0, 1e-12);
+c.expectNear("...UL data, UE still", maxDifference(bsMoving.ulData, still.ulData), 0.0, 1e-12);
+
+c.summary();
+
+%contains: stdout
+modelchecks=11 modelfailures=0
+
+%not-contains: stdout
+FAILED
