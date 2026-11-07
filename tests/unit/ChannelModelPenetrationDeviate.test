@@ -1,0 +1,131 @@
+%description:
+
+The random term of an indoor UE's building penetration loss: sigma_P times a
+standard-normal deviate that is the UE's own (TR 38.901 v16.1.0 7.4.3, "The
+O2I penetration is UT-specifically generated"), the same in every evaluation
+of each of its links, at either end, and none for a UE outdoors.
+
+Checked with the TR 38.901 low-loss model at 28 GHz, sigma_P = 4.4 dB (Table
+7.4.3-2): raising the UE's deviate from 0 to 1 raises the attenuation by
+4.4 dB on a downlink transmission evaluated at the UE, on its CQI evaluated
+at the base station, and on an uplink transmission evaluated at the base
+station; the base station's own deviate counts for none of them.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The control information a packet from 'source' to 'dest' carries, with the
+// sender's position.
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source,
+        MacNodeId dest, const Coord& senderPosition)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCoord(senderPosition);
+    return info;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsChannelModel: Tr38901ChannelModel;
+        ueChannelModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 28GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = true
+**.shadowing = true
+**.fading = false
+**.useBuildingPenetrationHighLossModel = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *bs = harnessModule<StochasticChannelModel>(this, "bsChannelModel");
+auto *ue = harnessModule<StochasticChannelModel>(this, "ueChannelModel");
+
+StubEndpoint bsEndpoint, ueEndpoint;
+bs->setPhy(&bsEndpoint);
+ue->setPhy(&ueEndpoint);
+const MacNodeId bsId = MacNodeId(1);
+const MacNodeId ueId = MacNodeId(1025);
+bsEndpoint.nodeId = bsId;
+ueEndpoint.nodeId = ueId;
+bsEndpoint.coord = Coord(0, 0, 25);
+ueEndpoint.coord = Coord(120, 45, 1.5);
+bsEndpoint.penetrationLossDeviate = 2.0;   // the base station's own: counts for none of the links
+ueEndpoint.insideBuilding = true;
+ueEndpoint.insideDistance = 7.0;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+StubRadioRegistration bsRadio(medium, bsId, &bsEndpoint);
+StubRadioRegistration ueRadio(medium, ueId, &ueEndpoint);
+ChannelModelProbe bsProbe(bs), ueProbe(ue);
+
+wait(0.010);
+
+UserControlInfo dlData = controlInfo(DL, DATAPKT, bsId, ueId, bsEndpoint.coord);
+UserControlInfo dlCqi = controlInfo(DL, FEEDBACKPKT, ueId, bsId, ueEndpoint.coord);
+UserControlInfo ulData = controlInfo(UL, DATAPKT, ueId, bsId, ueEndpoint.coord);
+RadioLink atUe = ueProbe.linkFor(&dlData);
+RadioLink cqiAtBs = bsProbe.linkFor(&dlCqi);
+RadioLink ulAtBs = bsProbe.linkFor(&ulData);
+
+// the attenuation of each link at the UE's deviate z
+auto attenuations = [&] (double z) {
+    ueEndpoint.penetrationLossDeviate = z;
+    return std::vector<double>{ ue->getAttenuation(atUe), bs->getAttenuation(cqiAtBs), bs->getAttenuation(ulAtBs) };
+};
+std::vector<double> a0 = attenuations(0.0);
+std::vector<double> a1 = attenuations(1.0);
+c.expectNear("an indoor UE's deviate raises a downlink transmission's attenuation at the UE by sigma_P per unit", a1[0] - a0[0], 4.4, 1e-9);
+c.expectNear("...that of its CQI at the base station by the same", a1[1] - a0[1], 4.4, 1e-9);
+c.expectNear("...and that of its uplink transmission at the base station by the same", a1[2] - a0[2], 4.4, 1e-9);
+c.check("...so the downlink and its CQI are attenuated alike", a1[0] == a1[1], std::to_string(a1[0]) + " " + std::to_string(a1[1]));
+
+ueEndpoint.insideBuilding = false;
+std::vector<double> o0 = attenuations(0.0);
+std::vector<double> o1 = attenuations(1.0);
+c.check("a UE outdoors has no penetration loss, whatever its deviate", o0 == o1 && o0[0] < a0[0]);
+
+c.summary();
+
+%contains: stdout
+modelchecks=5 modelfailures=0
+
+%not-contains: stdout
+FAILED
