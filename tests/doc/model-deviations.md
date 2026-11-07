@@ -21,7 +21,7 @@ same mechanism, so that nothing is fixed twice.
    - What the spec says: TR 38.901 7.4.4, eq. (7.4-5): R(dx) = exp(-dx/d_cor), with d_cor from Table 7.5-6, "correlation distance in the horizontal plane". TR 36.873 7.2.4 and TR 36.814 B.1.2.1.1 say the same (Gudmundson, ITU-R P.1816). No clause has a 0.5 factor or a hold rule.
    - Effect: the 0.5 doubles the correlation length, and the hold makes R = 1 below d_cor and the process stepwise.
    - Fix shape: `a = exp(-d/dcorr)`. Then decide between updating at every evaluation with that a, or interpolating ("may be interpolated within the coherence length", 7.6.3.2).
-   - Later in the branch: 5166c1198 ("shadowing is redrawn by how far its ends have moved") keeps the factor "as before", and c65da458c makes the shadowing per link. Neither fixes this.
+   - Later in the branch: "a link's shadowing is redrawn by how far its ends have moved, not by time and speed" keeps the factor "as before", and "a link's shadowing is kept once per link, shared by every channel model evaluating it" makes the shadowing per link. Neither fixes this.
    - Pinned by tests/unit/ChannelModelShadowing.
 2. **The thermal noise does not depend on the bandwidth, and the transmit power is not split over the RBs.**
    - What the model does: thermalNoise is a fixed parameter, -104.5 dBm by NED default, which is kTB for 50 RBs at 15 kHz (9 MHz). Every band's SINR gets the node's full transmit power.
@@ -40,7 +40,7 @@ same mechanism, so that nothing is fixed twice.
 5. **The scenario geometry is outside the formulas' validity.** The physics tests (and possibly examples) run URBAN_MICROCELL with nodebHeight = 25 m. TR 38.901 Table 7.4.1-1 UMi-SC gives "hBS = 10 m", and TR 36.814 Table B.1.2.1-1 UMi gives "hBS = 10 m". This is a configuration issue, not code; check the shipped examples.
 6. **The external- and background-cell interference was not evaluated with the model's own path loss.**
    - What the model did: computeExtCellPathLoss always applied TR 36.814 with the 3D distance as d, NLOS by configuration, and antennGainEnB.
-   - Later in the branch: fe74f9e4b ("external and background cells' interference takes the model's own path loss") replaces this. Re-check after the merge whether anything remains, e.g. shadowing and LOS for these links (stage B gives phantom links their own LOS state in 8766d912d).
+   - Later in the branch: "external and background cells' interference takes the model's own path loss" replaces this. Re-check after the merge whether anything remains, e.g. shadowing and LOS for these links (stage B gives phantom links their own LOS state in "a phantom transmission's link has its own LOS state").
    - From piece 5a on, these links take the evaluating model's own study. What remains at the end of piece 5a: no shadowing on these links, and the formulas take the nodebHeight and ueHeight parameters while the distances come from the real positions.
 
 ## Data and arithmetic defects
@@ -65,7 +65,7 @@ fingerprints. In the branch they get test hardening only (pins and expected fail
    - Reachable in simulations/lte/d2d_multicast (d2dInterference defaults to true). Moves those rows.
    - Fix shape: the receiving radio's own id for D2D_MULTI.
 14. **A UE with two radios has two indoor positions.**
-   - What the model does: each CellularRadio draws its own distance from the wall (uniform 0-25 m) and, from 3e2cc6bb4 on, its own penetration-loss deviate. An NR UE always has two radios (NrNicUe extends the LTE NIC: `radio` and `nrRadio`, the LTE one unused in standalone), and `**.insideBuilding = true` marks both, so every indoor NR UE draws twice; a dual-connectivity UE uses both.
+   - What the model does: each CellularRadio draws its own distance from the wall (uniform 0-25 m) and, from "the random term of a UE's building penetration loss is drawn once, the UE's own" on, its own penetration-loss deviate. An NR UE always has two radios (NrNicUe extends the LTE NIC: `radio` and `nrRadio`, the LTE one unused in standalone), and `**.insideBuilding = true` marks both, so every indoor NR UE draws twice; a dual-connectivity UE uses both.
    - What the spec says: TR 38.901 7.4.3.1 generates d2D-in and the O2I loss's random term per UT ("UT-specifically"), the same for all of the UT's links.
    - Effect: the indoor loss is 0.5 dB/m, so the two legs of one UE can differ by up to 12.5 dB for no physical reason; biases anything comparing a DC UE's LTE and NR legs indoors. On dev it was worse: one draw per channel model, i.e. per radio and per carrier.
    - Moves the four channelmodel Penetration rows (one draw fewer per UE on RNG 0).
@@ -103,13 +103,33 @@ piece 5a pin item 19.
    - What the model does: from "external and background cells interfere through the downlink and uplink interference computations" on, a beacon's reception, which has no bands, goes through the downlink interference computation with the other cells off and the external and background cells as their switches say.
    - Open: what the RSSI the handover decision compares is meant to include.
 
+## Found in piece 5b (2026-11-07): fix after the full merge
+
+Recorded, not fixed in the branch, like the items of pieces 4 and 5a.
+
+22. **A car halted at a red light keeps its Doppler shift.**
+   - What the model does: TrafficLightMobility leaves the car's velocity unchanged while it waits at a red light, and from "the Doppler speed is the mobile end's, from its mobility" on, the Doppler speed is the mobility's velocity. A waiting car fades as if it were driving at its cruising speed. The old two-sample estimate gave 0 there.
+   - Reached in nr/videostreaming_dataset_generator (UrbanNetwork).
+   - Fix shape: the velocity is zero while the car waits.
+23. **A car's trajectory depends on how often its position is read.**
+   - What the model does: at each update, TrafficLightMobility either stops the car for the whole time since the last update (light red) or moves it for the whole of it (light green). From "positions are the mobility's, at the instant they are read" on, every read of the position is an update, and positions are read at arbitrary instants (frames sent and received, CQIs, other nodes' evaluations), so the time a car waits, and where it is, depend on the reads.
+   - Reached in the same row.
+   - Fix shape: compute when the car reaches the stop line and when the light changes, independently of the update instants.
+24. **The Jakes phase is the speed times the absolute time, and only one end's speed counts.**
+   - What the model does: StochasticChannelModel::jakesFading() sums the paths with phase 2*pi*(cos(aoa)*v*f/c*t - tau*f), with v the speed at the evaluation and t the absolute simulation time. The phase that has accumulated up to t is not the integral of the Doppler frequency, so every change of speed (waypoints, TraCI steps, GaussMarkovMobility) jumps the phase by an amount growing with t, which re-randomizes the fading, and a UE that stops returns to the same static value whatever its path. The speed is that of the link's mobile end, the UE, or the transmitter of a D2D link: a moving base station's and a D2D receiver's are ignored, and the two directions of a D2D pair share one realization at two different speeds. On dev the phase was the same; the speed was an estimate.
+   - What the physics says: a path's phase advances by the integral of its Doppler frequency over time, and the Doppler frequency has a term for each moving end.
+   - Fix shape: keep the accumulated phase per link and path, advanced by the Doppler frequency over the time since the last evaluation; take the velocities of both ends.
+25. **The distance statistic is weighted by the reads of the position.**
+   - What the model does: a UE's PHY emits its distance (and serving cell) statistics on the mobility's mobilityStateChanged signal. From "positions are the mobility's, at the instant they are read" on, the mobility emits that signal whenever anyone reads the position, so the mean of the distance is an average over the reads, not over time, and an unrelated module that reads the position more often changes it.
+   - Fix shape: record the statistic time-weighted (timeavg), or emit it on a timer.
+
 ## Fixed later in the branch, re-check only
 
-- **The O2I loss's random term redrawn at every evaluation:** drawn once per UE from 3e2cc6bb4 ("the random term of a UE's building penetration loss is drawn once, the UE's own"); see item 14 for the per-radio residue.
+- **The O2I loss's random term redrawn at every evaluation:** drawn once per UE from "the random term of a UE's building penetration loss is drawn once, the UE's own"; see item 14 for the per-radio residue.
 
-- **Shadowing per direction (LinkReciprocity):** made per link by c65da458c.
-- **Jakes fading evaluated at now - 1 ms:** fixed by c36541a99.
-- **The Doppler speed from a two-sample estimate:** fixed by 9f1ff8874.
+- **Shadowing per direction (LinkReciprocity):** made per link by "a link's shadowing is kept once per link, shared by every channel model evaluating it".
+- **Jakes fading evaluated at now - 1 ms:** fixed by "a link's Jakes fading is that at the start of the transmission evaluated on it".
+- **The Doppler speed from a two-sample estimate:** accepted with piece 5b. The estimate becomes the real speed with "positions are the mobility's, at the instant they are read", and the speed is the mobility's from "the Doppler speed is the mobile end's, from its mobility"; see items 22 and 24 for what remains.
 
 ## Not a deviation
 

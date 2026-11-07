@@ -183,3 +183,84 @@ background cells on the medium.
   beacon's RSSI counts the background cells but not the real ones.
 - **The A/B tool was fixed** (tests/abtest/run.sh failed every run with a
   relative output directory, as in its README's example).
+
+## Piece 5b: positions, Doppler speeds and the medium's channel models (9 commits + 4 test commits)
+
+Commits: "PhyBase, background UEs: positions are the mobility's, at the instant
+they are read" to "D2D: fix: a one-to-many D2D frame interferes at the D2D
+power it is sent at". The second half of piece 5 of the plan: a node's position
+is its mobility's at the instant it is read, the Doppler speed is the mobile
+end's, from its mobility, the radio medium owns the channel models (one per
+carrier and RAT), and a one-to-many D2D frame interferes at its own power.
+
+- **The fingerprint suite passes at the piece's tip.**
+- **The statistics of the rows with moving UEs and Jakes fading change, and
+  they change as the old Doppler estimate predicts.** Replicated A/B against
+  piece 5a's tip, 15 configurations (the channelmodel rows UMa-38901,
+  SMa-36814, Penetration-36873 and TallUe-38901, the LTE tutorial, demo VoIP,
+  handover VoIP-DL, D2D mode switching, D2D multihop, nr D2D with dynamic LOS,
+  multi-carrier, numerology, standalone multicell, dual connectivity, Ethernet
+  handover), 30 seeds per side: 2792 statistics tested, 120 significant, in 10
+  configurations. The largest: the first-transmission DL H-ARQ error rate in
+  SMa-36814 (0.20 to 0.37, with the mean received DL SINR 11.2 to 8.1 dB) and
+  in lte/demo VoIP (0.025 to 0.004, with the mean opinion score 4.18 to 4.36);
+  the UL error rate in nr/ethernet Ethernet-Handover (0.006 to 0.048). On the
+  development branch the channel models estimated the Doppler speed from two
+  positions quantized to the mobility's update interval: zero between two
+  updates, so a moving UE's fading was frozen at its static value, and many
+  times the real speed right after an update. With the real speed, the fading
+  of a fast UE varies between the CQI and the decoding (more errors), and
+  that of a slow UE no longer jumps after each update (fewer errors).
+- **The cause is the intended commit.** The 10 configurations with
+  significant changes were run with 30 seeds at two inner commits. All but a
+  few of the changes come with "positions are the mobility's, at the instant
+  they are read", measured together with the refactoring after it (for
+  example SMa-36814 0.20 to 0.37, VoIP 0.025 to 0.005). "the Doppler speed is
+  the mobile end's, from its mobility" moves only the means of the distance
+  statistic and the measured SINR of a few UEs, in their fourth or fifth
+  significant digit (lte/test_handover VoIP-DL, DoubleConnection): reading
+  the speed makes the mobility report its position, and the PHY emits these
+  statistics at each report (item 25). The rest of the piece moves nothing.
+- **The null control is clean overall, and its flags in two configurations
+  are chance.** No statistic is significant over all configurations; two
+  configurations have flags of their own. In nr/test_multiCarrier the same counter as in piece 5a
+  is flagged again (8 statistics counting the received MAC PDUs). In
+  channelmodel UMa-38901, 117 of 134 statistics, all following the number of
+  frames the base station sends (729 against 641 on average). A third seed
+  range (60-89) compares clean with both (0 of 136 and 0 of 135 statistics;
+  the same count is 693 there), so the two ranges were at the two ends of a
+  wide spread, and BH, applied within one configuration, flagged every
+  statistic that follows it. The A/B's 5 significant statistics in this
+  configuration come, in the bisection, with the same commit as the others.
+- **D2D multihop moves no distribution either.** It records no statistic in
+  the 3 s of the A/B above, so it was compared again at 15 s, 30 seeds per
+  side: 5577 statistics tested, none significant. The D2D power fix, which
+  moves the four multihop fingerprint rows, is not visible in the
+  distributions. The D2D SINR statistic is not compared: between "the radio
+  medium owns the channel models" and "a D2D receiver records its own
+  rcvdSinrD2D", later in the branch, the medium's channel model records it,
+  for all receivers at once.
+- **The building penetration loss had a fault, which was split out as its own
+  fix:** at an outdoor base station, the high-loss choice of an indoor UE's
+  links was read from an uninitialized member. No fingerprint row reaches
+  this state (each row that puts UEs inside a building marks the base
+  stations too), and a test of undefined behavior cannot be made red, so the
+  fix has no test of its own; the test of the choice at the base station's end
+  is deferred to piece 7, with the indoor tests.
+- **Test gaps were closed, each checked by mutation:** a background UE's
+  position between and after two mobility reports (BackgroundUePosition);
+  whose speed the Doppler shift takes, for each of a link's three evaluations,
+  with the base station's speed left out (ChannelModelDopplerSpeed); the
+  medium's channel model of a carrier and a RAT (RadioMediumChannelModels);
+  and the power a one-to-many D2D frame is recorded at
+  (CellularTransmitterD2dPower, which goes first and fails until the fix).
+- **The new tests pass at 41 commits:** at their own commits, and at every
+  later commit that changes the interfaces they use, up to the branch tip;
+  the D2D power test fails at its own commit only, as intended. The full unit
+  and physics suites at the piece's tip show no failure beyond the recorded
+  expected failures, each failing on its checks.
+- **Recorded, to be fixed after the merge** (model-deviations.md, items
+  22-25): a car halted at a red light keeps its Doppler shift; a car's
+  trajectory depends on how often its position is read; the Jakes phase is
+  the speed times the absolute time, and only one end's speed counts; the
+  distance statistic is weighted by the reads of the position.
