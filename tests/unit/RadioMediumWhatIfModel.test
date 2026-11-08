@@ -1,0 +1,180 @@
+%description:
+
+Which channel model the radio medium evaluates a what-if with:
+CellularRadioMedium::computeRsrp() and computeSinr() take a transmission that
+is not on the medium and the radio it would arrive at, and evaluate it with
+the channel model of the receiver's RAT on the transmission's carrier -- not
+the transmitter's. A receiver that does not operate on the carrier has no
+such model, and its what-if is rejected.
+
+Every caller of the medium's what-if (the cell-selection probe, the DL CQI,
+the D2D CQI) has both ends on one RAT, so a medium that took the
+transmitter's model, or one that evaluated a receiver off the carrier with
+some other model, would pass every other test.
+
+Checked on one 2 GHz carrier whose two RATs' models are configured
+differently -- the LTE model with the TR 36.814 urban macro path loss, the NR
+model with the TR 38.901 urban micro one -- so that they evaluate one link to
+different values. An LTE base station's what-if (a DL CQI) to an NR UE must
+give exactly what the NR model gives for that link, through the model's own
+link evaluation, and differ from what the LTE model gives. Shadowing and
+fading are off and the link is NLOS, so the received power is the transmit
+power less the path loss; the path loss it implies is graded against the
+TR 38.901 UMi NLOS formula of pathloss_reference.py. A UE that operates on
+another carrier only is rejected, for the received power and for the SINR.
+
+%includes:
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.radioMedium.numCarriers = 1
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# the two RATs' models on the carrier, configured differently
+*.radioMedium.channelModelType = "StochasticChannelModel"
+*.radioMedium.channelModel[*].pathLossType = "Tr36814"
+*.radioMedium.channelModel[*].scenario = "URBAN_MACROCELL"
+*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
+*.radioMedium.nrChannelModel[*].scenario = "URBAN_MICROCELL"
+*.radioMedium.nrChannelModel[*].nodebHeight = 10m
+**.ueHeight = 1.5m
+
+# path loss only, NLOS
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+# the stub radios have no receiver to record the measured SINR on
+**.collectSinrStatistics = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const GHz carrier = GHz(2.0);
+auto *lteModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, false));
+auto *nrModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, true));
+ChannelModelProbe lteProbe(lteModel), nrProbe(nrModel);
+
+// an LTE base station, an NR UE, and an NR UE that operates on another carrier only
+StubEndpoint enb, ue, offCarrierUe;
+enb.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+offCarrierUe.nodeId = MacNodeId(1026);
+enb.coord = inet::Coord(0, 0, 10);
+ue.coord = inet::Coord(180, 60, 1.5);
+offCarrierUe.coord = inet::Coord(180, 60, 1.5);
+enb.txPower = 40.0;
+enb.channelModels[carrier] = lteModel;
+ue.channelModels[carrier] = nrModel;
+offCarrierUe.channelModels[GHz(3.5)] = nrModel;
+StubRadioRegistration enbRadio(medium, enb.nodeId, &enb);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration offCarrierUeRadio(medium, offCarrierUe.nodeId, &offCarrierUe);
+
+RbMap bands;
+for (Band b = 0; b < nrModel->getNumBands(); b++)
+    bands[MACRO][b] = 1;
+
+wait(SimTime(10, SIMTIME_MS));
+
+// the LTE base station's DL CQI to the NR UE, a what-if
+CellularTransmission whatIf = dlCqiTransmission(&enb, ue.nodeId);
+whatIf.carrierFrequency = carrier;
+whatIf.txPower = enb.txPower;
+whatIf.grantedBlocks = bands;
+
+std::vector<double> rsrp = medium->computeRsrp(&ue, whatIf);
+std::vector<double> sinr = medium->computeSinr(&ue, whatIf);
+
+// the same link, through each model's own link evaluation
+std::vector<double> nrRsrp = nrModel->getRSRP(nrProbe.whatIfLink(&ue, whatIf), whatIf.txPower);
+std::vector<double> lteRsrp = lteModel->getRSRP(lteProbe.whatIfLink(&ue, whatIf), whatIf.txPower);
+
+c.check("the two RATs' models evaluate the link differently", nrRsrp != lteRsrp, show(nrRsrp) + " / " + show(lteRsrp));
+c.check("the received power of a what-if is the receiver's RAT's model's", rsrp == nrRsrp, show(rsrp) + " / " + show(nrRsrp));
+c.check("...not the transmitter's", rsrp != lteRsrp, show(rsrp));
+c.check("the SINR of a what-if is the receiver's RAT's model's", sinr == nrModel->computeSinr(&ue, whatIf), show(sinr));
+c.check("...not the transmitter's", sinr != lteModel->computeSinr(&ue, whatIf), show(sinr));
+
+// the path loss the medium's received power implies (no antenna gains, no cable loss), against TR 38.901 UMi NLOS
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 2.0;
+const double d2D = std::sqrt(180.0 * 180.0 + 60.0 * 60.0);
+const double d3D = std::sqrt(d2D * d2D + 8.5 * 8.5);
+graded.record("t901_umi_nlos", p, { { "d3D", d3D }, { "d2D", d2D }, { "los", 0.0 } }, whatIf.txPower - rsrp.at(0));
+
+// a receiver that does not operate on the carrier
+c.expectRejected("a what-if at a receiver that does not operate on its carrier is rejected (received power)", [&] {
+    medium->computeRsrp(&offCarrierUe, whatIf);
+});
+c.expectRejected("...and (SINR)", [&] {
+    medium->computeSinr(&offCarrierUe, whatIf);
+});
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=1 failures=0
+
+%contains: stdout
+modelchecks=7 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
