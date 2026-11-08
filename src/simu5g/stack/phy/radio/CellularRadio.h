@@ -26,7 +26,8 @@ class IRadioEndpoint;
 
 /**
  * See the NED documentation of CellularRadio. A received frame is held until
- * the end of its transmission (on a reception timer of the radio's own) and then
+ * the end of its transmission (on a reception timer of the radio's own, which
+ * owns it until then, so a frame still on the air is deleted with its timer) and then
  * passed up unchanged; a frame from the PHY carries a RadioTransmissionRequest
  * that says where to send it.
  */

@@ -37,7 +37,7 @@ void CellularRadio::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         if (strcmp(msg->getName(), "receptionTimer") == 0) {
             // the end of a held frame's transmission
-            auto frame = static_cast<AirFrame *>(msg->getContextPointer());
+            auto frame = check_and_cast<AirFrame *>(msg->removeControlInfo());
             delete msg;
             send(frame, upperLayerOutGateId_);
         }
@@ -56,7 +56,7 @@ void CellularRadio::handleMessage(cMessage *msg)
         // own, as INET's -- for a zero-duration beacon, an event at the same
         // instant; the timer has the frame's scheduling priority
         auto timer = new cMessage("receptionTimer");
-        timer->setContextPointer(frame);
+        timer->setControlInfo(frame);
         timer->setSchedulingPriority(frame->getSchedulingPriority());
         scheduleAfter(frame->getDuration(), timer);
     }
