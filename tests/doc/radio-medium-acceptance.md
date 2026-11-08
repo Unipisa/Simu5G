@@ -412,3 +412,77 @@ cell's interference evaluated with the receiver's model.
   4*2^mu slots before the report), 29 (the indoor state ignored by TR 36.814
   and by TR 36.873 outside UMa) and 30 (a moving base station's interference
   taken from where it is now).
+
+## Piece 7a: phantom radios, and background cells on the medium (9 commits + 8 test commits)
+
+Commits: "ExtCell, BackgroundCell, BackgroundUe: external and background cells
+and background UEs have phantom radios" to "BackgroundCell:
+BackgroundCellChannelModel deleted". The first part of piece 7 of the plan:
+whatever transmits without a PHY gets a radio of its own, shaped like INET's
+NoiseSource, its transmissions are sent by that radio, their links have the
+radios' budget and a LOS state of their own, and background UEs' and cells' CQIs
+are what-ifs on the medium, so BackgroundCellChannelModel goes.
+
+- **The fingerprint suite passes at the piece's tip.** The test commits, the
+  external cell's fix and the amendments (a failed registration is not removed,
+  a phantom transmission on none of a reception's bands is not evaluated, the
+  reception paths assert that the radio has a receiver) move no row.
+- **One change is larger than its commit said.** The interference switches are
+  now the medium's channel model's, off by default, where
+  BackgroundCellChannelModel's were on, so a background cell's UEs see no real
+  cell's interference unless they are set. nr/tutorial BgTraffic, fading and
+  shadowing off, mean bgMeasuredSinrDl: the old model 8.48 dB, and 16.90 dB with
+  its switch off; the new code 16.92 dB, and 8.50 dB with
+  `**.downlinkInterference = true`. The rise is all of it: TR 38.901's and TR
+  36.814's UMa NLOS formulas differ by 0.02 dB at that distance. The tutorials
+  (nr/tutorial, tutorials/nr) get the switches together with the fingerprint-row
+  work right after the branch, as their rows have to be re-recorded.
+- **No real UE's distribution moves.** Replicated A/B against dev, 10
+  configurations (nr/bgTraffic CBR-DL, CBR-UL, CBR-DL_UL and
+  CBR-DL-NoBgCellInterference; nr/tutorial BgTraffic, Numerology and Multiple-UEs;
+  lte/multicell Interference-AllOn and Interference-NoExtCell; nr/standalone
+  VoIP-DL), 30 seeds per side: 1418 statistics tested, 23 significant within their
+  configurations, none over all, and none of a real UE. In the tutorials the
+  background UEs' SINR rises by about 10 dB and their CQI by 2 to 3, the change
+  above. In nr/bgTraffic CBR-DL_UL one cell's served blocks fall (UL 5.22 to 4.68,
+  DL 3.46 to 3.38). The lte/multicell configurations and the VoIP control are
+  identical run by run.
+- **The null control is clean:** 3216 statistics, none significant.
+- **Background UEs lost their shadowing, which is recorded (item 31).** The spread
+  of the mean SINR across a cell's background UEs narrows, with the means unchanged,
+  in nr/bgTraffic: DL 10.2 to 8.6 dB (mean 47.06 to 47.10), UL 9.7 to 8.5 dB (mean
+  29.84 to 29.87).
+- **A capability is given up, by design.** A background cell's scenario, heights,
+  fading and thermal noise are the medium's channel model's, per carrier and RAT;
+  a cell can no longer have its own.
+- **The fix has its test first:** an external cell's new mobility inherited the
+  ini's constraint area, so a cell outside it aborted at startup;
+  ExternalCellOutsideMobilityArea fails until "an external cell may stand outside
+  the area the nodes move in".
+- **Test gaps were closed, each checked by mutation:** the fields of a phantom
+  transmission and the antenna wiring, an id clash failing cleanly
+  (PhantomRadioTransmissions); the link budget, DL and UL, with every term set apart
+  (ChannelModelPhantomLinkBudget: putting the model's keys back passed every suite);
+  a phantom link's 2D and 3D distances on either side of a breakpoint, its UE end, its
+  h_E, and no evaluation of a transmission on none of the bands
+  (ChannelModelPhantomGeometry, deferred from piece 5a); a background UE's CQI and
+  load against the closed form, so that its allocations reach the medium with the
+  station's antenna (BackgroundUeCqi, BackgroundUeLoad, the rest of that deferred
+  item; dropping the DL what-if's cell id passed every suite and all 254 rows); a
+  background cell's CQI, the interference switches both ways, and a narrower cell
+  (BackgroundCellCqi); the two rejected configurations
+  (BackgroundCellRejected_WiderThanCarrier, BackgroundCellRejected_NoModelOnCarrier).
+  Not covered: a background UE's retransmission's registration, and the penetration
+  deviate on a phantom link.
+- **Messages:** the flipped switches and the false path-loss explanation are
+  corrected, the old speed that was always 0, the deleted keys' successors and the
+  states that differ are stated, and the unit-test counts that predated the rebase
+  are dropped. The WHATSNEW entry, which repeats the explanation, is corrected with
+  piece 7c.
+- **The new tests pass at every later commit,** up to the branch tip, in versions
+  that follow the interface changes; the external cell's test fails only at its own
+  commit, before the fix. The full suites at the piece's tip show no failure beyond
+  the recorded expected failures.
+- **Recorded, to be fixed after the merge:** item 31 of model-deviations.md, and
+  the defects and cleanups outside the branch's scope, in open-defects.md (new with
+  this piece, from the findings of pieces 1 to 6b).

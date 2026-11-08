@@ -51,7 +51,7 @@ same mechanism, so that nothing is fixed twice.
 10. **The azimuth is wrong whenever the heights differ.** computeAngle() takes asin(dy/d) with d the 3D distance. A UE due north of a 25 m mast at 50 m comes out at 64.8 degrees instead of 90. Fix: atan2 on the horizontal components. Recorded in tests/unit/ChannelModelAngleHeights as an expected failure. In the suite only channelmodel/Anisotropic-36873 would move.
 11. **The SINR statistic leaves out the worst receptions.** A reception lost to CQI 0, or to a band below the curves, returns before rcvdSinr is emitted, so the statistic and the recorded results never see those receptions. Fix shape still to be agreed.
 
-12. **Part of the fading table is never filled (latent).** PhyPisaData's constructor sizes channel_ to 10000 entries and fills only the first 1000. getChannel(i) wraps i modulo 10000, so any index from 1000 to 9999 returns 0, which is -inf dB. Both callers index by band only (StochasticChannelModel::rayleighFading and BackgroundCellChannelModel), so this is reached only with 1000 or more bands. Found while mutation-checking the Rayleigh test.
+12. **Part of the fading table is never filled (latent).** PhyPisaData's constructor sizes channel_ to 10000 entries and fills only the first 1000. getChannel(i) wraps i modulo 10000, so any index from 1000 to 9999 returns 0, which is -inf dB. The caller, StochasticChannelModel::rayleighFading, indexes by band only, so this is reached only with 1000 or more bands. Found while mutation-checking the Rayleigh test.
 
 ## Found in piece 4 (2026-11-06): fix after the full merge
 
@@ -75,7 +75,7 @@ fingerprints. In the branch they get test hardening only (pins and expected fail
    - What the spec says: a link's path loss is reciprocal; TR 36.843 A.2.1.2 uses the indoor model between two indoor UEs.
    - Fix shape: one indoor end means one wall; both indoor needs an indoor-to-indoor model. D2D is legacy: decide whether it is worth more than the reciprocal rule.
 16. **The medium's per-link maps are never erased.**
-   - What the model does: the LOS, shadowing and Jakes maps keep one entry per (UE, cell) pair and carrier, and per D2D pair, for the whole run (CellularRadioMedium.h: "Entries are never removed: node ids are not reused"). On dev the base-station side grew the same way; the UE-side state died with the UE's channel model.
+   - What the model does: the LOS, shadowing and Jakes maps keep one entry per (UE, cell) pair and carrier, per D2D pair, and from piece 7a on per (phantom transmitter, receiver) pair, for the whole run (CellularRadioMedium.h: "Entries are never removed: node ids are not reused"). On dev the base-station side grew the same way; the UE-side state died with the UE's channel model.
    - Effect: memory grows with the number of UEs ever created (cars, Veins); Jakes entries are bands x paths x 16 B. A user-assigned macNodeId reused after a departure would inherit stale state.
    - Fix shape: erase a radio's links when it unregisters from the medium (fingerprint-inert: no row removes UEs).
 17. **The indoor distance is one uniform draw.** TR 38.901 7.4.3.1 takes d2D-in as the minimum of two independent uniforms (0-25 m for UMa/UMi, 0-10 m for RMa); the model draws one uniform(0, 25 m) for every scenario. Pre-existing.
@@ -161,6 +161,17 @@ Recorded, not fixed in the branch, like the items of the earlier pieces.
    - What the medium's model says: from "every radio's position is read as a transmission starts" on, a transmission's arrival is computed from where it started, as on INET's medium.
    - Reached in no row: no base station moves.
    - Fix shape: build the interfering cell's link from the transmission's start position.
+
+## Found in piece 7a (2026-11-08): fix after the full merge
+
+Recorded, not fixed in the branch, like the items of the earlier pieces.
+
+31. **A background UE's links have no shadowing, and a real UE's link to a background cell has it in one direction.**
+   - What the model does: StochasticChannelModel skips shadowing when a link's state node id is at or above BGUE_MIN_ID, and on the phantom links. BackgroundCellChannelModel, deleted in piece 7a, drew it per background UE (sigma 6 dB at UMa NLOS). The UL what-if at a background cell evaluates a real UE's interference through getAttenuation(), which shadows it; the background cell's DL at that same UE goes through phantomPowerAt(), which does not.
+   - What the specification says: TR 38.901 Table 7.4.1-1 has a shadow fading standard deviation for every scenario and LOS state; 7.5 Step 4 generates the large scale parameters, "shadow fading (SF)" among them: "These LSPs for different BS-UT links are uncorrelated, but the LSPs for links from co-sited sectors to a UT are the same."
+   - Effect: the spread of the mean SINR across a cell's background UEs narrows (nr/bgTraffic: DL 10.2 to 8.6 dB, UL 9.7 to 8.5 dB), with the means unchanged, so the cell's load is more even than it would be. The commit that made the change cites a decision of 2026-10-16 that keeps phantom links cheap; item 6 has the same abstraction for the interference.
+   - Reached in every row with a background cell or background UEs computing CQIs; the one-way link in nr/videostreaming_dataset_generator UrbanNetwork (uplink interference on).
+   - Fix shape: decide per link, not per kind of radio: either shadow these links, one realization per link in both directions, or none of them, and say so.
 
 ## Fixed later in the branch, re-check only
 
