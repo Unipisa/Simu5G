@@ -338,3 +338,77 @@ taken at the start of the transmission evaluated on it.
   and h_E per cell and carrier, not per site and UE), the Doppler speed read at
   the evaluation rather than at the transmission's start (item 24), and the
   Binder's uplink map written past its end on a second carrier (item 18).
+
+## Piece 6b: INET's event shape, the evaluation's arguments and the what-if (15 commits + 6 test commits)
+
+Commits: "CellularRadioMedium: refactor: radios are kept, and broadcasts
+delivered, in the order they were added" to "StochasticChannelModel: fix:
+another cell interferes whatever its own channel model is". The second half
+of piece 6 of the plan: a transmission's end and every reception at an event
+of the radio's own, beacons as packets with a size, every radio's position
+read as a transmission starts, the radio and the link's conditions as
+arguments of an evaluation, the CQI's what-if on the medium, and another
+cell's interference evaluated with the receiver's model.
+
+- **The fingerprint suite passes at the piece's tip.** The test commits leave
+  the sources as they were; the two fixes, the throw on an unknown
+  self-message and the corrected comments move no row.
+- **The event-shape commits move only the event count.** The transmission end
+  event and the reception timer move tplx and tilx in every row with radio
+  transmissions; the beacon's own event, packet and size the 48 rows whose
+  base stations send beacons. No result changes.
+- **No distribution moves beyond a hair.** Replicated A/B against dev, 17
+  configurations (channelmodel UMa-38901, UMi-36873 and
+  PenetrationHigh-38901, lte tutorial SingleCell DL and UL, lte handover
+  VoIP DL and UL, nr numerology single and multicell DL and UL, nr multi
+  carrier, standalone multicell, dual connectivity multicell, nr D2D mode
+  switching and dynamic LOS, nr TDD), 30 seeds per side: 3751 statistics
+  tested, 14 significant, in four configurations whose runs hardly vary
+  between seeds (lte test_handover VoIP-DL and VoIP-UL, nr
+  dualConnectivity_multicell DoubleConnection-CBR-DL, nr d2d
+  SinglePair-modeSwitching-UDP): the mean measured DL SINR by at most 0.002
+  dB, and the D2D UEs' distance statistic by 0.3 m (115.24 to 115.57 m, the
+  distance weighted by the reads of the position, item 25). The UEs there
+  move, and their positions are now read at more instants and the CQI a slot
+  later; the changes were not bisected further.
+- **The null control has one hit, which is chance:** 4977 statistics, 0
+  significant over all; within nr/test_multiCarrier MultiCarrier-CBR-DL one
+  correlated family (ue[0]'s packet counts, 9 statistics) is lower in seeds
+  30-59 than in seeds 0-29, and within nr/test_tdd TestTdd one statistic. Both
+  sides are dev's build; a third set of dev's seeds (60-89) lies between the
+  two (p = 0.18 and 0.018 for the family).
+- **Two defects were found in the piece, and fixed after their tests:** a
+  frame still on the air when its radio is deleted was left behind (from "a
+  reception ends on a reception timer of the radio's own": the timer only
+  pointed to the frame; every run reported "undisposed object" for the frames
+  in flight at its end); RadioFramesDisposedAtEnd (a module test) fails from
+  that commit until "a frame still on the air when its radio is deleted is
+  deleted with it". Another cell whose RAT has a non-stochastic model on the
+  carrier did not interfere at a UE of the other RAT, although the receiver's
+  model evaluates the link; ChannelModelCrossRatInterference fails until
+  "another cell interferes whatever its own channel model is". Neither state
+  is in a fingerprint row.
+- **Test gaps were closed, each checked by mutation:** a radio removed from
+  the medium takes only its own entry (RadioMediumRemoveRadio); a
+  transmission's start reads every other radio's position once, in the order
+  the radios were added, and from "a phantom transmission reads no radio's
+  position" on a phantom transmission none (RadioMediumPositionReads); a CQI's
+  what-if takes the fading and the positions of its own instant
+  (ChannelModelCqiTime; which instant the base station's PHY chooses is not
+  reachable without a PHY); the medium's what-if is evaluated with the
+  receiver's RAT model, and a receiver off the carrier is rejected
+  (RadioMediumWhatIfModel).
+- **Messages:** the radio and the link conditions as arguments are marked as
+  refactors; the CQI's later instant, the D2D CQI's mixed positions it
+  removes, the what-if's two changed edge states and the interference link's
+  state drawn by the receiver's model are stated; the unit-test counts that
+  predated the rebase are dropped.
+- **The new tests pass at every later commit,** up to the branch tip, in
+  versions that follow the interface changes; the two fix tests fail only
+  between the faulty commit and their fix. The full unit and physics suites
+  at the piece's tip show no failure beyond the recorded expected failures.
+- **Recorded, to be fixed after the merge** (model-deviations.md): items 28
+  (the CQI has no measurement delay: TS 38.214 5.2.2.5 measures nCSI_ref >=
+  4*2^mu slots before the report), 29 (the indoor state ignored by TR 36.814
+  and by TR 36.873 outside UMa) and 30 (a moving base station's interference
+  taken from where it is now).

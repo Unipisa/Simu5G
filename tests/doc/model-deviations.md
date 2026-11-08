@@ -141,6 +141,27 @@ Recorded, not fixed in the branch, like the items of the earlier pieces.
    - Reached in the rows that serve a UE on two carriers of one cell (e.g. nr/test_multiCarrier), and in any network with co-sited cells.
    - Fix shape: key the LOS sample by site and UE, shared by every carrier.
 
+## Found in piece 6b (2026-11-08): fix after the full merge
+
+Recorded, not fixed in the branch, like the items of the earlier pieces.
+
+28. **The CQI describes the channel of the slot it is first used for: it has no measurement delay.**
+   - What the model does: the base station computes a UE's DL CQI, and a D2D pair's CQI, from the UE's report as a what-if on the medium at the instant the report's reception ends (from "a CQI's what-if is evaluated where the radios are now" on), so it takes the positions and the Jakes fading of the DL slot that starts then. Before that commit it took the report's start, one slot earlier. The UL CQI of the same report is the report's own reception, faded at its start, so the two halves of one report are a slot apart.
+   - What the specification says: TS 38.214 V19.5.0 5.2.2.5: "In the time domain, the CSI reference resource for a CSI reporting in uplink slot n' [...] is defined by a single downlink slot n-nCSI_ref-Koffset[...]", "where for periodic and semi-persistent CSI reporting - if a single CSI-RS/SSB resource is configured for channel measurement nCSI_ref is the smallest value greater than or equal to 4*2^muDL, such that it corresponds to a valid downlink slot". TS 36.213 V19.5.0 7.2.3 defines the LTE CSI reference resource the same way, as "a single downlink subframe/slot/subslot [...] n-nCQI_ref".
+   - Effect: where the channel changes within a few slots (moving UEs, Jakes fading), the CQI is more accurate than a real UE's, and link adaptation fares better than it would.
+   - Reached in every row with moving UEs and CQI reporting.
+   - Fix shape: evaluate the CQI at its CSI reference resource -- the positions and the fading nCSI_ref slots before the report -- for the DL, UL and D2D CQI alike.
+29. **A UE inside a building has no penetration loss under TR 36.814, nor under TR 36.873 except in UMa.**
+   - What the model does: only Tr36873PathLossModel's UMa and Tr38901PathLossModel add a building penetration loss. Tr36814PathLossModel, in every scenario, and Tr36873PathLossModel's UMi, RMa and InH (and SMa, which is TR 36.814's formula) take the link's conditions and do not use them, so `insideBuilding = true` on a UE silently changes nothing.
+   - What the specification says: TR 36.873 7.2.3: "3D-UMi O2I PL = PLb + PLtw + PLin", "PLb = PL3D-UMi (d3D-out + d3D-in)", "PLtw = 20", "PLin = 0.5d2D-in", "0m < d2D-in < 25m". TR 36.814 Table B.1.2.1-1, UMi outdoor-to-indoor: "PLtw = 20, other values remain the same", "0 m < din< 25 m". The other scenarios of the two studies have no outdoor-to-indoor model.
+   - Reached in no row: the Penetration rows use TR 38.901 and TR 36.873 UMa.
+   - Fix shape: the O2I loss in TR 36.873 UMi and TR 36.814 UMi; an indoor UE rejected where the study has no O2I model.
+30. **A moving base station interferes from where it is when the interference is evaluated, not from where its transmission started.**
+   - What the model does: the DL interference walk evaluates another cell's link through StochasticChannelModel::cellularLink(), which reads the interfering cell's current position; the angular attenuation of the same walk and the uplink interference take the transmission's start position.
+   - What the medium's model says: from "every radio's position is read as a transmission starts" on, a transmission's arrival is computed from where it started, as on INET's medium.
+   - Reached in no row: no base station moves.
+   - Fix shape: build the interfering cell's link from the transmission's start position.
+
 ## Fixed later in the branch, re-check only
 
 - **The O2I loss's random term redrawn at every evaluation:** accepted with piece 6a. Drawn once per UE from "the random term of a UE's building penetration loss is drawn once, the UE's own"; see item 14 for the per-radio residue.
