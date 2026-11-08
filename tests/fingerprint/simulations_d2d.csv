@@ -66,7 +66,7 @@
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c MultiCell-CBR-UL -r 0,               20s,         19d7-e195/tplx;8de6-cfb5/tilx;9718-3156/~tNl;f79e-8953/sz, PASS,
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-DL -r 0,              10s,         e363-0a8c/tplx;168b-4118/tilx;4fbf-c345/~tNl;5a00-29dc/sz, PASS,
 /simulations/nr/test_numerology/,        -f omnetpp.ini -c SingleCell-CBR-UL -r 0,              10s,         b9de-37d4/tplx;4430-8d44/tilx;a200-4b6e/~tNl;09fc-6114/sz, PASS,
-/simulations/nr/test_tdd/,               -f omnetpp.ini -c TestTdd -r 0,                         5s,         0782-2c20/tplx;6972-838a/tilx;1357-11f1/~tNl;fb51-4d42/sz, PASS,
+/simulations/nr/test_tdd/,               -f omnetpp.ini -c TestTdd -r 0,                         5s,         b469-0972/tplx;b38c-2dbd/tilx;1357-11f1/~tNl;750d-34d3/sz, PASS,
 /simulations/nr/d2d/,                    -f omnetpp.ini -c ChannelModel-DynamicLos -r 0,         20s,        7857-e4bb/tplx;e555-9ec1/tilx;e37f-7d8f/~tNl;f7a6-1a7d/sz, PASS,
 /simulations/nr/d2d/,                    -f omnetpp.ini -c ChannelModel-IndoorD2D -r 0,           5s,        3bf0-7540/tplx;9050-9b3b/tilx;fda1-6e56/~tNl;3de7-2610/sz, PASS,
 /simulations/nr/dualConnectivity/,       -f omnetpp.ini -c NeDualConn-VoIP-DL-IPv6 -r 0,           5s,        b4c0-c78f/tplx;9296-c0d7/tilx;0de7-7368/~tNl;e14c-5de3/sz, PASS,

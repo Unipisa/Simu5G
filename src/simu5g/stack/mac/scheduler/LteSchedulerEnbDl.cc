@@ -44,6 +44,8 @@ bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrier
                 throw cRuntimeError("LteSchedulerEnbDl::checkEligibility(): abnormal codeword id %d", (int)cw);
             return true;
         }
+        // every H-ARQ process of user <id> is busy
+        return false;
     }
     return true;
 }
