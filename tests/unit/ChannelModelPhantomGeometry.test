@@ -1,0 +1,374 @@
+%description:
+
+The geometry and the conditions of a phantom transmission's link: which
+distance each part of the path loss takes, which end is the UE, at which h_E
+the link is evaluated, and whether it is evaluated at all.
+
+ - The two distances. TR 38.901 Table 7.4.1-1 decides between PL1 and PL2 by
+   d2D and evaluates them at d3D. Under UMi at 3.5 GHz, a 25 m base station and
+   a 1.5 m UE, the breakpoint d'BP = 4 h'BS h'UT fc/c, with "For UMi hE = 1.0m",
+   is 560 m. A UE at d2D = 559.8 m has d3D = 560.293 m, so d2D < d'BP < d3D:
+   taking d3D for d2D picks PL2, and taking d2D for d3D moves PL1; both move the
+   power by less than 0.01 dB. At d2D = 560.2 m both distances are beyond it.
+   Literal: 100.99808065818436 dB and 101.00752491832802 dB, from
+   pathloss_reference.py, LOS.
+
+ - The UE end. It is the receiver of a cell's downlink: an indoor receiver
+   takes the penetration loss, Table 7.4.3-3's single-frequency model below
+   6 GHz, 20 dB + 0.5 d2D-in, 25 dB at 10 m. It is the transmitter of a UE's
+   uplink: a receiver saying it is indoors is a decoy, and a transmitter saying
+   so takes the loss. A transmitter saying so in a downlink is a decoy too.
+
+ - h_E. A link's h_E is its own, kept with its LOS state. Under UMa at 0.7 GHz,
+   a 25 m base station and a 22.5 m UE, d'BP is 4816 m at h_E = 1 m and 1274 m
+   at h_E = 12 m. With the sample's h_E set to 12, a LOS link at d2D = 2000 m,
+   below the former and beyond the latter, is 101.05010944348632 dB rather than
+   97.5246281693233 dB; one at 4900 m, beyond both, is 116.61674150738372 dB
+   rather than 106.22144860068218 dB (PL2 has d'BP in it). A first evaluation at
+   300 m draws the h_E, as Note 1 says: 1 m with probability 1/(1+C(d2D, hUT)),
+   otherwise uniform on 12, 15, 18, 21 m, replayed from an RngSnapshot with
+   its draws counted; the path loss is graded at it by pathloss_reference.py.
+
+ - On none of the reception's bands. With dynamicLos on, a phantom transmission
+   sharing no band with a reception does not interfere with it and its link is
+   not evaluated, as for every other link: no entry in the LOS map and no draw,
+   in the downlink and the uplink interference walks. On a shared band it is
+   evaluated, one draw, and adds its closed-form power on that band alone.
+   LOS and NLOS literal, TR 38.901 UMi at 2 GHz at 300 m, 90.4680419955501 dB
+   and 116.30121059831647 dB; the LOS probability closed form, Table 7.4.2-1.
+
+%includes:
+#include <cmath>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "PathLossTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// the protected interference walks of a channel model
+struct WalkAccess : StochasticChannelModel
+{
+    static auto dlPtr() { return &WalkAccess::computeDownlinkInterference; }
+    static auto ulPtr() { return &WalkAccess::computeUplinkInterference; }
+};
+
+// a reception's resource blocks: the given bands of ten
+static RbMap receptionOn(std::vector<Band> bands)
+{
+    RbMap rbmap;
+    for (Band b = 0; b < 10; b++)
+        rbmap[MACRO][b] = 0;
+    for (Band b : bands)
+        rbmap[MACRO][b] = 1;
+    return rbmap;
+}
+
+// a transmission of a phantom radio, starting now
+static CellularTransmission phantomTransmission(StubEndpoint& sender, const cModule *cell, Direction direction, double txPower)
+{
+    CellularTransmission transmission;
+    transmission.transmitter = &sender;
+    transmission.phantomCell = cell;
+    transmission.sourceId = sender.nodeId;
+    transmission.cellId = MacNodeId(900);
+    transmission.direction = direction;
+    transmission.frameType = DATAPKT;
+    transmission.txPower = txPower;
+    transmission.startPosition = sender.coord;
+    transmission.startTime = simTime();
+    return transmission;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        umiModel: Tr38901ChannelModel;
+        umaModel: Tr38901ChannelModel;
+        walkModel: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 3
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+*.carrierAggregation.componentCarrier[1].carrierFrequency = 0.7GHz
+*.carrierAggregation.componentCarrier[1].numBands = 10
+*.carrierAggregation.componentCarrier[2].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[2].numBands = 10
+*.umiModel.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.umaModel.componentCarrierModule = "carrierAggregation.componentCarrier[1]"
+*.walkModel.componentCarrierModule = "carrierAggregation.componentCarrier[2]"
+*.binder.printTrafficGeneratorConfig = false
+
+*.umaModel.scenario = "URBAN_MACROCELL"
+*.umaModel.ueHeight = 22.5m
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+# the walks draw the LOS state, and nothing else does: UMi draws nothing else for an outdoor UE
+*.walkModel.dynamicLos = true
+**.dynamicLos = false
+**.fixedLos = true
+**.shadowing = false
+**.fading = false
+**.bgCellInterference = true
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-9);
+auto *umiModel = harnessModule<StochasticChannelModel>(this, "umiModel");
+auto *umaModel = harnessModule<StochasticChannelModel>(this, "umaModel");
+auto *walkModel = harnessModule<StochasticChannelModel>(this, "walkModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+ChannelModelProbe umi(umiModel), uma(umaModel), walk(walkModel);
+auto drawn = [](StochasticChannelModel *model) { return (long long)model->getRNG(0)->getNumbersDrawn(); };
+
+// no gains and no cable loss: a transmission's power at a receiver is its transmit power less the path loss
+const double txPower = 46;
+StubEndpoint phantom;
+phantom.nodeId = MacNodeId(900);
+phantom.coord = Coord(0, 0, 25);
+auto dl = [&] { return phantomTransmission(phantom, this, DL, txPower); };
+
+// a receiver at x on the x axis, under its own node id
+auto receiverAt = [&] (StubEndpoint& receiver, int id, double x, double z) {
+    receiver.nodeId = MacNodeId(id);
+    receiver.coord = Coord(x, 0, z);
+};
+
+//
+// the two distances
+//
+{
+    StubEndpoint ue;
+    receiverAt(ue, 1025, 559.8, 1.5);
+    c.expectNear("d2D < d'BP < d3D: PL1, chosen by d2D, evaluated at d3D", umi.phantomPowerAt(dl(), &ue), txPower - 100.99808065818436, 1e-9);
+}
+{
+    StubEndpoint ue;
+    receiverAt(ue, 1026, 560.2, 1.5);
+    c.expectNear("d2D > d'BP: PL2, evaluated at d3D", umi.phantomPowerAt(dl(), &ue), txPower - 101.00752491832802, 1e-9);
+}
+
+//
+// the UE end
+//
+const double outdoors = txPower - 95.32880296927598;  // UMi LOS at 3.5 GHz, d2D = 300 m
+const double penetration = 20 + 0.5 * 10;
+{
+    StubEndpoint ue;
+    receiverAt(ue, 1027, 300, 1.5);
+    c.expectNear("DL, everything outdoors", umi.phantomPowerAt(dl(), &ue), outdoors, 1e-9);
+    ue.insideBuilding = true;
+    ue.insideDistance = 10;
+    c.expectNear("DL, the receiver 10 m inside a building: 25 dB more", umi.phantomPowerAt(dl(), &ue), outdoors - penetration, 1e-9);
+}
+{
+    StubEndpoint ue, indoorCell;
+    receiverAt(ue, 1028, 300, 1.5);
+    indoorCell.nodeId = MacNodeId(901);
+    indoorCell.coord = phantom.coord;
+    indoorCell.insideBuilding = true;
+    indoorCell.insideDistance = 10;
+    c.expectNear("DL, a transmitter saying it is inside a building is not the UE end",
+            umi.phantomPowerAt(phantomTransmission(indoorCell, this, DL, txPower), &ue), outdoors, 1e-9);
+}
+{
+    StubEndpoint bgUe, baseStation;
+    receiverAt(bgUe, 4097, 300, 1.5);
+    baseStation.nodeId = MacNodeId(1);
+    baseStation.coord = Coord(0, 0, 25);
+    baseStation.insideBuilding = true;
+    baseStation.insideDistance = 10;
+    c.expectNear("UL, a receiver saying it is inside a building is not the UE end",
+            umi.phantomPowerAt(phantomTransmission(bgUe, this, UL, txPower), &baseStation), outdoors, 1e-9);
+    baseStation.insideBuilding = false;
+    baseStation.insideDistance = 0;
+    bgUe.insideBuilding = true;
+    bgUe.insideDistance = 10;
+    c.expectNear("UL, the transmitter is: inside a building, 25 dB more",
+            umi.phantomPowerAt(phantomTransmission(bgUe, this, UL, txPower), &baseStation), outdoors - penetration, 1e-9);
+}
+
+//
+// h_E: the first evaluation decides the link's state; the test then sets the h_E kept in it
+//
+{
+    const double hUe = 22.5;
+    ScenarioParams p;
+    p.scenario = URBAN_MACROCELL;
+    p.hNodeB = 25;
+    p.hUe = hUe;
+    p.carrierFrequencyGHz = 0.7;
+    StubEndpoint ue;
+    receiverAt(ue, 1030, 2000, hUe);
+    uma.phantomPowerAt(dl(), &ue);
+    uma.losMap().at(LinkKey(phantom.nodeId, ue.nodeId)).los = true;
+    uma.losMap().at(LinkKey(phantom.nodeId, ue.nodeId)).environmentHeight = 12;
+    c.expectNear("h_E = 12 m kept for the link, between the two breakpoints: PL2 with h_E = 12 m's breakpoint",
+            uma.phantomPowerAt(dl(), &ue), txPower - 101.05010944348632, 1e-9);
+
+    StubEndpoint far;
+    receiverAt(far, 1031, 4900, hUe);
+    uma.phantomPowerAt(dl(), &far);
+    uma.losMap().at(LinkKey(phantom.nodeId, far.nodeId)).los = true;
+    uma.losMap().at(LinkKey(phantom.nodeId, far.nodeId)).environmentHeight = 12;
+    c.expectNear("h_E = 12 m kept for the link, beyond both breakpoints: PL2 with h_E = 12 m's breakpoint",
+            uma.phantomPowerAt(dl(), &far), txPower - 116.61674150738372, 1e-9);
+
+    // the h_E of a first evaluation, from the very numbers the model draws
+    StubEndpoint near;
+    receiverAt(near, 1032, 300, hUe);
+    const double d2D = 300, d3D = phantom.coord.distance(near.coord);
+    const double g = 5.0 / 4.0 * std::pow(d2D / 100, 3) * std::exp(-d2D / 150);
+    const double C = std::pow((hUe - 13) / 10, 1.5) * g;
+    RngSnapshot snapshot(umaModel);
+    long long before = drawn(umaModel);
+    double power = uma.phantomPowerAt(dl(), &near);
+    long long draws = drawn(umaModel) - before;
+    bool hE1 = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) < 1 / (1 + C);
+    double hE = hE1 ? 1 : 12 + 3 * omnetpp::intuniform(snapshot.rng(), 0, 3);
+    c.expectNear("a first evaluation draws the link's h_E: Note 1, replayed", uma.losMap().at(LinkKey(phantom.nodeId, near.nodeId)).environmentHeight, hE, 0);
+    c.expectValue("...with its draws, and no others: fixed LOS", draws, hE1 ? 1 : 2);
+    graded.record("t901_uma_los_he", p, { { "d3D", d3D }, { "d2D", d2D }, { "hE", hE } }, txPower - power);
+}
+
+//
+// on none of the reception's bands
+//
+{
+    const double d2D = 300;
+    const double pLos = std::min(18 / d2D, 1.0) * (1 - std::exp(-d2D / 36)) + std::exp(-d2D / 36);
+    const double plLos = 90.4680419955501, plNlos = 116.30121059831647;
+    const GHz carrier = GHz(2.0);
+    const simtime_t slot = SimTime(1, SIMTIME_MS);
+
+    // what the walk finds on the medium in the slot just completed
+    auto occupy = [&] (const CellularTransmission& transmission, std::vector<Band> bands) {
+        auto *onMedium = new CellularTransmission(transmission);
+        onMedium->carrierFrequency = carrier;
+        for (Band b : bands)
+            onMedium->grantedBlocks[MACRO][b] = 1;
+        onMedium->duration = slot;
+        medium->addPhantomTransmission(onMedium);
+        wait(slot);
+    };
+    auto occupied = [] (const std::vector<double>& interference) {
+        int bands = 0;
+        for (double i : interference)
+            bands += i != 0;
+        return bands;
+    };
+
+    // the downlink walk, with the real cells off: no real transmission is on the medium
+    StubEndpoint cell, ue, serving;
+    cell.nodeId = MacNodeId(902);
+    cell.coord = Coord(0, 0, 25);
+    cell.antennaGain = 7;
+    ue.nodeId = MacNodeId(1040);
+    ue.coord = Coord(d2D, 0, 1.5);
+    ue.antennaGain = 2;
+    ue.cableLoss = 1;
+    serving.nodeId = MacNodeId(1);
+    StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+    const LinkKey dlLink(cell.nodeId, ue.nodeId);
+    auto dlWalk = [&] (std::vector<double>& interference, std::vector<Band> reception) {
+        (walkModel->*WalkAccess::dlPtr())(serving.nodeId, ue.nodeId, ue.coord, false, carrier, receptionOn(reception), &interference, false);
+    };
+
+    occupy(phantomTransmission(cell, this, DL, txPower), {4, 5});
+    {
+        std::vector<double> interference(10, 0.0);
+        long long before = drawn(walkModel);
+        dlWalk(interference, {0, 1});
+        c.expectValue("DL walk, on none of the reception's bands: no interference", occupied(interference), 0);
+        c.expectValue("...its link is not evaluated: no entry in the LOS map", walk.losMap().count(dlLink), 0);
+        c.expectValue("...and no draw", drawn(walkModel) - before, 0);
+    }
+    occupy(phantomTransmission(cell, this, DL, txPower), {1, 5});
+    {
+        std::vector<double> interference(10, 0.0);
+        RngSnapshot snapshot(walkModel);
+        long long before = drawn(walkModel);
+        dlWalk(interference, {0, 1});
+        bool los = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= pLos;
+        c.expectValue("DL walk, on a shared band: one draw", drawn(walkModel) - before, 1);
+        c.check("...the link's LOS state, the draw's", walk.losMap().count(dlLink) == 1 && walk.losMap().at(dlLink).los == los);
+        c.expectValue("...it interferes on that band alone", occupied(interference), 1);
+        c.expectNear("...with the closed-form power at the UE", linearToDBm(interference[1]), txPower - (los ? plLos : plNlos) + 7 + 2 - 1, 1e-9);
+    }
+
+    // the uplink walk: a background cell's UE at a real base station
+    StubEndpoint bgUe, baseStation;
+    bgUe.nodeId = MacNodeId(4098);
+    bgUe.coord = Coord(d2D, 0, 1.5);
+    bgUe.antennaGain = 2;
+    baseStation.nodeId = MacNodeId(2);
+    baseStation.coord = Coord(0, 0, 25);
+    baseStation.antennaGain = 7;
+    baseStation.cableLoss = 1;
+    const MacNodeId realUe = MacNodeId(1041);
+    const LinkKey ulLink(bgUe.nodeId, baseStation.nodeId);
+    auto ulWalk = [&] (std::vector<double>& interference, std::vector<Band> reception) {
+        (walkModel->*WalkAccess::ulPtr())(&baseStation, baseStation.nodeId, realUe, baseStation.coord, false, carrier, receptionOn(reception), &interference, false);
+    };
+
+    occupy(phantomTransmission(bgUe, this, UL, txPower), {4, 5});
+    {
+        std::vector<double> interference(10, 0.0);
+        long long before = drawn(walkModel);
+        ulWalk(interference, {0, 1});
+        c.expectValue("UL walk, on none of the reception's bands: no interference", occupied(interference), 0);
+        c.expectValue("...its link is not evaluated: no entry in the LOS map", walk.losMap().count(ulLink), 0);
+        c.expectValue("...and no draw", drawn(walkModel) - before, 0);
+    }
+    occupy(phantomTransmission(bgUe, this, UL, txPower), {1, 5});
+    {
+        std::vector<double> interference(10, 0.0);
+        RngSnapshot snapshot(walkModel);
+        long long before = drawn(walkModel);
+        ulWalk(interference, {0, 1});
+        bool los = omnetpp::uniform(snapshot.rng(), 0.0, 1.0) <= pLos;
+        c.expectValue("UL walk, on a shared band: one draw", drawn(walkModel) - before, 1);
+        c.check("...the link's LOS state, the draw's", walk.losMap().count(ulLink) == 1 && walk.losMap().at(ulLink).los == los);
+        c.expectValue("...it interferes on that band alone", occupied(interference), 1);
+        c.expectNear("...with the closed-form power at the base station", linearToDBm(interference[1]), txPower - (los ? plLos : plNlos) + 2 + 7 - 1, 1e-9);
+    }
+}
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=1 failures=0
+
+%contains: stdout
+modelchecks=25 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
