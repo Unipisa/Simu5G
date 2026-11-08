@@ -1,0 +1,191 @@
+%description:
+
+The link budget of a phantom transmission -- an external or a background
+cell's, or a background cell's UE's -- at a receiver: the transmission's power,
+less the path loss, less its antenna's attenuation towards the receiver, plus
+the antenna gains of the radios at both ends, less the receiver's cable loss.
+Every term is the radios'; none is a key of the channel model, as in the real
+walks, and the phantom radio's own cable loss, a transmitter's, does not count.
+
+The other tests of a phantom transmission cannot see this: their values equal
+the keys' defaults (antennGainEnB 18, antennaGainUe 0, cableLoss 2), and nothing
+grades the uplink. So here every term has a value of its own, and each is
+different from the keys:
+
+ - DL: the phantom radio has gain 15 dBi and cable loss 9 dB (a decoy), the UE
+   gain 3 dBi and cable loss 1 dB: txPower - PL + 15 + 3 - 1.
+ - UL: a background UE's phantom radio has gain 1.5 dBi and cable loss 9 dB (a
+   decoy), the base station gain 12 dBi and cable loss 0.5 dB:
+   txPower - PL + 1.5 + 12 - 0.5. The base station stub says it is inside a
+   building, a decoy too: the UE end of an uplink is the transmitter.
+ - An ANISOTROPIC DL takes the antenna pattern at the receiver's angle off the
+   boresight, with no other term moving. An OMNI UL with a txAngle takes none.
+
+Expected values are literal: the path loss is TR 38.901 Table 7.4.1-1, UMi LOS
+below the breakpoint, PL1 = 32.4 + 21 log10(d3D) + 20 log10(fc), at 3.5 GHz, a
+25 m base station and a 1.5 m UE; the pattern is TR 36.873's, which TR 38.901's
+model takes: min(min(12 (phi/65)^2, 30) + min(12 ((theta-90)/65)^2, 30), 30).
+Both computed with pathloss_reference.py and written down here, and each path
+loss the power implies is graded against pathloss_reference.py on every run.
+
+%includes:
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "PathLossTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// the protected power of a phantom transmission at a receiver
+struct PhantomPowerAccess : StochasticChannelModel
+{
+    static auto powerPtr() { return &PhantomPowerAccess::phantomPowerAt; }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        model: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.shadowing = false
+**.fading = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-9);
+auto *model = harnessModule<StochasticChannelModel>(this, "model");
+ChannelModelProbe probe(model);
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 25;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 3.5;
+
+// the receiver's serving link, whose LOS state a phantom transmission borrows
+const LinkKey servingLink(MacNodeId(1), MacNodeId(1025));
+probe.losMap()[servingLink].los = true;
+auto powerAt = [&] (const CellularTransmission& transmission, IRadioEndpoint *receiver) {
+    return (model->*PhantomPowerAccess::powerPtr())(transmission, receiver, receiver->getCoord(), servingLink);
+};
+
+// a transmission as a phantom radio creates it; the radio's txPower is a decoy, the transmission's counts
+auto transmissionFrom = [&] (StubEndpoint& sender, Direction direction, double txPower) {
+    CellularTransmission transmission;
+    transmission.transmitter = &sender;
+    transmission.phantomCell = this;
+    transmission.sourceId = sender.nodeId;
+    transmission.cellId = MacNodeId(900);
+    transmission.direction = direction;
+    transmission.frameType = DATAPKT;
+    transmission.txPower = txPower;
+    transmission.startPosition = sender.coord;
+    transmission.startTime = omnetpp::simTime();
+    return transmission;
+};
+
+// downlink: an external or a background cell's phantom radio at 300 m from a UE, on the x axis
+StubEndpoint cell, ue;
+cell.nodeId = MacNodeId(900);
+cell.coord = Coord(0, 0, 25);
+cell.txPower = 99;
+cell.antennaGain = 15;
+cell.cableLoss = 9;
+ue.nodeId = MacNodeId(1025);
+ue.coord = Coord(300, 0, 1.5);
+ue.antennaGain = 3;
+ue.cableLoss = 1;
+const double d3D300 = 300.91900903731556, pl300 = 95.32880296927598;
+const double dlPower = 46.0;
+
+{
+    auto transmission = transmissionFrom(cell, DL, dlPower);
+    double power = powerAt(transmission, &ue);
+    c.expectNear("DL: the transmission's power, less the path loss, plus both radios' gains, less the UE's cable loss",
+            power, dlPower - pl300 + 15 + 3 - 1, 1e-9);
+    graded.record("t901_umi_los", p, { { "d3D", d3D300 }, { "d2D", 300.0 } }, dlPower + 15 + 3 - 1 - power);
+}
+{
+    // the UE is on the x axis, at 0 deg, 30 deg off the boresight
+    auto transmission = transmissionFrom(cell, DL, dlPower);
+    transmission.txDirection = ANISOTROPIC;
+    transmission.txAngle = 30;
+    c.expectNear("DL ANISOTROPIC, 30 deg off the boresight: and the antenna pattern, 2.6132 dB",
+            powerAt(transmission, &ue), dlPower - pl300 - 2.613192845598541 + 15 + 3 - 1, 1e-9);
+    // over the wrap: 350 deg is 10 deg from 0 deg
+    transmission.txAngle = 350;
+    c.expectNear("DL ANISOTROPIC, 10 deg off the boresight over the 360 deg wrap: the antenna pattern, 0.3410 dB",
+            powerAt(transmission, &ue), dlPower - pl300 - 0.34100349648611467 + 15 + 3 - 1, 1e-9);
+}
+
+// uplink: a background cell's UE's phantom radio at 400 m from a real base station
+StubEndpoint bgUe, baseStation;
+bgUe.nodeId = MacNodeId(4097);
+bgUe.coord = Coord(400, 0, 1.5);
+bgUe.txPower = 99;
+bgUe.antennaGain = 1.5;
+bgUe.cableLoss = 9;
+baseStation.nodeId = MacNodeId(1);
+baseStation.coord = Coord(0, 0, 25);
+baseStation.antennaGain = 12;
+baseStation.cableLoss = 0.5;
+baseStation.insideBuilding = true;
+baseStation.insideDistance = 10;
+const double d3D400 = 400.68971786158926, pl400 = 97.94033304714979;
+const double ulPower = 23.0;
+
+{
+    // OMNI, with an angle the antenna would point at
+    auto transmission = transmissionFrom(bgUe, UL, ulPower);
+    transmission.txAngle = 120;
+    double power = powerAt(transmission, &baseStation);
+    c.expectNear("UL OMNI: the transmission's power, less the path loss outdoors, no antenna pattern, plus both radios' gains, less the base station's cable loss",
+            power, ulPower - pl400 + 1.5 + 12 - 0.5, 1e-9);
+    graded.record("t901_umi_los", p, { { "d3D", d3D400 }, { "d2D", 400.0 } }, ulPower + 1.5 + 12 - 0.5 - power);
+}
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=2 failures=0
+
+%contains: stdout
+modelchecks=4 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
