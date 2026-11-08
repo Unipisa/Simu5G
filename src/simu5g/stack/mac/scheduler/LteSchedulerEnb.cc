@@ -311,7 +311,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     for ( ; cw < numCodewords; ++cw) {
         EV << "LteSchedulerEnb::grant @@@@@ CODEWORD " << cw << " @@@@@" << endl;
 
-        queueLength += MAC_HEADER + RLC_HEADER_UM;  // TODO RLC may be either UM or AM
+        queueLength += MAC_HEADER + rlcOverheadOfGrant(cid, dir, conn);
         toServe = (queueLength <= bytes) ? queueLength : bytes; // do not serve more bytes than the maximum number of bytes requested
         EV << "LteSchedulerEnb::scheduleGrant bytes to be allocated: " << toServe << endl;
 
@@ -539,6 +539,22 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     EV << "LteSchedulerEnb::grant --------------------::[  END GRANT  ]::--------------------" << endl;
 
     return totalAllocatedBytes;
+}
+
+unsigned int LteSchedulerEnb::rlcOverheadOfGrant(MacCid cid, Direction dir, const LteMacBuffer *conn) const
+{
+    const unsigned int flatEstimate = RLC_HEADER_UM;  // TODO RLC may be either UM or AM
+    if (dir != DL || conn->isEmpty() || !mac_->getLogicalChannelConfig(cid).soFraming)
+        return flatEstimate;
+
+    const auto& config = mac_->getLogicalChannelConfig(cid);
+    auto hdr = [&config](NrUmSegState state) {
+        return config.rlcMode == AM ? nrAmHeaderBytes(state, config.snFieldLength) : nrUmHeaderBytes(state, config.snFieldLength);
+    };
+    unsigned int wholeSduHdr = hdr(config.rlcMode == AM ? NRUM_FIRST : NRUM_COMPLETE);
+    auto it = soFrontIsContinuation_.find(cid);
+    unsigned int frontHdr = (it != soFrontIsContinuation_.end() && it->second) ? hdr(NRUM_CONTINUATION) : wholeSduHdr;
+    return std::max(flatEstimate, frontHdr + (conn->getQueueLength() - 1) * wholeSduHdr);
 }
 
 unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, GHz carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)

@@ -304,6 +304,11 @@ class LteSchedulerEnb : public cSimpleModule
      */
     virtual bool checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency) = 0;
 
+    /// The RLC header bytes a grant must cover to empty this connection's buffer.
+    /// With NR SO framing in DL, every queued SDU is a PDU with a header of its own;
+    /// the flat estimate stands for anything else, and is a lower bound.
+    virtual unsigned int rlcOverheadOfGrant(MacCid cid, Direction dir, const LteMacBuffer *conn) const;
+
     /*
      * Schedule and related methods.
      *
