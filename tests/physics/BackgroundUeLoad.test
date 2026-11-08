@@ -1,0 +1,199 @@
+%description:
+
+What a real cell's background UEs cost a real UE of another cell, against the
+closed form.
+
+A background UE has no protocol stack. What its allocations do reaches the rest
+of the network only as transmissions on the radio medium: in DL its base
+station's radio sends one for each allocation, with the base station's power
+and antenna; in UL the UE's phantom radio sends one, with the generator's power.
+
+Worth having separately from InterferenceDelta and InterferenceDeltaUl, as the
+interferer here is a cell that carries background UEs only: the cell's real
+frames, the path those tests grade, do not exist in this scenario. And
+separately from BackgroundUeCqi, which grades the what-ifs of such UEs and
+not their allocations.
+
+The scenario is two real cells: a real UE, the victim, in the first, with a
+trickle in both directions; one background UE, loaded in both directions, in the
+second, whose antenna is sectorial (ANISOTROPIC) with a boresight well off the
+victim. Fading and shadowing are off, every link is NLOS by configuration, and
+downlinkInterference and uplinkInterference are off in one run and on in the
+other, so that the victim's four statistics take these values:
+
+    S_DL = P1 + G1 + Gue - cableLoss_ue - PL(d_serving)
+    I_DL = P2 - A(phi, theta) + G2 + Gue - cableLoss_ue - PL(d_gnb2)
+    N_DL = thermalNoise + noiseFigure_ue
+    S_UL = ueTxPower + Gue + G1 - cableLoss_gnb - PL(d_serving)
+    I_UL = bgTxPower + Gbg + G1 - cableLoss_gnb - PL(d_bgUe)
+    N_UL = thermalNoise + noiseFigure_gnb
+
+where A is the sectorial pattern of TR 36.873 Table 7.1-1, the study a TR 38.901
+cell takes it from. The victim stands on the x axis of gnb2, the boresight 60
+degrees off it, so phi = 60 degrees and A is about 10 dB, the horizontal
+term and a small vertical one.
+
+The path loss and A are the specifications'; that a background UE's allocations
+reach the medium with these budgets is the model's choice, so this is a regression
+test of that choice.
+
+With the switches off, every statistic is S - N. With them on, the maximum is
+S - N, from the slots in which the background UE had no allocation, and the
+minimum S - (N + I), from those in which it occupied every band: the reception
+statistics, on the bands the victim used, and the CQI's, on all bands. Those
+endpoints only occur when the allocations reach the medium. So:
+
+ - deleting the DL allocation's transmission makes the DL minimum the quiet
+   budget, or trips the debug assertion on the medium's band occupancy against
+   the scheduler's (in the commits that still have it);
+ - an allocation that goes out omnidirectionally moves the DL minimum by A,
+   or trips the debug assertion that it does not, in the DL walk;
+ - deleting the UL registration in the scheduler makes the UL minimum the quiet
+   budget, or trips the debug assertion on the Binder's map (while it exists).
+
+The background UE's own what-ifs are graded as well. In DL they pass through
+the sector: at 110 m from gnb2, on its x axis, with phi = 60 degrees and the
+larger vertical term of a closer UE; in UL they do not, as a UE's antenna
+is not the cell's. The victim's trickle does not fill a slot, so with the
+switches on only their maximum has a closed form.
+
+Both rtx rates are 0, so all of the load is the allocations of new data, and
+the loaded minimum is reached without the scheduler's rtx path. Its registration
+sites are not covered here.
+
+%extraargs: -c BackgroundUeLoad
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config BackgroundUeLoad]
+network = simu5g.simulations.nr.networks.MultiCell_Standalone
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+# The extremes are the quantities under test here, not the average.
+**.bgMeasuredSinrDl.result-recording-modes = mean,count,min,max
+**.bgMeasuredSinrUl.result-recording-modes = mean,count,min,max
+**.measuredSinrDl.result-recording-modes = mean,count,min,max
+**.measuredSinrUl.result-recording-modes = mean,count,min,max
+**.rcvdSinrDl.result-recording-modes = mean,count,min,max
+**.rcvdSinrUl.result-recording-modes = mean,count,min,max
+
+############### The sweep: the medium's switches of a real cell's interference ##############
+**.downlinkInterference = ${dli = false, true}
+**.uplinkInterference = ${uli = false, true ! dli}
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### Geometry: the victim and the background UE on the x axis of the cells ##############
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb1.mobility.initialZ = 25m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb2.mobility.initialZ = 25m
+*.numUe = 1
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+# Association is by best signal and then frozen.
+**.dynamicCellAssociation = true
+**.enableHandover = false
+*.ue[0].mobility.initialX = 350m
+*.ue[0].mobility.initialY = 500m
+*.ue[0].mobility.initialZ = 1.5m
+*.gnb2.cellularNic.bgTrafficGenerator[0].numBgUes = 1
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialX = 640m
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialY = 500m
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1500m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one NLOS path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = false
+**.fading = false
+**.shadowing = false
+
+############### The budget terms, stated rather than inherited, and apart ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+*.gnb1.**.eNodeBTxPower = 40dBm
+*.gnb2.**.eNodeBTxPower = 37dBm
+**.ueTxPower = 25dBm
+**.thermalNoise = -104.5dBm
+*.gnb1.cellularNic.radio.antenna.gain = 17dBi
+*.gnb2.cellularNic.radio.antenna.gain = 15dBi
+*.gnb2.cellularNic.radio.antenna.txDirection = "ANISOTROPIC"
+*.gnb2.cellularNic.radio.antenna.txAngle = 120deg
+*.gnb*.cellularNic.radio.receiver.noiseFigure = 4dB
+*.gnb*.cellularNic.radio.receiver.cableLoss = 1dB
+*.ue[*].cellularNic.*adio.antenna.gain = 1dBi
+*.ue[*].cellularNic.*adio.receiver.noiseFigure = 8dB
+*.ue[*].cellularNic.*adio.receiver.cableLoss = 2.5dB
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.antenna.gain = 3dBi
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.noiseFigure = 9dB
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.cableLoss = 3.5dB
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].generator.txPower = 21dBm
+
+############### Traffic: a trickle for the victim, a load for the background UE ##############
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.typename = "TrafficGeneratorCbr"
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.rtxRateDl = 0
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.rtxRateUl = 0
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.startTimeDl = 0.1s
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.packetSizeDl = 1000B
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.periodDl = 0.007s
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.startTimeUl = 0.1s
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.packetSizeUl = 1000B
+*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.periodUl = 0.007s
+
+*.ue[0].numApps = 2
+*.server.numApps = 2
+*.ue[0].app[0].typename = "CbrReceiver"
+*.ue[0].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 40B
+*.server.app[0].samplingTime = 0.013s
+*.server.app[0].startTime = 0.1s
+*.ue[0].app[1].typename = "CbrSender"
+*.ue[0].app[1].destAddress = "server"
+*.ue[0].app[1].destPort = 4000
+*.ue[0].app[1].localPort = 4088
+*.ue[0].app[1].packetSize = 40B
+*.ue[0].app[1].samplingTime = 0.013s
+*.ue[0].app[1].startTime = 0.1s
+*.server.app[1].typename = "CbrReceiver"
+*.server.app[1].localPort = 4000
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=27 failures=0
+
+%not-contains: verdict.txt
+FAILED

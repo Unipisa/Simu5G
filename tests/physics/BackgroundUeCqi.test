@@ -1,0 +1,181 @@
+%description:
+
+A real cell's background UE's CQI, against the closed form.
+
+A background UE is the bgTrafficGenerator's UE of a real base station's NIC.
+Its CQIs are what-ifs on the radio medium: in DL a transmission of the base
+station's radio at the UE's phantom radio, in UL one of the phantom radio at
+the base station's. bgMeasuredSinrDl and bgMeasuredSinrUl are what those
+what-ifs report, in dB, as the mean over the carrier's bands.
+
+The scenario is two real cells, with two background UEs in the first and a
+real UE, loaded in both directions, in the second. Fading and shadowing are
+off, and every link is NLOS by configuration, so everything is a sum of the
+radios' constants and one path loss of TR 38.901:
+
+    S_DL = eNodeBTxPower + Gcell + Gbg - cableLoss_bg - PL(d)
+    N_DL = thermalNoise + noiseFigure_bg
+    S_UL = bgTxPower + Gbg + Gcell - cableLoss_cell - PL(d)
+    N_UL = thermalNoise + noiseFigure_cell
+
+The terms are set apart in bgUE[0] (each different from the NED default and
+from the corresponding term of the other end), so that a term taken from the
+wrong radio or the wrong direction moves the result. bgUE[1] stays on the
+NED defaults of its radio and its generator, and pins those.
+
+downlinkInterference and uplinkInterference are the medium's switches of a
+real cell's interference at any receiver, and default to false:
+
+ - with both off, nothing else reaches the what-ifs. Both SINRs are one value
+   at any load, min = max = S - N, and a real cell's interference does not
+   exist for a background UE;
+ - with both on, the maximum is still S - N, from the slots in which the other
+   cell was idle, and the minimum is S - (N + I), with I from the other cell
+   alone: the other gNB's power and gain in DL, the real UE's in UL, at their
+   own distances.
+
+Only the path loss is a specification's: that a background UE's links are
+evaluated this way, with these budgets, is the model's choice, so this is a
+regression test of that choice.
+
+The cell's own allocations are not in I, though the cell's background UEs are
+loaded in both directions: a CQI's interference is the transmissions of the
+other cells only, and what makes them other cells is the what-if's cellId.
+With the DL what-if's cellId replaced by NODEID_NONE, the cell interferes with
+its own background UE and the minimum falls by far more than the closed form
+says (mutation-checked).
+
+The loads' periods are coprime with the CQI period of 6 slots, so that the CQI
+samples every phase of a load's busy and idle slots.
+
+%extraargs: -c BackgroundUeCqi
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config BackgroundUeCqi]
+network = simu5g.simulations.nr.networks.MultiCell_Standalone
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+# The extremes are the quantities under test here, not the average.
+**.bgMeasuredSinrDl.result-recording-modes = mean,count,min,max
+**.bgMeasuredSinrUl.result-recording-modes = mean,count,min,max
+
+############### The sweep: the medium's switches of a real cell's interference ##############
+**.downlinkInterference = ${dli = false, true}
+**.uplinkInterference = ${uli = false, true ! dli}
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### Geometry: bgUE[0] and bgUE[1] in the first cell, the loaded real UE in the second ##############
+*.gnb1.mobility.initialX = 250m
+*.gnb1.mobility.initialY = 500m
+*.gnb1.mobility.initialZ = 25m
+*.gnb2.mobility.initialX = 750m
+*.gnb2.mobility.initialY = 500m
+*.gnb2.mobility.initialZ = 25m
+*.gnb1.cellularNic.bgTrafficGenerator[0].numBgUes = 2
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialX = 350m
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialY = 400m
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].mobility.initialZ = 1.5m
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[1].mobility.initialX = 200m
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[1].mobility.initialY = 620m
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[1].mobility.initialZ = 1.5m
+*.numUe = 1
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 2
+# Association is by best signal and then frozen.
+**.dynamicCellAssociation = true
+**.enableHandover = false
+*.ue[0].mobility.initialX = 800m
+*.ue[0].mobility.initialY = 500m
+*.ue[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1500m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one NLOS path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = false
+**.fading = false
+**.shadowing = false
+
+############### The budget terms, stated rather than inherited, and apart ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+*.gnb1.**.eNodeBTxPower = 40dBm
+*.gnb2.**.eNodeBTxPower = 37dBm
+**.ueTxPower = 25dBm
+**.thermalNoise = -104.5dBm
+*.gnb1.cellularNic.radio.antenna.gain = 17dBi
+*.gnb2.cellularNic.radio.antenna.gain = 15dBi
+*.gnb*.cellularNic.radio.receiver.noiseFigure = 4dB
+*.gnb*.cellularNic.radio.receiver.cableLoss = 1dB
+*.ue[*].cellularNic.*adio.antenna.gain = 1dBi
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.antenna.gain = 3dBi
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.noiseFigure = 9dB
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].radio.cableLoss = 3.5dB
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[0].generator.txPower = 21dBm
+
+############### Traffic: the first cell's background UEs and the second cell's real UE, both directions ##############
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.typename = "TrafficGeneratorCbr"
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.rtxRateDl = 0
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.rtxRateUl = 0
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.startTimeDl = 0.1s
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.packetSizeDl = 1000B
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.periodDl = 0.011s
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.startTimeUl = 0.1s
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.packetSizeUl = 1000B
+*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[*].generator.periodUl = 0.013s
+
+*.ue[0].numApps = 2
+*.server.numApps = 2
+*.ue[0].app[0].typename = "CbrReceiver"
+*.ue[0].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 1000B
+*.server.app[0].samplingTime = 0.007s
+*.server.app[0].startTime = 0.1s
+*.ue[0].app[1].typename = "CbrSender"
+*.ue[0].app[1].destAddress = "server"
+*.ue[0].app[1].destPort = 4000
+*.ue[0].app[1].localPort = 4088
+*.ue[0].app[1].packetSize = 1000B
+*.ue[0].app[1].samplingTime = 0.007s
+*.ue[0].app[1].startTime = 0.1s
+*.server.app[1].typename = "CbrReceiver"
+*.server.app[1].localPort = 4000
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=21 failures=0
+
+%not-contains: verdict.txt
+FAILED

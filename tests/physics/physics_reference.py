@@ -722,6 +722,304 @@ GRADERS = {
 }
 
 
+class BudgetEnds:
+    """Link budgets between named radios of a scenario in which nothing is
+    random and every link is NLOS: a sum of the two radios' own constants and
+    one path loss. Unlike Budget it states the terms per radio, as the
+    background tests set them apart: an interferer's gain, or a term of the
+    wrong end, then moves a result. The coordinates are the ini's, so d3D and
+    d2D are what the model measures, and only the UMi NLOS formula of TR 38.901
+    is the specification's."""
+
+    def __init__(self):
+        self.plr = pathloss_reference()
+        cfg = config_values(['**.thermalNoise', '**.nodebHeight', '**.ueHeight',
+                             '*.carrierAggregation.componentCarrier[0].carrierFrequency'])
+        self.thermal = cfg['**.thermalNoise']
+        self.hBS = cfg['**.nodebHeight']
+        self.hUT = cfg['**.ueHeight']
+        self.fc = cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
+
+    def position(self, node):
+        names = [f'{node}.mobility.initial{axis}' for axis in 'XYZ']
+        return [config_values(names)[name] for name in names]
+
+    def path_loss(self, a, b):
+        d2D = math.hypot(a[0] - b[0], a[1] - b[1])
+        d3D = math.hypot(d2D, a[2] - b[2])
+        return self.plr.t901_umi_nlos(d3D, d2D, self.fc, self.hBS, self.hUT)
+
+    def received(self, tx_power, tx_gain, rx_gain, rx_cable_loss, tx_pos, rx_pos, attenuation=0.0):
+        """dBm at the receiver: the receiver's cable loss, the gains of both
+        ends, and the angular attenuation of a sectorial transmitter."""
+        return (tx_power + tx_gain + rx_gain - rx_cable_loss
+                - self.path_loss(tx_pos, rx_pos) - attenuation)
+
+    def sinr(self, signal_dbm, noise_figure, interference_dbm=None):
+        """dB of a received power over the receiver's noise floor, thermal
+        noise plus its own noise figure, or over noise plus one interferer."""
+        denominator = 10 ** ((self.thermal + noise_figure) / 10.0)
+        if interference_dbm is not None:
+            denominator += 10 ** (interference_dbm / 10.0)
+        return signal_dbm - 10 * math.log10(denominator)
+
+    def check_geometry(self, grader, stations, ues):
+        for name, position in stations:
+            grader.check_absolute('geometry-is-consistent', f'{name} at the formula hBS',
+                                  position[2], self.hBS, 0.0, " m")
+        for name, position in ues:
+            grader.check_absolute('geometry-is-consistent', f'{name} at the formula hUT',
+                                  position[2], self.hUT, 0.0, " m")
+
+
+def sector_attenuation(budget, cell, ue, boresight):
+    """TR 36.873 Table 7.1-1's pattern, which TR 38.901 cells take, for a UE on
+    the cell's x axis, west of it. On that axis the model's horizontal angle is
+    exactly 180 degrees, whatever the 3D geometry. theta is measured from the
+    zenith, as in the specification, so a UE below the antenna has theta > 90."""
+    if ue[1] != cell[1] or ue[0] >= cell[0]:
+        raise LookupError("sector_attenuation() takes a UE on the cell's x axis, west of it")
+    phi = abs(boresight - 180.0)
+    theta = 90.0 + math.degrees(math.atan2(cell[2] - ue[2], cell[0] - ue[0]))
+    return budget.plr.t873_antenna(phi, theta)
+
+
+def check_endpoints(grader, row, stat, params, quiet, loaded=None):
+    """A statistic of a run that has no interferer on (loaded is None) is one
+    value; otherwise its maximum is the quiet budget and its minimum the
+    fully loaded one."""
+    if loaded is None:
+        grader.check_absolute('no-interference-is-flat', f'{stat} {params}',
+                              row[f'{stat}:max'] - row[f'{stat}:min'], 0.0, 1e-9, " dB")
+        grader.check_absolute('quiet-sinr', f'{stat} {params}',
+                              row[f'{stat}:min'], quiet, 1e-9, " dB")
+    else:
+        grader.check_absolute('idle-interferer-costs-nothing', f'{stat} {params}',
+                              row[f'{stat}:max'], quiet, 1e-9, " dB")
+        grader.check_absolute('loaded-interferer-sinr', f'{stat} {params}',
+                              row[f'{stat}:min'], loaded, 1e-9, " dB")
+
+
+# The NED defaults of a background UE's phantom radio and generator
+# (BackgroundUe.ned, CellularPhantomRadio.ned, TrafficGeneratorBase.ned), and
+# of a background cell's radio (BackgroundCell.ned). A test leaves one UE or one
+# cell on them, so a default that moves or two that swap fail by name.
+BGUE_DEFAULT_GAIN, BGUE_DEFAULT_NOISE_FIGURE, BGUE_DEFAULT_TX_POWER = 0.0, 7.0, 26.0
+BGCELL_DEFAULT_GAIN, BGCELL_DEFAULT_NOISE_FIGURE = 18.0, 5.0
+RADIO_DEFAULT_CABLE_LOSS = 2.0
+
+
+def grade_background_ue_cqi(grader):
+    """A real cell's background UEs: their CQIs' SINRs, with the other real
+    cell's load in and out through the medium's switches."""
+    budget = BudgetEnds()
+    gnb1, gnb2 = budget.position('*.gnb1'), budget.position('*.gnb2')
+    prefix = '*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE'
+    ue0, ue1 = budget.position(f'{prefix}[0]'), budget.position(f'{prefix}[1]')
+    realUe = budget.position('*.ue[0]')
+    budget.check_geometry(grader, [('gnb1', gnb1), ('gnb2', gnb2)],
+                          [('bgUE[0]', ue0), ('bgUE[1]', ue1), ('ue[0]', realUe)])
+    cfg = config_values([
+        '*.gnb1.**.eNodeBTxPower', '*.gnb2.**.eNodeBTxPower', '**.ueTxPower',
+        '*.gnb1.cellularNic.radio.antenna.gain', '*.gnb2.cellularNic.radio.antenna.gain',
+        '*.gnb*.cellularNic.radio.receiver.noiseFigure', '*.gnb*.cellularNic.radio.receiver.cableLoss',
+        '*.ue[*].cellularNic.*adio.antenna.gain',
+        f'{prefix}[0].radio.antenna.gain', f'{prefix}[0].radio.noiseFigure',
+        f'{prefix}[0].radio.cableLoss', f'{prefix}[0].generator.txPower',
+    ])
+    bsGain = cfg['*.gnb1.cellularNic.radio.antenna.gain']
+    bsNoiseFigure = cfg['*.gnb*.cellularNic.radio.receiver.noiseFigure']
+    bsCable = cfg['*.gnb*.cellularNic.radio.receiver.cableLoss']
+    ues = {
+        0: (ue0, cfg[f'{prefix}[0].radio.antenna.gain'], cfg[f'{prefix}[0].radio.noiseFigure'],
+            cfg[f'{prefix}[0].radio.cableLoss'], cfg[f'{prefix}[0].generator.txPower']),
+        1: (ue1, BGUE_DEFAULT_GAIN, BGUE_DEFAULT_NOISE_FIGURE, RADIO_DEFAULT_CABLE_LOSS, BGUE_DEFAULT_TX_POWER),
+    }
+    for i, (pos, gain, noiseFigure, cable, txPower) in ues.items():
+        table = scalar_table(f'module =~ "*.gnb1.cellularNic.bgTrafficGenerator[0].bgUE[{i}].generator" '
+                             'AND (name =~ "bgMeasuredSinrDl:*" OR name =~ "bgMeasuredSinrUl:*")',
+                             itervars=('dli', 'uli'))
+        signalDl = budget.received(cfg['*.gnb1.**.eNodeBTxPower'], bsGain, gain, cable, gnb1, pos)
+        neighbourDl = budget.received(cfg['*.gnb2.**.eNodeBTxPower'], cfg['*.gnb2.cellularNic.radio.antenna.gain'],
+                                      gain, cable, gnb2, pos)
+        signalUl = budget.received(txPower, gain, bsGain, bsCable, pos, gnb1)
+        neighbourUl = budget.received(cfg['**.ueTxPower'], cfg['*.ue[*].cellularNic.*adio.antenna.gain'],
+                                      bsGain, bsCable, realUe, gnb1)
+        quietDl = budget.sinr(signalDl, noiseFigure)
+        quietUl = budget.sinr(signalUl, bsNoiseFigure)
+        for (dli, uli), row in table.iterrows():
+            on = str(dli) == 'true'
+            params = f"bgUE[{i}] interference={'on' if on else 'off'}"
+            check_endpoints(grader, row, 'bgMeasuredSinrDl', params, quietDl,
+                            budget.sinr(signalDl, noiseFigure, neighbourDl) if on else None)
+            check_endpoints(grader, row, 'bgMeasuredSinrUl', params, quietUl,
+                            budget.sinr(signalUl, bsNoiseFigure, neighbourUl) if on else None)
+
+
+def grade_background_ue_load(grader):
+    """A cell that carries only background UEs, on a sectorial antenna, against
+    a real UE of another cell: what the UEs' allocations cost it, with the
+    cell's antenna in DL and the UE's power in UL, as the medium has them."""
+    budget = BudgetEnds()
+    gnb1, gnb2 = budget.position('*.gnb1'), budget.position('*.gnb2')
+    victim = budget.position('*.ue[0]')
+    prefix = '*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0]'
+    bgUe = budget.position(prefix)
+    budget.check_geometry(grader, [('gnb1', gnb1), ('gnb2', gnb2)],
+                          [('ue[0]', victim), ('bgUE[0]', bgUe)])
+    cfg = config_values([
+        '*.gnb1.**.eNodeBTxPower', '*.gnb2.**.eNodeBTxPower', '**.ueTxPower',
+        '*.gnb1.cellularNic.radio.antenna.gain', '*.gnb2.cellularNic.radio.antenna.gain',
+        '*.gnb2.cellularNic.radio.antenna.txAngle',
+        '*.gnb*.cellularNic.radio.receiver.noiseFigure', '*.gnb*.cellularNic.radio.receiver.cableLoss',
+        '*.ue[*].cellularNic.*adio.antenna.gain', '*.ue[*].cellularNic.*adio.receiver.noiseFigure',
+        '*.ue[*].cellularNic.*adio.receiver.cableLoss',
+        f'{prefix}.radio.antenna.gain', f'{prefix}.radio.noiseFigure',
+        f'{prefix}.radio.cableLoss', f'{prefix}.generator.txPower',
+    ])
+    gain1 = cfg['*.gnb1.cellularNic.radio.antenna.gain']
+    gain2 = cfg['*.gnb2.cellularNic.radio.antenna.gain']
+    boresight = cfg['*.gnb2.cellularNic.radio.antenna.txAngle']
+    bsNoiseFigure = cfg['*.gnb*.cellularNic.radio.receiver.noiseFigure']
+    bsCable = cfg['*.gnb*.cellularNic.radio.receiver.cableLoss']
+    ueGain = cfg['*.ue[*].cellularNic.*adio.antenna.gain']
+    ueNoiseFigure = cfg['*.ue[*].cellularNic.*adio.receiver.noiseFigure']
+    ueCable = cfg['*.ue[*].cellularNic.*adio.receiver.cableLoss']
+    bgGain = cfg[f'{prefix}.radio.antenna.gain']
+    bgNoiseFigure = cfg[f'{prefix}.radio.noiseFigure']
+    bgCable = cfg[f'{prefix}.radio.cableLoss']
+    bgPower = cfg[f'{prefix}.generator.txPower']
+
+    # The victim's DL and UL, against the background UE's allocations.
+    signalDl = budget.received(cfg['*.gnb1.**.eNodeBTxPower'], gain1, ueGain, ueCable, gnb1, victim)
+    attenuation = sector_attenuation(budget, gnb2, victim, boresight)
+    grader.check_true('sector-is-well-off-victim', f'boresight={boresight:g} deg',
+                      5.0 < attenuation < 30.0, f'attenuation={attenuation:.3f} dB')
+    interfererDl = budget.received(cfg['*.gnb2.**.eNodeBTxPower'], gain2, ueGain, ueCable, gnb2, victim, attenuation)
+    signalUl = budget.received(cfg['**.ueTxPower'], ueGain, gain1, bsCable, victim, gnb1)
+    interfererUl = budget.received(bgPower, bgGain, gain1, bsCable, bgUe, gnb1)
+    table = scalar_table('module =~ "*.ue[0].*.nrRadio.receiver" AND '
+                         '(name =~ "measuredSinrDl:*" OR name =~ "rcvdSinrDl:*" OR '
+                         'name =~ "measuredSinrUl:*" OR name =~ "rcvdSinrUl:*")', itervars=('dli', 'uli'))
+    for (dli, uli), row in table.iterrows():
+        on = str(dli) == 'true'
+        params = f"interference={'on' if on else 'off'}"
+        for stat in ('measuredSinrDl', 'rcvdSinrDl'):
+            check_endpoints(grader, row, stat, params, budget.sinr(signalDl, ueNoiseFigure),
+                            budget.sinr(signalDl, ueNoiseFigure, interfererDl) if on else None)
+        for stat in ('measuredSinrUl', 'rcvdSinrUl'):
+            check_endpoints(grader, row, stat, params, budget.sinr(signalUl, bsNoiseFigure),
+                            budget.sinr(signalUl, bsNoiseFigure, interfererUl) if on else None)
+
+    # The background UE's own what-ifs, through the sector in DL and not in UL.
+    # Its interferers are the victim's trickle, which fills no slot, so only
+    # their absence has a closed form when the switches are on.
+    signalDl = budget.received(cfg['*.gnb2.**.eNodeBTxPower'], gain2, bgGain, bgCable, gnb2, bgUe,
+                               sector_attenuation(budget, gnb2, bgUe, boresight))
+    signalUl = budget.received(bgPower, bgGain, gain2, bsCable, bgUe, gnb2)
+    table = scalar_table(f'module =~ "*.gnb2.cellularNic.bgTrafficGenerator[0].bgUE[0].generator" '
+                         'AND (name =~ "bgMeasuredSinrDl:*" OR name =~ "bgMeasuredSinrUl:*")',
+                         itervars=('dli', 'uli'))
+    for (dli, uli), row in table.iterrows():
+        on = str(dli) == 'true'
+        params = f"bgUE[0] interference={'on' if on else 'off'}"
+        for stat, quiet in (('bgMeasuredSinrDl', budget.sinr(signalDl, bgNoiseFigure)),
+                            ('bgMeasuredSinrUl', budget.sinr(signalUl, bsNoiseFigure))):
+            if on:
+                grader.check_absolute('idle-interferer-costs-nothing', f'{stat} {params}',
+                                      row[f'{stat}:max'], quiet, 1e-9, " dB")
+            else:
+                check_endpoints(grader, row, stat, params, quiet)
+
+
+def grade_background_cell_cqi(grader):
+    """A background cell's CQIs' SINRs: the DL what-if at the UE's phantom radio
+    and the UL one at the cell's, with what each switch lets in."""
+    budget = BudgetEnds()
+    gnb, realUe = budget.position('*.gnb'), budget.position('*.ue[0]')
+    cell0, cell1 = budget.position('*.bgCell[0]'), budget.position('*.bgCell[1]')
+    ue00 = budget.position('*.bgCell[0].bgTrafficGenerator.bgUE[0]')
+    ue01 = budget.position('*.bgCell[0].bgTrafficGenerator.bgUE[1]')
+    ue10 = budget.position('*.bgCell[1].bgTrafficGenerator.bgUE[0]')
+    budget.check_geometry(grader, [('gnb', gnb), ('bgCell[0]', cell0), ('bgCell[1]', cell1)],
+                          [('ue[0]', realUe), ('bgCell[0].bgUE[0]', ue00), ('bgCell[0].bgUE[1]', ue01),
+                           ('bgCell[1].bgUE[0]', ue10)])
+    cfg = config_values([
+        '*.gnb.**.eNodeBTxPower', '**.ueTxPower', '*.gnb.cellularNic.radio.antenna.gain',
+        '*.ue[*].cellularNic.*adio.antenna.gain',
+        '*.bgCell[0].bgScheduler.txPower', '*.bgCell[1].bgScheduler.txPower',
+        '*.bgCell[0].radio.antenna.gain', '*.bgCell[0].radio.noiseFigure', '*.bgCell[0].radio.cableLoss',
+        '*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.antenna.gain',
+        '*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.noiseFigure',
+        '*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.cableLoss',
+        '*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.txPower',
+        '*.bgCell[1].bgTrafficGenerator.bgUE[0].generator.txPower',
+    ])
+    power0 = cfg['*.bgCell[0].bgScheduler.txPower']
+    gain0 = cfg['*.bgCell[0].radio.antenna.gain']
+    noiseFigure0 = cfg['*.bgCell[0].radio.noiseFigure']
+    cable0 = cfg['*.bgCell[0].radio.cableLoss']
+    ueGain = cfg['*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.antenna.gain']
+    ueNoiseFigure = cfg['*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.noiseFigure']
+    ueCable = cfg['*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.cableLoss']
+    uePower = cfg['*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.txPower']
+    power1 = cfg['*.bgCell[1].bgScheduler.txPower']
+    uePower1 = cfg['*.bgCell[1].bgTrafficGenerator.bgUE[0].generator.txPower']
+
+    def mean_over_cell(loaded, quiet, shared, width):
+        # The reported SINR is the mean, in dB, over the cell's own bands; the
+        # interferer occupies only the 'shared' first ones.
+        return (shared * loaded + (width - shared) * quiet) / width
+
+    for i, pos in ((0, ue00), (1, ue01)):
+        table = scalar_table(f'module =~ "*.bgCell[0].bgTrafficGenerator.bgUE[{i}].generator" '
+                             'AND (name =~ "bgMeasuredSinrDl:*" OR name =~ "bgMeasuredSinrUl:*")',
+                             itervars=('s', 'width0', 'width1'))
+        signalDl = budget.received(power0, gain0, ueGain, ueCable, cell0, pos)
+        signalUl = budget.received(uePower, ueGain, gain0, cable0, pos, cell0)
+        quietDl = budget.sinr(signalDl, ueNoiseFigure)
+        quietUl = budget.sinr(signalUl, noiseFigure0)
+        for (s, width0, width1), row in table.iterrows():
+            params = f"{s} bgUE[{i}]"
+            loadedDl = loadedUl = None
+            if s == 'realCellOn':
+                loadedDl = budget.sinr(signalDl, ueNoiseFigure, budget.received(
+                    cfg['*.gnb.**.eNodeBTxPower'], cfg['*.gnb.cellularNic.radio.antenna.gain'],
+                    ueGain, ueCable, gnb, pos))
+                loadedUl = budget.sinr(signalUl, noiseFigure0, budget.received(
+                    cfg['**.ueTxPower'], cfg['*.ue[*].cellularNic.*adio.antenna.gain'],
+                    gain0, cable0, realUe, cell0))
+            elif s in ('neighbour', 'narrowCell', 'narrowNeighbour'):
+                shared = min(width0, width1)
+                loadedDl = mean_over_cell(budget.sinr(signalDl, ueNoiseFigure, budget.received(
+                    power1, BGCELL_DEFAULT_GAIN, ueGain, ueCable, cell1, pos)), quietDl, shared, width0)
+                loadedUl = mean_over_cell(budget.sinr(signalUl, noiseFigure0, budget.received(
+                    uePower1, BGUE_DEFAULT_GAIN, gain0, cable0, ue10, cell0)), quietUl, shared, width0)
+            check_endpoints(grader, row, 'bgMeasuredSinrDl', params, quietDl, loadedDl)
+            check_endpoints(grader, row, 'bgMeasuredSinrUl', params, quietUl, loadedUl)
+
+    # The neighbouring cell, on the NED defaults of its radios: bgCell[0], its
+    # only interferer here, also falls idle.
+    table = scalar_table('module =~ "*.bgCell[1].bgTrafficGenerator.bgUE[0].generator" '
+                         'AND (name =~ "bgMeasuredSinrDl:*" OR name =~ "bgMeasuredSinrUl:*")',
+                         itervars=('s', 'width0', 'width1'))
+    signalDl = budget.received(power1, BGCELL_DEFAULT_GAIN, BGUE_DEFAULT_GAIN, RADIO_DEFAULT_CABLE_LOSS, cell1, ue10)
+    signalUl = budget.received(uePower1, BGUE_DEFAULT_GAIN, BGCELL_DEFAULT_GAIN, RADIO_DEFAULT_CABLE_LOSS, ue10, cell1)
+    for (s, width0, width1), row in table.iterrows():
+        params = f"{s} bgCell[1] NED defaults"
+        grader.check_absolute('idle-interferer-costs-nothing', f'bgMeasuredSinrDl {params}', row['bgMeasuredSinrDl:max'],
+                              budget.sinr(signalDl, BGUE_DEFAULT_NOISE_FIGURE), 1e-9, " dB")
+        grader.check_absolute('idle-interferer-costs-nothing', f'bgMeasuredSinrUl {params}', row['bgMeasuredSinrUl:max'],
+                              budget.sinr(signalUl, BGCELL_DEFAULT_NOISE_FIGURE), 1e-9, " dB")
+
+
+GRADERS.update({
+    'BackgroundUeCqi': grade_background_ue_cqi,
+    'BackgroundUeLoad': grade_background_ue_load,
+    'BackgroundCellCqi': grade_background_cell_cqi,
+})
+
+
 def main():
     if len(sys.argv) != 3 or sys.argv[1] != '--grade':
         print("usage: physics_reference.py --grade <result-directory>", file=sys.stderr)
