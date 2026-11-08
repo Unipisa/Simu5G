@@ -1,0 +1,50 @@
+%description:
+Uplink traffic on an LTE cell loses no data in the MAC, and does not abort the simulation,
+when the UE gets a grant while the H-ARQ process of the TTI is still busy. The eNodeB decides
+on UL grants from its own RX process, which is empty as soon as the PDU is decoded and the
+feedback sent, while the UE's TX process stays busy until that feedback arrives. The eNodeB and
+the UE have five H-ARQ processes, so a process comes round again before that. The UE leaves such
+a grant unused, and also holds back a standalone BSR for it. ue[0], which is close to the cell,
+sends the server a 1400-byte datagram every ms. The channel is good, so H-ARQ does not lose
+PDUs either.
+
+Checks: the simulation completes, and the server receives every datagram.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.EpcSessionTestNetwork
+sim-time-limit = 0.6s
+
+# the results the test checks
+*.server.app[*].packet*.scalar-recording = true
+*.ue[*].app[*].packet*.scalar-recording = true
+
+# a process comes round again before its feedback arrives
+*.eNB.cellularNic.mac.harqProcesses = 5
+*.ue[*].cellularNic.mac.harqProcesses = 5
+
+# the flow, and the sink
+*.ue[0].numApps = 1
+*.ue[0].app[0].typename = "UdpBasicApp"
+*.ue[0].app[0].destAddresses = "server"
+*.ue[0].app[0].destPort = 3000
+*.ue[0].app[0].messageLength = 1400B
+*.ue[0].app[0].sendInterval = 1ms
+*.ue[0].app[0].startTime = 0.1s
+*.ue[0].app[0].stopTime = 0.4s
+*.server.numApps = 1
+*.server.app[0].typename = "UdpSink"
+*.server.app[0].localPort = 3000
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar EpcSessionTestNetwork.ue[0].app[0] packetSent:count 300
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar EpcSessionTestNetwork.server.app[0] packetReceived:count 300
+%#--------------------------------------------------------------------------------------------------------------

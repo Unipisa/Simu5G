@@ -1,0 +1,47 @@
+%description:
+Downlink traffic on an LTE cell loses no data in the MAC when the eNodeB runs out of H-ARQ
+processes: the data stays in RLC until a process frees up. The eNodeB and the UE have four
+H-ARQ processes, fewer than the time a process stays busy until its feedback arrives. The
+server sends ue[0], which is close to the cell, a 1400-byte datagram every ms. The channel is
+good, so H-ARQ does not lose PDUs either.
+
+Checks: the UE receives every datagram.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.EpcSessionTestNetwork
+sim-time-limit = 0.6s
+
+# the results the test checks
+*.server.app[*].packet*.scalar-recording = true
+*.ue[*].app[*].packet*.scalar-recording = true
+
+# fewer H-ARQ processes than the time a process stays busy
+*.eNB.cellularNic.mac.harqProcesses = 4
+*.ue[*].cellularNic.mac.harqProcesses = 4
+
+# the flow, and the sink
+*.server.numApps = 1
+*.server.app[0].typename = "UdpBasicApp"
+*.server.app[0].destAddresses = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].messageLength = 1400B
+*.server.app[0].sendInterval = 1ms
+*.server.app[0].startTime = 0.1s
+*.server.app[0].stopTime = 0.4s
+*.ue[0].numApps = 1
+*.ue[0].app[0].typename = "UdpSink"
+*.ue[0].app[0].localPort = 3000
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar EpcSessionTestNetwork.server.app[0] packetSent:count 300
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar EpcSessionTestNetwork.ue[0].app[0] packetReceived:count 300
+%#--------------------------------------------------------------------------------------------------------------

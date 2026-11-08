@@ -1,0 +1,56 @@
+%description:
+The gNB does not spend resource blocks on UL grants for a UE whose H-ARQ processes are all
+busy. The gNB evaluates a received PDU and sends its feedback only after twelve slots, longer
+than the UE's five processes last at this load, so all of them are regularly busy, at both
+ends. The UE leaves a grant unused while they are, and also holds back a standalone BSR for it.
+ue[0], which is close to the cell, sends the server a 1400-byte datagram every 0.5 ms. The channel
+is good, so H-ARQ does not lose PDUs either.
+
+Checks: the server receives every datagram, and the mean of the resource blocks that the gNB
+allocates per slot is the value without such grants (with them, it is 23.2).
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+sim-time-limit = 2s
+
+# the results the test checks
+*.server.app[*].packet*.scalar-recording = true
+*.ue[*].app[*].packet*.scalar-recording = true
+*.gnb.cellularNic.mac.avgServedBlocksUl*.scalar-recording = true
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+# the feedback takes longer than the UE's processes last
+*.gnb.cellularNic.mac.harqFbEvaluationTimer = 12
+
+# the flow, and the sink
+*.ue[0].numApps = 1
+*.ue[0].app[0].typename = "UdpBasicApp"
+*.ue[0].app[0].destAddresses = "server"
+*.ue[0].app[0].destPort = 3000
+*.ue[0].app[0].messageLength = 1400B
+*.ue[0].app[0].sendInterval = 0.5ms
+*.ue[0].app[0].startTime = 0.1s
+*.ue[0].app[0].stopTime = 1s
+*.server.numApps = 1
+*.server.app[0].typename = "UdpSink"
+*.server.app[0].localPort = 3000
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar NrSessionTestNetwork.ue[0].app[0] packetSent:count 1800
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar NrSessionTestNetwork.server.app[0] packetReceived:count 1800
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar NrSessionTestNetwork.gnb.cellularNic.mac avgServedBlocksUl:mean 14.4635
+%#--------------------------------------------------------------------------------------------------------------
