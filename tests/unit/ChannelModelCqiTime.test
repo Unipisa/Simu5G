@@ -1,0 +1,264 @@
+%description:
+
+When and where a CQI's what-if is evaluated: now, where the radios are now --
+not when the UE's report began to arrive, nor where the reporting UE was when
+it sent the report.
+
+The base station computes two CQIs from a UE's report, at the report's
+reception end: the DL CQI, what the UE would receive of a transmission of the
+base station (PhyEnb::requestFeedback(), the report's control information
+with its direction flipped to DL, through getSINR()), and the D2D CQI, what a
+peer would receive of a D2D transmission of the reporting UE
+(PhyEnbD2D::appendExtraFeedback(), through getSINR_D2D()). Both are what-ifs:
+a transmission starting now, arriving where the receiver is now. A DL CQI
+therefore has exactly the value of a DL frame whose reception starts now at
+the UE where it is now, and a D2D CQI that of a D2D frame of the reporting
+UE, from where it is now, starting now.
+
+ChannelModelRadioLink checks only the DL CQI's positions. A CQI faded at the
+report's reception start (one slot older), or a D2D CQI taken from where the
+reporting UE sent the report, would pass every other test.
+
+Checked with a moving reporting UE, 30 m/s at 3.5 GHz, so that the Jakes
+fading moves by a measurable amount within one numerology-2 slot (0.25 ms).
+The UE's report begins to arrive at t - 0.25 ms and the CQIs are computed at
+t. The stub UE is moved by more than a slot's travel since the report began
+(a stub's position is data), so that the path-loss term of the position is
+measurable too. Every other random ingredient and every interference is off.
+The expected values are the model's own link evaluation (getRSRP() and
+getSINR() of a link), which takes the link's ends and its start time as
+given: the DL link from the base station to the UE where it is now, the D2D
+link from the reporting UE where it is now to the peer, both at start time t.
+Each CQI must equal that exactly, and differ measurably from the same link
+at t - 0.25 ms (the report's reception start) and from the link with the
+reporting UE where it sent the report.
+
+%includes:
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/d2d/phy/channelmodel/D2dChannelModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+// the largest per-band difference of two vectors of the same size
+static double maxDiff(const std::vector<double>& a, const std::vector<double>& b)
+{
+    double d = 0;
+    for (size_t i = 0; i < a.size() && i < b.size(); i++)
+        d = std::max(d, std::fabs(a[i] - b[i]));
+    return d;
+}
+
+// The D2D model's own link builder, which is protected. Never instantiated:
+// see ChannelModelProbe for the technique.
+struct D2dLinkAccess : D2dChannelModel
+{
+    static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bsModel: Tr38901D2dChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[0].numerologyIndex = 2
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# Jakes fading is the only random ingredient
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = true
+**.fadingType = "JAKES"
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+**.d2dInterference = false
+# the stub radios have no receiver to record the measured SINR on
+**.collectSinrStatistics = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *model = harnessModule<D2dChannelModel>(this, "bsModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const GHz carrier = model->getCarrierFrequency();
+const simtime_t slot = SimTime(250, SIMTIME_US);
+
+// a base station, the reporting UE, and its D2D peer
+StubEndpoint bs, ue, peer;
+bs.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+peer.nodeId = MacNodeId(1026);
+bs.coord = inet::Coord(0, 0, 25);
+peer.coord = inet::Coord(160, 70, 1.5);
+bs.txPower = 40.0;
+ue.txPower = 23.0;
+peer.txPower = 23.0;
+ue.speed = 30.0;     // m/s: the mobile end of the DL link and of the D2D link
+bs.channelModels[carrier] = model;
+ue.channelModels[carrier] = model;
+peer.channelModels[carrier] = model;
+StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration peerRadio(medium, peer.nodeId, &peer);
+ChannelModelProbe probe(model);
+
+RbMap bands;
+for (Band b = 0; b < model->getNumBands(); b++)
+    bands[MACRO][b] = 1;
+
+const double minDiffDb = 0.01;
+
+// the report begins to arrive at the base station at tReport, sent from where the UE was then
+wait(SimTime(10, SIMTIME_MS));
+const simtime_t tReport = simTime();
+const inet::Coord reportPosition(100, 20, 1.5);
+ue.coord = reportPosition;
+
+// its reception ends one slot later, at t, and the UE has moved on
+wait(slot);
+const simtime_t t = simTime();
+const inet::Coord nowPosition(100, 40, 1.5);
+ue.coord = nowPosition;
+
+// the report as the base station's radio passes it up: stamped with where and when it began to arrive
+auto *report = new AirFrame();
+report->setArrivalPosition(bs.coord);
+report->setReceptionStartTime(tReport);
+
+// the report's control information, as requestFeedback() has it for the DL CQI: direction flipped to DL, the base station's power
+UserControlInfo info;
+info.setDirection(DL);
+info.setFrameType(FEEDBACKPKT);
+info.setSourceId(ue.nodeId);
+info.setDestId(bs.nodeId);
+info.setCoord(reportPosition);
+info.setTxPower(bs.txPower);
+info.setD2dTxPower(ue.txPower);
+info.setCarrierFrequency(carrier);
+info.setGrantedBlocks(bands);
+
+//
+// DL CQI
+//
+{
+    std::vector<double> cqi = model->getSINR(&bs, report, &info);
+
+    // a DL frame of the base station, as the UE decodes it: the link from the base station to the UE where it is now
+    UserControlInfo data;
+    data.setDirection(DL);
+    data.setFrameType(DATAPKT);
+    data.setSourceId(bs.nodeId);
+    data.setDestId(ue.nodeId);
+    data.setCoord(bs.coord);
+    data.setTxPower(bs.txPower);
+    data.setCarrierFrequency(carrier);
+    data.setGrantedBlocks(bands);
+    auto sinrOf = [&] (const RadioLink& link) { return model->getSINR(link, &data, model->getRSRP(link, bs.txPower)); };
+
+    RadioLink atNow = probe.linkFor(&ue, &data);
+    atNow.startTime = t;
+    RadioLink atReportStart = atNow;
+    atReportStart.startTime = tReport;
+    RadioLink fromReportPosition = atNow;
+    fromReportPosition.rxCoord = reportPosition;
+    std::vector<double> expected = sinrOf(atNow);
+    std::vector<double> older = sinrOf(atReportStart);
+    std::vector<double> elsewhere = sinrOf(fromReportPosition);
+
+    c.check("DL CQI: the fading now and at the report's reception start differ measurably",
+            maxDiff(expected, older) > minDiffDb, show(expected) + " / " + show(older));
+    c.check("DL CQI: the UE now and where it sent the report differ measurably",
+            maxDiff(expected, elsewhere) > minDiffDb, show(expected) + " / " + show(elsewhere));
+    c.check("DL CQI: the value of a DL frame whose reception starts now, at the UE where it is now",
+            cqi == expected, show(cqi) + " / " + show(expected));
+}
+
+//
+// D2D CQI
+//
+{
+    std::vector<double> cqi = model->getSINR_D2D(report, &info, peer.nodeId, peer.coord, bs.nodeId);
+
+    // a D2D frame of the reporting UE, as the peer decodes it
+    UserControlInfo data;
+    data.setDirection(D2D);
+    data.setFrameType(DATAPKT);
+    data.setSourceId(ue.nodeId);
+    data.setDestId(peer.nodeId);
+    data.setCoord(nowPosition);
+    data.setD2dTxPower(ue.txPower);
+    data.setCarrierFrequency(carrier);
+    data.setGrantedBlocks(bands);
+    auto d2dLink = [&] (const inet::Coord& sourcePosition, simtime_t startTime) {
+        RadioLink link = (model->*D2dLinkAccess::d2dLinkPtr())(ue.nodeId, sourcePosition, peer.nodeId, peer.coord);
+        link.startTime = startTime;
+        link.cellId = bs.nodeId;
+        return link;
+    };
+    auto sinrOf = [&] (const RadioLink& link) { return model->getSINR(link, &data, model->getRSRP(link, ue.txPower)); };
+
+    std::vector<double> expected = sinrOf(d2dLink(nowPosition, t));
+    std::vector<double> older = sinrOf(d2dLink(nowPosition, tReport));
+    std::vector<double> elsewhere = sinrOf(d2dLink(reportPosition, t));
+
+    c.check("D2D CQI: the fading now and at the report's reception start differ measurably",
+            maxDiff(expected, older) > minDiffDb, show(expected) + " / " + show(older));
+    c.check("D2D CQI: the reporting UE now and where it sent the report differ measurably",
+            maxDiff(expected, elsewhere) > minDiffDb, show(expected) + " / " + show(elsewhere));
+    c.check("D2D CQI: the value of a D2D frame of the reporting UE from where it is now, starting now",
+            cqi == expected, show(cqi) + " / " + show(expected));
+}
+
+delete report;
+
+c.summary();
+
+%contains: stdout
+modelchecks=6 modelfailures=0
+
+%not-contains: stdout
+FAILED
