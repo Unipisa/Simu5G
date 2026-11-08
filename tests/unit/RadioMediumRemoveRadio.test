@@ -1,0 +1,160 @@
+%description:
+
+The radio medium's registry after a radio is removed: the radio is gone, and
+only it.
+
+CellularRadioMedium keeps the radios twice: by node id, for the lookups
+(findRadio(), getRadio()), and, in the order they were added, the radios a
+broadcast frame is sent to, each with the radioIn gate its frames enter at.
+removeRadio() takes the radio out of both. Removing a radio must leave the
+others where they were: a radio removed from the middle of the broadcast list
+must not take another radio's entry with it, which would silently stop the
+beacons to a radio that is still on the medium (and keep sending them to one
+that has left).
+
+No other test removes a radio from the middle of the list: the registrations
+of the other unit tests have no radioIn gate, and in the simulations the
+radios leave, if at all, at the end. Erasing the first entry of the list
+instead of the removed radio's passes every suite.
+
+Checked with stub radios, each registered with a module of its own that has
+a radioIn gate and counts the frames that arrive there, through
+sendToNeighbors() (the broadcast a base station's beacon goes out with),
+findRadio(), getRadio() and removeRadio():
+ - three radios A, B, C added in this order, B removed: a broadcast from A
+   reaches C once and B not at all; B is not found any more (and removing it
+   again is rejected); A and C still are;
+ - three other radios D, E, F, the first added, D, removed: a broadcast from E
+   reaches F once and D not at all; D is not found any more; E and F still
+   are.
+
+%includes:
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The module of a radio, as far as the medium sees it: the radioIn gate that
+// frames sent to the radio enter at. It counts the frames that arrive.
+class FrameCountingRadio : public cSimpleModule
+{
+  public:
+    int framesReceived = 0;
+
+  protected:
+    virtual void handleMessage(cMessage *msg) override
+    {
+        framesReceived++;
+        delete msg;
+    }
+};
+
+Define_Module(FrameCountingRadio);
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+simple FrameCountingRadio
+{
+    @class(FrameCountingRadio);
+    gates:
+        input radioIn @directIn;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        radioModule[6]: FrameCountingRadio;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto radioModule = [&] (int k) { return check_and_cast<FrameCountingRadio *>(getParentModule()->getSubmodule("radioModule", k)); };
+const simtime_t frameDuration = SimTime(1, SIMTIME_MS);
+
+// a broadcast from the given radio; returns when every copy has arrived
+auto broadcastFrom = [&] (StubEndpoint *sender) {
+    medium->sendToNeighbors(sender, this, new AirFrame("broadcast"), frameDuration);
+    wait(2 * frameDuration);
+};
+auto framesAt = [&] (int k) { return radioModule(k)->framesReceived; };
+auto count = [] (int n) { return "frames=" + std::to_string(n); };
+
+// every radio well inside the broadcast range
+StubEndpoint radioA, radioB, radioC, radioD, radioE, radioF;
+StubEndpoint *endpoints[] = {&radioA, &radioB, &radioC, &radioD, &radioE, &radioF};
+const MacNodeId ids[] = {MacNodeId(1), MacNodeId(1025), MacNodeId(1026), MacNodeId(2), MacNodeId(1027), MacNodeId(1028)};
+for (int k = 0; k < 6; k++) {
+    endpoints[k]->nodeId = ids[k];
+    endpoints[k]->coord = Coord(10.0 * k, 5, 1.5);
+}
+
+//
+// --- B, the second of three, removed ---
+//
+for (int k : {0, 1, 2})
+    medium->addRadio(ids[k], endpoints[k], radioModule(k));
+medium->removeRadio(&radioB);
+
+broadcastFrom(&radioA);
+c.check("after B is removed, a broadcast from A reaches C once", framesAt(2) == 1, count(framesAt(2)));
+c.check("...and not B", framesAt(1) == 0, count(framesAt(1)));
+c.check("...nor A itself", framesAt(0) == 0, count(framesAt(0)));
+c.check("B is not found any more", medium->findRadio(ids[1]) == nullptr);
+c.expectRejected("...getRadio() of B", [&] { medium->getRadio(ids[1]); });
+c.check("A and C still are", medium->findRadio(ids[0]) == &radioA && medium->findRadio(ids[2]) == &radioC
+        && medium->getRadio(ids[0]) == &radioA && medium->getRadio(ids[2]) == &radioC);
+c.expectRejected("removing B again", [&] { medium->removeRadio(&radioB); });
+
+medium->removeRadio(&radioA);
+medium->removeRadio(&radioC);
+
+//
+// --- D, the first of three, removed ---
+//
+for (int k : {3, 4, 5})
+    medium->addRadio(ids[k], endpoints[k], radioModule(k));
+medium->removeRadio(&radioD);
+
+broadcastFrom(&radioE);
+c.check("after D is removed, a broadcast from E reaches F once", framesAt(5) == 1, count(framesAt(5)));
+c.check("...and not D", framesAt(3) == 0, count(framesAt(3)));
+c.check("D is not found any more", medium->findRadio(ids[3]) == nullptr);
+c.check("E and F still are", medium->findRadio(ids[4]) == &radioE && medium->findRadio(ids[5]) == &radioF);
+
+medium->removeRadio(&radioE);
+medium->removeRadio(&radioF);
+
+c.summary();
+
+%contains: stdout
+modelchecks=11 modelfailures=0
+
+%not-contains: stdout
+FAILED
