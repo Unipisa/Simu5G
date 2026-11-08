@@ -64,6 +64,13 @@ module ExtCell
     submodules:
         mobility: StationaryMobility {
             initFromDisplayString = false;
+            // an external cell stands where it is configured to, inside or outside the area the nodes move in
+            constraintAreaMinX = -inf m;
+            constraintAreaMinY = -inf m;
+            constraintAreaMinZ = -inf m;
+            constraintAreaMaxX = inf m;
+            constraintAreaMaxY = inf m;
+            constraintAreaMaxZ = inf m;
             initialX = parent.positionX;
             initialY = parent.positionY;
             initialZ = parent.positionZ;
