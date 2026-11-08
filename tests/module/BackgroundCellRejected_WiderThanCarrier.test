@@ -1,0 +1,49 @@
+%description:
+A background cell has no more bands than its carrier: a CQI of the cell is a what-if on the
+medium, and its SINRs are per band of the carrier. A cell with 8 bands on a 6-band carrier is
+an error when its background UE's first CQI is computed, at t=0.
+
+The what-if is the path that rejects this, so this configuration takes it: the default of a
+periodic CQI update, and a background UE with traffic in DL, as a generator without traffic
+computes no CQI. With useProbabilisticCqi = true there is no what-if, and the same cell runs.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.BackgroundCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+
+network BackgroundCellRejectedTestNetwork
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bgCell: BackgroundCell;
+}
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = BackgroundCellRejectedTestNetwork
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.bgCell.bgScheduler.isNr = true
+*.bgCell.bgScheduler.numBands = 8
+*.bgCell.bgTrafficGenerator.numBgUes = 1
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.startTimeDl = 0.1s
+*.bgCell.mobility.initialX = 250m
+*.bgCell.mobility.initialY = 500m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialX = 500m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialY = 400m
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+BackgroundCellTrafficManager::getSINR(): the background cell has 8 bands, its carrier 2 GHz only 6
+%#--------------------------------------------------------------------------------------------------------------

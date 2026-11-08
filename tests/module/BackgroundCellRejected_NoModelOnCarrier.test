@@ -1,0 +1,55 @@
+%description:
+A background cell is on a carrier the radio medium has a model for: a CQI of the cell is a
+what-if on the medium, evaluated by the medium's channel model on the cell's carrier. A cell on
+3.5 GHz with the medium's only carrier on 2 GHz is an error when its background UE's first CQI
+is computed, at t=0. bgScheduler.carrierFrequency has a default, 2 GHz, so this also is what a
+network on 3.5 GHz gets for not setting it.
+
+The what-if is the path that rejects this, so this configuration takes it: the default of a
+periodic CQI update, and a background UE with traffic in DL, as a generator without traffic
+computes no CQI. With useProbabilisticCqi = true there is no what-if, and the same cell stops
+later, at its first allocation, on an error of the Binder that does not name the medium.
+
+The receiver's node id in the message is the background UE's, which this test does not pin.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.BackgroundCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+
+network BackgroundCellRejectedTestNetwork
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bgCell: BackgroundCell;
+}
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = BackgroundCellRejectedTestNetwork
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.bgCell.bgScheduler.isNr = true
+*.bgCell.bgScheduler.carrierFrequency = 3.5GHz
+*.bgCell.bgScheduler.numBands = 6
+*.bgCell.bgTrafficGenerator.numBgUes = 1
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.startTimeDl = 0.1s
+*.bgCell.mobility.initialX = 250m
+*.bgCell.mobility.initialY = 500m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialX = 500m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialY = 400m
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 1
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stderr
+of a what-if does not operate on its carrier 3.5 GHz
+%#--------------------------------------------------------------------------------------------------------------
