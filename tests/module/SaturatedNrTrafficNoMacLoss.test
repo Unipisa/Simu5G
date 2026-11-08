@@ -1,0 +1,101 @@
+%description:
+Saturated NR traffic loses no data in the MAC: when every H-ARQ process of a UE is busy,
+the data stays in RLC until a process frees up, in both directions (GitHub issue #310).
+The gNB and the UE have their default five H-ARQ processes. dnStation, a host on the
+UPF's N6 Ethernet LAN, and the device behind ue[0], a UE in Ethernet bridge mode, send
+each other a 1400-byte frame every 0.25 ms from 0.1 s to 0.4 s on an RLC UM bearer. The
+run continues to 0.6 s so that the queues drain. The channel is good, so H-ARQ does not
+lose PDUs either.
+
+Checks: each sink receives every frame its peer sent.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: test.ned
+import inet.node.ethernet.Eth1G;
+import inet.node.inet.StandardHost;
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+network SaturatedNrTrafficTestNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        dnStation: StandardHost {
+            @display("p=650,75");
+        }
+        device: StandardHost {
+            @display("p=650,400");
+        }
+    connections:
+        upf.dnEthg <--> Eth1G <--> dnStation.ethg++;
+        device.ethg++ <--> Eth1G <--> ue[0].ethg++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = SaturatedNrTrafficTestNetwork
+sim-time-limit = 0.6s
+
+# the results the test checks
+*.*.app[*].source.**.scalar-recording = true
+*.*.app[*].sink.**.scalar-recording = true
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+# ue[0]: an Ethernet session in bridge mode, with the device behind it, on one RLC UM bearer
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[0].ethernetMode = "bridge"
+*.ue[0].numEthInterfaces = 1
+*.bearerConfigurator.staticDrbs = [{coreNetwork: "5gc", ue: "ue[0]", drbId: 1, isDefault: true, rlcMode: "UM"}]
+
+# dnStation and the device: raw Ethernet hosts
+*.dnStation.hasIpv4 = false
+*.device.hasIpv4 = false
+*.dnStation.eth[*].typename = "LayeredEthernetInterface"
+*.device.eth[*].typename = "LayeredEthernetInterface"
+*.dnStation.ethernet.typename = "EthernetLayer"
+*.device.ethernet.typename = "EthernetLayer"
+*.dnStation.ethernet.hasSocketSupport = true
+*.device.ethernet.hasSocketSupport = true
+*.dnStation.llc.typename = ""
+*.device.llc.typename = ""
+*.dnStation.eth[*].bitrate = 1Gbps
+*.device.eth[*].bitrate = 1Gbps
+*.ue[0].eth[*].bitrate = 1Gbps
+
+# the downlink (dnStation -> device) and uplink (device -> dnStation) flows, and the sinks
+*.dnStation.numApps = 2
+*.device.numApps = 2
+*.*.app[0].typename = "EthernetSourceApp"
+*.*.app[0].io.interface = "eth0"
+*.dnStation.app[0].io.remoteAddress = "device"
+*.device.app[0].io.remoteAddress = "dnStation"
+*.*.app[0].source.packetLength = 1400B
+*.*.app[0].source.productionInterval = (simTime() < 0.4s ? 0.25ms : 1000s)
+*.*.app[0].source.initialProductionOffset = 0.1s
+*.*.app[1].typename = "EthernetSinkApp"
+*.*.app[1].io.interface = "eth0"
+*.dnStation.app[1].io.localAddress = "dnStation"
+*.device.app[1].io.localAddress = "device"
+*.*.app[1].io.steal = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SaturatedNrTrafficTestNetwork.dnStation.app[0].source packets:count 1202
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SaturatedNrTrafficTestNetwork.device.app[0].source packets:count 1202
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SaturatedNrTrafficTestNetwork.device.app[1].sink packets:count 1202
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SaturatedNrTrafficTestNetwork.dnStation.app[1].sink packets:count 1202
+%#--------------------------------------------------------------------------------------------------------------
