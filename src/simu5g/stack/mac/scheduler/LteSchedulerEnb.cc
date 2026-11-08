@@ -468,6 +468,8 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
                 soFrontIsContinuation_[cid] = false;  // buffer drained; next SDU is fresh
             if (pduSizes.empty())
                 scheduledSoPduSizes_.erase(cid);
+            if (!active && !conn->isEmpty())
+                throw cRuntimeError("LteSchedulerEnb::scheduleGrant(): connection %s is marked inactive with %u bytes in its buffer", cid.str().c_str(), conn->getQueueOccupancy());
         }
         else {
             if (cwAllocatedBytes > 0)
