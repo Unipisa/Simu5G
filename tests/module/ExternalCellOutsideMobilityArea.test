@@ -1,0 +1,59 @@
+%description:
+An external cell may stand outside the area the nodes move in: a constraint
+area describes where things may move, and an external cell's mobility does not
+move. Outside any area is where external cells naturally are.
+
+The network holds no node but two external cells, and the ini has the limits
+of lib/defaults.ini: **.mobility.constraintArea* with X and Y in 0..1000 m and
+Z in 0..0 m, as the example simulations have. Neither cell's position is inside
+them: one stands beyond all three upper limits at (1500 m, 1200 m, 25 m), the
+other below all three lower limits at (-100 m, -200 m, -5 m). So each of the
+six limits, were it to reach the cell's mobility, would be violated on its own.
+
+Checks: the run reaches the time limit, with exit code 0. No traffic is needed:
+a mobility out of its constraint area aborts as the network initializes.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.ExtCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        extCell[2]: ExtCell;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = Harness
+sim-time-limit = 10ms
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 50
+
+*.extCell[0].positionX = 1500m
+*.extCell[0].positionY = 1200m
+*.extCell[0].positionZ = 25m
+*.extCell[1].positionX = -100m
+*.extCell[1].positionY = -200m
+*.extCell[1].positionZ = -5m
+*.extCell[*].carrierFrequency = 2GHz
+*.extCell[*].bandAllocationType = "CONTIGUOUS_ALLOC"
+*.extCell[*].bandUtilization = 0.5
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+Simulation time limit reached
+%#--------------------------------------------------------------------------------------------------------------
