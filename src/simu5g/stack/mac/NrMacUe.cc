@@ -164,11 +164,18 @@ void NrMacUe::handleSelfMessage()
         // if no retransmission is needed, proceed with normal scheduling
         if (!retx) {
             emptyScheduleList_ = true;
+            bool harqBlocked = false;
             std::map<GHz, LteSchedulerUeUl *>::iterator sit;
             for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
                 // skip if this is not the turn of this carrier
                 if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFrequency))) > 0)
                     continue;
+
+                if (isUlGrantBlockedByHarq(carrierFrequency)) {
+                    EV << "NrMacUe::handleSelfMessage - no free H-ARQ process for the grant on carrier [" << carrierFrequency << "], the grant is not used" << endl;
+                    harqBlocked = true;
+                    continue;
+                }
 
                 EV << "NrMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
@@ -178,7 +185,9 @@ void NrMacUe::handleSelfMessage()
                     emptyScheduleList_ = false;
             }
 
-            if (isBsrPending() && emptyScheduleList_) {
+            // a standalone BSR also needs an H-ARQ process, and buildStandaloneBsr()
+            // may pick a blocked carrier's grant: with one blocked, it waits
+            if (isBsrPending() && emptyScheduleList_ && !harqBlocked) {
                 // no connection scheduled, but we can use this grant to send a BSR to the eNB
                 macPduMake();
             }

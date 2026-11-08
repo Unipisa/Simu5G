@@ -264,6 +264,23 @@ UnitList LteMacUe::reserveTxHarqUnits(LteHarqBufferTx *txBuf, Direction dir)
     return txBuf->getEmptyUnits(currentHarq_);
 }
 
+bool LteMacUe::isUlGrantBlockedByHarq(GHz carrierFrequency)
+{
+    auto git = schedulingGrant_.find(carrierFrequency);
+    if (git == schedulingGrant_.end() || git->second == nullptr || git->second->getDirection() != UL)
+        return false;
+
+    // a buffer that does not exist yet is created empty by macPduMake()
+    auto cit = harqTxBuffers_.find(carrierFrequency);
+    if (cit == harqTxBuffers_.end())
+        return false;
+    auto hit = cit->second.find(getMacCellId());
+    if (hit == cit->second.end())
+        return false;
+
+    return reserveTxHarqUnits(hit->second, UL).second.empty();
+}
+
 bool LteMacUe::bufferizePacket(cPacket *cpkt)
 {
     auto pkt = check_and_cast<Packet *>(cpkt);
@@ -884,8 +901,15 @@ void LteMacUe::handleSelfMessage()
         // if no retx is needed, proceed with normal scheduling
         if (!retx) {
             emptyScheduleList_ = true;
+            bool harqBlocked = false;
             std::map<GHz, LteSchedulerUeUl *>::iterator sit;
             for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
+                if (isUlGrantBlockedByHarq(carrierFrequency)) {
+                    EV << "LteMacUe::handleSelfMessage - no free H-ARQ process for the grant on carrier [" << carrierFrequency << "], the grant is not used" << endl;
+                    harqBlocked = true;
+                    continue;
+                }
+
                 EV << "LteMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
                 EV << "LteMacUe::handleSelfMessage - scheduled " << carrierScheduleList->size() << " connections on carrier " << carrierFrequency << endl;
@@ -894,7 +918,9 @@ void LteMacUe::handleSelfMessage()
                     emptyScheduleList_ = false;
             }
 
-            if (isBsrPending() && emptyScheduleList_) {
+            // a standalone BSR also needs an H-ARQ process, and buildStandaloneBsr()
+            // may pick a blocked carrier's grant: with one blocked, it waits
+            if (isBsrPending() && emptyScheduleList_ && !harqBlocked) {
                 // no connection scheduled, but we can use this grant to send a BSR to the eNB
                 macPduMake();
             }

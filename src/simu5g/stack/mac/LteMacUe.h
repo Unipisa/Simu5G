@@ -179,6 +179,12 @@ class LteMacUe : public LteMacBase
     /// the synchronous current process; the NR MAC picks the first available one.
     virtual UnitList reserveTxHarqUnits(LteHarqBufferTx *txBuf, Direction dir);
 
+    /// Whether the carrier's UL grant is unusable for a new transmission because
+    /// the H-ARQ TX buffer toward the cell has no unit for it (reserveTxHarqUnits()).
+    /// The UE then requests no data from RLC for that carrier, and the grant goes
+    /// unused. A D2D grant is not checked.
+    virtual bool isUlGrantBlockedByHarq(GHz carrierFrequency);
+
     /// end-of-main-loop purge of corrupted PDUs from the RX H-ARQ buffers
     /// (default: none; the D2D MAC purges its DL buffer only, so that mirror
     /// buffers for D2D communication stay intact)
