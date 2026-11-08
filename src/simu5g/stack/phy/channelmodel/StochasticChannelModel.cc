@@ -1155,13 +1155,9 @@ bool StochasticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNod
         // the cell's radio, which also sends its background UEs' allocations
         IRadioEndpoint *cell = radioMedium_->getRadio(id);
         ASSERT(transmission->txPower == cell->getTxPwr() && transmission->txDirection == cell->getTxDirection() && transmission->txAngle == cell->getTxAngle());
-        StochasticChannelModel *interfChanModel = dynamic_cast<StochasticChannelModel *>(cell->getChannelModel(carrierFrequency));
-        if (interfChanModel == nullptr)
-            continue;
 
         // a transmission on none of the reception's bands does not interfere with it: its link is not evaluated
-        unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
-        auto bands = sharedBands(*transmission, numBands, receptionBands);
+        auto bands = sharedBands(*transmission, numBands_, receptionBands);
         if (bands.empty())
             continue;
 
