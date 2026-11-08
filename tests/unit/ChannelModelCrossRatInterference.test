@@ -1,0 +1,248 @@
+%description:
+
+Which channel model evaluates another cell's downlink interference at a UE
+when the two are of different RATs on one carrier: the receiving UE's (its
+RAT's model on the carrier), as the medium evaluates every arrival at a
+receiver -- not the interfering cell's. And the interfering cell's model has
+no say in whether its interference counts: an LTE base station interferes at
+an NR UE on a shared carrier whatever the LTE radios' model is, Ideal
+included, since the NR UE's own model is what evaluates the link.
+
+No other unit test puts two RATs' models on one carrier, so an interference
+evaluated with the interfering cell's model, or one dropped because that
+model is not a StochasticChannelModel, would pass them.
+
+Checked on one 2 GHz carrier with the NR model (TR 38.901 urban micro) and
+two LTE models -- the radio medium's (TR 36.814 urban macro) and an
+IdealChannelModel -- as in ChannelModelCqiSlot: two LTE base stations send
+DL data in one slot, the first with the medium's LTE model on bands 0 and 1,
+the second with the Ideal model on bands 2 and 3, and the NR model computes
+an NR UE's CQI interference (the slot completed last) at the next boundary.
+The NR UE's serving gNB sends nothing. Shadowing, fading and every
+interference other than the cells' are off, and every link is NLOS. The
+antennas are omnidirectional with no gain and the radios have no cable
+loss, so a transmission's power towards the UE is its transmit power. On
+each band, the interference must be the transmit power less the NR model's
+attenuation of the (base station, UE) link, evaluated through the model's
+own link evaluation; the attenuation the interference implies is graded
+against the TR 38.901 UMi NLOS formula of pathloss_reference.py, and for
+the first base station it must differ measurably from the LTE model's
+attenuation of the same link.
+
+%includes:
+#include <cmath>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// the protected downlink interference computation of a channel model
+struct DlInterferenceAccess : StochasticChannelModel
+{
+    static auto computePtr() { return &DlInterferenceAccess::computeDownlinkInterference; }
+};
+
+// the other cells' DL interference at the UE, per band, as the model computes it for a CQI, in mW
+static std::vector<double> cqiInterference(StochasticChannelModel *model, MacNodeId servingId, IRadioEndpoint *ue)
+{
+    std::vector<double> interference(model->getNumBands(), 0.0);
+    RbMap everyBand;
+    for (Band b = 0; b < model->getNumBands(); b++)
+        everyBand[MACRO][b] = 1;
+    (model->*DlInterferenceAccess::computePtr())(servingId, ue->getMacNodeId(), ue->getCoord(), true, model->getCarrierFrequency(), everyBand, &interference,
+            LinkKey(servingId, ue->getMacNodeId()), true);
+    return interference;
+}
+
+// a DL data transmission of the base station on the given bands, for one slot, starting now
+static CellularTransmission *dlData(IRadioEndpoint *bs, GHz carrier, std::vector<Band> bands, simtime_t slot)
+{
+    auto *transmission = new CellularTransmission();
+    transmission->transmitter = bs;
+    transmission->sourceId = bs->getMacNodeId();
+    transmission->cellId = bs->getMacNodeId();
+    transmission->direction = DL;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = carrier;
+    for (Band b : bands)
+        transmission->grantedBlocks[MACRO][b] = 1;
+    transmission->txPower = bs->getTxPwr();
+    transmission->txDirection = bs->getTxDirection();
+    transmission->txAngle = bs->getTxAngle();
+    transmission->startPosition = bs->getCoord();
+    transmission->startTime = simTime();
+    transmission->duration = slot;
+    return transmission;
+}
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.IdealChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        idealModel: IdealChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[0].numerologyIndex = 0
+*.radioMedium.numCarriers = 1
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+# the two RATs' models on the carrier, configured differently
+*.radioMedium.channelModelType = "StochasticChannelModel"
+*.radioMedium.channelModel[*].pathLossType = "Tr36814"
+*.radioMedium.channelModel[*].scenario = "URBAN_MACROCELL"
+*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
+*.radioMedium.nrChannelModel[*].scenario = "URBAN_MICROCELL"
+*.radioMedium.nrChannelModel[*].nodebHeight = 10m
+**.ueHeight = 1.5m
+
+# path loss only, NLOS, the other cells' interference only
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = true
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *idealModel = harnessModule<ChannelModelBase>(this, "idealModel");
+const GHz carrier = GHz(2.0);
+auto *lteModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, false));
+auto *nrModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, true));
+ChannelModelProbe lteProbe(lteModel), nrProbe(nrModel);
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+
+// the NR UE's serving gNB, two interfering LTE base stations -- one with each LTE model -- and the NR UE
+StubEndpoint gnb, enb, idealEnb, ue;
+gnb.nodeId = MacNodeId(1);
+enb.nodeId = MacNodeId(2);
+idealEnb.nodeId = MacNodeId(3);
+ue.nodeId = MacNodeId(1025);
+gnb.coord = inet::Coord(0, 0, 10);
+enb.coord = inet::Coord(400, 0, 10);
+idealEnb.coord = inet::Coord(150, 300, 10);
+ue.coord = inet::Coord(150, 30, 1.5);
+gnb.txPower = enb.txPower = idealEnb.txPower = 40.0;
+ue.txPower = 23.0;
+gnb.channelModels[carrier] = nrModel;
+enb.channelModels[carrier] = lteModel;
+idealEnb.channelModels[carrier] = idealModel;
+ue.channelModels[carrier] = nrModel;
+StubRadioRegistration gnbRadio(medium, gnb.nodeId, &gnb);
+StubRadioRegistration enbRadio(medium, enb.nodeId, &enb);
+StubRadioRegistration idealEnbRadio(medium, idealEnb.nodeId, &idealEnb);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+
+// the slot [2 ms, 3 ms): the two LTE base stations send, the CQI is computed at its end
+wait(2 * slot);
+medium->addTransmission(dlData(&enb, carrier, {0, 1}, slot));
+medium->addTransmission(dlData(&idealEnb, carrier, {2, 3}, slot));
+wait(slot);
+std::vector<double> interference = cqiInterference(nrModel, gnb.nodeId, &ue);
+
+// each base station's link to the UE, evaluated with a model's own link evaluation
+auto nrAttenuation = [&] (IRadioEndpoint *bs) { return nrModel->getAttenuation(nrProbe.cellularLink(bs, ue.nodeId, UL, ue.coord)); };
+auto lteAttenuation = [&] (IRadioEndpoint *bs) { return lteModel->getAttenuation(lteProbe.cellularLink(bs, ue.nodeId, UL, ue.coord)); };
+
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 2.0;
+// the attenuation an interference value implies, against TR 38.901 UMi NLOS
+auto gradeImplied = [&] (IRadioEndpoint *bs, double interferenceMw) {
+    double d2D = std::hypot(bs->getCoord().x - ue.coord.x, bs->getCoord().y - ue.coord.y);
+    double d3D = bs->getCoord().distance(ue.coord);
+    graded.record("t901_umi_nlos", p, { { "d3D", d3D }, { "d2D", d2D }, { "los", 0.0 } }, bs->getTxPwr() - linearToDBm(interferenceMw));
+};
+
+//
+// (a) an LTE base station whose model is a StochasticChannelModel
+//
+{
+    double expected = dBmToLinear(enb.txPower - nrAttenuation(&enb));
+    double lteValue = dBmToLinear(enb.txPower - lteAttenuation(&enb));
+    c.check("(a) the LTE and the NR model attenuate the base station's link differently",
+            std::fabs(nrAttenuation(&enb) - lteAttenuation(&enb)) > 0.01,
+            "nr=" + std::to_string(nrAttenuation(&enb)) + " lte=" + std::to_string(lteAttenuation(&enb)));
+    c.expectNear("(a) on band 0, the interference is the transmit power less the NR model's attenuation (dBm)",
+            linearToDBm(interference[0]), linearToDBm(expected), 1e-9);
+    c.expectNear("(a) ...and on band 1 (dBm)", linearToDBm(interference[1]), linearToDBm(expected), 1e-9);
+    c.check("(a) ...not the LTE model's", std::fabs(linearToDBm(interference[0]) - linearToDBm(lteValue)) > 0.01,
+            "interference=" + std::to_string(linearToDBm(interference[0])) + " dBm, lte=" + std::to_string(linearToDBm(lteValue)) + " dBm");
+    if (interference[0] > 0)
+        gradeImplied(&enb, interference[0]);
+}
+
+//
+// (b) an LTE base station whose model is Ideal
+//
+{
+    double expected = dBmToLinear(idealEnb.txPower - nrAttenuation(&idealEnb));
+    c.check("(b) an LTE base station whose model is Ideal still interferes at the NR UE", interference[2] > 0 && interference[3] > 0,
+            show(interference));
+    c.expectNear("(b) on band 2, the interference is the transmit power less the NR model's attenuation (dBm)",
+            interference[2] > 0 ? linearToDBm(interference[2]) : -1000, linearToDBm(expected), 1e-9);
+    c.expectNear("(b) ...and on band 3 (dBm)", interference[3] > 0 ? linearToDBm(interference[3]) : -1000, linearToDBm(expected), 1e-9);
+    if (interference[2] > 0)
+        gradeImplied(&idealEnb, interference[2]);
+}
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=2 failures=0
+
+%contains: stdout
+modelchecks=7 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
