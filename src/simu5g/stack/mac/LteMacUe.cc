@@ -669,7 +669,12 @@ void LteMacUe::macPduMake(MacCid cid)
             // pdu transmission here (if any)
             // txAcid has HARQ_NONE for non-fillable codeword, acid otherwise
             if (txList.second.empty()) {
-                EV << "macPduMake() : no available process for this MAC PDU in TxHarqBuffer" << endl;
+                // handleSelfMessage() does not use an UL grant without a free process
+                // (isUlGrantBlockedByHarq()). A D2D grant is not checked, so a D2D PDU
+                // can find no free process: it is deleted, and its data is lost.
+                if (dir == UL)
+                    throw cRuntimeError("LteMacUe::macPduMake(): no free H-ARQ process for the UL MAC PDU to node %hu, codeword %u", num(destId), (unsigned int)cw);
+                EV_WARN << "LteMacUe::macPduMake - no free H-ARQ process for this D2D MAC PDU, deleting it" << endl;
                 delete macPkt;
             }
             else {

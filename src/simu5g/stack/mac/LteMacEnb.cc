@@ -581,15 +581,12 @@ void LteMacEnb::macPduMake(MacCid cid)
             EV << "LteMacBase: PDU Maker created PDU: " << macPacket->str() << endl;
 
             // PDU transmission here (if any)
-            if (txList.second.empty()) {
-                EV << "macPduMake() : no available process for this MAC PDU in TxHarqBuffer" << endl;
-                delete macPacket;
-            }
-            else {
-                if (txList.first == HARQ_NONE)
-                    throw cRuntimeError("LteMacBase: PDU Maker sending to an incorrect void H-ARQ process");
-                txBuf->insertPdu(txList.first, cw, macPacket);
-            }
+            // the scheduler does not grant a UE without a free process (checkEligibility())
+            if (txList.second.empty())
+                throw cRuntimeError("LteMacEnb::macPduMake(): no free H-ARQ process for the MAC PDU to UE %hu, codeword %u", num(destId), (unsigned int)cw);
+            if (txList.first == HARQ_NONE)
+                throw cRuntimeError("LteMacBase: PDU Maker sending to an incorrect void H-ARQ process");
+            txBuf->insertPdu(txList.first, cw, macPacket);
         }
     }
     EV << "------ END LteMacEnb::macPduMake ------\n";
