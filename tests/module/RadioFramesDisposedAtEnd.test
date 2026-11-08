@@ -1,0 +1,50 @@
+%description:
+A frame still on the air when the simulation ends is deleted with the network, not
+left behind: a radio holds a received frame until its transmission ends, and the
+frames in flight at the time limit are disposed of at teardown. OMNeT++ reports an
+object a module still owns when it is deleted as "undisposed object" (print-undisposed).
+
+The network is one gNB and one NR UE with downlink and uplink traffic in every slot;
+the time limit falls inside a slot (0.2003 s at numerology 0), so data frames, H-ARQ
+feedback and CQI reports sent at 0.200 s are still being received when the run ends.
+
+Checks: the run ends at the time limit, and no undisposed object is reported.
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = simu5g.test.moduletest.lib.NrSessionTestNetwork
+print-undisposed = true
+sim-time-limit = 0.2003s
+
+*.server.numApps = 2
+*.server.app[0].typename = "UdpBasicApp"
+*.server.app[0].destAddresses = "ue[0]"
+*.server.app[0].destPort = 1000
+*.server.app[0].messageLength = 1000B
+*.server.app[0].sendInterval = 1ms
+*.server.app[0].startTime = 0.05s
+
+*.ue[0].numApps = 2
+*.ue[0].app[0].typename = "UdpSink"
+*.ue[0].app[0].localPort = 1000
+*.ue[0].app[1].typename = "UdpBasicApp"
+*.ue[0].app[1].destAddresses = "server"
+*.ue[0].app[1].destPort = 1000
+*.ue[0].app[1].messageLength = 500B
+*.ue[0].app[1].sendInterval = 1ms
+*.ue[0].app[1].startTime = 0.05s
+*.server.app[1].typename = "UdpSink"
+*.server.app[1].localPort = 1000
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+Simulation time limit reached
+%#--------------------------------------------------------------------------------------------------------------
+%not-contains: stdout
+undisposed object
+%#--------------------------------------------------------------------------------------------------------------
