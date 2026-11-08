@@ -278,7 +278,9 @@ bool LteMacUe::isUlGrantBlockedByHarq(GHz carrierFrequency)
     if (hit == cit->second.end())
         return false;
 
-    return reserveTxHarqUnits(hit->second, UL).second.empty();
+    // a new transmission needs its process completely empty, not just a free unit in it
+    UnitList units = reserveTxHarqUnits(hit->second, UL);
+    return units.second.empty() || !hit->second->getProcess(units.first)->isEmpty();
 }
 
 bool LteMacUe::bufferizePacket(cPacket *cpkt)

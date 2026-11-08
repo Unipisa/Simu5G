@@ -180,7 +180,7 @@ class LteMacUe : public LteMacBase
     virtual UnitList reserveTxHarqUnits(LteHarqBufferTx *txBuf, Direction dir);
 
     /// Whether the carrier's UL grant is unusable for a new transmission because
-    /// the H-ARQ TX buffer toward the cell has no unit for it (reserveTxHarqUnits()).
+    /// the H-ARQ TX buffer toward the cell has no empty process for it (reserveTxHarqUnits()).
     /// The UE then requests no data from RLC for that carrier, and the grant goes
     /// unused. A D2D grant is not checked.
     virtual bool isUlGrantBlockedByHarq(GHz carrierFrequency);
