@@ -1,0 +1,290 @@
+%description:
+
+A phantom transmission -- the occupation of an external or a background cell,
+or of a background cell's UE, in a slot -- is sent by that transmitter's
+phantom radio: its transmitter is the radio on the medium under its source id,
+and its power, antenna and position are the radio's.
+
+Nothing else can see a background cell's antenna: no ini sets one ANISOTROPIC,
+and the wiring from the scheduler's parameters to the radio's antenna, deleted,
+passes every suite. Here each cell has a power, a direction, an angle and a
+position of its own:
+
+ - a background cell, 37 dBm, ANISOTROPIC to 30 deg, at (250, 500, 25);
+ - its UE, 19 dBm, OMNI, at (260, 510, 1.5), whose UL transmission has the UE's
+   id as its source and the cell as its destination and cell;
+ - an external cell allocating per slot, 31 dBm, ANISOTROPIC to 120 deg, at
+   (900, 300, 20);
+ - an external cell occupying every band for ever from its start, 33 dBm,
+   ANISOTROPIC to 210 deg, at (100, 800, 15).
+
+Their transmissions are read from the medium, in a slot after the traffic
+started, and compared with those literal values.
+
+The radio's own contract, on the radios themselves:
+
+ - A second addToMedium() is rejected.
+ - A radio whose id is taken fails with the medium's error, the radio that has
+   the id stays on the medium, and deleting the failed radio, as tearing the
+   network down after the error does, is harmless: its destructor has nothing
+   to remove. If it tried, the error from a destructor would terminate this very
+   process, which is what the check that the test is still running stands for.
+ - It has no receiver.
+ - It is not among the radios frames go to: a broadcast from a sender standing
+   next to the phantom radios, closer than the one real radio on the medium,
+   goes to that radio alone. Every copy on its way is counted.
+ - It answers outdoors, whatever **.insideBuilding says.
+
+%includes:
+#include <cstring>
+#include <string>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// A radio module as far as the medium sees it: the radioIn gate that frames sent to the radio enter at.
+class CountingRadio : public cSimpleModule
+{
+  public:
+    int received = 0;
+
+  protected:
+    virtual void handleMessage(cMessage *msg) override
+    {
+        received++;
+        delete msg;
+    }
+};
+
+Define_Module(CountingRadio);
+
+// what a transmission has to be
+struct Expected
+{
+    const char *name;
+    CellularPhantomRadio *radio;
+    MacNodeId destId, cellId;
+    Direction direction;
+    double txPower;
+    TxDirectionType txDirection;
+    double txAngle;
+    Coord position;
+    const cModule *phantomCell;
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.BackgroundCell;
+import simu5g.nodes.ExtCell;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.stack.phy.radio.CellularPhantomRadio;
+
+simple CountingRadio
+{
+    @class(CountingRadio);
+    gates:
+        input radioIn @directIn;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        bgCell: BackgroundCell;
+        extCell: ExtCell;
+        fullExtCell: ExtCell;
+        spareRadio: CellularPhantomRadio {
+            txPower = 20dBm;
+        }
+        realRadio: CountingRadio;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 100ms
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.insideBuilding = true
+**.mobility.initFromDisplayString = false
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxZ = 30m
+
+*.bgCell.mobility.initialX = 250m
+*.bgCell.mobility.initialY = 500m
+*.bgCell.mobility.initialZ = 25m
+*.bgCell.bgScheduler.numBands = 6
+*.bgCell.bgScheduler.txPower = 37dBm
+*.bgCell.bgScheduler.txDirection = "ANISOTROPIC"
+*.bgCell.bgScheduler.txAngle = 30deg
+*.bgCell.bgTrafficGenerator.numBgUes = 1
+*.bgCell.bgTrafficGenerator.enablePeriodicCqiUpdate = false
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialX = 260m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialY = 510m
+*.bgCell.bgTrafficGenerator.bgUE[0].mobility.initialZ = 1.5m
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.typename = "TrafficGeneratorCbr"
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.txPower = 19dBm
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.startTimeDl = 1ms
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.startTimeUl = 1ms
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.packetSizeDl = 2000B
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.packetSizeUl = 2000B
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.periodDl = 1ms
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.periodUl = 1ms
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.rtxRateDl = 0
+*.bgCell.bgTrafficGenerator.bgUE[0].generator.rtxRateUl = 0
+
+*.extCell.positionX = 900m
+*.extCell.positionY = 300m
+*.extCell.positionZ = 20m
+*.extCell.txPower = 31dBm
+*.extCell.txDirection = "ANISOTROPIC"
+*.extCell.txAngle = 120deg
+*.extCell.bandAllocationType = "CONTIGUOUS_ALLOC"
+*.extCell.bandUtilization = 0.5
+
+*.fullExtCell.positionX = 100m
+*.fullExtCell.positionY = 800m
+*.fullExtCell.positionZ = 15m
+*.fullExtCell.txPower = 33dBm
+*.fullExtCell.txDirection = "ANISOTROPIC"
+*.fullExtCell.txAngle = 210deg
+*.fullExtCell.bandAllocationType = "FULL_ALLOC"
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+cModule *network = getParentModule();
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *bgScheduler = network->getModuleByPath(".bgCell.bgScheduler");
+auto *extAllocator = network->getModuleByPath(".extCell.allocator");
+auto *fullExtAllocator = network->getModuleByPath(".fullExtCell.allocator");
+auto *bgRadio = check_and_cast<CellularPhantomRadio *>(network->getModuleByPath(".bgCell.radio"));
+auto *bgUeRadio = check_and_cast<CellularPhantomRadio *>(network->getModuleByPath(".bgCell.bgTrafficGenerator.bgUE[0].radio"));
+auto *extRadio = check_and_cast<CellularPhantomRadio *>(network->getModuleByPath(".extCell.radio"));
+auto *fullExtRadio = check_and_cast<CellularPhantomRadio *>(network->getModuleByPath(".fullExtCell.radio"));
+const GHz carrier = GHz(2.0);
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+
+// the transmissions of a slot well after the traffic started
+wait(30 * slot);
+auto transmissions = medium->getDataTransmissionsDuring(carrier, simTime() - slot, simTime());
+
+const MacNodeId bgId = bgRadio->getMacNodeId();
+const Expected expected[] = {
+    {"the background cell's DL", bgRadio, NODEID_NONE, bgId, DL, 37, ANISOTROPIC, 30, Coord(250, 500, 25), bgScheduler},
+    {"the background cell's UE's UL", bgUeRadio, bgId, bgId, UL, 19, OMNI, 0, Coord(260, 510, 1.5), bgScheduler},
+    {"the external cell's DL", extRadio, NODEID_NONE, extRadio->getMacNodeId(), DL, 31, ANISOTROPIC, 120, Coord(900, 300, 20), extAllocator},
+    {"the FULL_ALLOC external cell's DL", fullExtRadio, NODEID_NONE, fullExtRadio->getMacNodeId(), DL, 33, ANISOTROPIC, 210, Coord(100, 800, 15), fullExtAllocator},
+};
+c.expectValue("the slot has one transmission of each of the four", transmissions.size(), 4);
+c.check("the background cell's UE has an id of its own", bgUeRadio->getMacNodeId() != bgId && bgUeRadio->getMacNodeId() != NODEID_NONE);
+for (const Expected& e : expected) {
+    std::string name(e.name);
+    const CellularTransmission *found = nullptr;
+    for (auto t : transmissions)
+        if (t->sourceId == e.radio->getMacNodeId() && t->direction == e.direction)
+            found = t;
+    c.check(name + ": on the medium, the radio's id as its source", found != nullptr);
+    if (found == nullptr)
+        continue;
+    c.check(name + ": sent by the radio on the medium under that id",
+            found->transmitter == static_cast<IRadioEndpoint *>(e.radio) && medium->findRadio(found->sourceId) == found->transmitter);
+    c.expectNear(name + ": the power", found->txPower, e.txPower, 0);
+    c.expectValue(name + ": the antenna's direction", found->txDirection, e.txDirection);
+    c.expectNear(name + ": the antenna's angle", found->txAngle, e.txAngle, 0);
+    c.check(name + ": from where the radio is", found->startPosition == e.position,
+            "x=" + std::to_string(found->startPosition.x) + " y=" + std::to_string(found->startPosition.y) + " z=" + std::to_string(found->startPosition.z));
+    c.check(name + ": its phantom cell", found->phantomCell == e.phantomCell);
+    c.check(name + ": its destination and cell", found->destId == e.destId && found->cellId == e.cellId);
+}
+{
+    const CellularTransmission *full = nullptr;
+    for (auto t : transmissions)
+        if (t->sourceId == fullExtRadio->getMacNodeId())
+            full = t;
+    c.check("the FULL_ALLOC external cell's never ends", full != nullptr && full->getEndTime() == SimTime::getMaxTime());
+}
+
+//
+// the radio's own contract
+//
+const MacNodeId unusedId = MacNodeId(3000);
+c.expectRejected("a second addToMedium()", [&] { bgRadio->addToMedium(unusedId); });
+c.check("...which leaves the radio on the medium as it was",
+        bgRadio->getMacNodeId() == bgId && medium->findRadio(bgId) == static_cast<IRadioEndpoint *>(bgRadio) && medium->findRadio(unusedId) == nullptr);
+
+auto *spareRadio = check_and_cast<CellularPhantomRadio *>(network->getSubmodule("spareRadio"));
+{
+    std::string error;
+    try {
+        spareRadio->addToMedium(bgId);
+    }
+    catch (omnetpp::cRuntimeError& e) {
+        error = e.what();
+    }
+    c.check("a radio whose id is taken fails with the medium's error", error.find("a radio is already registered") != std::string::npos, error);
+    c.check("...and is not on the medium", spareRadio->getMacNodeId() == NODEID_NONE);
+    c.expectRejected("...so it transmits nothing", [&] { spareRadio->transmit(NODEID_NONE, bgId, DL, carrier, RbMap(), slot, nullptr); });
+    spareRadio->deleteModule();
+    c.check("deleting the failed radio leaves the process running, and the first radio on the medium",
+            medium->findRadio(bgId) == static_cast<IRadioEndpoint *>(bgRadio));
+}
+
+c.expectRejected("a phantom radio has no receiver", [&] { bgRadio->getReceiver(); });
+
+c.check("a phantom radio answers outdoors, whatever **.insideBuilding says",
+        !bgRadio->isInsideBuilding() && bgRadio->getInsideDistance() == 0 && bgRadio->getPenetrationLossDeviate() == 0);
+
+{
+    auto *realRadio = check_and_cast<CountingRadio *>(network->getSubmodule("realRadio"));
+    StubEndpoint sender, real;
+    sender.nodeId = MacNodeId(1);
+    sender.coord = Coord(250, 500, 20);
+    real.nodeId = MacNodeId(1025);
+    real.coord = Coord(250, 530, 20);
+    medium->addRadio(real.nodeId, &real, realRadio);
+
+    medium->sendToNeighbors(&sender, this, new AirFrame("broadcast"), slot);
+    int copies = 0, copiesToRealRadio = 0;
+    cFutureEventSet *fes = getSimulation()->getFES();
+    for (int i = 0; i < fes->getLength(); i++) {
+        auto *msg = dynamic_cast<cMessage *>(fes->get(i));
+        if (msg != nullptr && strcmp(msg->getName(), "broadcast") == 0) {
+            copies++;
+            if (msg->getArrivalModule() == realRadio)
+                copiesToRealRadio++;
+        }
+    }
+    c.expectValue("a broadcast from next to the phantom radios: one copy", copies, 1);
+    c.expectValue("...to the real radio", copiesToRealRadio, 1);
+    wait(2 * slot);
+    c.expectValue("...which receives it", realRadio->received, 1);
+    medium->removeRadio(&real);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=46 modelfailures=0
+
+%not-contains: stdout
+FAILED
