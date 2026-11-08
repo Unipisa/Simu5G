@@ -38,8 +38,9 @@ Three kinds of ingredient, and only the first is a specification:
  - Characterisation, where the model makes a choice no specification makes or
    where a different one applies: D2dLinkBudget (a UE-to-UE link evaluated as
    a UMi link), BackgroundCellFloor and ExtCellFloor (the external and
-   background cells' path loss). Their descriptions say so. They are
-   regression tests of the model's choice.
+   background cells' path loss), BackgroundUeCqi, BackgroundUeLoad and
+   BackgroundCellCqi (background UEs' CQIs and load). Their descriptions
+   say so. They are regression tests of the model's choice.
 
 Most scenarios here use URBAN_MICROCELL with a 25 m base station, outside the
 formulas' stated applicability (TR 38.901 Table 7.4.1-1 and TR 36.814 Table

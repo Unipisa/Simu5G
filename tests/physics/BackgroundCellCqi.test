@@ -1,0 +1,205 @@
+%description:
+
+A background cell's CQIs, against the closed form.
+
+A background cell's CQIs are what-ifs on the radio medium: in DL a transmission
+of the cell's phantom radio at the background UE's, in UL one of the UE's phantom
+radio at the cell's. bgMeasuredSinrDl and bgMeasuredSinrUl are what those
+what-ifs report, in dB, as the mean over the cell's own bands.
+
+The scenario is BackgroundCellFloor's kind: a real cell and up to two background
+cells, with fading and shadowing off, the background UEs at fixed positions,
+and every link NLOS by configuration. Everything is a sum of the radios'
+constants and one path loss of TR 38.901:
+
+    S_DL = bgTxPower_cell + Gcell + Gbg - cableLoss_bg - PL(d)
+    N_DL = thermalNoise + noiseFigure_bg
+    S_UL = bgTxPower_ue + Gbg + Gcell - cableLoss_cell - PL(d)
+    N_UL = thermalNoise + noiseFigure_cell
+
+bgCell[0]'s terms are set apart, each different from its NED default and from
+the corresponding term at the other end, so that this pins the direction of each
+what-if, its power, and the gains, cable loss and noise figure of its ends.
+bgCell[1] stays on the NED defaults of its radios, 18 dBi and 5 dB at the cell,
+0 dBi and 7 dB at the UE, 2 dB each, with only its powers set, which pins those
+defaults: its UE's SINRs are the first formula's at those values.
+
+Only the path loss is a specification's: that a background cell's links are
+evaluated this way, with these budgets, is the model's choice, so this is a
+regression test of that choice, as BackgroundCellFloor is.
+
+The axis s takes the scenarios one at a time:
+
+ - realCellOff: a real cell, loaded in both directions, with downlinkInterference
+   and uplinkInterference false, and one background cell. Nothing reaches the
+   what-ifs, and min = max = S - N. Those switches are the medium's, and default
+   to false: with the defaults, a real cell's interference does not exist for a
+   background cell.
+ - realCellOn: the same with both switches true. The maximum is S - N, from the
+   slots in which the real gNB or UE was idle, and the minimum S - (N + I), with I
+   the gNB's at the background UE in DL, the real UE's at the cell in UL.
+ - neighbour: two background cells, bgCellInterference on. The maximum is
+   S - N, and the minimum S - (N + I), with I the neighbour's DL at the UE and
+   the neighbour's UE's UL at the cell. bgCell[0] has two loaded UEs: neither
+   they, nor the UE of the what-if itself, count at their own cell. A cell that
+   counted them would get a far lower minimum (mutation-checked).
+ - neighbourOff: the same with bgCellInterference off: flat again.
+ - narrowCell: both background cells have 3 of the carrier's 6 bands. The
+   neighbour's load falls on bands 0..2, which are all of bgCell[0]'s, and the
+   minimum is the fully loaded S - (N + I). A report that took the mean over the
+   carrier's 6 bands would give the mean of the loaded and the quiet SINR.
+ - narrowNeighbour: only the neighbour has 3 bands. The report is the mean over
+   bgCell[0]'s 6, and the minimum is the mean of the loaded and the quiet SINR:
+   the interference of a cell counts only on its own bands.
+
+The loads' periods are coprime with the CQI period of 6 slots, so that the CQI
+samples every phase of a load's busy and idle slots. In the scenarios with both
+background cells, the neighbour's own UE's maximum is graded, against the NED
+defaults; its minimum is S - (N + I) at the mean over bands only if bgCell[0]
+fills its bands in a slot, which is not asserted here.
+
+%extraargs: -c BackgroundCellCqi
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config BackgroundCellCqi]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 3s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+# The extremes are the quantities under test here, not the average.
+**.bgMeasuredSinrDl.result-recording-modes = mean,count,min,max
+**.bgMeasuredSinrUl.result-recording-modes = mean,count,min,max
+
+############### The sweep: one scenario at a time ##############
+# description only carries the axis the other keys below iterate in parallel with
+description = "${s = realCellOff, realCellOn, neighbour, neighbourOff, narrowCell, narrowNeighbour}"
+*.numBgCells =          ${n =       1,          1,         2,        2,           2,         2 ! s}
+**.downlinkInterference = ${dli =   false,      true,      false,    false,       false,     false ! s}
+**.uplinkInterference =   ${uli =   false,      true,      false,    false,       false,     false ! s}
+**.bgCellInterference =   ${bgi =   true,       true,      true,     false,       true,      true ! s}
+*.bgCell[0].bgScheduler.numBands = ${width0 = 6, 6,        6,        6,           3,         6 ! s}
+*.bgCell[1].bgScheduler.numBands = ${width1 = 6, 6,        6,        6,           3,         3 ! s}
+**.extCellInterference = false
+
+############### Geometry: a real cell, and background cells to the east ##############
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 25m
+*.numUe = 1
+*.ue[0].servingNodeId = 0
+*.ue[0].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 250m
+*.ue[0].mobility.initialY = 300m
+*.ue[0].mobility.initialZ = 1.5m
+*.bgCell[0].mobility.initialX = 800m
+*.bgCell[0].mobility.initialY = 300m
+*.bgCell[0].mobility.initialZ = 25m
+*.bgCell[0].bgTrafficGenerator.numBgUes = 2
+*.bgCell[0].bgTrafficGenerator.bgUE[0].mobility.initialX = 700m
+*.bgCell[0].bgTrafficGenerator.bgUE[0].mobility.initialY = 400m
+*.bgCell[0].bgTrafficGenerator.bgUE[0].mobility.initialZ = 1.5m
+*.bgCell[0].bgTrafficGenerator.bgUE[1].mobility.initialX = 850m
+*.bgCell[0].bgTrafficGenerator.bgUE[1].mobility.initialY = 200m
+*.bgCell[0].bgTrafficGenerator.bgUE[1].mobility.initialZ = 1.5m
+*.bgCell[1].mobility.initialX = 1400m
+*.bgCell[1].mobility.initialY = 300m
+*.bgCell[1].mobility.initialZ = 25m
+*.bgCell[1].bgTrafficGenerator.numBgUes = 1
+*.bgCell[1].bgTrafficGenerator.bgUE[0].mobility.initialX = 1300m
+*.bgCell[1].bgTrafficGenerator.bgUE[0].mobility.initialY = 300m
+*.bgCell[1].bgTrafficGenerator.bgUE[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 2000m
+**.mobility.constraintAreaMaxY = 2000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one NLOS path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = false
+**.fading = false
+**.shadowing = false
+
+############### The budget terms, stated rather than inherited, and apart ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.numBands = 6
+*.gnb.**.eNodeBTxPower = 40dBm
+**.ueTxPower = 25dBm
+**.thermalNoise = -104.5dBm
+*.gnb.cellularNic.radio.antenna.gain = 17dBi
+*.ue[*].cellularNic.*adio.antenna.gain = 1dBi
+*.bgCell[*].bgScheduler.isNr = true
+*.bgCell[0].bgScheduler.txPower = 37dBm
+*.bgCell[0].radio.antenna.gain = 15dBi
+*.bgCell[0].radio.noiseFigure = 4dB
+*.bgCell[0].radio.cableLoss = 1dB
+*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.antenna.gain = 3dBi
+*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.noiseFigure = 9dB
+*.bgCell[0].bgTrafficGenerator.bgUE[*].radio.cableLoss = 3.5dB
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.txPower = 24dBm
+*.bgCell[1].bgScheduler.txPower = 33dBm
+*.bgCell[1].bgTrafficGenerator.bgUE[0].generator.txPower = 21dBm
+
+############### Traffic: every background UE and the real UE, in both directions ##############
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.typename = "TrafficGeneratorCbr"
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.rtxRateDl = 0
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.rtxRateUl = 0
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.startTimeDl = 0.1s
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.startTimeUl = 0.1s
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.packetSizeDl = 1000B
+*.bgCell[*].bgTrafficGenerator.bgUE[*].generator.packetSizeUl = 1000B
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.periodDl = 0.011s
+*.bgCell[0].bgTrafficGenerator.bgUE[*].generator.periodUl = 0.013s
+*.bgCell[1].bgTrafficGenerator.bgUE[*].generator.periodDl = 0.007s
+*.bgCell[1].bgTrafficGenerator.bgUE[*].generator.periodUl = 0.007s
+
+*.ue[0].numApps = 2
+*.server.numApps = 2
+*.ue[0].app[0].typename = "CbrReceiver"
+*.ue[0].app[0].localPort = 3000
+*.server.app[0].typename = "CbrSender"
+*.server.app[0].destAddress = "ue[0]"
+*.server.app[0].destPort = 3000
+*.server.app[0].localPort = 3088
+*.server.app[0].packetSize = 1000B
+*.server.app[0].samplingTime = 0.007s
+*.server.app[0].startTime = 0.1s
+*.ue[0].app[1].typename = "CbrSender"
+*.ue[0].app[1].destAddress = "server"
+*.ue[0].app[1].destPort = 4000
+*.ue[0].app[1].localPort = 4088
+*.ue[0].app[1].packetSize = 1000B
+*.ue[0].app[1].samplingTime = 0.007s
+*.ue[0].app[1].startTime = 0.1s
+*.server.app[1].typename = "CbrReceiver"
+*.server.app[1].localPort = 4000
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=63 failures=0
+
+%not-contains: verdict.txt
+FAILED
