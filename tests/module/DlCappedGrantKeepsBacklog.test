@@ -1,0 +1,94 @@
+%description:
+A DL connection keeps its backlog when a scheduler caps its grant. DRR limits each grant to
+the connection's deficit, far below what a burst of frames needs. dnStation, a host on the
+UPF's N6 Ethernet LAN, sends the device behind ue[0], a UE in Ethernet bridge mode, a burst
+of 1400-byte frames from 0.1 s and nothing afterwards, so no new arrival wakes the
+connection up.
+
+Checks: the device receives every frame of the burst.
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: test.ned
+import inet.node.ethernet.Eth1G;
+import inet.node.inet.StandardHost;
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+network CappedGrantTestNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        dnStation: StandardHost {
+            @display("p=650,75");
+        }
+        device: StandardHost {
+            @display("p=650,400");
+        }
+    connections:
+        upf.dnEthg <--> Eth1G <--> dnStation.ethg++;
+        device.ethg++ <--> Eth1G <--> ue[0].ethg++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = CappedGrantTestNetwork
+sim-time-limit = 1s
+
+# the results the test checks
+*.dnStation.app[0].source.**.scalar-recording = true
+*.device.app[0].sink.**.scalar-recording = true
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+# the scheduling discipline that caps grants
+*.gnb.cellularNic.mac.schedulingDisciplineDl = "DRR"
+
+# ue[0]: an Ethernet session in bridge mode, with the device behind it, on one RLC UM bearer
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[0].ethernetMode = "bridge"
+*.ue[0].numEthInterfaces = 1
+*.bearerConfigurator.staticDrbs = [{coreNetwork: "5gc", ue: "ue[0]", drbId: 1, isDefault: true, rlcMode: "UM"}]
+
+# dnStation and the device: raw Ethernet hosts
+*.dnStation.hasIpv4 = false
+*.device.hasIpv4 = false
+*.dnStation.eth[*].typename = "LayeredEthernetInterface"
+*.device.eth[*].typename = "LayeredEthernetInterface"
+*.dnStation.ethernet.typename = "EthernetLayer"
+*.device.ethernet.typename = "EthernetLayer"
+*.dnStation.ethernet.hasSocketSupport = true
+*.device.ethernet.hasSocketSupport = true
+*.dnStation.llc.typename = ""
+*.device.llc.typename = ""
+*.dnStation.eth[*].bitrate = 1Gbps
+*.device.eth[*].bitrate = 1Gbps
+*.ue[0].eth[*].bitrate = 1Gbps
+
+# the burst, and the sink
+*.dnStation.numApps = 1
+*.dnStation.app[0].typename = "EthernetSourceApp"
+*.dnStation.app[0].io.interface = "eth0"
+*.dnStation.app[0].io.remoteAddress = "device"
+*.dnStation.app[0].source.packetLength = 1400B
+*.dnStation.app[0].source.productionInterval = (simTime() < 0.1002s ? 0.05ms : 1000s)
+*.dnStation.app[0].source.initialProductionOffset = 0.1s
+*.device.numApps = 1
+*.device.app[0].typename = "EthernetSinkApp"
+*.device.app[0].io.interface = "eth0"
+*.device.app[0].io.localAddress = "device"
+*.device.app[0].io.steal = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar CappedGrantTestNetwork.dnStation.app[0].source packets:count 5
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar CappedGrantTestNetwork.device.app[0].sink packets:count 5
+%#--------------------------------------------------------------------------------------------------------------
