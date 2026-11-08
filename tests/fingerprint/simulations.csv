@@ -95,7 +95,7 @@
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL -r 0,                         5s,         61a4-5b1a/tplx;b4dc-32ab/tilx;bc8b-370a/~tNl;39e2-f7a8/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-FilterRules -r 0,             5s,         e463-3563/tplx;56c5-337c/tilx;bc8b-370a/~tNl;39e2-f7a8/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg -r 0,                5s,         1004-8c86/tplx;e255-be4d/tilx;6d55-c3d2/~tNl;62db-c5d3/sz, PASS,
-/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg-Heavy -r 0,          5s,         fe12-6a9a/tplx;610e-adc6/tilx;5602-0693/~tNl;4a0b-5025/sz, PASS,
+/simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-UL-CrossLcg-Heavy -r 0,          5s,         f4b4-8f66/tplx;6c8e-831c/tilx;cb4d-3453/~tNl;930a-d1d1/sz, PASS,
 /simulations/nr/standalone_drb/,         -f omnetpp.ini -c VoIP-DL-NoDrbConfig -r 0,             5s,         3259-6bc1/tplx;5b89-92cb/tilx;b5c6-1d21/~tNl;039d-105e/sz, PASS,
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-DL -r 0,             5s,         eaf0-c5bd/tplx;3acf-293e/tilx;09d4-c820/~tNl;c6b5-6e0a/sz, PASS,
 /simulations/nr/test_multiCarrier/,      -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,             5s,         3760-58a6/tplx;bae4-0104/tilx;d434-ee48/~tNl;15ee-e088/sz, PASS,

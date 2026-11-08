@@ -400,7 +400,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
 
             // update the counter of bytes to be served
             toServe = (uBytes > toServe) ? 0 : toServe - uBytes;
-            queueLength = (uBytes > toServe) ? 0 : queueLength - uBytes;
+            queueLength -= uBytes;
             if (toServe == 0) {
                 // all bytes booked, go to allocation
                 stop = true;
