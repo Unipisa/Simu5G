@@ -1,0 +1,173 @@
+%description:
+
+The radio medium reads every other radio's position as a transmission
+starts.
+
+When a transmission is added, CellularRadioMedium calls getCoord() on every
+radio on the medium but the transmission's transmitter, once each, in the
+order the radios were added -- as INET's radio medium computes a
+transmission's arrival at every radio but the transmitter. It is the read's
+side effect that matters: reading a PHY's position moves its mobility to the
+current instant, so the mobility reports, and the statistics they emit,
+happen as the transmissions start.
+
+Nothing else checks this: deleting the reads changes only fingerprints, and
+reading the transmitter's position too passes every suite.
+
+Checked with three stub radios A, B, C, added in this order (and not in the
+order of their node ids), whose getCoord() counts its calls and logs whose it
+was, each registered with a module of its own that has a radioIn gate:
+ - a transmission from A reads B's and C's position once each, in this
+   order, and not A's;
+ - a transmission from B reads A's and C's once each, in this order, and not
+   B's.
+
+%includes:
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/medium/CellularRadioMedium.h"
+#include "simu5g/stack/phy/medium/CellularTransmission.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// A stub radio whose position reads are counted and logged by name.
+class ReadCountingEndpoint : public StubEndpoint
+{
+  public:
+    std::string name;
+    std::vector<std::string> *readLog = nullptr;
+    mutable int reads = 0;
+
+    const Coord& getCoord() const override
+    {
+        reads++;
+        readLog->push_back(name);
+        return coord;
+    }
+};
+
+// The module of a radio, as far as the medium sees it: the radioIn gate that
+// frames sent to the radio enter at.
+class SilentRadio : public cSimpleModule
+{
+  protected:
+    virtual void handleMessage(cMessage *msg) override { delete msg; }
+};
+
+Define_Module(SilentRadio);
+
+static std::string show(const std::vector<std::string>& names)
+{
+    std::string s = "[";
+    for (const auto& name : names)
+        s += (s.size() > 1 ? " " : "") + name;
+    return s + "]";
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+simple SilentRadio
+{
+    @class(SilentRadio);
+    gates:
+        input radioIn @directIn;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        radioModule[3]: SilentRadio;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+
+std::vector<std::string> readLog;
+ReadCountingEndpoint radioA, radioB, radioC;
+ReadCountingEndpoint *radios[] = {&radioA, &radioB, &radioC};
+const char *names[] = {"A", "B", "C"};
+// added in the order A, B, C; by node id the order would be B, C, A
+const MacNodeId ids[] = {MacNodeId(1027), MacNodeId(1025), MacNodeId(1026)};
+for (int k = 0; k < 3; k++) {
+    radios[k]->name = names[k];
+    radios[k]->readLog = &readLog;
+    radios[k]->nodeId = ids[k];
+    radios[k]->coord = Coord(10.0 * k, 5, 1.5);
+    medium->addRadio(ids[k], radios[k], getParentModule()->getSubmodule("radioModule", k));
+}
+
+auto resetReads = [&] {
+    readLog.clear();
+    for (auto radio : radios)
+        radio->reads = 0;
+};
+auto reads = [] (const ReadCountingEndpoint& radio) { return "reads=" + std::to_string(radio.reads); };
+
+// a one-slot UL data transmission from the given radio, starting now
+auto transmissionFrom = [&] (ReadCountingEndpoint *sender) {
+    auto *transmission = new CellularTransmission();
+    transmission->transmitter = sender;
+    transmission->sourceId = sender->nodeId;
+    transmission->direction = UL;
+    transmission->frameType = DATAPKT;
+    transmission->carrierFrequency = GHz(2.0);
+    transmission->startPosition = sender->coord;
+    transmission->startTime = simTime();
+    transmission->duration = slot;
+    return transmission;
+};
+
+wait(slot);
+resetReads();
+medium->addTransmission(transmissionFrom(&radioA));
+c.check("a transmission from A reads B's position once", radioB.reads == 1, reads(radioB));
+c.check("...and C's once", radioC.reads == 1, reads(radioC));
+c.check("...and not A's, the transmitter's", radioA.reads == 0, reads(radioA));
+c.check("...in the order the radios were added", readLog == (std::vector<std::string>{"B", "C"}), show(readLog));
+
+wait(slot);
+resetReads();
+medium->addTransmission(transmissionFrom(&radioB));
+c.check("a transmission from B reads A's and C's position once each", radioA.reads == 1 && radioC.reads == 1,
+        reads(radioA) + " " + reads(radioC));
+c.check("...and not B's, the transmitter's", radioB.reads == 0, reads(radioB));
+c.check("...in the order the radios were added", readLog == (std::vector<std::string>{"A", "C"}), show(readLog));
+
+for (auto radio : radios)
+    medium->removeRadio(radio);
+
+c.summary();
+
+%contains: stdout
+modelchecks=7 modelfailures=0
+
+%not-contains: stdout
+FAILED
