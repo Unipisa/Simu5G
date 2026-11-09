@@ -39,7 +39,8 @@ Three kinds of ingredient, and only the first is a specification:
    where a different one applies: D2dLinkBudget and D2dInterferenceDelta (a
    UE-to-UE link evaluated as a UMi link), BackgroundCellFloor and ExtCellFloor (the external and
    background cells' path loss), BackgroundUeCqi, BackgroundUeLoad and
-   BackgroundCellCqi (background UEs' CQIs and load). Their descriptions
+   BackgroundCellCqi (background UEs' CQIs and load), IndoorOneRadioTwoCarriers
+   (one indoor distance on all of a radio's carriers). Their descriptions
    say so. They are regression tests of the model's choice.
 
 Most scenarios here use URBAN_MICROCELL with a 25 m base station, outside the

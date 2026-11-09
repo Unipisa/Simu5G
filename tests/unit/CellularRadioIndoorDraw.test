@@ -1,0 +1,119 @@
+%description:
+
+CellularRadio's own indoor state: whether the radio is inside a building, its
+distance from the wall and the deviate of its building penetration loss, as a
+real radio draws them.
+
+A radio with insideBuilding set draws its state once, at initialization: the
+distance uniformly in [0, 25) m (TR 38.901 7.4.3.1: "between 0 and 25 m for UMa
+and UMi-Street Canyon"; that it is one draw and not the minimum of two is item
+17 of tests/doc/model-deviations.md), then the deviate, standard normal. The
+getters only read what was drawn. A radio without it draws nothing, and answers
+outdoors, with 0 for both.
+
+The channel model tests give their endpoints these values through StubEndpoint,
+so none of them reaches the radio's draws: a getter that draws at every call, or
+drawing the two in the other order, passes them. Here the values are replayed
+from an RngSnapshot that a module declared before everything else takes in stage
+0, so they are graded exactly. The number of values drawn in the whole of
+initialization is graded too: the outdoor radio is declared before the indoor one,
+so a draw of its own would both show in the count and move the values replayed.
+
+%includes:
+#include <memory>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/radio/CellularRadio.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// Declared first: the state of the RNG before any module of the network has drawn
+class RngRecorder : public cSimpleModule
+{
+  public:
+    std::unique_ptr<RngSnapshot> snapshot;
+
+  protected:
+    virtual void initialize() override { snapshot = std::make_unique<RngSnapshot>(this); }
+};
+
+Define_Module(RngRecorder);
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.stack.phy.radio.CellularRadio;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+
+simple RngRecorder
+{
+    @class(RngRecorder);
+}
+
+network Harness
+{
+    submodules:
+        rngRecorder: RngRecorder;
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        outdoor: CellularRadio;
+        indoor: CellularRadio;
+        test: Test;
+    connections allowunconnected:
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.binder.printTrafficGeneratorConfig = false
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.cellInfoModule = ""
+*.indoor.insideBuilding = true
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *indoor = harnessModule<CellularRadio>(this, "indoor");
+auto *outdoor = harnessModule<CellularRadio>(this, "outdoor");
+RngSnapshot& snapshot = *harnessModule<RngRecorder>(this, "rngRecorder")->snapshot;
+auto drawn = [&] { return (long long)getRNG(0)->getNumbersDrawn(); };
+
+// what initialization ought to have drawn, in that order
+const double distance = omnetpp::uniform(snapshot.rng(), 0.0, 25.0);
+const double deviate = omnetpp::normal(snapshot.rng(), 0.0, 1.0);
+c.expectValue("initialization draws the indoor radio's two values and nothing else", drawn(), (long long)snapshot.rng()->getNumbersDrawn());
+
+c.check("the radio with insideBuilding set answers indoors", indoor->isInsideBuilding());
+c.expectNear("its distance from the wall is the first draw, uniform(0, 25)", indoor->getInsideDistance(), distance, 0.0);
+c.expectNear("its penetration loss deviate is the second, normal(0, 1)", indoor->getPenetrationLossDeviate(), deviate, 0.0);
+c.check("the distance lies in [0, 25)", distance >= 0.0 && distance < 25.0, std::to_string(distance));
+
+c.check("the radio without it answers outdoors", !outdoor->isInsideBuilding());
+c.expectNear("...with no distance", outdoor->getInsideDistance(), 0.0, 0.0);
+c.expectNear("...and no deviate", outdoor->getPenetrationLossDeviate(), 0.0, 0.0);
+
+const long long drawnBefore = drawn();
+c.expectNear("a second read gives the same distance", indoor->getInsideDistance(), distance, 0.0);
+c.expectNear("...and the same deviate", indoor->getPenetrationLossDeviate(), deviate, 0.0);
+wait(0.5);
+c.expectNear("later, the same distance", indoor->getInsideDistance(), distance, 0.0);
+c.expectNear("...and the same deviate", indoor->getPenetrationLossDeviate(), deviate, 0.0);
+c.expectNear("...and the outdoor radio's distance is still 0", outdoor->getInsideDistance(), 0.0, 0.0);
+c.expectValue("reading the state draws nothing", drawn() - drawnBefore, 0);
+
+c.summary();
+
+%contains: stdout
+modelchecks=14 modelfailures=0
+
+%not-contains: stdout
+FAILED

@@ -1,0 +1,158 @@
+%description:
+
+One indoor distance per radio, shared by its carriers, through the real PHY.
+
+The channel model's indoor tests give it stub endpoints. Here real NrUe and
+gNodeB nodes run on two carriers below 6 GHz, 2 GHz and 3.5 GHz, indoors and
+outdoors, in TR 38.901 UMa with a fixed LOS state, with fading, shadowing and
+interference off. There TR 38.901 Table 7.4.3-3 applies:
+
+    PLtw = "20 dB"
+    PLin = "0.5 d2D-in"
+    sigma_P = "0 dB"
+
+so the deviate does not enter, and the indoor loss is a sum of 20 dB and the
+distance's term alone. Everything else cancels between an outdoor and an indoor
+run of the same geometry, whatever the carrier and whichever way the link goes,
+so each UE's distance can be read from its results:
+
+    d = (SINR_outdoor - SINR_indoor - 20) / 0.5
+
+A UE's receiver records the SINRs of both directions of the UE's links, per
+carrier, under the carrier's frequency. The grader computes d from each of them:
+measuredSinrDl (the CQI, evaluated at the gNB, with the UE as the receiver),
+measuredSinrUl (evaluated at the gNB, with the UE as the transmitter), rcvdSinrDl
+(evaluated at the UE) and rcvdSinrUl (evaluated at the gNB). So this also covers
+the rule that a link's penetration loss is its UE end's, for real nodes:
+**.insideBuilding marks the gNB's radio as well, whose own distance is a decoy.
+
+Per UE, all eight values must agree to 1e-9. They must lie in [0, 25), and differ
+between the UEs: the distance is the UE's, not the scenario's. A value of 5 m or
+more must occur among the UEs, which tells a distance from a draw of another
+kind that a standard-normal deviate would be: it may lie in the range and differ
+between UEs too, but it does not reach 5 m. With a distance uniform in [0, 25),
+four UEs all stay below 5 m with probability 0.2^4 = 0.0016, once per draw order.
+
+That the statistics really are the carriers' own is checked on the way: outdoors,
+below the breakpoint distance, the two carriers differ by 20 log10(3.5 / 2) dB in
+every statistic (TR 38.901 Table 7.4.1-1, PL1 of UMa).
+
+What a specification says here, and what it does not. For the O2I penetration
+models of Table 7.4.3-2, TR 38.901 7.4.3.1 says "d2D-in shall be
+UT-specifically generated". Table 7.4.3-3 is offered "for UMa and UMi
+single-frequency simulations at frequencies below 6 GHz", with "d2D-in being a
+single, link-specific, uniformly distributed variable between 0 and 25 m". So the
+scenario here, two carriers, is outside the table's title, and sharing the
+distance between carriers follows the UT-specific statement, not the table's
+link-specific one. That the model applies this table on each carrier below 6 GHz
+is the model's choice; this is a regression test of that choice, as far as the
+20 dB is concerned, and the one place that shows the distance is one per radio.
+
+The fixed LOS state and the UEs' height of 1.5 m leave no draw in the path loss:
+h_E is 1 m (TR 38.901 Table 7.4.1-1, note 1: C = 0 below 13 m), and the UEs stand
+below the breakpoint distance on both carriers.
+
+%extraargs: -c IndoorOneRadioTwoCarriers
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%inifile: omnetpp.ini
+
+[Config IndoorOneRadioTwoCarriers]
+network = simu5g.simulations.nr.networks.SingleCell_Standalone
+sim-time-limit = 1s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+
+############### The sweep ##############
+**.insideBuilding = ${indoor = false, true}
+
+############### Two carriers below 6 GHz, both on every node ##############
+*.carrierAggregation.numComponentCarriers = 2
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+*.carrierAggregation.componentCarrier[1].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[1].numBands = 6
+*.gnb.cellularNic.numCarriers = 2
+*.gnb.cellularNic.phy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
+*.ue[*].cellularNic.nrPhy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
+
+############### Geometry: every UE below the breakpoint distance on both carriers ##############
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 25m
+*.numUe = 4
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+*.ue[0].mobility.initialX = 360m
+*.ue[0].mobility.initialY = 300m
+*.ue[1].mobility.initialX = 300m
+*.ue[1].mobility.initialY = 400m
+*.ue[2].mobility.initialX = 150m
+*.ue[2].mobility.initialY = 300m
+*.ue[3].mobility.initialX = 300m
+*.ue[3].mobility.initialY = 80m
+*.ue[*].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and the indoor loss ##############
+**.scenario = "URBAN_MACROCELL"
+**.nodebHeight = 25m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### Traffic in both directions, for the receptions ##############
+# More than a carrier of 6 bands carries, so that every UE's frames go out on both
+*.ue[*].numApps = 2
+*.server.numApps = 8
+*.ue[*].app[0].typename = "CbrReceiver"
+*.ue[*].app[0].localPort = 3000
+*.server.app[0..3].typename = "CbrSender"
+*.server.app[0..3].destAddress = "ue[" + string(ancestorIndex(0)) + "]"
+*.server.app[0..3].destPort = 3000
+*.server.app[0..3].localPort = 3088 + ancestorIndex(0)
+*.server.app[0..3].packetSize = 1000B
+*.server.app[0..3].samplingTime = 0.002s
+*.server.app[0..3].startTime = 0.1s
+*.ue[*].app[1].typename = "CbrSender"
+*.ue[*].app[1].destAddress = "server"
+*.ue[*].app[1].destPort = 4000 + ancestorIndex(1)
+*.ue[*].app[1].localPort = 4088
+*.ue[*].app[1].packetSize = 1000B
+*.ue[*].app[1].samplingTime = 0.002s
+*.ue[*].app[1].startTime = 0.1s
+*.server.app[4..7].typename = "CbrReceiver"
+*.server.app[4..7].localPort = 4000 + ancestorIndex(0) - 4
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=59 failures=0
+
+%not-contains: verdict.txt
+FAILED

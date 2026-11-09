@@ -1146,6 +1146,66 @@ GRADERS.update({
 })
 
 
+INDOOR_STATISTICS = ('measuredSinrDl', 'measuredSinrUl', 'rcvdSinrDl', 'rcvdSinrUl')
+
+
+def grade_indoor_one_radio_two_carriers(grader):
+    """Outdoors minus indoors, every SINR of a UE is the penetration loss of TR
+    38.901 Table 7.4.3-3, 20 dB + 0.5 d2D-in, so each statistic gives the UE's
+    distance back. One radio has one distance: on both carriers, in both
+    directions, at both evaluating ends. The statistics are recorded on the UE's
+    own receiver, in both directions (CellularReceiver.ned)."""
+    df = scave.get_scalars('module =~ "*.ue[*].cellularNic.nrRadio.receiver"'
+                           ' AND (name =~ "measuredSinr*MHz:mean" OR name =~ "rcvdSinr*MHz:mean")',
+                           include_itervars=True, convert_to_base_unit=False)
+    if df.empty:
+        raise LookupError("no per-carrier SINR statistics recorded")
+    sinrs = {(row.indoor, row.module.split('.')[1], row.name): row.value for row in df.itertuples()}
+    ues = sorted({key[1] for key in sinrs})
+    if len(ues) != 4:
+        raise LookupError(f"expected four UEs in the results, found {ues}")
+
+    # Outdoors, below the breakpoint distance, PL1 of UMa in LOS is
+    # 28 + 22 log10(d3D) + 20 log10(fc), and the carriers differ only in its last term
+    carrier_difference = 20 * math.log10(3.5 / 2.0)
+
+    distances = {}
+    for ue in ues:
+        reference = None
+        for stat in INDOOR_STATISTICS:
+            for mhz in (2000, 3500):
+                name = f'{stat}-{mhz}MHz:mean'
+                outdoor = sinrs.get(('false', ue, name), float('nan'))
+                indoor = sinrs.get(('true', ue, name), float('nan'))
+                # nan fails: a statistic never emitted says nothing about the rule
+                d = (outdoor - indoor - 20.0) / 0.5
+                if reference is None:
+                    reference = d
+                grader.check_absolute('one-distance-per-radio', f'{ue} {stat} {mhz}MHz', d, reference, 1e-9, " m")
+            outdoor_low = sinrs.get(('false', ue, f'{stat}-2000MHz:mean'), float('nan'))
+            outdoor_high = sinrs.get(('false', ue, f'{stat}-3500MHz:mean'), float('nan'))
+            grader.check_absolute('carrier-path-loss-difference', f'{ue} {stat}',
+                                  outdoor_low - outdoor_high, carrier_difference, 1e-9, " dB")
+        distances[ue] = reference
+        grader.check_true('distance-in-range', ue, 0.0 <= reference < 25.0, f"d={reference:.6f} m")
+
+    # Different UEs, different distances
+    for i, a in enumerate(ues):
+        for b in ues[i + 1:]:
+            grader.check_true('distance-is-the-ues', f'{a} {b}', abs(distances[a] - distances[b]) > 1e-6,
+                              f"{distances[a]:.6f} m and {distances[b]:.6f} m")
+
+    # A standard normal deviate would not reach it; four uniforms miss it
+    # with probability 0.2^4
+    grader.check_true('distance-spans-the-range', 'largest of four', max(distances.values()) >= 5.0,
+                      f"{max(distances.values()):.6f} m")
+
+
+GRADERS.update({
+    'IndoorOneRadioTwoCarriers': grade_indoor_one_radio_two_carriers,
+})
+
+
 def main():
     if len(sys.argv) != 3 or sys.argv[1] != '--grade':
         print("usage: physics_reference.py --grade <result-directory>", file=sys.stderr)
