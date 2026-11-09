@@ -1,0 +1,354 @@
+%description:
+
+An indoor UE's links in the interference walks: the building penetration loss is in
+an interference term as it is in a desired signal, and it is the UE end's there too.
+
+A link in an interference walk is built with the node id alone: the model finds the
+UE's radio on the medium, and with it the indoor state (cellularLink() for the
+uplink and downlink walks, d2dLink() for the D2D one). No fingerprint row has an
+indoor UE with an interference switch on, and ChannelModelPenetrationDeviate looks
+at the links of a frame and a CQI only, so a walk's link that had lost the UE's radio
+would be outdoors, and would pass every suite.
+
+Checked with stub radios at 28 GHz, TR 38.901 UMi NLOS, with shadowing and fading
+off. The frames are recorded by the real CellularTransmitter. A UE's indoor state
+is data, so each walk is repeated with the same transmissions on the medium:
+
+    I = P + G(tx) + G(rx) - cableLoss(rx) - PL(d) - O2I
+
+The outdoor attenuation that an interference implies is graded against
+t901_umi_nlos of pathloss_reference.py, and what going indoors adds to it against
+t901_o2i_lowloss (Table 7.4.3-2: the low-loss median at d2D-in, plus sigma_P = 4.4 dB
+times the UE's deviate), with each UE's own distance and deviate.
+
+ - (a) Downlink: another cell's DL data at an indoor UE, for its CQI, carries the
+   UE's wall. The interfering base station saying that it is indoors is a decoy,
+   with both the UE outdoors and the UE indoors.
+ - (b) Uplink: an indoor UE's UL data at a neighbour base station, for the CQI of
+   the neighbour's own UE, carries the UE's wall. The neighbour saying that it is
+   indoors is a decoy, with both.
+ - (c) D2D: this pins item 15 of tests/doc/model-deviations.md, by which a D2D link's
+   loss is the receiver's. An indoor interferer at an outdoor receiver carries none,
+   and an outdoor interferer at an indoor receiver carries the receiver's.
+   ChannelModelD2dIndoorDirection and ChannelModelD2dIndoorReciprocal have the
+   defect itself. computeD2DInterference() needs the pair's cell's MAC, a stub that
+   is only what the walk asks of it.
+
+%includes:
+#include <cmath>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/d2d/mac/ID2dMacEnb.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// A base station's MAC, as far as the D2D walk asks: never initialized, it exists to be found by the Binder.
+class StubD2dEnbMac : public LteMacEnb, public ID2dMacEnb
+{
+  protected:
+    void initialize(int stage) override {}
+    void handleMessage(cMessage *msg) override { delete msg; }
+
+  public:
+    HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(GHz carrierFrequency) override { return nullptr; }
+    void deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer) override {}
+    void sendModeSwitchNotification(MacNodeId srcId, MacNodeId dstId, LteD2DMode oldMode, LteD2DMode newMode) override {}
+    bool isMsHarqInterrupt() override { return false; }
+    bool isReuseD2DEnabled() override { return true; }
+    bool isReuseD2DMultiEnabled() override { return false; }
+    ConflictGraph *getConflictGraph() override { return nullptr; }
+};
+
+Define_Module(StubD2dEnbMac);
+
+// The protected interference walks of a channel model. Never instantiated: see ChannelModelProbe for the technique.
+struct WalkAccess : StochasticChannelModel
+{
+    static auto downlinkPtr() { return &WalkAccess::computeDownlinkInterference; }
+    static auto uplinkPtr() { return &WalkAccess::computeUplinkInterference; }
+    static auto d2dPtr() { return &WalkAccess::computeD2DInterference; }
+};
+
+// the map of the given bands of a carrier of 4
+static RbMap blocksOn(std::vector<Band> bands)
+{
+    RbMap blocks;
+    for (Band b = 0; b < 4; b++)
+        blocks[MACRO][b] = 0;
+    for (Band b : bands)
+        blocks[MACRO][b] = 1;
+    return blocks;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.radio.CellularTransmitter;
+
+simple StubD2dEnbMac
+{
+    @class(StubD2dEnbMac);
+}
+
+module StubCellularNic
+{
+    submodules:
+        mac: StubD2dEnbMac;
+}
+
+module StubCell
+{
+    submodules:
+        cellularNic: StubCellularNic;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        transmitter: CellularTransmitter;
+        d2dCell: StubCell;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 28GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[0].numerologyIndex = 0
+*.radioMedium.numCarriers = 1
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+*.radioMedium.channelModelType = "StochasticChannelModel"
+*.radioMedium.channelModel[*].pathLossType = "Tr36814"
+*.radioMedium.channelModel[*].scenario = "URBAN_MACROCELL"
+*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
+*.radioMedium.nrChannelModel[*].scenario = "URBAN_MICROCELL"
+*.radioMedium.nrChannelModel[*].nodebHeight = 10m
+**.ueHeight = 1.5m
+**.useBuildingPenetrationHighLossModel = false
+
+# path loss only, NLOS
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.extCellInterference = false
+**.bgCellInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *transmitter = harnessModule<CellularTransmitter>(this, "transmitter");
+auto *binder = harnessModule<Binder>(this, "binder");
+const GHz carrier = GHz(28.0);
+auto *model = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, true));
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 28.0;
+
+const MacNodeId servingCell = MacNodeId(1), neighbourCell = MacNodeId(2), d2dCellId = MacNodeId(3);
+binder->registerNode(d2dCellId, getParentModule()->getSubmodule("d2dCell"), NODEB, false);
+
+StubEndpoint serving, neighbour, ue, neighbourUe, pairTx, pairRx;
+serving.nodeId = servingCell;
+serving.coord = Coord(-200, 0, 10);
+neighbour.nodeId = neighbourCell;
+neighbour.coord = Coord(0, 0, 10);
+neighbour.txPower = 40;
+neighbour.antennaGain = 6;
+neighbour.cableLoss = 2;
+
+// the indoor UE, at a distance and a deviate of its own
+ue.nodeId = MacNodeId(1025);
+ue.coord = Coord(120, 160, 1.5);
+ue.txPower = 23;
+ue.antennaGain = 3;
+ue.cableLoss = 1;
+const double ueDistance = 7, ueDeviate = 0.5;
+
+neighbourUe.nodeId = MacNodeId(1026);
+neighbourUe.coord = Coord(30, 40, 1.5);
+pairTx.nodeId = MacNodeId(1027);
+pairTx.coord = Coord(120, 190, 1.5);
+pairRx.nodeId = MacNodeId(1028);
+pairRx.coord = Coord(120, 220, 1.5);
+pairRx.antennaGain = 2;
+pairRx.cableLoss = 1.5;
+const double pairRxDistance = 11, pairRxDeviate = 1.5;
+
+StubRadioRegistration servingRadio(medium, serving.nodeId, &serving);
+StubRadioRegistration neighbourRadio(medium, neighbour.nodeId, &neighbour);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration neighbourUeRadio(medium, neighbourUe.nodeId, &neighbourUe);
+StubRadioRegistration pairTxRadio(medium, pairTx.nodeId, &pairTx);
+StubRadioRegistration pairRxRadio(medium, pairRx.nodeId, &pairRx);
+
+auto setIndoors = [] (StubEndpoint& node, bool indoors, double distance, double deviate) {
+    node.insideBuilding = indoors;
+    node.insideDistance = indoors ? distance : 0.0;
+    node.penetrationLossDeviate = indoors ? deviate : 0.0;
+};
+
+// a data frame of the sender's on bands 0 and 1, as its radio's transmitter records it on the medium
+auto send = [&] (IRadioEndpoint *sender, Direction dir, MacNodeId dest, MacCellId cell, double power) {
+    RadioTransmissionRequest request;
+    request.sender = sender;
+    request.cellId = cell;
+    request.duration = slot;
+    UserControlInfo info;
+    info.setSourceId(sender->getMacNodeId());
+    info.setDestId(dest);
+    info.setDirection(dir);
+    info.setFrameType(DATAPKT);
+    info.setCarrierFrequency(carrier);
+    info.setGrantedBlocks(blocksOn({0, 1}));
+    info.setTxPower(power);
+    info.setD2dTxPower(power);
+    medium->addTransmission(transmitter->createTransmission(request, info));
+};
+
+// grades the interference on band 0 with an end outdoors and with it indoors, from the budget of the link
+auto grade = [&] (const std::string& what, const Coord& from, const Coord& to, double budget, double iOutdoors, double iIndoors, double distance, double deviate) {
+    double d2D = std::hypot(from.x - to.x, from.y - to.y);
+    graded.record("t901_umi_nlos", p, { { "d3D", from.distance(to) }, { "d2D", d2D }, { "los", 0.0 } }, budget - linearToDBm(iOutdoors));
+    graded.record("t901_o2i_lowloss", p, { { "dIn", distance }, { "z", deviate } }, linearToDBm(iOutdoors) - linearToDBm(iIndoors));
+    c.check(what, linearToDBm(iOutdoors) - linearToDBm(iIndoors) > 10.0,
+            "the wall, dB: " + std::to_string(linearToDBm(iOutdoors) - linearToDBm(iIndoors)));
+};
+
+const RbMap everyBand = blocksOn({0, 1, 2, 3});
+
+//
+// (a) Downlink
+//
+{
+    wait(10 * slot);
+    send(&neighbour, DL, MacNodeId(1029), neighbourCell, neighbour.txPower);
+    wait(slot);
+
+    // the other cells' DL interference at the UE, for its CQI, on band 0
+    auto interference = [&] {
+        std::vector<double> perBand(model->getNumBands(), 0.0);
+        (model->*WalkAccess::downlinkPtr())(servingCell, ue.nodeId, ue.coord, true, carrier, everyBand, &perBand, true);
+        return perBand[0];
+    };
+
+    setIndoors(ue, false, 0, 0);
+    const double outdoors = interference();
+    setIndoors(ue, true, ueDistance, ueDeviate);
+    const double indoors = interference();
+    grade("(a) another cell's downlink interference at an indoor UE carries the UE's wall", neighbour.coord, ue.coord,
+            neighbour.txPower + neighbour.antennaGain + ue.antennaGain - ue.cableLoss, outdoors, indoors, ueDistance, ueDeviate);
+
+    setIndoors(neighbour, true, 13, 2.0);
+    c.expectNear("(a) the interfering base station saying it is indoors moves nothing, the UE indoors", linearToDBm(interference()), linearToDBm(indoors), 1e-9);
+    setIndoors(ue, false, 0, 0);
+    c.expectNear("(a) ...nor with the UE outdoors", linearToDBm(interference()), linearToDBm(outdoors), 1e-9);
+    setIndoors(neighbour, false, 0, 0);
+}
+
+//
+// (b) Uplink
+//
+{
+    wait(10 * slot);
+    send(&ue, UL, servingCell, servingCell, ue.txPower);
+    wait(slot);
+
+    // the UEs' interference at the neighbour, for its own UE's CQI, on band 0
+    auto interference = [&] {
+        std::vector<double> perBand(model->getNumBands(), 0.0);
+        (model->*WalkAccess::uplinkPtr())(&neighbour, neighbourCell, neighbourUe.nodeId, neighbour.coord, true, carrier, everyBand, &perBand, true);
+        return perBand[0];
+    };
+
+    setIndoors(ue, false, 0, 0);
+    const double outdoors = interference();
+    setIndoors(ue, true, ueDistance, ueDeviate);
+    const double indoors = interference();
+    grade("(b) an indoor UE's uplink interference at a neighbour base station carries the UE's wall", ue.coord, neighbour.coord,
+            ue.txPower + ue.antennaGain + neighbour.antennaGain - neighbour.cableLoss, outdoors, indoors, ueDistance, ueDeviate);
+
+    setIndoors(neighbour, true, 13, 2.0);
+    c.expectNear("(b) the neighbour saying it is indoors moves nothing, the UE indoors", linearToDBm(interference()), linearToDBm(indoors), 1e-9);
+    setIndoors(ue, false, 0, 0);
+    c.expectNear("(b) ...nor with the UE outdoors", linearToDBm(interference()), linearToDBm(outdoors), 1e-9);
+    setIndoors(neighbour, false, 0, 0);
+}
+
+//
+// (c) D2D
+//
+{
+    wait(10 * slot);
+    send(&ue, UL, servingCell, servingCell, ue.txPower);
+    wait(slot);
+
+    // the interference at the D2D pair's receiver, for its CQI, on band 0
+    auto interference = [&] {
+        std::vector<double> perBand(model->getNumBands(), 0.0);
+        (model->*WalkAccess::d2dPtr())(d2dCellId, pairTx.nodeId, pairTx.coord, pairRx.nodeId, pairRx.coord, true, carrier, everyBand, &perBand, D2D);
+        return perBand[0];
+    };
+
+    setIndoors(ue, false, 0, 0);
+    setIndoors(pairRx, false, 0, 0);
+    const double outdoors = interference();
+    double d2D = std::hypot(ue.coord.x - pairRx.coord.x, ue.coord.y - pairRx.coord.y);
+    graded.record("t901_umi_nlos", p, { { "d3D", ue.coord.distance(pairRx.coord) }, { "d2D", d2D }, { "los", 0.0 } },
+            ue.txPower + ue.antennaGain + pairRx.antennaGain - pairRx.cableLoss - linearToDBm(outdoors));
+
+    setIndoors(ue, true, ueDistance, ueDeviate);
+    c.expectNear("(c) PINNED DEFECT: an indoor interferer at an outdoor receiver carries no wall", linearToDBm(interference()), linearToDBm(outdoors), 1e-9);
+
+    setIndoors(ue, false, 0, 0);
+    setIndoors(pairRx, true, pairRxDistance, pairRxDeviate);
+    const double receiverIndoors = interference();
+    graded.record("t901_o2i_lowloss", p, { { "dIn", pairRxDistance }, { "z", pairRxDeviate } }, linearToDBm(outdoors) - linearToDBm(receiverIndoors));
+    c.check("(c) PINNED DEFECT: an outdoor interferer at an indoor receiver carries the receiver's wall", linearToDBm(outdoors) - linearToDBm(receiverIndoors) > 10.0,
+            "the wall, dB: " + std::to_string(linearToDBm(outdoors) - linearToDBm(receiverIndoors)));
+}
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=6 failures=0
+
+%contains: stdout
+modelchecks=8 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED

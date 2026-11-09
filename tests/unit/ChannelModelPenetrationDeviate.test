@@ -11,6 +11,19 @@ Checked with the TR 38.901 low-loss model at 28 GHz, sigma_P = 4.4 dB (Table
 at the base station, and on an uplink transmission evaluated at the base
 station; the base station's own deviate counts for none of them.
 
+The UE's indoor distance is the UE end's in the same way. With PL_in = 0.5 d2D-in
+(Table 7.4.3-2), raising the UE's distance from 7 to 17 m raises the attenuation of
+each of the three links by 5 dB, and the base station's own distance, 13 m, counts
+for none of them.
+
+The high-loss model is the choice of the channel model the link is evaluated by,
+which is the base station's for a UE's uplink frame and its DL CQI. A channel
+model with useBuildingPenetrationHighLossModel on, at an outdoor base station,
+evaluating an indoor UE: sigma_P is 6.5 dB per unit of deviate (Table 7.4.3-2),
+and at a deviate of 0 the attenuation exceeds the low-loss model's by the difference
+of the two models' medians. At 28 GHz, whatever d2D-in, that is 20.120232142044063 dB:
+t901_o2i_highloss_mean(28, d) - t901_o2i_lowloss_mean(28, d) of pathloss_reference.py.
+
 %includes:
 #include "SchedulerTestUtil.h"
 #include "ChannelModelTestUtil.h"
@@ -46,6 +59,7 @@ network Harness
         carrierAggregation: CarrierAggregation;
         bsChannelModel: Tr38901ChannelModel;
         ueChannelModel: Tr38901ChannelModel;
+        bsHighLossChannelModel: Tr38901ChannelModel;
         test: Test;
 }
 
@@ -68,6 +82,7 @@ sim-time-limit = 1s
 **.dynamicLos = true
 **.shadowing = true
 **.fading = false
+*.bsHighLossChannelModel.useBuildingPenetrationHighLossModel = true
 **.useBuildingPenetrationHighLossModel = false
 
 %no-default-inifile: 1
@@ -117,10 +132,34 @@ std::vector<double> o0 = attenuations(0.0);
 std::vector<double> o1 = attenuations(1.0);
 c.check("a UE outdoors has no penetration loss, whatever its deviate", o0 == o1 && o0[0] < a0[0]);
 
+// the UE end's indoor distance
+ueEndpoint.insideBuilding = true;
+std::vector<double> at7m = attenuations(0.0);
+ueEndpoint.insideDistance = 17.0;
+std::vector<double> at17m = attenuations(0.0);
+c.expectNear("an indoor UE's distance from 7 to 17 m raises a downlink transmission's attenuation at the UE by 5 dB", at17m[0] - at7m[0], 5.0, 1e-9);
+c.expectNear("...that of its CQI at the base station by the same", at17m[1] - at7m[1], 5.0, 1e-9);
+c.expectNear("...and that of its uplink transmission at the base station by the same", at17m[2] - at7m[2], 5.0, 1e-9);
+bsEndpoint.insideDistance = 13.0;   // the base station's own: counts for none of the links
+c.check("the base station's own indoor distance moves none of them", attenuations(0.0) == at17m);
+
+// the high-loss model, of the base station's channel model
+auto *bsHighLoss = harnessModule<StochasticChannelModel>(this, "bsHighLossChannelModel");
+ueEndpoint.insideDistance = 7.0;
+bsEndpoint.insideDistance = 0.0;
+ueEndpoint.penetrationLossDeviate = 0.0;
+const double cqiLow = bs->getAttenuation(cqiAtBs), ulLow = bs->getAttenuation(ulAtBs);
+const double cqiHigh = bsHighLoss->getAttenuation(cqiAtBs), ulHigh = bsHighLoss->getAttenuation(ulAtBs);
+c.expectNear("the high-loss model at a deviate of 0 exceeds the low-loss one by the difference of the medians, on a DL CQI", cqiHigh - cqiLow, 20.120232142044063, 1e-9);
+c.expectNear("...and on an uplink frame", ulHigh - ulLow, 20.120232142044063, 1e-9);
+ueEndpoint.penetrationLossDeviate = 1.0;
+c.expectNear("its sigma_P is 6.5 dB per unit of deviate, on a DL CQI", bsHighLoss->getAttenuation(cqiAtBs) - cqiHigh, 6.5, 1e-9);
+c.expectNear("...and on an uplink frame", bsHighLoss->getAttenuation(ulAtBs) - ulHigh, 6.5, 1e-9);
+
 c.summary();
 
 %contains: stdout
-modelchecks=5 modelfailures=0
+modelchecks=13 modelfailures=0
 
 %not-contains: stdout
 FAILED
