@@ -1,0 +1,196 @@
+%description:
+
+A frame no radio sent is rejected: it carries no start position.
+
+A frame's start position is where the transmitting radio was when the
+transmission started; CellularRadio stamps it on every frame it sends, and until
+then it is unspecified. The channel model takes the sending end of a frame's
+link from that stamp and only from it, so a frame that did not come from a radio
+has no such end. Evaluated anyway, its NaN position would give a NaN distance
+and so a NaN attenuation, a NaN SINR, and a frame that is lost or kept for no
+reason. So StochasticChannelModel rejects it, at each of the three places a
+received frame is turned into a link:
+
+ - getSINR() of a downlink or an uplink frame;
+ - getRSRP_D2D(), reached from computeReceptionRsrp() for the capture effect and
+   from getReceptionSinr() for a one-to-one D2D frame;
+ - getSINR_D2D() with an RSRP given, reached from getReceptionSinr() for a
+   one-to-many D2D frame.
+
+Each rejection is checked by its message, so that an unrelated error in the set-up
+cannot pass as one; and the same frames with the start position stamped are
+accepted, with a SINR that is a number, which shows the stubs are good enough for
+the rejection to be the reason.
+
+%includes:
+#include <cmath>
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The model's protected entry of a received frame's SINR. Never instantiated: see ChannelModelProbe for the technique.
+struct ReceptionSinrAccess : StochasticChannelModel
+{
+    static auto getReceptionSinrPtr() { return &ReceptionSinrAccess::getReceptionSinr; }
+};
+
+// A frame as a radio passes it up, with the given start position, or none
+static std::unique_ptr<AirFrame> receivedFrame(Direction direction, MacNodeId source, MacNodeId dest, GHz carrier, const RbMap& blocks, const Coord *startPosition)
+{
+    auto *info = new UserControlInfo();
+    info->setDirection(direction);
+    info->setFrameType(DATAPKT);
+    info->setSourceId(source);
+    info->setDestId(dest);
+    info->setTxPower(20.0);
+    info->setD2dTxPower(20.0);
+    info->setCarrierFrequency(carrier);
+    info->setGrantedBlocks(blocks);
+    std::unique_ptr<AirFrame> frame(new AirFrame());
+    if (startPosition != nullptr)
+        frame->setStartPosition(*startPosition);
+    frame->setControlInfo(info);
+    return frame;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        model: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+**.d2dInterference = false
+# the stub radios have no receiver to record the measured SINR on
+**.collectSinrStatistics = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *model = harnessModule<StochasticChannelModel>(this, "model");
+const GHz carrier = model->getCarrierFrequency();
+
+StubEndpoint bs, ue, peer;
+bs.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+peer.nodeId = MacNodeId(1026);
+bs.coord = Coord(0, 0, 10);
+ue.coord = Coord(100, 0, 1.5);
+peer.coord = Coord(100, 60, 1.5);
+bs.channelModels[carrier] = model;
+ue.channelModels[carrier] = model;
+peer.channelModels[carrier] = model;
+StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration peerRadio(medium, peer.nodeId, &peer);
+
+RbMap blocks;
+for (Band b = 0; b < model->getNumBands(); b++)
+    blocks[MACRO][b] = 1;
+
+wait(SimTime(10, SIMTIME_MS));
+
+// The ways a received frame is evaluated: 'receiver' and the frame's direction and ends are per way.
+struct Way
+{
+    const char *name;
+    Direction direction;
+    StubEndpoint *sender;
+    StubEndpoint *receiver;
+    std::function<std::vector<double>(AirFrame *, StubEndpoint *)> evaluate;
+};
+auto infoOf = [] (AirFrame *frame) { return check_and_cast<UserControlInfo *>(frame->getControlInfo()); };
+auto receptionSinr = [&] (AirFrame *frame, StubEndpoint *receiver, const std::vector<double>& rsrp) {
+    return (model->*ReceptionSinrAccess::getReceptionSinrPtr())(receiver, frame, infoOf(frame), rsrp);
+};
+const std::vector<double> givenRsrp(model->getNumBands(), -60.0);
+std::vector<Way> ways = {
+    { "a downlink frame's getSINR()", DL, &bs, &ue,
+        [&] (AirFrame *frame, StubEndpoint *receiver) { return model->getSINR(receiver, frame, infoOf(frame)); } },
+    { "an uplink frame's getSINR()", UL, &ue, &bs,
+        [&] (AirFrame *frame, StubEndpoint *receiver) { return model->getSINR(receiver, frame, infoOf(frame)); } },
+    { "a D2D frame's computeReceptionRsrp()", D2D, &ue, &peer,
+        [&] (AirFrame *frame, StubEndpoint *receiver) { return medium->computeReceptionRsrp(receiver, frame); } },
+    { "a one-to-one D2D frame's getReceptionSinr()", D2D, &ue, &peer,
+        [&] (AirFrame *frame, StubEndpoint *receiver) { return receptionSinr(frame, receiver, {}); } },
+    { "a one-to-many D2D frame's getReceptionSinr()", D2D_MULTI, &ue, &peer,
+        [&] (AirFrame *frame, StubEndpoint *receiver) { return receptionSinr(frame, receiver, givenRsrp); } },
+};
+
+for (const Way& way : ways) {
+    // no start position: rejected, for this reason
+    {
+        auto frame = receivedFrame(way.direction, way.sender->nodeId, way.receiver->nodeId, carrier, blocks, nullptr);
+        std::string error;
+        try {
+            way.evaluate(frame.get(), way.receiver);
+        }
+        catch (cRuntimeError& e) {
+            error = e.what();
+        }
+        c.check(std::string(way.name) + " rejects a frame no radio sent", error.find("carries no start position") != std::string::npos,
+                error.empty() ? "no error" : error);
+    }
+    // with the sender's position stamped: a number on every band
+    {
+        auto frame = receivedFrame(way.direction, way.sender->nodeId, way.receiver->nodeId, carrier, blocks, &way.sender->coord);
+        std::vector<double> value = way.evaluate(frame.get(), way.receiver);
+        bool finite = value.size() == model->getNumBands();
+        for (double v : value)
+            finite = finite && std::isfinite(v);
+        c.check(std::string(way.name) + " accepts the same frame with its start position", finite);
+    }
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=10 modelfailures=0
+
+%not-contains: stdout
+FAILED
