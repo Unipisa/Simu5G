@@ -8,8 +8,8 @@ but this one switches it off. The scenario is two D2D pairs in a cell with a
 second cell next to it, and every random ingredient switched off, so that each
 term is a sum of configured constants and one path loss:
 
-    S = d2dTxPower(tx) - PL(d(tx, rx)) + G(tx) + G(rx) - cableLoss
-    I = txPower(i)     - PL(d(i, rx))  + G(i)  + G(rx) - cableLoss
+    S = d2dTxPower(tx) - PL(d(tx, rx)) + G(tx) + G(rx) - cableLoss(rx)
+    I = txPower(i)     - PL(d(i, rx))  + G(i)  + G(rx) - cableLoss(rx)
     N = thermalNoise + UE noise figure
 
     SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
@@ -20,7 +20,9 @@ as D2dLinkBudget does and tests/doc/model-deviations.md records in item 4: the
 UMi LOS formula with the base station's height in the breakpoint distance, and
 a cable loss on a link with no base station. It is a characterisation test of
 the model, not a specification check. All distances stay below the breakpoint
-(a tripwire says so).
+(a tripwire says so). The cable loss of a term is the receiving UE's own, which is
+not that of the transmitters or of anybody else (3 dB against 1.5 dB), so an
+interferer evaluated with the interfering UE's cable loss moves the result.
 
 The second pair's transmitter transmits at another power and has another antenna
 gain, so an interferer evaluated with the wrong transmitter's terms moves the
@@ -201,7 +203,8 @@ measurement-label = ${scen = "off", "pair", "sameCellUl", "otherCellUl", "cqiQui
 *.ueCell[*].cellularNic.*adio.antenna.gain = 5dBi
 *.ueOther[*].cellularNic.*adio.antenna.gain = 5dBi
 # None of the three is its default, so a key that stops reaching the radios moves the result
-**.cableLoss = 3dB
+*.ueD2DRx[*].cellularNic.*adio.receiver.cableLoss = 3dB
+**.cableLoss = 1.5dB
 **.thermalNoise = -103dBm
 *.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure = 6dB
 

@@ -1039,9 +1039,10 @@ def grade_d2d_interference_delta(grader):
     ue_gain = '*.ueOther[*].cellularNic.*adio.antenna.gain'
     d2d_power, b_power = '**.d2dTxPower', '*.ueD2DTx[1].**.d2dTxPower'
     noise_figure = '*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure'
+    rx_cable = '*.ueD2DRx[*].cellularNic.*adio.receiver.cableLoss'
     cfg = config_values([
         d2d_gain, b_gain, ue_gain, '*.ueCell[*].cellularNic.*adio.antenna.gain',
-        d2d_power, b_power, '**.ueTxPower', noise_figure, '**.cableLoss', '**.thermalNoise',
+        d2d_power, b_power, '**.ueTxPower', noise_figure, rx_cable, '**.thermalNoise',
         '**.nodebHeight', '**.ueHeight',
         '*.carrierAggregation.componentCarrier[0].carrierFrequency',
     ])
@@ -1074,7 +1075,7 @@ def grade_d2d_interference_delta(grader):
 
     def received(tx_power, tx_gain, d):
         return (tx_power - plr.t901_umi_los(d, d, fc, hBS, hUT)
-                + tx_gain + cfg[d2d_gain] - cfg['**.cableLoss'])
+                + tx_gain + cfg[d2d_gain] - cfg[rx_cable])
 
     def over_noise(signal_dbm, interference_dbm=None):
         denominator = 10 ** (noise / 10.0)
