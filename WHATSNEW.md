@@ -1,5 +1,83 @@
 # What's New in Simu5G
 
+## v1.8.1 (unreleased)
+
+A bug fix release. Most of the fixes change simulation results, above all in
+NR: loss under heavy traffic goes away, and NR downlink delays fall, in some
+configurations substantially. Results recorded with v1.8.0 are not directly
+comparable: 72 of the 222 fingerprint configurations have new baselines, and in
+37 of them the traffic between the nodes changed (`~tNl`).
+
+This release requires INET-4.7.0 and OMNeT++ 6.4.0, like v1.8.0.
+
+### MAC
+
+- **No more silent data loss when the H-ARQ processes run out (issue #310).**
+  Under sustained traffic the MAC requested data from RLC and then deleted the
+  MAC PDU if no H-ARQ process was free, and no statistic recorded the loss. In
+  the scenario of the issue (1400 bytes every 0.25 ms in both directions on a
+  gNB's and a UE's default five processes) about 19% of the frames were lost in
+  each direction. The data now stays in RLC until a process frees up. The
+  downlink scheduler no longer grants a UE whose processes are all busy, and a UE
+  leaves unused an uplink grant it has no free process for. A MAC PDU that finds
+  no free process is now an error, not a silent loss. D2D is the exception: a
+  D2D PDU can still be deleted, with a warning in the log, which the
+  `MultiplePairs-*-D2D-wReuse` configurations reach.
+
+- **Unused uplink grants are a simplification.** In a real system the gNB names
+  the H-ARQ process in the uplink grant, so it never issues a grant that the UE
+  has no process for. Here the grant's resource blocks go unused, and the UE's
+  data waits.
+
+- **Fewer than the default H-ARQ processes on LTE.** With `harqProcesses` at 5 or
+  fewer, an eNodeB lost data the same way, and an LTE UE aborted the simulation
+  with "H-ARQ TX buffer: new process selected for tx is not completely empty". No
+  run with the default of 8 reached either.
+
+- **Delayed NR downlink data.** A downlink grant could fall a few bytes short of
+  the RLC headers of the queued SDUs. The end of an SDU then stayed in the buffer
+  with the connection marked inactive, and waited for the next SDU to arrive. This
+  inflated delays by up to a whole packet interval (`CBR-DL` in
+  `standalone_multicell`, a frame every 20 ms: mean `cbrFrameDelay` 24.9 ms before,
+  4.9 ms now), and could lose the last frame of a burst. A connection marked
+  inactive with data in its buffer is now an error.
+
+- **Schedulers that cap grants, such as DRR.** A capped grant could mark a
+  connection as finished while it still had data, so its frames were delayed
+  until new data arrived, or never sent.
+
+- **NR uplink scheduler.** The gNB no longer spends resource blocks on grants for
+  a UE whose H-ARQ processes are all busy. No data was lost here; this needs a
+  `harqFbEvaluationTimer` larger than the default to show.
+
+### RLC and GTP-U
+
+- **`rlcDelayDl` and `rlcDelayUl` count from the SDU's arrival at RLC (issue
+  #309).** They measured from the creation of the packet, and so could include
+  time spent on other nodes, links and queues. For example, in `lte/d2d`
+  `MultiplePairs-UDP-Infra` they counted the whole uplink leg of UE-to-UE traffic
+  delivered locally at the eNB (13.5 ms before, 5 ms now).
+
+- **INET flow measurements across the 5G system (issue #309).** A
+  `FlowMeasurementRecorder` behind a UE recorded nothing for a flow marked on the
+  data network, because `GtpUser` lost the flow's region tags at each tunnel
+  endpoint. `GtpUser` now keeps the packet and only adds or removes the GTP-U
+  header. As a result, a packet now keeps its identity and creation time across
+  the tunnel.
+
+### Build
+
+- **macOS.** The `receiveSignal()` overrides of `CoreControl`, `D2dBinder` and the
+  `D2dAmc` mixin take `intval_t`. Declared with `long`, they did not compile on
+  macOS.
+
+### Validation
+
+The fixes come with new module tests: `SaturatedNrTrafficNoMacLoss`,
+`FewHarqProcessesLteDlNoMacLoss`, `FewHarqProcessesLteUlNoMacLoss`,
+`SlowHarqFeedbackNrUlGrants`, `DlCappedGrantKeepsBacklog` and
+`EthernetSessionFlowMeasurement`.
+
 ## v1.8.0 (2026-10-07)
 
 The most significant change in this release is the support for new PDU
