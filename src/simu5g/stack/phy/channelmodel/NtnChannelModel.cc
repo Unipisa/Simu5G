@@ -257,14 +257,22 @@ std::vector<double> NtnChannelModel::computeReceptionSinr(LteAirFrame *frame, Us
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
-    // use harmonic formula to combine service and feeder link SINRs (see Maral-Bousequets, chap 5)
+    // combine service and feeder link SINRs for a fixed-output transparent payload (see below)
     std::vector<double> combinedSinr(localHopSinr.size(), 0.0);
     for (size_t i = 0; i < combinedSinr.size(); i++) {
         if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
             continue;
         double relayLinear = dBToLinear(relayHopSinr[i]);
         double localLinear = dBToLinear(localHopSinr[i]);
-        double combinedSinrLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
+        // Fixed-output transparent payload: the relay always radiates its configured txPower
+        // (NtnPhyBase), and that power is shared between the amplified first-hop signal and the
+        // amplified first-hop noise in the ratio s1 : 1. The second hop's SINR (localLinear, s2)
+        // treats the whole txPower as signal, so the end-to-end result is
+        //     s = s1*s2 / (s1 + s2 + 1)
+        // rather than the harmonic 1/(1/s1 + 1/s2) (Maral-Bousquet, chap. 5), which is exact only
+        // for a fixed-gain payload. The two coincide at high SINR; at s1 = s2 = 0 dB the harmonic
+        // form is 1.76 dB optimistic.
+        double combinedSinrLinear = relayLinear * localLinear / (relayLinear + localLinear + 1.0);
         combinedSinr[i] = linearToDb(combinedSinrLinear);
         EV_DEBUG << "NtnChannelModel::computeReceptionSinr - band[" << i << "] 1st-hop SINR[" << relayHopSinr[i] << "dB] 2nd-hop SINR[" << localHopSinr[i]
                     << "dB] combined[" << combinedSinr[i] << "]" << endl;
