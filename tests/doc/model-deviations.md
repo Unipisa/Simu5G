@@ -65,10 +65,13 @@ fingerprints. In the branch they get test hardening only (pins and expected fail
    - What the spec says: TR 38.901 7.4.3.1 generates d2D-in and the O2I loss's random term per UT ("UT-specifically"), the same for all of the UT's links.
    - Effect: the indoor loss is 0.5 dB/m, so the two legs of one UE can differ by up to 12.5 dB for no physical reason; biases anything comparing a DC UE's LTE and NR legs indoors. On dev it was worse: one draw per channel model, i.e. per radio and per carrier.
    - Moves the four channelmodel Penetration rows (one draw fewer per UE on RNG 0).
+   - Recorded in tests/module/IndoorTwoRadios (pin) and IndoorOnePosition (expected failure).
    - Fix shape: one draw per UE, shared by its radios.
 15. **A D2D link's indoor loss depends on its direction.**
    - What the model does: the penetration loss is the "UE end's", `link.dir == UL ? txRadio : rxRadio` (StochasticChannelModel::getAttenuation), so a D2D link takes the receiver's indoor state: A indoors, B outdoors gives no wall loss on A->B and the full wall loss on B->A. Two indoor UEs get the full outdoor-to-indoor loss.
    - What the spec says: a link's path loss is reciprocal; TR 36.843 A.2.1.2 uses the indoor model between two indoor UEs.
+   - TR 36.843 A.2.1.2's NLOS outdoor-to-indoor formula also has a term - 0.8*h_MS, which the model does not.
+   - Recorded in tests/unit/ChannelModelD2dIndoorDirection (pin) and ChannelModelD2dIndoorReciprocal (expected failure).
    - Fix shape: one indoor end means one wall; both indoor needs an indoor-to-indoor model. D2D is legacy: decide whether it is worth more than the reciprocal rule.
 16. **The medium's per-link maps are never erased.**
    - What the model does: the LOS, shadowing and Jakes maps keep one entry per (UE, cell) pair and carrier, per D2D pair, and from piece 7a on per (phantom transmitter, receiver) pair, for the whole run (CellularRadioMedium.h: "Entries are never removed: node ids are not reused"). On dev the base-station side grew the same way; the UE-side state died with the UE's channel model.
@@ -84,7 +87,7 @@ piece 5a pin item 19.
 18. **A background UE on a cell's second carrier occupies the wrong bands.**
    - What the model does: a background UE's allocation is keyed as the scheduler allocates, by the cell-wide band index (CellInfo lists every band of the cell for each carrier, -2 outside it), and the background traffic manager registers it with the medium unchanged. A radio's frame is registered with carrier-local band indices (LteSchedulerEnb::readRbOccupation() subtracts the carrier's first band). On dev the DL interference read the cell's band status, also cell-wide, with the victim carrier's band index.
    - Effect: with carriers of 6 and 10 bands, a background UE on cell band 6+j is taken as occupying band 6+j of the second carrier: the wrong band for j < 4, none for j >= 4. No row has background UEs on a cell's second carrier.
-   - With uplink interference on, Binder::storeUlTransmissionMap() writes the same cell-wide band into a vector sized by the carrier's bands: for j >= 4 past its end, which is undefined behavior. The map is deleted later in the branch.
+   - With uplink interference on, Binder::storeUlTransmissionMap() writes the same cell-wide band into a vector sized by the carrier's bands: for j >= 4 past its end, which was undefined behavior until "Binder: the uplink transmission map deleted". The band beyond the carrier now stops at an assertion in a debug build when the sender is a radio.
    - Fix shape: subtract the carrier's first band when the allocation is registered.
 19. **A transmission between two slot boundaries prunes the slot completed last.**
    - What the model does: when a transmission is added, the medium drops every transmission of its carrier that ended before the new one's start minus its duration. A beacon takes no air time, so one sent between two boundaries drops the slot completed last, and a CQI computed in the rest of that slot sees none of its interference.
@@ -94,7 +97,7 @@ piece 5a pin item 19.
    - Fix shape: keep what overlaps the slot before the current slot boundary, whatever the new transmission's duration; assert that data transmissions start on the grid.
 20. **A background UE's uplink allocation is on the medium only if its own cell evaluates uplink interference.**
    - What the model does: LteSchedulerEnb registers a background UE's UL allocation with the medium only when its base station's channel model has uplinkInterference on, while every real UE's uplink frame is on the medium.
-   - Effect: a neighbour cell with uplinkInterference on, or a D2D receiver, sees a cell's real UEs but not its background UEs when that cell's switch is off. The condition mirrored the Binder's uplink transmission map, which is deleted later in the branch.
+   - Effect: a neighbour cell with uplinkInterference on, or a D2D receiver, sees a cell's real UEs but not its background UEs when that cell's switch is off. The condition mirrored the Binder's uplink transmission map, deleted in piece 7c, so nothing explains it any more.
    - Fix shape: register every allocation; the receiving model's switch decides what it counts.
 21. **The handover beacon's RSSI counts the background cells' interference, but not the real cells'.**
    - What the model does: from "external and background cells interfere through the downlink and uplink interference computations" on, a beacon's reception, which has no bands, goes through the downlink interference computation with the other cells off and the external and background cells as their switches say.

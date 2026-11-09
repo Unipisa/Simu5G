@@ -541,3 +541,61 @@ rate being one.
   entries in open-defects.md (AmcPilotD2D's band 0, the pilotMode enum's typo, a band
   on a remote unit keeping its RSRP, the decision's place, the two encodings of a
   certain loss).
+
+## Piece 7c: the deletions, the budget and the indoor state on the radios (13 commits + 7 test commits)
+
+Commits: "Binder: the uplink transmission map deleted" to "NICs, BackgroundScheduler:
+the carrier counts and the medium reference that nothing reads are gone". The last part
+of piece 7 of the plan, and of the branch: what the medium replaced goes, the link budget
+and the indoor state are the radios', and the entry in WHATSNEW describes the result.
+
+- **The fingerprint suite passes at the branch's tip, and no commit of this piece moves a
+  row.** 254/254 in 832 s on a quiet machine. The commit that gave the medium six empty
+  submodules named after INET's (245 rows, tilx only) was dropped: they existed only for a
+  later stage that is not scheduled, and their names invited keys that silently do nothing.
+- **Nothing moves.** Replicated A/B against dev, 10 configurations (nr/bgTraffic CBR-DL_UL,
+  nr/tutorial BgTraffic, lte/multicell Interference-AllOn, lte/test_handover VoIP-DL,
+  nr/test_numerology MultiCell-CBR-DL at numerology 2, nr/test_multiCarrier
+  MultiCarrier-CBR-DL, nr/d2d MultiplePairs-UDP-D2D-wReuse, lte/rlc AM-Lossy, channelmodel
+  PenetrationHigh-38901, nr/standalone VoIP-DL), 30 seeds per side: every value common to
+  both sides is identical, run by run. The null control: 3147 statistics, none significant
+  over all; within nr/test_multiCarrier the family of ue[0]'s packet counts in seeds 30-59
+  again, the chance found in piece 6b (the seeds are the same).
+- **A defect was found in the piece, and fixed after its test:** a UE that has left the
+  simulation aborted another node's reception or CQI, as the medium keeps its transmissions
+  for up to two slots and the walks looked up its radio for the antenna gain. A transmission
+  now records that gain. RadioMediumDepartedInterferer fails until "a UE that has left does
+  not abort another node's evaluation". On a release build this was a regression against
+  dev; no row removes UEs.
+- **The deleted bridges found something, so their loss is stated.** The downlink band-status
+  check was catching issue #310. Nothing detects it on dev until that fix arrives with an
+  invariant of the scheduler and the medium (open-defects.md). The uplink map's bridge has
+  two replacements that need no copy: a real UE's uplink power and a radio's bands are
+  asserted in the walks.
+- **WHATSNEW was wrong in places, and is corrected:** the background cell's rise in SINR comes
+  from the interference switches, not from TR 38.901; the ideal channel does not keep "the same
+  parameters and defaults"; the indoor draws are per radio. The table gains the keys it missed,
+  of which a stale componentCarrierModule or numCarriers puts a cell on the wrong carrier
+  without a message, and a section says what can no longer be configured.
+- **The NED residue is gone:** numNrCarriers and a UE's numCarriers, which nothing read,
+  though 19 ini and test files set them; BackgroundScheduler's radioMediumModule. A base
+  station's numCarriers stays: it sizes bgTrafficGenerator[], which the MAC indexes by
+  carrier, so a rename to a generator count would have hidden that it must equal the
+  carriers (a smaller value crashes: open-defects.md).
+- **The tests deferred from pieces 4, 5a and 5b are in,** each checked by mutation:
+  CellularRadio's own draws (CellularRadioIndoorDraw); one indoor distance per radio on all
+  its carriers and in both directions, through a real PHY (IndoorOneRadioTwoCarriers); the
+  indoor distance of an uplink and the high-loss choice at the base station
+  (ChannelModelPenetrationDeviate); an indoor UE in the interference walks
+  (ChannelModelIndoorInterference: dropping the UE end passed every suite and row); pins with
+  expected failures for items 14 and 15. Also a frame no radio sent
+  (ChannelModelFrameWithoutStartPosition), and the D2D walk's cable loss end
+  (D2dInterferenceDelta).
+- **Messages:** deletions without behavior are marked as cleanups, the states that differ are
+  named, the capabilities lost are stated, and the unit-test counts are dropped.
+- **The new tests pass at every later commit,** each commit built in debug; the fix test fails
+  only at its own commit. Full suites at the tip: unit 64 + 9 expected failures, physics 17 +
+  1, module 17 + 2, all recorded.
+- **What the branch leaves open:** model-deviations.md, items 1 to 32 but for 13, and
+  open-defects.md, to be fixed after the merge, starting with the modeling errors of item 32
+  and the receive chain.
