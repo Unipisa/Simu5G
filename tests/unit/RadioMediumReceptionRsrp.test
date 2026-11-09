@@ -1,0 +1,328 @@
+%description:
+
+The power of a received frame, as the medium gives it to the capture effect:
+CellularRadioMedium::computeReceptionRsrp().
+
+The capture effect of one-to-many D2D ranks the frames a UE receives in a slot
+by this value, and decodes the strongest; nothing else calls it, so a wrong
+value only changes which frame is decoded. All one-to-many rows of the
+fingerprint suite are LTE, with UEs that move a millimeter per slot at most, so
+that a frame evaluated by the wrong RAT's model or at the receiver's position
+at decoding time would pass the suite.
+
+The value is that of the link from the frame's transmitter to where the
+receiver was when the frame began to arrive, at that time, with the D2D
+transmit power, evaluated by the receiving radio's model on the frame's
+carrier. Checked with stub radios on a medium that has an LTE model (TR 36.814
+urban macro) and an NR model (TR 38.901 urban micro) on each of two carriers,
+and with an IdealChannelModel. Every link is NLOS, and shadowing and every
+interference is off:
+
+ - A frame stamped with an arrival position other than the receiver's position
+   now gives exactly the model's link at the stamp, and not the one at the
+   position now. The path loss the value implies is graded, at both positions'
+   distances, against the formulas of pathloss_reference.py.
+ - The link's receiving end is the receiver, not the frame's destination id,
+   which a one-to-many frame sets differently: the receiver's antenna gain
+   and cable loss are the ones applied. D2D_MULTI and D2D give the same value.
+ - A receiver of each RAT gets its own model's value on a shared carrier, and on
+   its second carrier, the model of the frame's carrier.
+ - The frame's start time counts: with Jakes fading on and a transmitter moving
+   at 30 m/s, the value is that at the frame's reception start, and differs from
+   the one at the decoding instant.
+ - A DL or UL frame is rejected; a receiver with no model on the frame's carrier
+   is rejected.
+ - IdealChannelModel: its constant (FAKE_SINR_DB, 10000) on every band, whatever
+   the frame.
+
+%includes:
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+// the largest per-band difference of two vectors of the same size
+static double maxDiff(const std::vector<double>& a, const std::vector<double>& b)
+{
+    double d = 0;
+    for (size_t i = 0; i < a.size() && i < b.size(); i++)
+        d = std::max(d, std::fabs(a[i] - b[i]));
+    return d;
+}
+
+// The model's own D2D link builder, which is protected. Never instantiated: see ChannelModelProbe for the technique.
+struct D2dAccess : StochasticChannelModel
+{
+    static auto d2dLinkPtr() { return &D2dAccess::d2dLink; }
+};
+
+// A frame as a UE's radio passes it up, with its control info: sent from senderPosition, stamped
+// with where and when it began to arrive.
+static AirFrame *receivedFrame(Direction direction, MacNodeId sender, MacNodeId dest, GHz carrier, double d2dTxPower,
+        const Coord& senderPosition, const Coord& arrivalPosition, simtime_t receptionStart)
+{
+    auto *info = new UserControlInfo();
+    info->setDirection(direction);
+    info->setFrameType(DATAPKT);
+    info->setSourceId(sender);
+    info->setDestId(dest);
+    info->setCoord(senderPosition);
+    info->setD2dTxPower(d2dTxPower);
+    info->setCarrierFrequency(carrier);
+    auto *frame = new AirFrame();
+    frame->setArrivalPosition(arrivalPosition);
+    frame->setReceptionStartTime(receptionStart);
+    frame->setControlInfo(info);
+    return frame;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.IdealChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        idealModel: IdealChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 2
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[1].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[1].numBands = 4
+*.radioMedium.numCarriers = 2
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.binder.printTrafficGeneratorConfig = false
+
+# the two RATs' models on each carrier, configured differently
+*.radioMedium.channelModelType = "StochasticChannelModel"
+*.radioMedium.channelModel[*].pathLossType = "Tr36814"
+*.radioMedium.channelModel[*].scenario = "URBAN_MACROCELL"
+*.radioMedium.channelModel[*].nodebHeight = 25m
+*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
+*.radioMedium.nrChannelModel[*].scenario = "URBAN_MICROCELL"
+*.radioMedium.nrChannelModel[*].nodebHeight = 10m
+**.ueHeight = 1.5m
+**.buildingHeight = 20m
+**.streetWidth = 20m
+
+# path loss only and NLOS, until the test switches the fading on
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.fadingType = "JAKES"
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+**.d2dInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *idealModel = harnessModule<ChannelModelBase>(this, "idealModel");
+const GHz carrier = GHz(2.0), secondCarrier = GHz(3.5);
+auto *lteModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, false));
+auto *nrModel = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, true));
+auto *nrModel2 = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(secondCarrier, true));
+
+// the transmitter, the receiver of each RAT, one with its models on another carrier only, one with none, and an ideal one
+const double d2dPower = 20.0;
+StubEndpoint peer, nrUe, lteUe, elsewhereUe, unservedUe, idealUe;
+peer.nodeId = MacNodeId(1025);
+nrUe.nodeId = MacNodeId(1026);
+lteUe.nodeId = MacNodeId(1027);
+elsewhereUe.nodeId = MacNodeId(1028);
+unservedUe.nodeId = MacNodeId(1029);
+idealUe.nodeId = MacNodeId(1030);
+const Coord peerPosition(0, 0, 1.5);
+const Coord stampPosition(80, 60, 1.5);    // 100 m from the transmitter
+const Coord currentPosition(300, 0, 1.5);  // 300 m from the transmitter
+peer.coord = peerPosition;
+// its power towards the base station; a frame evaluated with it is 6 dB off
+peer.txPower = 26.0;
+for (StubEndpoint *ue : {&nrUe, &lteUe, &elsewhereUe, &unservedUe, &idealUe})
+    ue->coord = currentPosition;
+peer.channelModels[carrier] = nrModel;
+nrUe.channelModels[carrier] = nrModel;
+nrUe.channelModels[secondCarrier] = nrModel2;
+lteUe.channelModels[carrier] = lteModel;
+elsewhereUe.channelModels[secondCarrier] = nrModel2;
+idealUe.channelModels[carrier] = idealModel;
+StubRadioRegistration peerRadio(medium, peer.nodeId, &peer);
+StubRadioRegistration nrUeRadio(medium, nrUe.nodeId, &nrUe);
+StubRadioRegistration lteUeRadio(medium, lteUe.nodeId, &lteUe);
+StubRadioRegistration elsewhereUeRadio(medium, elsewhereUe.nodeId, &elsewhereUe);
+StubRadioRegistration unservedUeRadio(medium, unservedUe.nodeId, &unservedUe);
+StubRadioRegistration idealUeRadio(medium, idealUe.nodeId, &idealUe);
+
+// one numerology-2 slot between the frame's start and its decoding
+wait(SimTime(10, SIMTIME_MS));
+const simtime_t t0 = simTime();
+wait(SimTime(250, SIMTIME_US));
+
+auto d2dFrame = [&] (Direction direction, MacNodeId dest, GHz frameCarrier, const Coord& arrival) {
+    return receivedFrame(direction, peer.nodeId, dest, frameCarrier, d2dPower, peerPosition, arrival, t0);
+};
+// what the medium gives for such a frame
+auto receptionRsrp = [&] (IRadioEndpoint *receiver, Direction direction, MacNodeId dest, GHz frameCarrier, const Coord& arrival) {
+    std::unique_ptr<AirFrame> frame(d2dFrame(direction, dest, frameCarrier, arrival));
+    return medium->computeReceptionRsrp(receiver, frame.get());
+};
+// the model's own link from the transmitter to the position, starting at t0
+auto linkRsrp = [&] (StochasticChannelModel *model, IRadioEndpoint *receiver, const Coord& position) {
+    RadioLink link = (model->*D2dAccess::d2dLinkPtr())(peer.nodeId, peerPosition, receiver->getMacNodeId(), position);
+    link.startTime = t0;
+    return model->getRSRP(link, d2dPower);
+};
+
+ScenarioParams nrParams;
+nrParams.scenario = URBAN_MICROCELL;
+nrParams.hNodeB = 10;
+nrParams.hUe = 1.5;
+nrParams.carrierFrequencyGHz = 2.0;
+ScenarioParams nrParams2 = nrParams;
+nrParams2.carrierFrequencyGHz = 3.5;
+ScenarioParams lteParams;
+lteParams.scenario = URBAN_MACROCELL;
+lteParams.hNodeB = 25;
+lteParams.hUe = 1.5;
+lteParams.hBuilding = 20;
+lteParams.wStreet = 20;
+lteParams.carrierFrequencyGHz = 2.0;
+
+//
+// --- the position: the stamp, not where the receiver is now ---
+//
+{
+    std::vector<double> rsrp = receptionRsrp(&nrUe, D2D, nrUe.nodeId, carrier, stampPosition);
+    std::vector<double> atStamp = linkRsrp(nrModel, &nrUe, stampPosition);
+    std::vector<double> atCurrent = linkRsrp(nrModel, &nrUe, currentPosition);
+    c.check("a frame's power is the link's at its arrival stamp", rsrp == atStamp, show(rsrp) + " / " + show(atStamp));
+    c.check("...on every band", rsrp.size() == 4 && *std::max_element(rsrp.begin(), rsrp.end()) == *std::min_element(rsrp.begin(), rsrp.end()), show(rsrp));
+    c.check("...and differs from the link's at the receiver's position now", maxDiff(rsrp, atCurrent) > 1.0, show(rsrp) + " / " + show(atCurrent));
+    graded.record("t901_umi_nlos", nrParams, { { "d3D", 100.0 }, { "d2D", 100.0 }, { "los", 0.0 } }, d2dPower - rsrp[0]);
+    graded.record("t901_umi_nlos", nrParams, { { "d3D", 300.0 }, { "d2D", 300.0 }, { "los", 0.0 } }, d2dPower - atCurrent[0]);
+
+    c.check("one-to-many D2D gives the same value", receptionRsrp(&nrUe, D2D_MULTI, nrUe.nodeId, carrier, stampPosition) == rsrp);
+}
+
+//
+// --- the receiving end: the receiver, not the frame's destination id ---
+//
+{
+    std::vector<double> plain = receptionRsrp(&nrUe, D2D_MULTI, nrUe.nodeId, carrier, stampPosition);
+    nrUe.antennaGain = 5;
+    nrUe.cableLoss = 2;
+    // the frame's destination is another radio on the medium, which has neither
+    std::vector<double> viaGroup = receptionRsrp(&nrUe, D2D_MULTI, lteUe.nodeId, carrier, stampPosition);
+    c.expectNear("the receiver's antenna gain and cable loss apply, whatever the frame's destination id (dB)", viaGroup[0] - plain[0], 3.0, 1e-9);
+    nrUe.antennaGain = 0;
+    nrUe.cableLoss = 0;
+}
+
+//
+// --- the model: the receiving radio's RAT's, on the frame's carrier ---
+//
+{
+    std::vector<double> atNr = receptionRsrp(&nrUe, D2D, nrUe.nodeId, carrier, stampPosition);
+    std::vector<double> atLte = receptionRsrp(&lteUe, D2D, lteUe.nodeId, carrier, stampPosition);
+    c.check("an NR receiver gets the NR model's value", atNr == linkRsrp(nrModel, &nrUe, stampPosition));
+    c.check("an LTE receiver gets the LTE model's value", atLte == linkRsrp(lteModel, &lteUe, stampPosition));
+    c.check("...and the two differ measurably", maxDiff(atNr, atLte) > 1.0, show(atNr) + " / " + show(atLte));
+    graded.record("t814_macro_nlos", lteParams, { { "d", 100.0 } }, d2dPower - atLte[0]);
+
+    std::vector<double> onSecond = receptionRsrp(&nrUe, D2D, nrUe.nodeId, secondCarrier, stampPosition);
+    c.check("on its second carrier, the receiver gets that carrier's model's value", onSecond == linkRsrp(nrModel2, &nrUe, stampPosition));
+    c.check("...which differs from the first carrier's", maxDiff(onSecond, atNr) > 1.0, show(onSecond) + " / " + show(atNr));
+    graded.record("t901_umi_nlos", nrParams2, { { "d3D", 100.0 }, { "d2D", 100.0 }, { "los", 0.0 } }, d2dPower - onSecond[0]);
+}
+
+//
+// --- the time: the frame's reception start, not the decoding ---
+//
+{
+    ChannelModelProbe nrProbe(nrModel);
+    nrProbe.fading() = true;
+    peer.speed = 30.0;
+    std::vector<double> rsrp = receptionRsrp(&nrUe, D2D, nrUe.nodeId, carrier, stampPosition);
+    std::vector<double> atStart = linkRsrp(nrModel, &nrUe, stampPosition);
+    RadioLink linkNow = (nrModel->*D2dAccess::d2dLinkPtr())(peer.nodeId, peerPosition, nrUe.nodeId, stampPosition);
+    linkNow.startTime = simTime();
+    std::vector<double> atNow = nrModel->getRSRP(linkNow, d2dPower);
+    c.check("with fading, the frame's power is the link's at the frame's reception start", rsrp == atStart, show(rsrp) + " / " + show(atStart));
+    c.check("...and the fading at its reception start and at its decoding differ measurably", maxDiff(rsrp, atNow) > 0.01, show(rsrp) + " / " + show(atNow));
+    nrProbe.fading() = false;
+    peer.speed = 0.0;
+}
+
+//
+// --- what is rejected ---
+//
+for (Direction direction : {DL, UL})
+    c.expectRejected(std::string("a frame in direction ") + dirToA(direction) + " is rejected", [&] {
+        receptionRsrp(&nrUe, direction, nrUe.nodeId, carrier, stampPosition);
+    });
+c.expectRejected("a receiver with no model at all is rejected", [&] {
+    receptionRsrp(&unservedUe, D2D, unservedUe.nodeId, carrier, stampPosition);
+});
+c.expectRejected("a receiver with a model on another carrier only is rejected", [&] {
+    receptionRsrp(&elsewhereUe, D2D, elsewhereUe.nodeId, carrier, stampPosition);
+});
+
+//
+// --- the ideal model: its constant ---
+//
+c.check("an ideal model's value is its constant, on every band",
+        receptionRsrp(&idealUe, D2D, idealUe.nodeId, carrier, stampPosition) == std::vector<double>(4, 10000.0));
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=4 failures=0
+
+%contains: stdout
+modelchecks=17 modelfailures=0
+
+%not-contains: stdout
+FAILED
