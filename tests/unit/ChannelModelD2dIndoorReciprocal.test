@@ -1,0 +1,130 @@
+%description:
+
+A deviation of StochasticChannelModel::getAttenuation() from the specification,
+recorded rather than fixed (tests/doc/model-deviations.md, item 15): the building
+penetration loss of a D2D link between an indoor and an outdoor UE depends on which
+of the two transmits.
+
+TR 36.843 V12.0.0 A.2.1.2, "Channel models":
+
+    Following channel models shall be used for D2D.
+
+    Outdoor to Outdoor    Outdoor to Indoor    Indoor to Indoor
+
+with, in the row "Pathloss", the column "Outdoor to Indoor" (for "Remaining Layout
+Options"):
+
+    LOS: PL_B1_tot (dout + din) + 20.0 + 0.5*d_in
+
+    NLOS: PL_B1_tot(dout + din) + 20.0 + 0.5*din - 0.8*h_MS
+
+where the first column has "d is distance between UEs". So the table has a model per
+pair of environments, with no column for an indoor UE transmitting to an outdoor
+one, and no term that tells the transmitter from the receiver: a link with one
+indoor end has one wall, whichever way the frame goes. The model takes the state of
+the receiving end, so A indoors, B outdoors gives no wall on A -> B and the full
+wall on B -> A.
+
+The checks say that the two directions are equal, and that each has the wall of the
+LOS formula above: 20.0 + 0.5*d_in over the outdoor path loss. The model's outdoor
+path loss differs from PL_B1_tot (item 4), which is not at issue here, so the wall is
+measured against the same link with both ends outdoors. Checked at 2 GHz on a fixed
+LOS link, 100 m between the UEs, with shadowing and fading off.
+
+ChannelModelD2dIndoorDirection pins what the model does today, so that any change to
+it fails there by name. When the model follows the specification, drop that pin and
+this test's line of expected failure.
+
+%expected-failure: a D2D link with one indoor end has the wall in one direction only, not in both (TR 36.843 A.2.1.2; model-deviations item 15)
+
+%includes:
+#include <cmath>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The model's own D2D link builder, which is protected. Never instantiated: see ChannelModelProbe for the technique.
+struct D2dLinkAccess : StochasticChannelModel
+{
+    static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        model: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.shadowing = false
+**.fading = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *model = harnessModule<StochasticChannelModel>(this, "model");
+
+StubEndpoint a, b;
+a.nodeId = MacNodeId(1025);
+b.nodeId = MacNodeId(1026);
+a.coord = Coord(0, 0, 1.5);
+b.coord = Coord(60, 80, 1.5);
+StubRadioRegistration aRadio(medium, a.nodeId, &a);
+StubRadioRegistration bRadio(medium, b.nodeId, &b);
+
+auto attenuation = [&] (StubEndpoint& from, StubEndpoint& to) {
+    return model->getAttenuation((model->*D2dLinkAccess::d2dLinkPtr())(from.nodeId, from.coord, to.nodeId, to.coord));
+};
+
+wait(SimTime(10, SIMTIME_MS));
+
+const double outdoors = attenuation(a, b);
+a.insideBuilding = true;
+a.insideDistance = 7;
+const double aToB = attenuation(a, b), bToA = attenuation(b, a);
+
+c.expectNear("a link with one indoor end has the same path loss in both directions", aToB, bToA, 1e-9);
+c.expectNear("the indoor UE sending has the wall, 20.0 + 0.5*d_in", aToB - outdoors, 23.5, 1e-9);
+c.expectNear("the indoor UE receiving has the wall, 20.0 + 0.5*d_in", bToA - outdoors, 23.5, 1e-9);
+
+c.summary();
+
+%contains: stdout
+modelchecks=3 modelfailures=0
+
+%not-contains: stdout
+FAILED

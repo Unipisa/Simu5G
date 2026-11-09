@@ -1,0 +1,141 @@
+%description:
+
+A known deviation, pinned, not endorsed: the building penetration loss of a D2D
+link depends on the link's direction (tests/doc/model-deviations.md, item 15).
+
+The loss belongs to "the UE end" of a link, and StochasticChannelModel::
+getAttenuation() takes that end as the transmitter of an uplink and otherwise the
+receiver. So a D2D link takes the receiver's indoor state:
+
+ - A indoors, B outdoors: A -> B is outdoors, with no wall, and B -> A has the full
+   outdoor-to-indoor loss;
+ - A and B indoors, at different distances from their walls: each direction has one
+   wall, the one at the receiving end's distance.
+
+ChannelModelD2dIndoorReciprocal says what a link's path loss ought to be, and is an
+expected failure. This test passes today, and fails by name the day either
+direction's attenuation changes; then this pin goes, and the other test's line
+of expected failure with it.
+
+Checked at 2 GHz, TR 38.901 UMi LOS, with shadowing and fading off, between UEs 100 m
+apart at the UE height, below the breakpoint distance. Below 6 GHz Table 7.4.3-3
+applies: the O2I loss is 20 dB + 0.5 d2D-in, with no random term. The values are
+graded against pathloss_reference.py. The model's UE-to-UE link takes the UMi
+formula with the base station's height in the breakpoint distance (item 4).
+
+%includes:
+#include <cmath>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// The model's own D2D link builder, which is protected. Never instantiated: see ChannelModelProbe for the technique.
+struct D2dLinkAccess : StochasticChannelModel
+{
+    static auto d2dLinkPtr() { return &D2dLinkAccess::d2dLink; }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        model: Tr38901ChannelModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.shadowing = false
+**.fading = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *model = harnessModule<StochasticChannelModel>(this, "model");
+
+StubEndpoint a, b;
+a.nodeId = MacNodeId(1025);
+b.nodeId = MacNodeId(1026);
+a.coord = Coord(0, 0, 1.5);
+b.coord = Coord(60, 80, 1.5);
+StubRadioRegistration aRadio(medium, a.nodeId, &a);
+StubRadioRegistration bRadio(medium, b.nodeId, &b);
+const double d = 100;
+
+auto attenuation = [&] (StubEndpoint& from, StubEndpoint& to) {
+    return model->getAttenuation((model->*D2dLinkAccess::d2dLinkPtr())(from.nodeId, from.coord, to.nodeId, to.coord));
+};
+
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 2.0;
+
+wait(SimTime(10, SIMTIME_MS));
+
+// A indoors, B outdoors
+a.insideBuilding = true;
+a.insideDistance = 7;
+const double aToB = attenuation(a, b), bToA = attenuation(b, a);
+graded.record("t901_umi_los", p, { { "d3D", d }, { "d2D", d }, { "los", 1.0 } }, aToB);
+graded.record("t901_o2i_sub6", p, { { "dIn", 7 } }, bToA - aToB);
+c.expectNear("PINNED DEFECT: an indoor UE sending to an outdoor one: no wall (t901_umi_los, 100 m)", aToB, 80.42059991327963, 1e-6);
+c.expectNear("PINNED DEFECT: the outdoor UE sending to the indoor one: the wall (20 + 0.5 * 7 dB more)", bToA - aToB, 23.5, 1e-9);
+
+// A and B indoors, at different distances from their walls: one wall, the receiver's
+b.insideBuilding = true;
+b.insideDistance = 13;
+graded.record("t901_o2i_sub6", p, { { "dIn", 13 } }, attenuation(a, b) - aToB);
+graded.record("t901_o2i_sub6", p, { { "dIn", 7 } }, attenuation(b, a) - aToB);
+c.expectNear("PINNED DEFECT: both indoors: A -> B has one wall, at B's distance", attenuation(a, b) - aToB, 26.5, 1e-9);
+c.expectNear("PINNED DEFECT: both indoors: B -> A has one wall, at A's distance", attenuation(b, a) - aToB, 23.5, 1e-9);
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=4 failures=0
+
+%contains: stdout
+modelchecks=4 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
