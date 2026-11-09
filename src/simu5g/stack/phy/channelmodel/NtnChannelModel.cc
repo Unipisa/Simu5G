@@ -77,7 +77,7 @@ void NtnChannelModel::initialize(int stage)
                     "which keeps a two-slot window and so reports the UEs that transmitted in the last two "
                     "slots -- not the ones whose signals are arriving now, which over a geostationary link "
                     "left hundreds of slots ago. The neighbour set it returns would be wrong rather than "
-                    "approximate. NTN interference is item 6 of ntn-implementation.md and is not modelled: "
+                    "approximate. NTN interference is not modelled (see \"Interference and multiple beams\" in ntn-implementation.md): "
                     "it needs that map keyed by arrival slot at the receiver. Set "
                     "ntnAllowUplinkInterference=true to proceed with a knowingly wrong neighbour set.",
                     getFullPath().c_str());
@@ -91,7 +91,7 @@ void NtnChannelModel::initialize(int stage)
                     "satellite link. Downlink interference is computed by comparing this cell's own "
                     "resource-block booking against every other cell's current- or previous-slot booking, "
                     "with no propagation-delay term -- the uplink failure above, on a different mechanism. "
-                    "NTN interference is item 6 of ntn-implementation.md and is not modelled. Set "
+                    "NTN interference is not modelled (see \"Interference and multiple beams\" in ntn-implementation.md). Set "
                     "ntnAllowDownlinkInterference=true to proceed with a knowingly wrong result.",
                     getFullPath().c_str());
     }

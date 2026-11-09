@@ -26,9 +26,10 @@ simple NtnChannelModel extends LteRealisticChannelModel
         // direction, and enabling it aborts the run. Both mechanisms assume a
         // transmission from one or two slots ago is what is arriving now -- true
         // terrestrially, false by hundreds of slots over a satellite link -- on two
-        // different code paths, so each has its own opt-out. Fixing this is item 6 of
-        // ntn-implementation.md: uplink needs Binder::getUlTransmissionMap() keyed by
-        // arrival slot (the reception slot ~NtnNrMacGnb already computes per grant);
+        // different code paths, so each has its own opt-out. Fixing this is described under
+        // "Interference and multiple beams" in ntn-implementation.md: uplink needs
+        // Binder::getUlTransmissionMap() keyed by arrival slot (the reception slot
+        // ~NtnNrMacGnb already computes per grant);
         // downlink compares via LteMacEnb::getDlBandStatus()/getDlPrevBandStatus()
         // instead, and is inert today regardless since every NTN scenario has one gNodeB.
         bool ntnAllowUplinkInterference = default(false);

@@ -1,7 +1,7 @@
 # Propagation Delay and NTN Timers
 
 How the `ntn` branch models propagation delay and the protocol timers that have to survive
-it. Expands item 2 of `ntn-implementation.md` and the timer half of item 4.
+it. Expands the propagation-delay and protocol-timer parts of `ntn-implementation.md`.
 
 Everything below is implemented. Open work is in the last section.
 
@@ -75,7 +75,8 @@ explicit positive assignment wins untouched.
 Not derived, deliberately: `t301` is pinned to 2000 ms (largest legal T301; in this model it
 is a resume delay after RLF, not a protocol deadline), and `ntnRaResponseWindow` to 40 ms,
 because it tracks twice the maximum *differential* delay across the beam footprint, which
-needs the coverage model of item 5 rather than a path-length bound.
+needs a coverage model ("Coverage, beams and dynamic association" in
+`ntn-implementation.md`) rather than a path-length bound.
 
 Values are expressed in **time** and converted to slot counts against the actual slot
 duration, since the inherited counters are slot counts. At numerology 0 slots and
@@ -212,7 +213,7 @@ anything needed to explain a run must be `EV_INFO` or a statistic)
   round-trip term, so under differential delay UEs that transmit in the same slot need not
   collide while UEs slots apart may collide spuriously. This is no longer hypothetical: in
   `GeoSatMultiUeLoad` at the default seed it locks one UE out of uplink for an entire 30 s
-  run while its downlink runs at full rate. Needs item 5's coverage model.
+  run while its downlink runs at full rate. Needs a coverage model (see `ntn-implementation.md`).
 - **The wired gNodeB-gateway fronthaul has no channel** (`gnb.ntn <--> ntnGateway.gnbLink`,
   zero delay and infinite datarate, in both smoke networks). It belongs in a
   `DatarateChannel`, not in `NtnRelay::relayDelay`, which must stay payload processing delay.
@@ -225,7 +226,7 @@ anything needed to explain a run must be `EV_INFO` or a statistic)
 - **Pre-attach Msg3 can arrive early.** A UE not yet heard from can only be given the
   cell-wide bound, so its Msg3 arrives slightly before the booked slot. Bounded by the beam
   footprint; the clean fix reserves Msg3 blocks across a span, which is the one thing here
-  that would need a multi-slot allocation map. Needs item 5.
+  that would need a multi-slot allocation map. Needs a coverage model.
 
 **Small known defects**
 
