@@ -48,6 +48,11 @@ class GeographicReferenceSystem : public omnetpp::cSimpleModule
 
     inet::Coord omnetFromWgs84(const inet::GeoCoord& wgs84Coord) const;
     inet::GeoCoord wgs84FromOmnet(const inet::Coord& omnetCoord) const;
+
+    // Rotates a free vector (e.g. a velocity) from ECEF axes into the local OMNeT++ axes. No
+    // translation: the local frame is a rigidly rotated and translated ECEF, so a difference of
+    // positions needs only the rotation at the reference point.
+    inet::Coord omnetVectorFromEcef(const inet::Coord& ecefVector) const;
 };
 
 class GeographicReferenceSystemAccess {

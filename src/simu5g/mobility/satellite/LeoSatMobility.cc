@@ -170,7 +170,10 @@ void LeoSatMobility::updateSatellitePosition()
         throw cRuntimeError("LeoSatMobility::updateSatellitePosition - SGP4 propagation failed");
 
     std::vector<double> rTEME(rArray, rArray + 3);
-    std::vector<double> vTEME(vArray, vArray + 3);
+    // SGP4 returns km/s, but TEME_to_ITRF() (ported from skyfield) takes and returns km/day:
+    // its Earth-rotation term uses theta_dot in rad/day.
+    constexpr double secondsPerDay = 86400.0;
+    std::vector<double> vTEME{vArray[0] * secondsPerDay, vArray[1] * secondsPerDay, vArray[2] * secondsPerDay};
 
     double daysToAdd = std::trunc((wallClockSimStartTimeFrac_ + simTime().dbl()) / 86400.0);
     currentWallClockTimeFrac_ = wallClockSimStartTimeFrac_ + simTime().dbl() / 86400.0;
@@ -186,6 +189,10 @@ void LeoSatMobility::updateSatellitePosition()
     // convert directly to geodetic coordinates on the WGS84 ellipsoid.
     WGS84_EARTH.Reverse(itrf.first[0] * 1000, itrf.first[1] * 1000, itrf.first[2] * 1000, latitude, longitude, altitude);
     inet::GeoCoord satelliteWgs84{inet::deg(latitude), inet::deg(longitude), inet::m(altitude)};
+    // TEME_to_ITRF() already adds the Earth-rotation term, so this is the Earth-fixed velocity
+    // the local frame needs (km/day in ITRF axes, rotated into local axes in m/s).
+    inet::Coord velocity = referenceSystem_->omnetVectorFromEcef(
+            inet::Coord(itrf.second[0], itrf.second[1], itrf.second[2]) * (1000.0 / secondsPerDay));
 
     EV_TRACE << "LeoSatMobility simTime(): " << simTime() << std::endl;
     if (!isInitialPositionReported_) {
@@ -193,13 +200,15 @@ void LeoSatMobility::updateSatellitePosition()
         EV_INFO << "LeoSatMobility::updateSatellitePosition - " << tle_.get_satellite_name()
                 << " initial position: (lat(deg) " << satelliteWgs84.latitude
                 << ", lon(deg) " << satelliteWgs84.longitude
-                << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
+                << ", alt(m) " << satelliteWgs84.altitude << ")"
+                << ", Earth-fixed speed(m/s) " << velocity.length() << std::endl;
     }
     EV_DEBUG << "LeoSatMobility sat_pos_wgs84: (lat(deg) " << satelliteWgs84.latitude
              << ", lon(deg) " << satelliteWgs84.longitude
              << ", alt(m) " << satelliteWgs84.altitude << ")" << std::endl;
 
     lastPosition = referenceSystem_->omnetFromWgs84(satelliteWgs84);
+    lastVelocity = velocity;
 
     EV_TRACE << "LeoSatMobility new lastPosition: " << lastPosition << std::endl;
 }
@@ -212,7 +221,6 @@ void LeoSatMobility::handleSelfMessage(cMessage *message)
 void LeoSatMobility::move()
 {
     updateSatellitePosition();
-    lastVelocity = inet::Coord::ZERO;
     lastUpdate = simTime();
     nextChange = simTime() + updateInterval;
 

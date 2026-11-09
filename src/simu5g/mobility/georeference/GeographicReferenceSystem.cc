@@ -1,5 +1,7 @@
 #include "simu5g/mobility/georeference/GeographicReferenceSystem.h"
 
+#include <cmath>
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -47,6 +49,21 @@ inet::GeoCoord GeographicReferenceSystem::wgs84FromOmnet(const inet::Coord& omne
     double altitude = 0;
     localFrame_.Reverse(east, north, up, latitude, longitude, altitude);
     return inet::GeoCoord(inet::deg(latitude), inet::deg(longitude), inet::m(altitude));
+}
+
+inet::Coord GeographicReferenceSystem::omnetVectorFromEcef(const inet::Coord& ecefVector) const
+{
+    // East/north/up unit vectors at the (geodetic) reference point, the same basis localFrame_
+    // uses, mapped onto the OMNeT++ convention of omnetFromWgs84(): x = east, y = -north, z = up.
+    double lat = inet::rad(referenceWgs84_.latitude).get();
+    double lon = inet::rad(referenceWgs84_.longitude).get();
+    double sinLat = std::sin(lat), cosLat = std::cos(lat);
+    double sinLon = std::sin(lon), cosLon = std::cos(lon);
+
+    double east = -sinLon * ecefVector.x + cosLon * ecefVector.y;
+    double north = -sinLat * cosLon * ecefVector.x - sinLat * sinLon * ecefVector.y + cosLat * ecefVector.z;
+    double up = cosLat * cosLon * ecefVector.x + cosLat * sinLon * ecefVector.y + sinLat * ecefVector.z;
+    return inet::Coord(east, -north, up);
 }
 
 } // namespace simu5g
