@@ -1,0 +1,270 @@
+%description:
+
+Whose rcvdSinrD2D a D2D reception lands on, and that it lands on it on a radio
+serving several carriers.
+
+A D2D reception's SINR is recorded by the receiver of the radio that decoded
+it, in the statistic rcvdSinrD2D and, on a radio serving more than one carrier,
+in the carrier's own rcvdSinrD2D-<f>MHz as well. The statistic exists only where
+the D2D UE PHY asked for it (CellularReceiver::enableD2dStatistics()). The PHY
+asks during its initialization and the carriers arrive later, but the two calls
+work in either order. No simulation reaches the other order, and no shipped
+configuration sets more than one carrier on a D2D network, so the per-carrier
+signal is reached by no fingerprint row and no other test.
+
+Checked with stub radios, whose receivers are real CellularReceiver modules, on
+the medium's registry, through the channel model's emitRcvdSinr(), which is
+given the decoding radio and the id of the sending UE:
+
+ - A receiver enabled before it is given two carriers and one enabled after: D2D
+   and D2D_MULTI land on the aggregate and on the frame's own carrier, with the
+   value as given, and not on the other carrier's signal, nor on the DL/UL
+   statistics.
+ - The sender's receiver, although that is enabled too, gets nothing. An uplink
+   SINR goes to the sending UE; a D2D SINR must not follow it there.
+ - A receiver with one carrier records the aggregate, and registers no per-carrier
+   signal.
+ - A receiver that was not enabled throws, directly and through the model, and has
+   no recorder on the signal: this is what "no empty statistic" means, and the .sca
+   file is checked for it too. A second enable throws.
+ - The recorders are attached at run time, so OMNeT++ puts no warm-up filter in
+   front of them: a reception before the warm-up period ends is not emitted, on
+   the aggregate or on the carrier's signal.
+
+%includes:
+#include <map>
+#include <string>
+#include <utility>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// Remembers the last value, and the number of values, each component emitted on the signals it is subscribed to.
+class SeenValues : public cListener
+{
+  public:
+    std::map<std::pair<const cComponent *, simsignal_t>, double> values;
+    std::map<std::pair<const cComponent *, simsignal_t>, int> counts;
+    virtual void receiveSignal(cComponent *source, simsignal_t signal, double value, cObject *) override
+    {
+        values[{source, signal}] = value;
+        counts[{source, signal}]++;
+    }
+    int count(const cComponent *source, simsignal_t signal) const
+    {
+        auto it = counts.find({source, signal});
+        return it == counts.end() ? 0 : it->second;
+    }
+    // the last value is the given one, and exactly the given number of values have arrived
+    bool saw(const cComponent *source, simsignal_t signal, double value, int times) const
+    {
+        return count(source, signal) == times && values.at({source, signal}) == value;
+    }
+};
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.d2d.phy.channelmodel.Tr38901D2dChannelModel;
+import simu5g.stack.phy.radio.CellularReceiver;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        model: Tr38901D2dChannelModel;
+        enabledFirst: CellularReceiver;
+        carriersFirst: CellularReceiver;
+        senderReceiver: CellularReceiver;
+        oneCarrier: CellularReceiver;
+        notEnabled: CellularReceiver;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+warmup-period = 10ms
+output-scalar-file = results.sca
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+*.binder.printTrafficGeneratorConfig = false
+**.d2dInterference = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *model = harnessModule<StochasticChannelModel>(this, "model");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *enabledFirst = harnessModule<CellularReceiver>(this, "enabledFirst");
+auto *carriersFirst = harnessModule<CellularReceiver>(this, "carriersFirst");
+auto *senderReceiver = harnessModule<CellularReceiver>(this, "senderReceiver");
+auto *oneCarrier = harnessModule<CellularReceiver>(this, "oneCarrier");
+auto *notEnabled = harnessModule<CellularReceiver>(this, "notEnabled");
+ChannelModelProbe atUe(model);
+
+const GHz carrier = GHz(3.5), otherCarrier = GHz(28);
+const std::vector<GHz> carriers = {carrier, otherCarrier};
+const MacNodeId senderId = MacNodeId(1025);
+
+// the sending UE, and a receiving radio per receiver under test
+StubEndpoint sender, atEnabledFirst, atCarriersFirst, atOneCarrier, atNotEnabled;
+sender.nodeId = senderId;
+sender.receiver = senderReceiver;
+atEnabledFirst.nodeId = MacNodeId(1026);
+atEnabledFirst.receiver = enabledFirst;
+atCarriersFirst.nodeId = MacNodeId(1027);
+atCarriersFirst.receiver = carriersFirst;
+atOneCarrier.nodeId = MacNodeId(1028);
+atOneCarrier.receiver = oneCarrier;
+atNotEnabled.nodeId = MacNodeId(1029);
+atNotEnabled.receiver = notEnabled;
+StubRadioRegistration senderRadio(medium, sender.nodeId, &sender);
+StubRadioRegistration enabledFirstRadio(medium, atEnabledFirst.nodeId, &atEnabledFirst);
+StubRadioRegistration carriersFirstRadio(medium, atCarriersFirst.nodeId, &atCarriersFirst);
+StubRadioRegistration oneCarrierRadio(medium, atOneCarrier.nodeId, &atOneCarrier);
+StubRadioRegistration notEnabledRadio(medium, atNotEnabled.nodeId, &atNotEnabled);
+
+// the two orders of the two initialization calls
+enabledFirst->enableD2dStatistics();
+enabledFirst->setCarrierFrequencies(carriers);
+carriersFirst->setCarrierFrequencies(carriers);
+carriersFirst->enableD2dStatistics();
+senderReceiver->setCarrierFrequencies(carriers);
+senderReceiver->enableD2dStatistics();
+oneCarrier->enableD2dStatistics();
+oneCarrier->setCarrierFrequencies({carrier});
+notEnabled->setCarrierFrequencies(carriers);
+
+simsignal_t d2d = cComponent::registerSignal("rcvdSinrD2D");
+simsignal_t d2dOnCarrier = cComponent::registerSignal("rcvdSinrD2D-3500MHz");
+simsignal_t d2dOnOther = cComponent::registerSignal("rcvdSinrD2D-28000MHz");
+simsignal_t dl = cComponent::registerSignal("rcvdSinrDl");
+simsignal_t ul = cComponent::registerSignal("rcvdSinrUl");
+simsignal_t dlOnCarrier = cComponent::registerSignal("rcvdSinrDl-3500MHz");
+simsignal_t ulOnCarrier = cComponent::registerSignal("rcvdSinrUl-3500MHz");
+
+SeenValues seen;
+for (cComponent *component : {(cComponent *)enabledFirst, (cComponent *)carriersFirst, (cComponent *)senderReceiver, (cComponent *)oneCarrier, (cComponent *)notEnabled, (cComponent *)model})
+    for (simsignal_t signal : {d2d, d2dOnCarrier, d2dOnOther, dl, ul, dlOnCarrier, ulOnCarrier})
+        component->subscribe(signal, &seen);
+
+//
+// --- before the warm-up period ends, nothing is emitted ---
+//
+atUe.emitRcvdSinr(&atEnabledFirst, D2D, senderId, carrier, -1.0);
+c.check("a D2D reception during the warm-up period is not emitted, neither on the aggregate nor on the carrier's signal",
+        seen.count(enabledFirst, d2d) == 0 && seen.count(enabledFirst, d2dOnCarrier) == 0);
+
+wait(SimTime(20, SIMTIME_MS));
+
+//
+// --- the two orders ---
+//
+struct Order { const char *name; StubEndpoint *radio; CellularReceiver *receiver; };
+int emitted = 0;
+for (const Order& order : {Order{"enabled before the carriers", &atEnabledFirst, enabledFirst}, Order{"enabled after the carriers", &atCarriersFirst, carriersFirst}}) {
+    const std::string name = std::string("a receiver ") + order.name;
+
+    atUe.emitRcvdSinr(order.radio, D2D, senderId, carrier, 12.5);
+    c.check(name + ": a D2D reception lands on rcvdSinrD2D", seen.saw(order.receiver, d2d, 12.5, 1));
+    c.check(name + ": ...and on the carrier's rcvdSinrD2D-3500MHz", seen.saw(order.receiver, d2dOnCarrier, 12.5, 1));
+    c.check(name + ": ...and not on the other carrier's", seen.count(order.receiver, d2dOnOther) == 0);
+
+    atUe.emitRcvdSinr(order.radio, D2D_MULTI, senderId, carrier, 7.25);
+    c.check(name + ": a one-to-many D2D reception lands on rcvdSinrD2D", seen.saw(order.receiver, d2d, 7.25, 2));
+    c.check(name + ": ...and on the carrier's rcvdSinrD2D-3500MHz", seen.saw(order.receiver, d2dOnCarrier, 7.25, 2));
+
+    atUe.emitRcvdSinr(order.radio, D2D, senderId, otherCarrier, 3.0);
+    c.check(name + ": a D2D reception on the other carrier lands on rcvdSinrD2D-28000MHz and the aggregate",
+            seen.saw(order.receiver, d2d, 3.0, 3) && seen.saw(order.receiver, d2dOnOther, 3.0, 1));
+    c.check(name + ": ...and not on the first carrier's", seen.count(order.receiver, d2dOnCarrier) == 2);
+
+    c.check(name + ": none of it reaches the DL or UL statistics",
+            seen.count(order.receiver, dl) == 0 && seen.count(order.receiver, ul) == 0
+            && seen.count(order.receiver, dlOnCarrier) == 0 && seen.count(order.receiver, ulOnCarrier) == 0);
+    emitted += 3;
+}
+c.check("none of the receptions reaches the sender's receiver, which the emission names by its ueId",
+        seen.count(senderReceiver, d2d) == 0 && seen.count(senderReceiver, d2dOnCarrier) == 0 && seen.count(senderReceiver, d2dOnOther) == 0);
+c.check("...nor the sender's uplink statistic", seen.count(senderReceiver, ul) == 0 && seen.count(senderReceiver, ulOnCarrier) == 0);
+c.check("...nor the channel model", seen.count(model, d2d) == 0);
+c.check("each receiver got its own receptions only", seen.count(enabledFirst, d2d) == 3 && seen.count(carriersFirst, d2d) == 3 && emitted == 6);
+
+// for comparison: a DL and a UL reception do not reach the D2D statistic of the radio they are on
+atUe.emitRcvdSinr(&atEnabledFirst, DL, atEnabledFirst.getMacNodeId(), carrier, 20.0);
+c.check("a DL reception on a D2D-capable radio stays on rcvdSinrDl", seen.saw(enabledFirst, dl, 20.0, 1) && seen.count(enabledFirst, d2d) == 3);
+atUe.emitRcvdSinr(&sender, UL, senderId, carrier, 21.0);
+c.check("...and an uplink SINR on the sender's rcvdSinrUl", seen.saw(senderReceiver, ul, 21.0, 1) && seen.count(senderReceiver, d2d) == 0);
+
+//
+// --- one carrier ---
+//
+atUe.emitRcvdSinr(&atOneCarrier, D2D, senderId, carrier, 4.5);
+c.check("a receiver with one carrier records rcvdSinrD2D", seen.saw(oneCarrier, d2d, 4.5, 1));
+c.check("...and no signal of the carrier", seen.count(oneCarrier, d2dOnCarrier) == 0);
+
+//
+// --- only where enabled ---
+//
+c.expectRejected("a D2D SINR on a receiver that was not enabled is rejected", [&] {
+    notEnabled->emitRcvdSinr(D2D, carrier, 1.0);
+});
+c.expectRejected("...also a one-to-many one", [&] {
+    notEnabled->emitRcvdSinr(D2D_MULTI, carrier, 1.0);
+});
+c.expectRejected("...and through the channel model", [&] {
+    atUe.emitRcvdSinr(&atNotEnabled, D2D, senderId, carrier, 1.0);
+});
+c.check("...and nothing was emitted", seen.count(notEnabled, d2d) == 0 && seen.count(notEnabled, d2dOnCarrier) == 0);
+c.expectRejected("a second enable is rejected", [&] {
+    enabledFirst->enableD2dStatistics();
+});
+
+// The listeners of this test come off, so that what remains on a signal is its recorders.
+for (cComponent *component : {(cComponent *)enabledFirst, (cComponent *)carriersFirst, (cComponent *)senderReceiver, (cComponent *)oneCarrier, (cComponent *)notEnabled, (cComponent *)model})
+    for (simsignal_t signal : {d2d, d2dOnCarrier, d2dOnOther, dl, ul, dlOnCarrier, ulOnCarrier})
+        component->unsubscribe(signal, &seen);
+
+c.check("an enabled receiver has recorders on rcvdSinrD2D and on both carriers' signals",
+        enabledFirst->hasListeners(d2d) && enabledFirst->hasListeners(d2dOnCarrier) && enabledFirst->hasListeners(d2dOnOther));
+c.check("...in either order", carriersFirst->hasListeners(d2d) && carriersFirst->hasListeners(d2dOnCarrier) && carriersFirst->hasListeners(d2dOnOther));
+c.check("a receiver with one carrier has recorders on rcvdSinrD2D only",
+        oneCarrier->hasListeners(d2d) && !oneCarrier->hasListeners(d2dOnCarrier) && !oneCarrier->hasListeners(d2dOnOther));
+c.check("a receiver that was not enabled has none",
+        !notEnabled->hasListeners(d2d) && !notEnabled->hasListeners(d2dOnCarrier) && !notEnabled->hasListeners(d2dOnOther));
+
+c.summary();
+
+%contains: stdout
+modelchecks=34 modelfailures=0
+
+%not-contains: stdout
+FAILED
+
+%contains-regex: results.sca
+scalar Harness\.enabledFirst rcvdSinrD2D:mean 7\.58333
+
+%contains-regex: results.sca
+scalar Harness\.carriersFirst rcvdSinrD2D-3500MHz:mean 9\.875
+
+%contains-regex: results.sca
+scalar Harness\.oneCarrier rcvdSinrD2D:mean 4\.5
+
+%not-contains-regex: results.sca
+scalar Harness\.notEnabled rcvdSinrD2D
+
+%not-contains-regex: results.sca
+scalar Harness\.oneCarrier rcvdSinrD2D-
