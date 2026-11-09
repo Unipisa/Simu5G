@@ -108,7 +108,7 @@ class CoreControl : public omnetpp::cSimpleModule, public omnetpp::cListener
     /**
      * Binder::nodeUnregisteredSignal_: a departing UE's sessions are released.
      */
-    void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, long nodeId, omnetpp::cObject *details) override;
+    void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, omnetpp::intval_t nodeId, omnetpp::cObject *details) override;
 
     // Take the nodes that end tunnels from the Binder: the user plane nodes' control-
     // plane entry points, registered there at INITSTAGE_LOCAL, in registration order, then the
