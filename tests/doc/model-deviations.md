@@ -59,11 +59,7 @@ Recorded, not fixed in the branch; addressed after the whole radio branch is
 merged, together with the items above. Each fix moves
 fingerprints. In the branch they get test hardening only (pins and expected failures).
 
-13. **A D2D multicast reception keys its interferers on the wrong link.**
-   - What the model does: a D2D_MULTI flow sets its destination id to the transmitter's own id (Ip2Nic), and the receiver's SINR evaluation takes the destination id as its own id (StochasticChannelModel::getReceptionSinr). Each interferer X is evaluated on LinkKey(X, transmitter), with the geometry of X to the local receiver; with the capture factor "Distance" the desired signal is evaluated on LinkKey(transmitter, transmitter).
-   - Effect: since "a link's LOS state is kept once per link" (radio stage B), that entry is one medium entry, shared by every multicast receiver and by the real X-to-transmitter link: one LOS state, shadowing sample and set of Jakes paths for physically different links. On dev the wrong key lived in each receiver's own model.
-   - Reachable in simulations/lte/d2d_multicast (d2dInterference defaults to true). Moves those rows.
-   - Fix shape: the receiving radio's own id for D2D_MULTI.
+13. **Withdrawn in piece 7b: a D2D multicast reception does not key its interferers on the wrong link.** The item read a D2D_MULTI flow's destination id as the transmitter's own at the SINR evaluation, but D2dUePhy::frameAccepted() sets a group member's to its own first (lte/d2d_multicast checkMulticastRange, 3 s: 7401 receptions with the receiver's id, none with the transmitter's). The number is kept so that the later items keep theirs.
 14. **A UE with two radios has two indoor positions.**
    - What the model does: each CellularRadio draws its own distance from the wall (uniform 0-25 m) and, from "the random term of a UE's building penetration loss is drawn once, the UE's own" on, its own penetration-loss deviate. An NR UE always has two radios (NrNicUe extends the LTE NIC: `radio` and `nrRadio`, the LTE one unused in standalone), and `**.insideBuilding = true` marks both, so every indoor NR UE draws twice; a dual-connectivity UE uses both.
    - What the spec says: TR 38.901 7.4.3.1 generates d2D-in and the O2I loss's random term per UT ("UT-specifically"), the same for all of the UT's links.
@@ -172,6 +168,15 @@ Recorded, not fixed in the branch, like the items of the earlier pieces.
    - Effect: the spread of the mean SINR across a cell's background UEs narrows (nr/bgTraffic: DL 10.2 to 8.6 dB, UL 9.7 to 8.5 dB), with the means unchanged, so the cell's load is more even than it would be. The commit that made the change cites a decision of 2026-10-16 that keeps phantom links cheap; item 6 has the same abstraction for the interference.
    - Reached in every row with a background cell or background UEs computing CQIs; the one-way link in nr/videostreaming_dataset_generator UrbanNetwork (uplink interference on).
    - Fix shape: decide per link, not per kind of radio: either shadow these links, one realization per link in both directions, or none of them, and say so.
+
+## Found in piece 7b (2026-11-09): fix after the full merge
+
+32. **A link's heights and scenario are one value per carrier and RAT, and the heights do not follow the positions.**
+   - What the model does: scenario, nodebHeight and ueHeight are parameters of the channel model, and from "the radio medium owns the channel models, one per carrier and RAT" on there is one model per carrier and RAT, shared by every cell and UE on it. The formulas take the heights from these parameters; the distances come from the mobility positions, and nothing ties the two together. Most examples constrain z to 0, so d3D equals d2D although the breakpoint is computed with 25 m and 1.5 m. On dev each NIC had its own models, which allowed values per node but not per link: DL took the UE's model, UL and the DL CQI the base station's.
+   - What the specification says: TR 38.901 7.5 Step 3: "Calculate pathloss with formulas in Table 7.4.1-1 for each BS-UT link to be modelled", whose h_BS and h_UT are that link's. TR 36.873 7.2.3 has a UT's height by its floor: "hUT=3(nfl - 1) + 1.5". A macro cell and a small cell are two scenarios.
+   - Effect: a macro and a small cell on one carrier, UEs at different heights, and a background cell of its own kind cannot be expressed. A network where all cells and all UEs have the same height gives the same results as before.
+   - Reached in every row as a mismatch of positions and heights; as a lost capability, in no row, which is why no suite showed it. Item 6's residue and item 4 are parts of this.
+   - Fix shape: both heights from the link's positions; the scenario a property of the cell or site. The examples then need real heights, which moves results widely.
 
 ## Fixed later in the branch, re-check only
 

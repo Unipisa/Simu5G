@@ -452,9 +452,10 @@ are what-ifs on the medium, so BackgroundCellChannelModel goes.
   of the mean SINR across a cell's background UEs narrows, with the means unchanged,
   in nr/bgTraffic: DL 10.2 to 8.6 dB (mean 47.06 to 47.10), UL 9.7 to 8.5 dB (mean
   29.84 to 29.87).
-- **A capability is given up, by design.** A background cell's scenario, heights,
-  fading and thermal noise are the medium's channel model's, per carrier and RAT;
-  a cell can no longer have its own.
+- **A capability is lost.** A background cell's scenario, heights, fading and
+  thermal noise are the medium's channel model's, per carrier and RAT; a cell can
+  no longer have its own. This is part of item 32 of model-deviations.md, a modeling
+  error to be fixed after the merge, not a design choice.
 - **The fix has its test first:** an external cell's new mobility inherited the
   ini's constraint area, so a cell outside it aborted at startup;
   ExternalCellOutsideMobilityArea fails until "an external cell may stand outside
@@ -486,3 +487,57 @@ are what-ifs on the medium, so BackgroundCellChannelModel goes.
 - **Recorded, to be fixed after the merge:** item 31 of model-deviations.md, and
   the defects and cleanups outside the branch's scope, in open-defects.md (new with
   this piece, from the findings of pieces 1 to 6b).
+
+## Piece 7b: D2D in the core model, and the receiver's error model (6 commits + 5 test commits)
+
+Commits: "CellularReceiver: a D2D receiver records its own rcvdSinrD2D" to
+"IdealChannelModel: the configured error rate is the receiver's
+ConfiguredRateErrorModel", with its test commit after it. D2D links are evaluated by the
+core channel model, the capture effect takes a received frame's power from the
+medium, and the receiver's error model is replaceable, the configured error
+rate being one.
+
+- **The fingerprint suite passes at the piece's tip.** Only "a D2D receiver
+  records its own rcvdSinrD2D" moves rows: 38, sz only, the statistic's module
+  path. The moved D2D bodies match the originals.
+- **Nothing moves.** Replicated A/B against dev, 9 configurations (lte/d2d and nr/d2d
+  SinglePair-UDP-D2D, nr/d2d MultiplePairs-UDP-D2D-wReuse,
+  SinglePair-modeSwitching-UDP and ChannelModel-DynamicLos, lte/d2d_multicast
+  checkMulticastRange, lte/rlc and nr/rlc AM-Lossy, nr/standalone VoIP-DL), 30 seeds
+  per side: every value common to both sides is identical, run by run. The null
+  control: 1460 statistics, none significant.
+- **An existing ideal-channel configuration changes meaning, and does not fail.**
+  A lossy ideal channel now takes two settings. With a rate but without
+  `**.receiver.errorModel.typename = "ConfiguredRateErrorModel"`, the run loses
+  nothing (lte/rlc AM-Lossy at perDl = 0.3, first-transmission DL H-ARQ error rate:
+  0.32 with it, as on dev; 0 without it), and OMNeT++ 6.5 reports the rate keys as
+  having had no effect. With no rate keys at all, the loss goes from 10% to 0, from
+  the NED defaults (not run). No error was added: a lossless default is what an
+  ideal channel should mean. A rate is also one per receiver now, not per carrier
+  and RAT, and the wildcard reaches every radio of a node.
+- **Small amendments, none moving a row:** the ideal model's decision has the
+  stochastic model's checks of the CQI and the attempt and takes its SINR from
+  getSINR(); the receiver asserts that a rate is between 0 and 1.
+- **A recorded item was false:** item 13, on the key of a D2D multicast reception.
+  D2dUePhy::frameAccepted() sets a group member's destination id to its own before
+  the SINR is computed. lte/d2d_multicast checkMulticastRange, 3 s, a temporary
+  counter: 7401 receptions with the receiver's id, none with the transmitter's. So
+  the recorded deviations are claims too, to be checked before they are fixed.
+- **Test gaps were closed, each checked by mutation:** the per-carrier D2D statistic
+  (ReceiverD2dStatistics); the D2D interference walk against the closed form, and
+  the rule's parts through the D2D CQI, as a same-cell uplink never overlaps a D2D
+  reception (D2dInterferenceDelta, a characterisation test); a received frame's
+  power (RadioMediumReceptionRsrp); what the stochastic model gives the error model
+  (StochasticErrorModelSeam); the configured rate's formula
+  (ConfiguredRateErrorModel); the ideal channel with either error model
+  (IdealChannelErrorModels).
+- **Messages:** the states that differ are named (a D2D CQI under the core type
+  aborted, the ideal model's capture aborted); the error model's interface is marked
+  as a refactor; the unit-test counts that predated the rebase are dropped.
+- **The new tests pass at every later commit,** up to the branch tip, in versions
+  that follow the interface changes. The full suites at the piece's tip show no
+  failure beyond the recorded expected failures.
+- **Recorded, to be fixed after the merge:** item 32 of model-deviations.md, and new
+  entries in open-defects.md (AmcPilotD2D's band 0, the pilotMode enum's typo, a band
+  on a remote unit keeping its RSRP, the decision's place, the two encodings of a
+  certain loss).
