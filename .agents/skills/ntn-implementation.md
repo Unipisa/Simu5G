@@ -212,9 +212,11 @@ The root build links GeographicLib using the relative `GEOLIB` setting in `Makef
 3. propagates from the TLE epoch using the configured UTC simulation start;
 4. converts TEME position/velocity to ITRF;
 5. treats ITRF2008 and WGS84 as equivalent for simulation purposes;
-6. converts geodetic WGS84 position into the local OMNeT++ frame.
+6. converts geodetic WGS84 position into the local OMNeT++ frame, and rotates the Earth-fixed velocity into the same axes with `GeographicReferenceSystem::omnetVectorFromEcef()`.
 
-The SGP4 velocity is currently discarded: `LeoSatMobility::move()` sets `lastVelocity` to zero. The channel model only derives speed from the terrestrial endpoint and contains a TODO for moving satellites. LEO satellite Doppler is therefore effectively absent.
+`getCurrentVelocity()` returns the SGP4-derived Earth-fixed velocity (m/s, local axes). The imported `TEME_to_ITRF()` is a port of skyfield's and works in **km/day** (its Earth-rotation term uses `theta_dot` in rad/day), while SGP4 returns km/s, so `LeoSatMobility::updateSatellitePosition()` converts on the way in and out rather than modifying the imported code. Checked against central differences of successive positions on `LeoSat`: agreement within 0.6 m/s at 7.54 km/s. Position is piecewise constant between `updateInterval` ticks; the velocity is the instantaneous value at each tick.
+
+Nothing in the channel consumes the satellite velocity yet: `computeSpeed()` estimates the terrestrial endpoint's speed from its own position history, and the TODO for moving satellites remains. This is deliberate rather than an omission to "fix" by feeding the satellite speed into fading: in TR 38.811 the satellite's motion gives a Doppler **shift** common to all paths, while the Doppler **spread** of the cluster model comes from motion around the terrestrial endpoint. A common shift leaves the per-RB fading magnitude unchanged; it only matters as residual frequency error after compensation (item 3). LEO satellite Doppler is therefore still absent from the link budget.
 
 `SatelliteInserter` reads strict three-line TLE records and dynamically creates satellite vector entries. It recognizes STARLINK, IRIDIUM, ORBCOMM, SPACEBEE, SPACEBEENZ, ONEWEB, and GLOBALSTAR names. Unknown satellites use the catalog number as the vector index. The supplied unknown sample has catalog number 51472, so the LEO smoke configuration can expand a very large sparse vector to create one satellite. Parsing also lacks robust file-open, checksum, and delimiter validation.
 
@@ -368,7 +370,8 @@ Complete these items before describing the implementation as a usable bent-pipe 
 
 ### 3. Model Relative Motion and Doppler
 
-- Preserve the SGP4-derived Earth-fixed velocity in `LeoSatMobility`.
+- ✓ **SGP4-derived Earth-fixed velocity preserved (done)**: `LeoSatMobility::getCurrentVelocity()`; see LEO Mobility.
+- Do **not** feed the satellite speed into the fading `speed`: that would decorrelate the cluster model within a slot. The satellite contributes a common shift, not spread.
 - Compute radial relative velocity independently for service and feeder links.
 - Use current-hop carrier frequency for Doppler.
 - Add configured frequency pre-compensation and residual error rather than assuming perfect compensation implicitly.
