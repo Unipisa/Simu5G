@@ -1,0 +1,421 @@
+%description:
+
+A transmission whose sender has left: a UE that leaves the simulation does not
+abort another node's evaluation, and the frame it sent still interferes, at
+the antenna gain it was sent with.
+
+The medium keeps a transmission for up to two slots after it started, also
+when its sender is gone: a Veins car transmits in slot k and the TraCI step at
+the slot's end removes it, before a neighbour's reception of the same slot is
+evaluated, and a CQI of the next slot asks about slot k as well. The radio is
+off the medium by then, so the uplink and D2D interference walks must take the
+sender's antenna gain from the transmission's record: its radio is no longer
+there to ask, and getRadio() throws "no radio is registered". No fingerprint
+row removes a UE with a transmission on the medium.
+
+The transmissions are created by the real CellularTransmitter, as a radio
+creates them, from a stub UE. Then the UE's registration on the medium ends
+(StubRadioRegistration ends with removeRadio(), as ~PhyBase does), and what the
+stub says from then on is a decoy: gain, power and position all change, since a
+real PHY is deleted and a stale read of it must not pass.
+
+Each interference is measured through the model's public SINR computations,
+with the switches on, on a frame sharing some bands with the departed UE's
+transmission and not others, so that the desired signal cancels:
+
+    SINR(clean band) - SINR(shared band) = 10 log10(1 + I / N)
+    I = P(sent) + G(sent) + G(rx) - cableLoss(rx) - PL(d)
+    N = thermalNoise + noiseFigure(rx)
+
+The path loss this implies, with P and G the sender's when it sent, is graded
+against pathloss_reference.py (TR 38.901 UMi NLOS). Every link is NLOS, and
+shadowing and fading are off.
+
+ - (a) The uplink walk: a UE of one cell sends an uplink data frame in a slot and
+   leaves at its end. A neighbour base station's reception of that slot, and its
+   CQI in the next slot, count it.
+ - (b) The D2D walk: the same with a D2D frame, sent at the UE's D2D power, at
+   the receiver of a D2D pair in another cell. computeD2DInterference() needs
+   the pair's cell's MAC, a stub that is only what the walk asks of it.
+ - (c) The frame did radiate: it stays in the medium's registry after its sender
+   left, and it interferes exactly as much as an equal frame, on another band,
+   of a UE at the same distance that stayed on the medium.
+
+%includes:
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "PathLossTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/d2d/mac/ID2dMacEnb.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/radio/CellularTransmitter.h"
+#include "simu5g/stack/phy/radio/RadioTransmissionRequest.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+using inet::Coord;
+
+// A base station's MAC, as far as the D2D walk asks: never initialized, it exists to be found by the Binder.
+class StubD2dEnbMac : public LteMacEnb, public ID2dMacEnb
+{
+  protected:
+    void initialize(int stage) override {}
+    void handleMessage(cMessage *msg) override { delete msg; }
+
+  public:
+    HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(GHz carrierFrequency) override { return nullptr; }
+    void deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer) override {}
+    void sendModeSwitchNotification(MacNodeId srcId, MacNodeId dstId, LteD2DMode oldMode, LteD2DMode newMode) override {}
+    bool isMsHarqInterrupt() override { return false; }
+    bool isReuseD2DEnabled() override { return true; }
+    bool isReuseD2DMultiEnabled() override { return false; }
+    ConflictGraph *getConflictGraph() override { return nullptr; }
+};
+
+Define_Module(StubD2dEnbMac);
+
+// the map of the given bands of a carrier of 4
+static RbMap blocksOn(std::vector<Band> bands)
+{
+    RbMap blocks;
+    for (Band b = 0; b < 4; b++)
+        blocks[MACRO][b] = 0;
+    for (Band b : bands)
+        blocks[MACRO][b] = 1;
+    return blocks;
+}
+
+static UserControlInfo controlInfo(Direction dir, LtePhyFrameType type, MacNodeId source, MacNodeId dest, GHz carrier,
+        const RbMap& blocks, double txPower, double d2dTxPower)
+{
+    UserControlInfo info;
+    info.setDirection(dir);
+    info.setFrameType(type);
+    info.setSourceId(source);
+    info.setDestId(dest);
+    info.setCarrierFrequency(carrier);
+    info.setGrantedBlocks(blocks);
+    info.setTxPower(txPower);
+    info.setD2dTxPower(d2dTxPower);
+    return info;
+}
+
+// An uplink frame as a base station's radio passes it up.
+static AirFrame *uplinkFrame(LtePhyFrameType type, IRadioEndpoint *ue, IRadioEndpoint *bs, GHz carrier, const RbMap& blocks, double txPower)
+{
+    auto *frame = new AirFrame();
+    frame->setStartPosition(ue->getCoord());
+    frame->setControlInfo(new UserControlInfo(controlInfo(UL, type, ue->getMacNodeId(), bs->getMacNodeId(), carrier, blocks, txPower, 0.0)));
+    return frame;
+}
+
+// What a noise of noiseDbm and an interferer the implied path loss away do to the SINR of a band: the
+// difference of the SINRs of a clean and a shared band gives the interference, in dBm.
+static double impliedInterferenceDbm(double sinrClean, double sinrShared, double noiseDbm)
+{
+    return noiseDbm + 10 * std::log10(std::pow(10.0, (sinrClean - sinrShared) / 10.0) - 1.0);
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.radio.CellularTransmitter;
+
+simple StubD2dEnbMac
+{
+    @class(StubD2dEnbMac);
+}
+
+module StubCellularNic
+{
+    submodules:
+        mac: StubD2dEnbMac;
+}
+
+module StubCell
+{
+    submodules:
+        cellularNic: StubCellularNic;
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        transmitter: CellularTransmitter;
+        d2dCell: StubCell;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+*.carrierAggregation.componentCarrier[0].numerologyIndex = 0
+*.radioMedium.numCarriers = 1
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+**.cellInfoModule = ""
+*.binder.printTrafficGeneratorConfig = false
+
+*.radioMedium.channelModelType = "StochasticChannelModel"
+*.radioMedium.channelModel[*].pathLossType = "Tr36814"
+*.radioMedium.channelModel[*].scenario = "URBAN_MACROCELL"
+*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
+*.radioMedium.nrChannelModel[*].scenario = "URBAN_MICROCELL"
+*.radioMedium.nrChannelModel[*].nodebHeight = 10m
+**.ueHeight = 1.5m
+**.thermalNoise = -104dBm
+
+# path loss only, NLOS, the UEs' interference only
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = false
+**.uplinkInterference = true
+**.d2dInterference = true
+**.extCellInterference = false
+**.bgCellInterference = false
+# the stub radios have no receiver to record the measured SINR on
+**.collectSinrStatistics = false
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+CaseRecorder graded(this, 1e-6);
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *transmitter = harnessModule<CellularTransmitter>(this, "transmitter");
+auto *binder = harnessModule<Binder>(this, "binder");
+const GHz carrier = GHz(2.0);
+auto *model = check_and_cast<StochasticChannelModel *>(medium->getChannelModel(carrier, true));
+const simtime_t slot = SimTime(1, SIMTIME_MS);
+const double thermalNoise = -104.0;
+
+const MacNodeId otherCell = MacNodeId(1), neighbourCell = MacNodeId(2), d2dCellId = MacNodeId(3);
+binder->registerNode(d2dCellId, getParentModule()->getSubmodule("d2dCell"), NODEB, false);
+
+ScenarioParams p;
+p.scenario = URBAN_MICROCELL;
+p.hNodeB = 10;
+p.hUe = 1.5;
+p.carrierFrequencyGHz = 2.0;
+
+// the path loss the given interference implies, from what the sender had when it sent, against TR 38.901 UMi NLOS
+auto gradeImplied = [&] (const Coord& from, const Coord& to, double budget, double interferenceDbm) {
+    double d2D = std::hypot(from.x - to.x, from.y - to.y);
+    graded.record("t901_umi_nlos", p, { { "d3D", from.distance(to) }, { "d2D", d2D }, { "los", 0.0 } }, budget - interferenceDbm);
+};
+
+// a frame of the sender's, as its radio's transmitter records it on the medium
+auto send = [&] (IRadioEndpoint *sender, Direction dir, MacNodeId dest, MacCellId cell, std::vector<Band> bands, double txPower, double d2dTxPower) {
+    RadioTransmissionRequest request;
+    request.sender = sender;
+    request.cellId = cell;
+    request.duration = slot;
+    UserControlInfo info = controlInfo(dir, DATAPKT, sender->getMacNodeId(), dest, carrier, blocksOn(bands), txPower, d2dTxPower);
+    medium->addTransmission(transmitter->createTransmission(request, info));
+};
+
+// a computation that must not abort; a failed check if it does, and an empty result
+auto sinrOf = [&] (const std::string& what, auto compute) {
+    std::vector<double> sinr;
+    try {
+        sinr = compute();
+        c.check(what + " does not abort", true);
+    }
+    catch (cRuntimeError& e) {
+        c.check(what + " does not abort", false, e.what());
+    }
+    return sinr;
+};
+
+//
+// (a) The uplink walk
+//
+{
+    // the neighbour base station and its own UE, whose frame is the one being evaluated
+    StubEndpoint bs, ownUe;
+    bs.nodeId = neighbourCell;
+    bs.coord = Coord(0, 0, 10);
+    bs.antennaGain = 8;
+    bs.cableLoss = 2;
+    bs.noiseFigure = 5;
+    bs.channelModels[carrier] = model;
+    ownUe.nodeId = MacNodeId(1026);
+    ownUe.coord = Coord(30, 40, 1.5);
+    ownUe.channelModels[carrier] = model;
+    StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+    StubRadioRegistration ownUeRadio(medium, ownUe.nodeId, &ownUe);
+
+    // a UE of the other cell that stays, at the same distance, power and gain as the one that leaves
+    StubEndpoint stayingUe;
+    stayingUe.nodeId = MacNodeId(1027);
+    stayingUe.coord = Coord(150, -200, 1.5);
+    stayingUe.txPower = 23;
+    stayingUe.antennaGain = 7;
+    StubRadioRegistration stayingUeRadio(medium, stayingUe.nodeId, &stayingUe);
+
+    const Coord sentFrom(150, 200, 1.5);
+    const double sentPower = 23, sentGain = 7;
+    StubEndpoint departingUe;
+    departingUe.nodeId = MacNodeId(1025);
+    departingUe.coord = sentFrom;
+    departingUe.txPower = sentPower;
+    departingUe.antennaGain = sentGain;
+
+    wait(10 * slot);
+    const simtime_t t0 = simTime();
+    {
+        StubRadioRegistration departingUeRadio(medium, departingUe.nodeId, &departingUe);
+        send(&departingUe, UL, otherCell, otherCell, {0, 1}, sentPower, 15.0);
+        send(&stayingUe, UL, otherCell, otherCell, {3}, stayingUe.txPower, 15.0);
+        wait(slot);
+    }
+
+    // a real PHY is gone by now; the stub still answers, wrongly
+    departingUe.antennaGain = 30;
+    departingUe.txPower = 40;
+    departingUe.coord = Coord(5000, 5000, 1.5);
+
+    const double noise = thermalNoise + bs.noiseFigure;
+    const double budget = sentPower + sentGain + bs.antennaGain - bs.cableLoss;
+
+    // the reception of the slot just completed, of a frame on the shared band 0 and the clean band 2
+    std::vector<double> reception = sinrOf("(a) the neighbour's reception of the slot, its sender gone,", [&] {
+        std::unique_ptr<AirFrame> frame(uplinkFrame(DATAPKT, &ownUe, &bs, carrier, blocksOn({0, 2}), 20.0));
+        return model->getSINR(&bs, frame.get(), check_and_cast<UserControlInfo *>(frame->getControlInfo()));
+    });
+    if (!reception.empty())
+        gradeImplied(sentFrom, bs.coord, budget, impliedInterferenceDbm(reception[2], reception[0], noise));
+
+    // the CQI of the next slot, which asks about the slot completed last, on every band
+    wait(slot / 2);
+    std::vector<double> cqi = sinrOf("(a) the neighbour's CQI in the next slot, its sender gone,", [&] {
+        std::unique_ptr<AirFrame> frame(uplinkFrame(FEEDBACKPKT, &ownUe, &bs, carrier, blocksOn({0, 1, 2, 3}), 20.0));
+        return model->getSINR(&bs, frame.get(), check_and_cast<UserControlInfo *>(frame->getControlInfo()));
+    });
+    if (!cqi.empty()) {
+        gradeImplied(sentFrom, bs.coord, budget, impliedInterferenceDbm(cqi[2], cqi[0], noise));
+        c.expectNear("(a) ...on both of the frame's bands", cqi[1], cqi[0], 1e-9);
+    }
+
+    //
+    // (c) The frame did radiate
+    //
+    auto during = medium->getUplinkTransmissionsDuring(carrier, t0, t0 + slot);
+    int departed = 0;
+    for (auto transmission : during)
+        if (transmission->sourceId == departingUe.nodeId)
+            departed++;
+    c.expectValue("(c) the frame stays on the medium after its sender left", departed, 1);
+    if (!cqi.empty())
+        c.expectNear("(c) ...and interferes exactly as an equal frame of a UE that stayed", cqi[0], cqi[3], 1e-9);
+}
+
+//
+// (b) The D2D walk
+//
+{
+    wait(9 * slot + slot / 2);  // to a slot boundary, the frames above out of every window
+
+    // a D2D pair of a third cell, whose receiver the frame interferes at
+    StubEndpoint pairTx, pairRx;
+    pairTx.nodeId = MacNodeId(1028);
+    pairTx.coord = Coord(1000, 30, 1.5);
+    pairTx.channelModels[carrier] = model;
+    pairRx.nodeId = MacNodeId(1029);
+    pairRx.coord = Coord(1000, 0, 1.5);
+    pairRx.antennaGain = 3;
+    pairRx.cableLoss = 1;
+    pairRx.noiseFigure = 6;
+    pairRx.channelModels[carrier] = model;
+    StubRadioRegistration pairTxRadio(medium, pairTx.nodeId, &pairTx);
+    StubRadioRegistration pairRxRadio(medium, pairRx.nodeId, &pairRx);
+
+    StubEndpoint stayingUe;
+    stayingUe.nodeId = MacNodeId(1030);
+    stayingUe.coord = Coord(1000, -80, 1.5);
+    stayingUe.antennaGain = 4;
+    StubRadioRegistration stayingUeRadio(medium, stayingUe.nodeId, &stayingUe);
+
+    const Coord sentFrom(1000, 80, 1.5);
+    const double sentD2dPower = 15, sentGain = 4;
+    StubEndpoint departingUe;
+    departingUe.nodeId = MacNodeId(1031);
+    departingUe.coord = sentFrom;
+    departingUe.antennaGain = sentGain;
+
+    {
+        StubRadioRegistration departingUeRadio(medium, departingUe.nodeId, &departingUe);
+        // the cellular power is a decoy: a D2D frame is sent at the D2D power
+        send(&departingUe, D2D, MacNodeId(1032), otherCell, {0, 1}, 23.0, sentD2dPower);
+        send(&stayingUe, D2D, MacNodeId(1032), otherCell, {3}, 23.0, sentD2dPower);
+        wait(slot);
+    }
+    departingUe.antennaGain = 30;
+    departingUe.coord = Coord(5000, 5000, 1.5);
+
+    const double noise = thermalNoise + pairRx.noiseFigure;
+    const double budget = sentD2dPower + sentGain + pairRx.antennaGain - pairRx.cableLoss;
+
+    // what the pair's receiver gets of the pair's transmission, of the given type, on the given bands
+    auto pairSinr = [&] (LtePhyFrameType type, std::vector<Band> bands) {
+        CellularTransmission transmission;
+        transmission.transmitter = &pairTx;
+        transmission.sourceId = pairTx.nodeId;
+        transmission.destId = pairRx.nodeId;
+        transmission.cellId = d2dCellId;
+        transmission.direction = D2D;
+        transmission.frameType = type;
+        transmission.carrierFrequency = carrier;
+        transmission.grantedBlocks = blocksOn(bands);
+        transmission.txPower = 10.0;
+        transmission.startPosition = pairTx.coord;
+        transmission.startTime = simTime();
+        transmission.duration = slot;
+        return medium->computeSinr(&pairRx, transmission);
+    };
+
+    std::vector<double> reception = sinrOf("(b) the D2D reception of the slot, its sender gone,", [&] { return pairSinr(DATAPKT, {0, 2}); });
+    if (!reception.empty())
+        gradeImplied(sentFrom, pairRx.coord, budget, impliedInterferenceDbm(reception[2], reception[0], noise));
+
+    wait(slot / 2);
+    std::vector<double> cqi = sinrOf("(b) the D2D CQI in the next slot, its sender gone,", [&] { return pairSinr(FEEDBACKPKT, {0, 1, 2, 3}); });
+    if (!cqi.empty()) {
+        gradeImplied(sentFrom, pairRx.coord, budget, impliedInterferenceDbm(cqi[2], cqi[0], noise));
+        c.expectNear("(b) ...on both of the frame's bands", cqi[1], cqi[0], 1e-9);
+        c.expectNear("(b) ...and exactly as an equal frame of a UE that stayed", cqi[0], cqi[3], 1e-9);
+    }
+}
+
+c.summary();
+
+%postrun-command: ../../pathloss_reference.py --grade test.out >verdict.txt
+
+%contains: verdict.txt
+graded=4 failures=0
+
+%contains: stdout
+modelchecks=9 modelfailures=0
+
+%not-contains: verdict.txt
+FAILED
+
+%not-contains: stdout
+FAILED
