@@ -1078,6 +1078,7 @@ StochasticChannelModel::InterfererInfo StochasticChannelModel::describeInterfere
     info.cellId = transmission.cellId;
     info.dir = transmission.direction;
     info.txPwr = transmission.txPower;
+    info.txAntennaGain = transmission.txAntennaGain;
     info.coord = transmission.startPosition;
     return info;
 }
@@ -1138,7 +1139,7 @@ bool StochasticChannelModel::computeUplinkInterference(IRadioEndpoint *radio, Ma
         EV << NOW << " StochasticChannelModel::computeUplinkInterference - Interference from UE: " << ueId << "(dir " << dirToA(interferer.dir) << ") on band[" << band << "]" << endl;
 
         // get rx power from this UE
-        double rxPwr = interferer.txPwr - cableLossOf(eNbId) + antennaGainOf(ueId) + antennaGainOf(eNbId);
+        double rxPwr = interferer.txPwr - cableLossOf(eNbId) + interferer.txAntennaGain + antennaGainOf(eNbId);
         (*interference)[band] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;
@@ -1357,7 +1358,7 @@ bool StochasticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId s
         EV << NOW << " StochasticChannelModel::computeD2DInterference - Interference from UE: " << ueId << "(dir " << dirToA(interferer.dir) << ") on band[" << band << "]" << endl;
 
         // get tx power from this UE
-        double rxPwr = interferer.txPwr - cableLossOf(destId) + antennaGainOf(ueId) + antennaGainOf(destId);
+        double rxPwr = interferer.txPwr - cableLossOf(destId) + interferer.txAntennaGain + antennaGainOf(destId);
         (*interference)[band] += dBmToLinear(rxPwr - att);//(dBm-dB)=dBm
 
         EV << "\t band " << band << "/pwr[" << rxPwr - att << "]-int[" << (*interference)[band] << "]" << endl;

@@ -489,6 +489,7 @@ class StochasticChannelModel : public ChannelModelBase
         MacCellId cellId;
         Direction dir;
         double txPwr;
+        double txAntennaGain;
         inet::Coord coord;
     };
 

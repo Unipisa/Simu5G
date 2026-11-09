@@ -45,6 +45,7 @@ class CellularTransmission
     LtePhyFrameType frameType = UNKNOWN_TYPE;
     GHz carrierFrequency = GHz(0.0);
     RbMap grantedBlocks;                        // the resource blocks it occupies, per antenna
+    double txAntennaGain = 0.0;                 // dBi, of the transmitter's antenna: the transmitter may be gone when it is evaluated
     double txPower = 0.0;                       // dBm; a one-to-one D2D frame's is the UE's D2D transmit power
     inet::Coord startPosition;                  // where the transmitter was when the transmission started
     TxDirectionType txDirection = OMNI;         // whether its antenna radiates omnidirectionally or sectorially

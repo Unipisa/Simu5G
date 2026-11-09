@@ -34,6 +34,7 @@ CellularTransmission *CellularTransmitter::createTransmission(const RadioTransmi
     // besides the cellular one
     bool d2d = transmission->direction == D2D || transmission->direction == D2D_MULTI;
     transmission->txPower = d2d ? info.getD2dTxPower() : info.getTxPower();
+    transmission->txAntennaGain = request.sender->getAntennaGain();
     transmission->startPosition = request.sender->getCoord();
     transmission->txDirection = request.sender->getTxDirection();
     transmission->txAngle = request.sender->getTxAngle();
@@ -56,6 +57,7 @@ CellularTransmission *CellularTransmitter::createPhantomTransmission(IRadioEndpo
     transmission->carrierFrequency = carrierFrequency;
     transmission->grantedBlocks = blocks;
     transmission->txPower = sender->getTxPwr(direction);
+    transmission->txAntennaGain = sender->getAntennaGain();
     transmission->startPosition = sender->getCoord();
     transmission->txDirection = sender->getTxDirection();
     transmission->txAngle = sender->getTxAngle();
