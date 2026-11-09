@@ -1,0 +1,378 @@
+%description:
+
+The seam between StochasticChannelModel and a receiver's error model: a stub
+ICellularErrorModel behind the real model, on the real SINR computation. The
+stub, a module of this test, records what it is called with and returns a rate
+the test sets.
+
+BlerCurveErrorModel, the default, ignores the direction, and the attempt and
+the rest only show through its arithmetic, so no other test or fingerprint row
+can see that the model hands the error model the reception's direction.
+Checked, for receptions in DL (at the UE), UL (at the base station), D2D and
+D2D_MULTI (at the peer UE), through the receiving radio's own error model:
+
+ - the direction is the reception's;
+ - the CQI is that of the frame's codeword (with one codeword, the only one),
+   and CQI 0 reaches the error model: a certain loss is the error model's call;
+ - the per-band SINR is the channel model's own, what getSINR() gives for that
+   frame in DL and UL, and getSINR_D2D() in D2D, computed separately with the
+   same frame and control info. Everything random and every interference is
+   off, so each is one fixed vector. D2D_MULTI decides on an RSRP captured by
+   the PHY, so there the test passes one that differs per band, and the
+   SINR must be that of getSINR_D2D() on that RSRP;
+ - the granted blocks and the attempt are the frame's.
+
+And the rate decides. Rate 0 is received and rate 1 is lost, and both still
+take the receiver's one draw; no rate (nullopt) is lost with no draw; rates
+between are graded against the draw, on a copy of the receiver's generator
+(see ChannelModelReception), and a series at one fixed rate would be
+contradicted.
+
+%includes:
+#include <optional>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/radio/ICellularErrorModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// An error model that records its arguments and returns the rate the test sets.
+class RecordingErrorModel : public cSimpleModule, public ICellularErrorModel
+{
+  public:
+    std::optional<double> rate = 0.0;
+
+    mutable int calls = 0;
+    mutable Direction direction = UNKNOWN_DIRECTION;
+    mutable Cqi cqi = 99;
+    mutable std::vector<double> sinr;
+    mutable RbMap blocks;
+    mutable int attempt = -1;
+
+    std::optional<double> computePacketErrorRate(Direction direction_, Cqi cqi_, const std::vector<double>& sinrPerBand, const RbMap& grantedBlocks,
+            unsigned char transmissionAttempt) const override
+    {
+        calls++;
+        direction = direction_;
+        cqi = cqi_;
+        sinr = sinrPerBand;
+        blocks = grantedBlocks;
+        attempt = transmissionAttempt;
+        return rate;
+    }
+};
+
+Define_Module(RecordingErrorModel);
+
+// the protected D2D SINR computations of the channel model
+struct D2dAccess : StochasticChannelModel
+{
+    using SinrD2d = std::vector<double> (StochasticChannelModel::*)(AirFrame *, UserControlInfo *, MacNodeId, inet::Coord, MacNodeId);
+    using SinrD2dWithRsrp = std::vector<double> (StochasticChannelModel::*)(AirFrame *, UserControlInfo *, MacNodeId, inet::Coord, MacNodeId, const std::vector<double>&);
+    static SinrD2d sinrD2dPtr() { return &D2dAccess::getSINR_D2D; }
+    static SinrD2dWithRsrp sinrD2dWithRsrpPtr() { return &D2dAccess::getSINR_D2D; }
+};
+
+// A received data frame, as the channel model is handed it.
+struct Reception
+{
+    Direction dir = DL;
+    StubEndpoint *sender = nullptr;
+    StubEndpoint *receiver = nullptr;
+    std::vector<Cqi> cqis = {7};  // per codeword
+    unsigned char cw = 0;
+    unsigned char txNumber = 1;
+    RbMap blocks;                 // remote unit -> band -> blocks
+    std::vector<double> rsrp;     // what the PHY captured, for D2D_MULTI
+};
+
+static void prepare(const Reception& r, AirFrame& frame, UserControlInfo& info)
+{
+    info.setDirection(r.dir);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(r.sender->nodeId);
+    info.setDestId(r.receiver->nodeId);
+    info.setCoord(r.sender->coord);
+    if (r.dir == D2D || r.dir == D2D_MULTI)
+        info.setD2dTxPower(r.sender->txPower);
+    else
+        info.setTxPower(r.sender->txPower);
+    info.setTxMode(SINGLE_ANTENNA_PORT0);
+    info.setCarrierFrequency(GHz(3.5));
+    info.setCw(r.cw);
+    info.setTxNumber(r.txNumber);
+    info.setGrantedBlocks(r.blocks);
+    auto *params = new UserTxParams();
+    params->writeCqi(r.cqis);
+    info.setUserTxParams(params);
+}
+
+static bool decide(StochasticChannelModel *model, const Reception& r)
+{
+    AirFrame frame;
+    UserControlInfo info;
+    prepare(r, frame, info);
+    return model->isReceptionSuccessful(r.receiver, &frame, &info, r.rsrp);
+}
+
+// The SINR of the reception by the channel model's own computation of the direction.
+static std::vector<double> expectedSinr(StochasticChannelModel *model, const Reception& r, MacNodeId servingNode)
+{
+    AirFrame frame;
+    UserControlInfo info;
+    prepare(r, frame, info);
+    if (r.dir == D2D)
+        return (model->*D2dAccess::sinrD2dPtr())(&frame, &info, r.receiver->nodeId, r.receiver->coord, servingNode);
+    if (r.dir == D2D_MULTI)
+        return (model->*D2dAccess::sinrD2dWithRsrpPtr())(&frame, &info, r.receiver->nodeId, r.receiver->coord, servingNode, r.rsrp);
+    return model->getSINR(r.receiver, &frame, &info);
+}
+
+// How many numbers fn drew from a component's generator, or -1 for more than a
+// few: the copy taken before is stepped until it agrees with the generator.
+template<typename Fn>
+static int drawsDuring(cComponent *component, Fn fn)
+{
+    RngSnapshot before(component);
+    fn();
+    for (int n = 0; n <= 4; n++) {
+        RngSnapshot a = before, b(component);
+        bool same = true;
+        for (int i = 0; i < 4; i++)
+            same = same && a.rng()->doubleRand() == b.rng()->doubleRand();
+        if (same)
+            return n;
+        before.rng()->doubleRand();
+    }
+    return -1;
+}
+
+static std::string show(const std::vector<double>& v)
+{
+    std::string s;
+    char buf[32];
+    for (double x : v) {
+        snprintf(buf, sizeof(buf), "%.17g", x);
+        s += (s.empty() ? "" : " ") + std::string(buf);
+    }
+    return s;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.Tr38901ChannelModel;
+import simu5g.stack.phy.radio.CellularReceiver;
+import simu5g.stack.phy.radio.ICellularErrorModel;
+
+// An error model of the test, selected by the receivers' errorModel.typename.
+simple RecordingErrorModel like ICellularErrorModel
+{
+    @class(RecordingErrorModel);
+}
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        channelModel: Tr38901ChannelModel;
+        bsReceiver: CellularReceiver;
+        ueReceiver: CellularReceiver;
+        peerReceiver: CellularReceiver;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 4
+**.componentCarrierModule = "carrierAggregation.componentCarrier[0]"
+*.binder.printTrafficGeneratorConfig = false
+
+*.*Receiver.errorModel.typename = "RecordingErrorModel"
+
+# one number per band, drawn from nothing
+**.dynamicLos = false
+**.fixedLos = false
+**.shadowing = false
+**.fading = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.extCellInterference = false
+**.bgCellInterference = false
+**.d2dInterference = false
+*.channelModel.collectSinrStatistics = false
+*.channelModel.cmdenv-log-level = off
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *model = harnessModule<StochasticChannelModel>(this, "channelModel");
+auto *medium = harnessModule<CellularRadioMedium>(this, "radioMedium");
+auto *binder = harnessModule<Binder>(this, "binder");
+const GHz carrier = model->getCarrierFrequency();
+
+auto *bsReceiver = harnessModule<CellularReceiver>(this, "bsReceiver");
+auto *ueReceiver = harnessModule<CellularReceiver>(this, "ueReceiver");
+auto *peerReceiver = harnessModule<CellularReceiver>(this, "peerReceiver");
+auto stubOf = [] (CellularReceiver *receiver) { return check_and_cast<RecordingErrorModel *>(receiver->getSubmodule("errorModel")); };
+
+StubEndpoint bs, ue, peer;
+bs.nodeId = MacNodeId(1);
+ue.nodeId = MacNodeId(1025);
+peer.nodeId = MacNodeId(1026);
+bs.coord = inet::Coord(0, 0, 25);
+ue.coord = inet::Coord(100, 20, 1.5);
+peer.coord = inet::Coord(130, 40, 1.5);
+bs.txPower = 40.0;
+ue.txPower = 23.0;
+peer.txPower = 20.0;
+bs.receiver = bsReceiver;
+ue.receiver = ueReceiver;
+peer.receiver = peerReceiver;
+bs.channelModels[carrier] = model;
+ue.channelModels[carrier] = model;
+peer.channelModels[carrier] = model;
+StubRadioRegistration bsRadio(medium, bs.nodeId, &bs);
+StubRadioRegistration ueRadio(medium, ue.nodeId, &ue);
+StubRadioRegistration peerRadio(medium, peer.nodeId, &peer);
+binder->registerServingNode(bs.nodeId, ue.nodeId);
+binder->registerServingNode(bs.nodeId, peer.nodeId);
+
+wait(SimTime(1, SIMTIME_MS));
+
+struct Link { std::string name; Direction dir; StubEndpoint *sender, *receiver; std::vector<double> rsrp; };
+const std::vector<Link> links = {
+    { "DL", DL, &bs, &ue, {} },
+    { "UL", UL, &ue, &bs, {} },
+    { "D2D", D2D, &ue, &peer, {} },
+    { "D2D_MULTI", D2D_MULTI, &ue, &peer, { -70, -75, -80, -85 } },
+};
+
+// the frame's codeword CQI, the grant and the attempt, each differing from case to case
+struct Case { std::vector<Cqi> cqis; unsigned char cw; Cqi cqi; unsigned char attempt; std::vector<std::vector<int>> bands; };
+const std::vector<Case> cases = {
+    { {4}, 0, 4, 1, { {0, 1} } },
+    { {4, 9}, 0, 4, 2, { {1, 2}, {3, 5} } },
+    { {4, 9}, 1, 9, 3, { {0, 6}, {1, 0}, {2, 25} } },
+    { {11}, 1, 11, 5, { {3, 1} } },
+    { {0}, 0, 0, 1, { {2, 2} } },
+};
+
+auto makeReception = [] (const Link& link) {
+    Reception r;
+    r.dir = link.dir;
+    r.sender = link.sender;
+    r.receiver = link.receiver;
+    r.rsrp = link.rsrp;
+    return r;
+};
+
+RbMap everyBand;
+for (Band b = 0; b < model->getNumBands(); b++)
+    everyBand[MACRO][b] = 1;
+
+//
+// --- what the error model is told ---
+//
+std::vector<double> sinrDl, sinrUl, sinrD2d, sinrD2dMulti;
+for (const Link& link : links) {
+    auto *stub = stubOf(link.receiver->receiver);
+    stub->rate = 0.0;
+    c.check(link.name + ": the receiver's error model is the one the typename selects",
+            link.receiver->receiver->getErrorModel() == stub);
+    for (size_t i = 0; i < cases.size(); i++) {
+        const Case& k = cases[i];
+        Reception r = makeReception(link);
+        r.cqis = k.cqis;
+        r.cw = k.cw;
+        r.txNumber = k.attempt;
+        for (const auto& band : k.bands)
+            r.blocks[i % 2 == 0 ? MACRO : RU1][band[0]] = band[1];
+        std::string name = link.name + " #" + std::to_string(i) + ": ";
+
+        std::vector<double> expected = expectedSinr(model, r, bs.nodeId);
+        int callsBefore = stub->calls;
+        int otherCallsBefore = stubOf(bsReceiver)->calls + stubOf(ueReceiver)->calls + stubOf(peerReceiver)->calls - callsBefore;
+        decide(model, r);
+        c.expectValue(name + "the receiving radio's error model is asked once", stub->calls, callsBefore + 1);
+        c.expectValue(name + "...and no other", stubOf(bsReceiver)->calls + stubOf(ueReceiver)->calls + stubOf(peerReceiver)->calls - stub->calls, otherCallsBefore);
+        c.expectValue(name + "the direction is the reception's", stub->direction, link.dir);
+        c.expectValue(name + "the CQI is the frame's codeword's", stub->cqi, k.cqi);
+        c.check(name + "the per-band SINR is the channel model's", stub->sinr == expected, show(stub->sinr) + " / " + show(expected));
+        c.check(name + "the granted blocks are the frame's", stub->blocks == r.blocks);
+        c.expectValue(name + "the attempt is the frame's", stub->attempt, k.attempt);
+    }
+
+    Reception r = makeReception(link);
+    r.blocks = everyBand;
+    (link.dir == DL ? sinrDl : link.dir == UL ? sinrUl : link.dir == D2D ? sinrD2d : sinrD2dMulti) = expectedSinr(model, r, bs.nodeId);
+}
+c.expectValue("the SINR is one value per band", sinrDl.size(), 4);
+c.check("the SINRs of the links differ, so the checks above can tell one link's from another's",
+        sinrDl != sinrUl && sinrUl != sinrD2d && sinrDl != sinrD2d,
+        show(sinrDl) + " / " + show(sinrUl) + " / " + show(sinrD2d));
+c.check("the captured RSRP gives a different SINR on each band, so the checks above can tell the bands apart",
+        sinrD2dMulti[0] != sinrD2dMulti[1] && sinrD2dMulti[1] != sinrD2dMulti[2] && sinrD2dMulti[2] != sinrD2dMulti[3], show(sinrD2dMulti));
+
+//
+// --- the rate decides ---
+//
+for (const Link& link : links) {
+    auto *stub = stubOf(link.receiver->receiver);
+    CellularReceiver *receiver = link.receiver->receiver;
+    Reception r = makeReception(link);
+    r.blocks = everyBand;
+    bool received = false;
+
+    stub->rate = 0.0;
+    int draws = drawsDuring(receiver, [&] { received = decide(model, r); });
+    c.check(link.name + ": rate 0 is received, by one draw", received && draws == 1, "draws=" + std::to_string(draws));
+
+    stub->rate = 1.0;
+    draws = drawsDuring(receiver, [&] { received = decide(model, r); });
+    c.check(link.name + ": rate 1 is lost, by one draw", !received && draws == 1, "draws=" + std::to_string(draws));
+
+    stub->rate = std::nullopt;
+    draws = drawsDuring(receiver, [&] { received = decide(model, r); });
+    c.check(link.name + ": no rate is lost with no draw", !received && draws == 0, "draws=" + std::to_string(draws));
+
+    const double rates[] = { 0.2, 0.5, 0.8 };
+    const int count = 300;
+    int mismatches = 0, numReceived = 0, contradictsFixedRate = 0;
+    RngSnapshot twin(receiver);
+    for (int i = 0; i < count; i++) {
+        double rate = rates[i % 3];
+        stub->rate = rate;
+        double u = omnetpp::uniform(twin.rng(), 0.0, 1.0);
+        bool actual = decide(model, r);
+        numReceived += actual;
+        mismatches += actual != (u > rate);
+        contradictsFixedRate += actual != (u > 0.5);
+    }
+    c.expectValue(link.name + ": the verdicts follow the rate and the draw", mismatches, 0);
+    c.check(link.name + ": ...on a series that is not one-sided", numReceived >= count / 10 && count - numReceived >= count / 10,
+            std::to_string(numReceived) + " received of " + std::to_string(count));
+    c.check(link.name + ": ...that tells the rate from a fixed one", contradictsFixedRate > 0);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=171 modelfailures=0
+
+%not-contains: stdout
+FAILED
