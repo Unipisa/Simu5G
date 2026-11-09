@@ -898,33 +898,32 @@ std::vector<double> NtnChannelModel::computeReceptionRsrp(LteAirFrame *frame, Us
     // Falling back to a single-hop evaluation here would silently report the last hop alone,
     // the same concern computeReceptionSinr() already guards against for SINR.
     auto *ntnFrame = dynamic_cast<NtnAirFrame *>(frame);
-    if (ntnFrame == nullptr || !ntnFrame->hasRelayHopRsrp())
-        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - frame %s carries no first-hop RSRP. "
+    if (ntnFrame == nullptr || !ntnFrame->hasRelayHopSinr())
+        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - frame %s carries no first-hop SINR. "
                 "A transparent NTN path must evaluate the first radio hop before combining it with the last one; "
                 "this usually means the relaying node had no channel model for the frame's carrier.",
                 frame->getName());
 
     std::vector<double> localHopRsrp = getRSRP(frame, lteInfo);
-    std::vector<double> relayHopRsrp = ntnFrame->getRelayHopRsrpVector();
-    if (relayHopRsrp.size() != localHopRsrp.size()) {
-        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - relay-hop RSRP vector size %lu differs from local-hop RSRP vector size %lu",
-                static_cast<unsigned long>(relayHopRsrp.size()), static_cast<unsigned long>(localHopRsrp.size()));
+    std::vector<double> relayHopSinr = ntnFrame->getRelayHopSinrVector();
+    if (relayHopSinr.size() != localHopRsrp.size()) {
+        throw cRuntimeError("NtnChannelModel::computeReceptionRsrp - relay-hop SINR vector size %lu differs from local-hop RSRP vector size %lu",
+                static_cast<unsigned long>(relayHopSinr.size()), static_cast<unsigned long>(localHopRsrp.size()));
     }
 
-    // RSRP is a power (dBm), not a ratio, so there is no exact physical two-hop combining rule
-    // without the transponder gain/noise model that item 1 of the NTN roadmap still lacks. As an
-    // explicit approximation, reuse the same cascaded-hop harmonic-mean formula already applied
-    // to SINR in computeReceptionSinr(), using the dBm<->linear-watts pair rather than the
-    // dB<->ratio pair (the two give numerically identical combined results here, since the
-    // harmonic mean is scale-covariant, but the dBm pair keeps the units honest).
+    // Fixed-output transparent payload (see computeReceptionSinr()): the relay radiates its
+    // configured txPower whatever it receives, split between the amplified first-hop signal and
+    // the amplified first-hop noise in the ratio s1 : 1. getRSRP() on this hop counts the whole
+    // txPower as signal, so only the signal share of it is reference-signal power:
+    //     RSRP = localRsrp * s1 / (1 + s1)  =  localRsrp[dBm] - 10*log10(1 + 1/s1)
+    // with s1 the first-hop SINR (linear). A UE measures the same thing: the re-radiated noise
+    // does not correlate with the known RS sequence. s1 -> 0 gives -inf, s1 >> 1 gives localRsrp.
     std::vector<double> combinedRsrp(localHopRsrp.size(), 0.0);
     for (size_t i = 0; i < combinedRsrp.size(); i++) {
-        double relayLinear = dBmToLinear(relayHopRsrp[i]);
-        double localLinear = dBmToLinear(localHopRsrp[i]);
-        double combinedLinear = 1.0 / (1.0 / relayLinear + 1.0 / localLinear);
-        combinedRsrp[i] = linearToDBm(combinedLinear);
-        EV_DEBUG << "NtnChannelModel::computeReceptionRsrp - band[" << i << "] 1st-hop RSRP[" << relayHopRsrp[i] << "dBm] 2nd-hop RSRP[" << localHopRsrp[i]
-                    << "dBm] combined[" << combinedRsrp[i] << "]" << endl;
+        double relayLinear = dBToLinear(relayHopSinr[i]);
+        combinedRsrp[i] = localHopRsrp[i] - linearToDb(1.0 + 1.0 / relayLinear);
+        EV_DEBUG << "NtnChannelModel::computeReceptionRsrp - band[" << i << "] 1st-hop SINR[" << relayHopSinr[i] << "dB] 2nd-hop RSRP[" << localHopRsrp[i]
+                    << "dBm] combined[" << combinedRsrp[i] << "dBm]" << endl;
     }
 
     return combinedRsrp;

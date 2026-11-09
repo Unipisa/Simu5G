@@ -125,7 +125,9 @@ NtnPhyBase::HopAction NtnPhyBase::getHopAction(const UserControlInfo& lteInfo) c
                 if (!isFeederLink_)
                     throw cRuntimeError("NtnPhyBase::getHopAction - satellite PHY %s received a beacon over the service link, but expected the feeder link (sourceId=%d, destId=%d)",
                             getFullPath().c_str(), lteInfo.getSourceId(), lteInfo.getDestId());
-                return HopAction::STORE_RELAY_HOP_RSRP;
+                // The feeder-hop SINR, not its RSRP: it sets how much of the satellite's fixed
+                // output power is signal (see NtnChannelModel::computeReceptionRsrp()).
+                return HopAction::STORE_RELAY_HOP_SINR;
             default:
                 return HopAction::RELAY_ONLY;
         }
@@ -186,9 +188,6 @@ void NtnPhyBase::handleAirFrame(cMessage *msg)
         switch (action) {
             case HopAction::STORE_RELAY_HOP_SINR:
                 ntnFrame->setRelayHopSinrVector(channelModel->getSINR(frame, &lteInfo));
-                break;
-            case HopAction::STORE_RELAY_HOP_RSRP:
-                ntnFrame->setRelayHopRsrpVector(channelModel->getRSRP(frame, &lteInfo));
                 break;
             case HopAction::STORE_END_TO_END_SINR: {
                 // Both hops combined, so the terrestrial gNB can derive uplink CSI from the
