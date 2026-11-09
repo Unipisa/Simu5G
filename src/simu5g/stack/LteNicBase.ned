@@ -51,7 +51,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         double processingDelayOut @unit(s) = default(0s);   // Additional processing delay for outgoing ip packets
 
         bool dualConnectivityEnabled = default(false);
-        int numCarriers = default(1);
 
         string address @mutable = default("auto");
         // The LTE leg's modules take their MacNodeId from the node

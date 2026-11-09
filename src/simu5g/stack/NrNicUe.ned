@@ -45,8 +45,6 @@ module NrNicUe extends LteNicUe
 
         packetFlowObserver.typename = default("PacketFlowObserverUe");
 
-        int numNrCarriers = default(1);
-
         ip2nic.isNr = default(true);
         rrc.bearerManagement.pdcpEntityModuleType = default("simu5g.stack.pdcp.NrPdcpEntity");
 

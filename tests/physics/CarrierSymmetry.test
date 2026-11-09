@@ -60,7 +60,6 @@ seed-set = 0
 
 *.gnb.cellularNic.numCarriers = 2
 *.gnb.cellularNic.phy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
-*.ue[*].cellularNic.numNrCarriers = 2
 *.ue[*].cellularNic.nrPhy.componentCarrierModules = "carrierAggregation.componentCarrier[0] carrierAggregation.componentCarrier[1]"
 
 *.gnb.mobility.initialX = 300m

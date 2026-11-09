@@ -41,6 +41,7 @@ module LteNicEnb extends LteNicBase
         handoverPacketHolder.typename = default("HandoverPacketHolderEnb");
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         bool compEnabled = default(false);
+        int numCarriers = default(1); // Number of carriers this base station serves, as listed in phy.componentCarrierModules: it sizes bgTrafficGenerator[], one per carrier
         rrc.hasConnectionControl = true;
         rrc.connectionControl.macNodeId = parent.macNodeId;
 
