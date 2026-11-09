@@ -1,0 +1,254 @@
+%description:
+
+What another transmitter costs a D2D link, against the closed form.
+
+The D2D mirror of InterferenceDeltaUl. computeD2DInterference walks the uplink
+and D2D transmissions of the slot on the reception's bands, and every D2D test
+but this one switches it off. The scenario is two D2D pairs in a cell with a
+second cell next to it, and every random ingredient switched off, so that each
+term is a sum of configured constants and one path loss:
+
+    S = d2dTxPower(tx) - PL(d(tx, rx)) + G(tx) + G(rx) - cableLoss
+    I = txPower(i)     - PL(d(i, rx))  + G(i)  + G(rx) - cableLoss
+    N = thermalNoise + UE noise figure
+
+    SINR = S - 10 log10( 10^(N/10) + 10^(I/10) )
+
+where txPower(i) is the interferer's D2D transmit power, or its ueTxPower if
+it transmits uplink. This takes the model's conventions for a UE-to-UE link,
+as D2dLinkBudget does and tests/doc/model-deviations.md records in item 4: the
+UMi LOS formula with the base station's height in the breakpoint distance, and
+a cable loss on a link with no base station. It is a characterisation test of
+the model, not a specification check. All distances stay below the breakpoint
+(a tripwire says so).
+
+The second pair's transmitter transmits at another power and has another antenna
+gain, so an interferer evaluated with the wrong transmitter's terms moves the
+result. The pair's flows overlap for part of the run, and reuseD2D with no edge
+in the conflict graph (conflictGraphThreshold far below any path loss) has the
+best-fit allocator hand both of them the bands from the lowest up. So rcvdSinrD2D
+spans two endpoints, and they are asserted as in InterferenceDeltaUl: the maximum
+is the quiet budget, from the frames sent while the other pair is silent, and the
+minimum the budget with the other pair's transmitter on every band of the frame.
+
+Every run is one column of the sweep:
+
+ - off: d2dInterference = false, with both flows overlapping: the two pairs
+   stay flat at their quiet budgets, although they share bands.
+ - pair: d2dInterference = true: the two endpoints, for both pairs.
+ - sameCellUl: a real UE of the first pair's cell transmits uplink, with no second
+   pair. The rule ("no D2D-UL reuse") says that it does not count, and flat is what
+   is expected. The allocator never gives a same-cell uplink and a reuse-enabled
+   D2D flow one band, so a reception never sees whether the rule holds. The CQI of
+   cqiSameCellUl does.
+ - otherCellUl: the same UE, at the same position and power, served by the second
+   cell: it counts, and the minimum is the budget with it on every band.
+
+A D2D CQI is evaluated on every band against the transmissions of the slot
+completed last, whatever the bands the pair uses, and it is the only place where
+the rule's same-cell parts make a difference; the bands of a same-cell transmission
+overlap no reception. Nothing records the SINR of a D2D CQI, so what is graded in
+these runs is the CQI the transmitter then uses (averageCqiD2D). The gNB's pilot
+is set to AVG_CQI, so that interference on any band shows. The links' quiet SINR
+is over 40 dB, which is CQI 15, flat; a transmission that counts lowers the CQI:
+
+ - cqiQuiet: the first pair alone: 15, flat.
+ - cqiSameCellUl: with the same-cell UE transmitting uplink: 15, flat.
+ - cqiOtherCellUl: with the other cell's UE: lower.
+ - cqiPairReuse: with the second pair, reuseD2D on: lower.
+ - cqiPairNoReuse: with the second pair, reuse off: 15 (same-cell D2D does not count
+   when reuse is disabled, "otherwise, computation of CQI is misleading").
+ - cqiPairReuseMulti: with the second pair, only reuseD2DMulti on: lower. The rule
+   looks at either switch, and the pairs' own frames stay on separate bands.
+ - cqiPairOff: with the second pair, d2dInterference = false: 15.
+
+The SINR of the receptions is graded in these runs too. A pair's own frames share
+bands with the second pair's under reuseD2D only, and with the other cell's UE
+always, so these runs have the same two endpoints or the flat line.
+
+%extraargs: -c D2dInterferenceDelta
+
+%file: demo.xml
+<config>
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
+</config>
+
+%file: D2dTwoCells.ned
+import inet.node.ethernet.Eth10G;
+import simu5g.nodes.NrUe;
+import simu5g.nodes.gNodeB;
+import simu5g.simulations.nr.networks.SingleCell_Standalone_D2D;
+
+//
+// SingleCell_Standalone_D2D with a second cell, which has cellular UEs of its own.
+//
+network D2dTwoCells extends SingleCell_Standalone_D2D
+{
+    parameters:
+        int numUeOther = default(0);
+    submodules:
+        gnb2: gNodeB;
+        ueOther[numUeOther]: NrUe;
+    connections:
+        iUpf.pppg++ <--> Eth10G <--> gnb2.ppp;
+}
+
+%inifile: omnetpp.ini
+
+[Config D2dInterferenceDelta]
+network = D2dTwoCells
+sim-time-limit = 1.5s
+**.routingRecorder.enabled = false
+cmdenv-express-mode = true
+cmdenv-status-frequency = 10000000s
+seed-set = 0
+
+output-scalar-file = results/${iterationvarsf}${repetition}.sca
+output-vector-file = results/${iterationvarsf}${repetition}.vec
+**.vector-recording = false
+# The extremes are the quantities under test here, not the average.
+**.rcvdSinrD2D.result-recording-modes = mean,count,min,max
+**.averageCqiD2D.result-recording-modes = mean,count,min,max
+**.rcvdSinrUl.result-recording-modes = mean,count
+
+############### The sweep: every run is one column ##############
+measurement-label = ${scen = "off", "pair", "sameCellUl", "otherCellUl", "cqiQuiet", "cqiSameCellUl", "cqiOtherCellUl", "cqiPairReuse", "cqiPairNoReuse", "cqiPairReuseMulti", "cqiPairOff"}
+**.d2dInterference = ${d2di = false, true, true, true, true, true, true, true, true, true, false ! scen}
+*.ueD2DTx[1].numApps = ${nB = 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 ! scen}
+*.numUeCell = ${nCell = 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 ! scen}
+*.numUeOther = ${nOther = 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 ! scen}
+*.gnb.cellularNic.mac.reuseD2D = ${reuse = true, true, true, true, true, true, true, true, false, false, true ! scen}
+*.gnb.cellularNic.mac.reuseD2DMulti = ${reuseMulti = false, false, false, false, false, false, false, false, false, true, false ! scen}
+# Fixed D2D transmission parameters in the first four: the CQI is then not an output of the link
+*.gnb.cellularNic.mac.usePreconfiguredTxParams = ${preconf = true, true, true, true, false, false, false, false, false, false, false ! scen}
+*.gnb.cellularNic.phy.enableD2DCqiReporting = ${cqiRep = false, false, false, false, true, true, true, true, true, true, true ! scen}
+*.gnb.cellularNic.mac.d2dCqi = 7
+
+############### D2D: two pairs, the flows started in D2D mode ##############
+*.ueOther[*].hasD2D = false
+**.ue*[*].hasD2D = true
+*.gnb.hasD2D = true
+*.numUeD2DTx = 2
+*.numUeD2DRx = 2
+*.ue*[*].servingNodeId = 0
+*.ueOther[*].nrServingNodeId = 2
+*.ue*[*].nrServingNodeId = 1
+*.ueD2D*[*].cellularNic.d2dInitialMode = true
+*.gnb.cellularNic.mac.amcMode = "D2D"
+*.gnb.cellularNic.mac.pilotMode = "AVG_CQI"
+
+# The two pairs share the bands: no edge in the conflict graph
+*.gnb.cellularNic.mac.schedulingDisciplineUl = "ALLOCATOR_BESTFIT"
+*.gnb.cellularNic.mac.conflictGraphThreshold = -1000
+
+############### Geometry: every link between UEs below the breakpoint distance ##############
+*.gnb.mobility.initialX = 300m
+*.gnb.mobility.initialY = 300m
+*.gnb.mobility.initialZ = 10m
+*.gnb2.mobility.initialX = 450m
+*.gnb2.mobility.initialY = 300m
+*.gnb2.mobility.initialZ = 10m
+*.ueD2DTx[0].mobility.initialX = 300m
+*.ueD2DTx[0].mobility.initialY = 350m
+*.ueD2DTx[0].mobility.initialZ = 1.5m
+*.ueD2DRx[0].mobility.initialX = 350m
+*.ueD2DRx[0].mobility.initialY = 350m
+*.ueD2DRx[0].mobility.initialZ = 1.5m
+*.ueD2DTx[1].mobility.initialX = 350m
+*.ueD2DTx[1].mobility.initialY = 430m
+*.ueD2DTx[1].mobility.initialZ = 1.5m
+*.ueD2DRx[1].mobility.initialX = 310m
+*.ueD2DRx[1].mobility.initialY = 430m
+*.ueD2DRx[1].mobility.initialZ = 1.5m
+# One position for the cellular UE, whichever cell it is in
+*.ueCell[0].mobility.initialX = 350m
+*.ueCell[0].mobility.initialY = 250m
+*.ueCell[0].mobility.initialZ = 1.5m
+*.ueOther[0].mobility.initialX = 350m
+*.ueOther[0].mobility.initialY = 250m
+*.ueOther[0].mobility.initialZ = 1.5m
+**.mobility.constraintAreaMinX = 0m
+**.mobility.constraintAreaMinY = 0m
+**.mobility.constraintAreaMinZ = 0m
+**.mobility.constraintAreaMaxX = 1000m
+**.mobility.constraintAreaMaxY = 1000m
+**.mobility.constraintAreaMaxZ = 50m
+**.mobility.initFromDisplayString = false
+
+############### The channel: one path loss and nothing else ##############
+**.scenario = "URBAN_MICROCELL"
+**.nodebHeight = 10m
+**.ueHeight = 1.5m
+**.dynamicLos = false
+**.fixedLos = true
+**.fading = false
+**.shadowing = false
+**.downlinkInterference = false
+**.uplinkInterference = false
+**.bgCellInterference = false
+**.extCellInterference = false
+
+############### The budget terms, stated rather than inherited ##############
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 2GHz
+*.carrierAggregation.componentCarrier[0].numBands = 6
+**.ueTxPower = 26dBm
+*.ueD2DTx[1].**.d2dTxPower = 17dBm
+**.d2dTxPower = 20dBm
+*.ueD2DTx[1].cellularNic.*adio.antenna.gain = 1dBi
+*.ueD2D*[*].cellularNic.*adio.antenna.gain = 3dBi
+*.ueCell[*].cellularNic.*adio.antenna.gain = 5dBi
+*.ueOther[*].cellularNic.*adio.antenna.gain = 5dBi
+# None of the three is its default, so a key that stops reaching the radios moves the result
+**.cableLoss = 3dB
+**.thermalNoise = -103dBm
+*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure = 6dB
+
+############### Traffic: a trickle over the first pair, bursts on every band from the others ##############
+# The trickle is alone until the bursts start, and the second pair alone once the trickle stops.
+*.ueD2DTx[0].numApps = 1
+*.ueD2DRx[*].numApps = 1
+*.ueD2DTx[*].app[0].typename = "CbrSender"
+*.ueD2DTx[*].app[0].localPort = 3088
+*.ueD2DTx[*].app[0].destAddress = "ueD2DRx[" + string(ancestorIndex(1)) + "]"
+*.ueD2DTx[*].app[0].destPort = 1000
+*.ueD2DTx[0].app[0].packetSize = 40B
+*.ueD2DTx[0].app[0].samplingTime = 0.001s
+*.ueD2DTx[0].app[0].startTime = 0.1s
+*.ueD2DTx[0].app[0].finishTime = 1s
+*.ueD2DTx[1].app[0].packetSize = 3000B
+*.ueD2DTx[1].app[0].samplingTime = 0.01s
+*.ueD2DTx[1].app[0].startTime = 0.5s
+*.ueD2DTx[1].app[0].finishTime = 1.4s
+*.ueD2DRx[*].app[0].typename = "CbrReceiver"
+*.ueD2DRx[*].app[0].localPort = 1000
+*.ueCell[*].numApps = 1
+*.ueOther[*].numApps = 1
+*.ueCell[*].app[0].typename = "CbrSender"
+*.ueOther[*].app[0].typename = "CbrSender"
+*.ueCell[*].app[0].destAddress = "server"
+*.ueOther[*].app[0].destAddress = "server"
+*.ueCell[*].app[0].destPort = 4000
+*.ueOther[*].app[0].destPort = 4000
+*.ueCell[*].app[0].localPort = 4088
+*.ueOther[*].app[0].localPort = 4088
+*.ueCell[*].app[0].packetSize = 3000B
+*.ueOther[*].app[0].packetSize = 3000B
+*.ueCell[*].app[0].samplingTime = 0.01s
+*.ueOther[*].app[0].samplingTime = 0.01s
+*.ueCell[*].app[0].startTime = 0.5s
+*.ueOther[*].app[0].startTime = 0.5s
+*.server.numApps = 1
+*.server.app[0].typename = "CbrReceiver"
+*.server.app[0].localPort = 4000
+
+*.configurator.config = xmldoc("./demo.xml")
+
+%postrun-command: ../../physics_reference.py --grade results >verdict.txt
+
+%contains: verdict.txt
+graded=68 failures=0
+
+%not-contains: verdict.txt
+FAILED

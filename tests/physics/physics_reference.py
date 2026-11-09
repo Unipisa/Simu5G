@@ -1020,6 +1020,127 @@ GRADERS.update({
 })
 
 
+def grade_d2d_interference_delta(grader):
+    """Two D2D pairs, a cellular UE in either cell, nothing random: the SINR of a
+    D2D reception is the D2D budget of grade_d2d_link_budget over the noise plus
+    what the transmissions sharing its bands add. An interferer's term is its own
+    transmit power and antenna gain, and the receiver's gain and cable loss.
+    Below the breakpoint the UMi LOS formula does not involve the antenna heights
+    beyond fixing the breakpoint itself, which is the model's convention for a
+    UE-to-UE link (tests/doc/model-deviations.md, item 4)."""
+    plr = pathloss_reference()
+    d2d_gain = '*.ueD2D*[*].cellularNic.*adio.antenna.gain'
+    b_gain = '*.ueD2DTx[1].cellularNic.*adio.antenna.gain'
+    ue_gain = '*.ueOther[*].cellularNic.*adio.antenna.gain'
+    d2d_power, b_power = '**.d2dTxPower', '*.ueD2DTx[1].**.d2dTxPower'
+    noise_figure = '*.ueD2D*[*].cellularNic.*adio.receiver.noiseFigure'
+    cfg = config_values([
+        d2d_gain, b_gain, ue_gain, '*.ueCell[*].cellularNic.*adio.antenna.gain',
+        d2d_power, b_power, '**.ueTxPower', noise_figure, '**.cableLoss', '**.thermalNoise',
+        '**.nodebHeight', '**.ueHeight',
+        '*.carrierAggregation.componentCarrier[0].carrierFrequency',
+    ])
+    hBS, hUT = cfg['**.nodebHeight'], cfg['**.ueHeight']
+    fc = cfg['*.carrierAggregation.componentCarrier[0].carrierFrequency']
+    noise = cfg['**.thermalNoise'] + cfg[noise_figure]
+
+    def position(node):
+        names = [f'*.{node}.mobility.initial{axis}' for axis in 'XYZ']
+        values = config_values(names)
+        return [values[name] for name in names]
+
+    tx_a, rx_a = position('ueD2DTx[0]'), position('ueD2DRx[0]')
+    tx_b, rx_b = position('ueD2DTx[1]'), position('ueD2DRx[1]')
+    other_ue, cell_ue = position('ueOther[0]'), position('ueCell[0]')
+
+    # Tripwires: the UEs at the height the formula assumes, so the model's 3D
+    # distance is the horizontal one, and every link below the breakpoint. The
+    # cellular UE is the same interferer, whichever cell it is in.
+    breakpoint = plr._dbp_effective(fc, hBS, hUT)
+    grader.check_true('geometry-is-consistent', 'every UE at ueHeight',
+                      all(p[2] == hUT for p in (tx_a, rx_a, tx_b, rx_b, other_ue, cell_ue)))
+    distances = {name: math.hypot(a[0] - b[0], a[1] - b[1]) for name, a, b in [
+        ('A', tx_a, rx_a), ('B', tx_b, rx_b), ('B at A', tx_b, rx_a), ('A at B', tx_a, rx_b),
+        ('UE at A', other_ue, rx_a)]}
+    for name, d in distances.items():
+        grader.check_true('below-breakpoint', name, d < breakpoint, f"{d:.1f} m < {breakpoint:.1f} m")
+    grader.check_true('geometry-is-consistent', 'one cellular interferer',
+                      cell_ue == other_ue and cfg['*.ueCell[*].cellularNic.*adio.antenna.gain'] == cfg[ue_gain])
+
+    def received(tx_power, tx_gain, d):
+        return (tx_power - plr.t901_umi_los(d, d, fc, hBS, hUT)
+                + tx_gain + cfg[d2d_gain] - cfg['**.cableLoss'])
+
+    def over_noise(signal_dbm, interference_dbm=None):
+        denominator = 10 ** (noise / 10.0)
+        if interference_dbm is not None:
+            denominator += 10 ** (interference_dbm / 10.0)
+        return signal_dbm - 10 * math.log10(denominator)
+
+    signal_a = received(cfg[d2d_power], cfg[d2d_gain], distances['A'])
+    signal_b = received(cfg[b_power], cfg[b_gain], distances['B'])
+    quiet_a, quiet_b = over_noise(signal_a), over_noise(signal_b)
+    # the other pair's transmitter, at its D2D power; the cellular UE, at its uplink power
+    loaded_a = over_noise(signal_a, received(cfg[b_power], cfg[b_gain], distances['B at A']))
+    loaded_b = over_noise(signal_b, received(cfg[d2d_power], cfg[d2d_gain], distances['A at B']))
+    loaded_ue = over_noise(signal_a, received(cfg['**.ueTxPower'], cfg[ue_gain], distances['UE at A']))
+
+    def rows(module, statistic):
+        table = scalar_table(f'module =~ "{module}" AND name =~ "{statistic}:*"', itervars=('scen',))
+        return {str(scen).strip('"'): row for scen, row in table.iterrows()}
+
+    sinr_a = rows('*.ueD2DRx[0].cellularNic.nrRadio.receiver', 'rcvdSinrD2D')
+    sinr_b = rows('*.ueD2DRx[1].cellularNic.nrRadio.receiver', 'rcvdSinrD2D')
+    cqi_a = rows('*.ueD2DTx[0].cellularNic.nrPhy', 'averageCqiD2D')
+
+    # what each run has at the first pair's receiver, and (when the second pair
+    # transmits) at the second's: the minimum of rcvdSinrD2D, or None if flat
+    runs = {
+        'off': (None, None),
+        'pair': (loaded_a, loaded_b),
+        'sameCellUl': (None,),
+        'otherCellUl': (loaded_ue,),
+        'cqiQuiet': (None,),
+        'cqiSameCellUl': (None,),
+        'cqiOtherCellUl': (loaded_ue,),
+        'cqiPairReuse': (loaded_a, loaded_b),
+        'cqiPairNoReuse': (None, None),
+        'cqiPairReuseMulti': (None, None),
+        'cqiPairOff': (None, None),
+    }
+    grader.check_true('every-run-recorded', 'first pair', set(sinr_a) == set(runs), str(sorted(sinr_a)))
+    for scen, minimum in runs.items():
+        grader.check_true('frames-received', scen, sinr_a[scen]['rcvdSinrD2D:count'] > 0)
+        check_endpoints(grader, sinr_a[scen], 'rcvdSinrD2D', f'{scen} first pair', quiet_a, minimum[0])
+        if len(minimum) > 1:
+            check_endpoints(grader, sinr_b[scen], 'rcvdSinrD2D', f'{scen} second pair', quiet_b, minimum[1])
+
+    # The CQI the first pair transmits with, reported on all bands. The table's top
+    # is what a quiet link of over 40 dB gets, and a transmission that counts lowers it.
+    TOP_CQI = 15.0
+    for scen in ('cqiQuiet', 'cqiSameCellUl', 'cqiPairNoReuse', 'cqiPairOff'):
+        grader.check_absolute('cqi-unaffected', f'{scen} min', cqi_a[scen]['averageCqiD2D:min'], TOP_CQI, 0.0)
+        grader.check_absolute('cqi-unaffected', f'{scen} max', cqi_a[scen]['averageCqiD2D:max'], TOP_CQI, 0.0)
+    for scen in ('cqiOtherCellUl', 'cqiPairReuse', 'cqiPairReuseMulti'):
+        grader.check_true('cqi-lowered', scen, cqi_a[scen]['averageCqiD2D:min'] < TOP_CQI,
+                          f"min {cqi_a[scen]['averageCqiD2D:min']:g}")
+
+    # The cellular UE really transmits: its uplink is received in the two runs where it does not count.
+    sinr_ul = rows('*.ueCell[0].cellularNic.nrRadio.receiver', 'rcvdSinrUl')
+    for scen in ('sameCellUl', 'cqiSameCellUl'):
+        grader.check_true('same-cell-ue-transmits', scen, sinr_ul[scen]['rcvdSinrUl:count'] > 0,
+                          f"{sinr_ul[scen]['rcvdSinrUl:count']:g} frames")
+    sinr_ul = rows('*.ueOther[0].cellularNic.nrRadio.receiver', 'rcvdSinrUl')
+    for scen in ('otherCellUl', 'cqiOtherCellUl'):
+        grader.check_true('other-cell-ue-transmits', scen, sinr_ul[scen]['rcvdSinrUl:count'] > 0,
+                          f"{sinr_ul[scen]['rcvdSinrUl:count']:g} frames")
+
+
+GRADERS.update({
+    'D2dInterferenceDelta': grade_d2d_interference_delta,
+})
+
+
 def main():
     if len(sys.argv) != 3 or sys.argv[1] != '--grade':
         print("usage: physics_reference.py --grade <result-directory>", file=sys.stderr)

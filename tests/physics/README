@@ -36,8 +36,8 @@ Three kinds of ingredient, and only the first is a specification:
    the model computes consistently with its convention, not that the
    convention is right.
  - Characterisation, where the model makes a choice no specification makes or
-   where a different one applies: D2dLinkBudget (a UE-to-UE link evaluated as
-   a UMi link), BackgroundCellFloor and ExtCellFloor (the external and
+   where a different one applies: D2dLinkBudget and D2dInterferenceDelta (a
+   UE-to-UE link evaluated as a UMi link), BackgroundCellFloor and ExtCellFloor (the external and
    background cells' path loss), BackgroundUeCqi, BackgroundUeLoad and
    BackgroundCellCqi (background UEs' CQIs and load). Their descriptions
    say so. They are regression tests of the model's choice.
