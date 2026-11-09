@@ -1,0 +1,175 @@
+%description:
+
+ConfiguredRateErrorModel, on its own: the module, its parameters and
+computePacketErrorRate(), called directly. Nothing else exists in the network,
+so the model needs no Binder, carrier or radio.
+
+The expected values are the literal numbers of the formula in
+ConfiguredRateErrorModel.ned, per * harqReduction^(n-1) for the n-th
+transmission attempt, with per the direction's rate.
+
+No fingerprint row can tell this formula from a near miss: every ideal row
+sets harqReduction = 1 and perD2D = 0 and carries no D2D traffic. Checked here:
+
+ - with perDl = 0.1, perUl = 0.2, perD2D = 0.3 and harqReduction = 0.5, the
+   rate of attempts 1 to 3 in each of DL, UL, D2D and D2D_MULTI (D2D_MULTI
+   takes perD2D), and that the CQI, the SINR and the allocation do not enter;
+ - attempt 0 and UNKNOWN_DIRECTION are rejected;
+ - with nothing configured, per's default of 0.1 in every direction and
+   harqReduction's default of 0.3, which makes attempt 2 0.03;
+ - with only per set, the per-direction rates default to it;
+ - the per-direction rates are volatile, which is how a coverage loss is
+   scripted: an expression of simTime() changes value across 0.5 s, in each
+   direction, and the H-ARQ reduction applies to the value of the moment.
+
+%includes:
+#include <cmath>
+#include <limits>
+#include <optional>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "simu5g/stack/phy/radio/ICellularErrorModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+static const double TOL = 1e-12;
+
+// An error rate as the test reads it: NaN, which no check accepts, stands for no
+// rate at all and for an error, so that a wrong answer fails the check that asked.
+static double rateOf(ICellularErrorModel *model, Direction dir, unsigned char attempt)
+{
+    try {
+        std::optional<double> rate = model->computePacketErrorRate(dir, 7, std::vector<double>(), RbMap(), attempt);
+        return rate ? *rate : std::numeric_limits<double>::quiet_NaN();
+    }
+    catch (omnetpp::cRuntimeError&) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+}
+
+struct DirectionRow
+{
+    const char *name;
+    Direction dir;
+};
+
+static const std::vector<DirectionRow> allDirections = { { "DL", DL }, { "UL", UL }, { "D2D", D2D }, { "D2D_MULTI", D2D_MULTI } };
+
+%file: harness.ned
+import simu5g.stack.phy.radio.ConfiguredRateErrorModel;
+
+network Harness
+{
+    submodules:
+        configured: ConfiguredRateErrorModel;
+        defaults: ConfiguredRateErrorModel;
+        perOnly: ConfiguredRateErrorModel;
+        scripted: ConfiguredRateErrorModel;
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+
+*.configured.perDl = 0.1
+*.configured.perUl = 0.2
+*.configured.perD2D = 0.3
+*.configured.harqReduction = 0.5
+
+*.perOnly.per = 0.4
+
+*.scripted.perDl = simTime() < 0.5s ? 0 : 1
+*.scripted.perUl = simTime() < 0.5s ? 1 : 0
+*.scripted.perD2D = simTime() < 0.5s ? 0.25 : 0.75
+*.scripted.harqReduction = 0.5
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto module = [&] (const char *name) { return check_and_cast<ICellularErrorModel *>(getParentModule()->getSubmodule(name)); };
+
+//
+// --- the configured rates ---
+//
+{
+    auto *model = module("configured");
+    struct Row { DirectionRow d; double attempt1, attempt2, attempt3; };
+    const std::vector<Row> rows = {
+        { allDirections[0], 0.1, 0.05, 0.025 },
+        { allDirections[1], 0.2, 0.1, 0.05 },
+        { allDirections[2], 0.3, 0.15, 0.075 },
+        { allDirections[3], 0.3, 0.15, 0.075 },
+    };
+    for (const Row& row : rows) {
+        std::string name = row.d.name;
+        c.expectNear(name + " attempt 1 is the direction's rate", rateOf(model, row.d.dir, 1), row.attempt1, TOL);
+        c.expectNear(name + " attempt 2 is reduced once", rateOf(model, row.d.dir, 2), row.attempt2, TOL);
+        c.expectNear(name + " attempt 3 is reduced twice", rateOf(model, row.d.dir, 3), row.attempt3, TOL);
+    }
+
+    std::vector<double> sinr = { -100.0, 0.0, 100.0 };
+    RbMap blocks;
+    blocks[MACRO][1] = 6;
+    std::optional<double> rate = model->computePacketErrorRate(DL, 15, sinr, blocks, 1);
+    c.expectNear("the CQI, the SINR and the allocation do not enter (nothing above; CQI 15, SINRs and blocks here)",
+            rate ? *rate : std::numeric_limits<double>::quiet_NaN(), 0.1, TOL);
+    rate = model->computePacketErrorRate(DL, 0, std::vector<double>(), RbMap(), 1);
+    c.expectNear("...not even a CQI of 0, which is a certain loss only to the BLER curves",
+            rate ? *rate : std::numeric_limits<double>::quiet_NaN(), 0.1, TOL);
+
+    for (const DirectionRow& d : allDirections)
+        c.expectRejected(std::string("attempt 0 in ") + d.name, [&] { model->computePacketErrorRate(d.dir, 7, std::vector<double>(), RbMap(), 0); });
+    c.expectRejected("UNKNOWN_DIRECTION", [&] { model->computePacketErrorRate(UNKNOWN_DIRECTION, 7, std::vector<double>(), RbMap(), 1); });
+}
+
+//
+// --- the defaults ---
+//
+{
+    auto *model = module("defaults");
+    for (const DirectionRow& d : allDirections) {
+        std::string name = d.name;
+        c.expectNear("nothing configured: " + name + " attempt 1 is per's default", rateOf(model, d.dir, 1), 0.1, TOL);
+        c.expectNear("nothing configured: " + name + " attempt 2 is reduced by harqReduction's default", rateOf(model, d.dir, 2), 0.03, TOL);
+    }
+    model = module("perOnly");
+    for (const DirectionRow& d : allDirections)
+        c.expectNear(std::string("only per set: ") + d.name + " defaults to it", rateOf(model, d.dir, 1), 0.4, TOL);
+}
+
+//
+// --- the volatile rates ---
+//
+{
+    auto *model = module("scripted");
+    auto expectRates = [&] (const std::string& when, double dl, double ul, double d2d) {
+        c.expectNear(when + ": DL", rateOf(model, DL, 1), dl, TOL);
+        c.expectNear(when + ": UL", rateOf(model, UL, 1), ul, TOL);
+        c.expectNear(when + ": D2D", rateOf(model, D2D, 1), d2d, TOL);
+        c.expectNear(when + ": D2D_MULTI", rateOf(model, D2D_MULTI, 1), d2d, TOL);
+    };
+    expectRates("at 0 s", 0, 1, 0.25);
+    wait(SimTime(499, SIMTIME_MS));
+    expectRates("at 0.499 s", 0, 1, 0.25);
+    wait(SimTime(1, SIMTIME_MS));
+    expectRates("at 0.5 s", 1, 0, 0.75);
+    wait(SimTime(100, SIMTIME_MS));
+    expectRates("at 0.6 s", 1, 0, 0.75);
+    c.expectNear("the H-ARQ reduction applies to the value of the moment", rateOf(model, DL, 2), 0.5, TOL);
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=48 modelfailures=0
+
+%not-contains: stdout
+FAILED

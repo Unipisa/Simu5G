@@ -1,0 +1,338 @@
+%description:
+
+IdealChannelModel::isReceptionSuccessful(): the model has no propagation and
+reports a fixed large SINR on every band, and the receiving node's receiver
+decides against its error model, with one draw. Both pairings the model's NED
+documentation describes are checked, on the same harness shape as
+ChannelModelReception.
+
+No fingerprint row or other test runs the first pairing, and every ideal row
+sets harqReduction = 1 and carries no D2D traffic in the second.
+
+IdealChannelModel with the default BlerCurveErrorModel "loses nothing at a CQI
+above 0": at the fixed SINR, above the curves, the rate is 0 whatever the
+grant and the attempt, and the receiver's draw decides. So every reception at
+CQI 15, for several band allocations and attempts, and at every other CQI
+above 0, is received and takes exactly one draw; at CQI 0, the error model's
+certain loss, it is lost with no draw. The CQI is the codeword's: with two
+codewords the one the frame was sent on, with one the only one there is.
+
+With ConfiguredRateErrorModel, the verdicts follow the formula of
+ConfiguredRateErrorModel.ned, per * harqReduction^(n-1), at this test's
+perDl = 0.4, perUl = 0.6, perD2D = 0.8 and harqReduction = 0.5. As in
+ChannelModelReception the series is graded exactly: a copy of the receiver's
+random number generator, taken before the series, yields the draw that decides
+each reception, and it serves the whole series, so a reception that drew twice
+would put every later verdict out of step. And the series has to tell the
+formula from its near misses, each of them contradicted by at least one
+reception: the attempt taken as 1, the reduction once too often, one direction's
+rate in place of another's. The series goes over all four directions, and
+attempts 1 to 4; its CQI and grant are random, and must not matter (CQI 0
+included: it is a certain loss only to the BLER curves).
+
+A CQI above 15 and an attempt of 0 are rejected with no draw, in the pairing
+where the error model would not reject them itself: BlerCurveErrorModel takes
+attempt 0 as a reduction to the power of -1, and has no use for a CQI above the
+curves at this SINR.
+
+%includes:
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <random>
+#include <string>
+#include <vector>
+#include "SchedulerTestUtil.h"
+#include "ChannelModelTestUtil.h"
+#include "simu5g/stack/phy/channelmodel/IdealChannelModel.h"
+
+%global:
+using namespace simu5g;
+using namespace simu5g::unittest;
+
+// One received packet, as the channel model is handed it.
+struct Reception
+{
+    Direction dir = DL;
+    std::vector<Cqi> cqis = {15};  // per codeword
+    unsigned char cw = 0;
+    unsigned char txNumber = 1;
+    RbMap blocks;                  // remote unit -> band -> blocks
+};
+
+static bool decide(ChannelModelBase *model, IRadioEndpoint *radio, const Reception& r)
+{
+    UserControlInfo info;
+    info.setDirection(r.dir);
+    info.setFrameType(DATAPKT);
+    info.setSourceId(MacNodeId(r.dir == DL ? 1 : 1025));
+    info.setDestId(MacNodeId(r.dir == DL ? 1025 : r.dir == UL ? 1 : 1026));
+    info.setTxMode(SINGLE_ANTENNA_PORT0);
+    info.setCarrierFrequency(GHz(3.5));
+    info.setCw(r.cw);
+    info.setTxNumber(r.txNumber);
+    info.setGrantedBlocks(r.blocks);
+    auto *params = new UserTxParams();
+    params->writeCqi(r.cqis);
+    info.setUserTxParams(params);
+    return model->isReceptionSuccessful(radio, nullptr, &info, {});
+}
+
+// How many numbers fn drew from a component's generator, or -1 for more than a
+// few: the copy taken before is stepped until it agrees with the generator.
+template<typename Fn>
+static int drawsDuring(cComponent *component, Fn fn)
+{
+    RngSnapshot before(component);
+    fn();
+    for (int n = 0; n <= 4; n++) {
+        RngSnapshot a = before, b(component);
+        bool same = true;
+        for (int i = 0; i < 4; i++)
+            same = same && a.rng()->doubleRand() == b.rng()->doubleRand();
+        if (same)
+            return n;
+        before.rng()->doubleRand();
+    }
+    return -1;
+}
+
+// The rates of ConfiguredRateErrorModel.ned's formula, and its near misses. EXACT
+// is the model as it is; each other variant differs from it in one step.
+enum Variant {
+    EXACT,
+    ATTEMPT_ALWAYS_1, REDUCTION_ONCE_TOO_OFTEN,
+    DL_RATE_EVERYWHERE, D2D_AT_THE_UL_RATE, D2D_MULTI_AT_THE_UL_RATE, UL_AT_THE_DL_RATE,
+    NUM_VARIANTS
+};
+
+static const char *variantNames[NUM_VARIANTS] = {
+    "exact",
+    "the attempt taken as 1", "the reduction once too often",
+    "the DL rate in every direction", "D2D at the UL rate", "D2D_MULTI at the UL rate", "UL at the DL rate",
+};
+
+static double errorRate(Direction dir, int attempt, Variant v)
+{
+    const double perDl = 0.4, perUl = 0.6, perD2D = 0.8, harqReduction = 0.5;
+    double per = dir == DL ? perDl : dir == UL ? perUl : perD2D;
+    if (v == DL_RATE_EVERYWHERE || (v == UL_AT_THE_DL_RATE && dir == UL))
+        per = perDl;
+    if ((v == D2D_AT_THE_UL_RATE && dir == D2D) || (v == D2D_MULTI_AT_THE_UL_RATE && dir == D2D_MULTI))
+        per = perUl;
+    int exponent = v == ATTEMPT_ALWAYS_1 ? 0 : v == REDUCTION_ONCE_TOO_OFTEN ? attempt : attempt - 1;
+    return per * std::pow(harqReduction, exponent);
+}
+
+// A reception for the series.
+static Reception randomReception(std::mt19937& gen)
+{
+    auto pick = [&](int lo, int hi) { return std::uniform_int_distribution<int>(lo, hi)(gen); };
+    const Direction directions[] = { DL, UL, D2D, D2D_MULTI };
+    Reception r;
+    r.dir = directions[pick(0, 3)];
+    r.cqis = {Cqi(pick(0, 15))};
+    if (pick(0, 1))
+        r.cqis.push_back(Cqi(pick(0, 15)));
+    r.cw = pick(0, 1);
+    r.txNumber = pick(1, 4);
+    int numBands = pick(0, 3);
+    for (int i = 0; i < numBands; i++)
+        r.blocks[pick(0, 3) == 0 ? RU1 : MACRO][pick(0, 9)] = pick(1, 6);
+    return r;
+}
+
+%file: harness.ned
+import simu5g.common.binder.Binder;
+import simu5g.stack.phy.medium.CellularRadioMedium;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.stack.phy.channelmodel.IdealChannelModel;
+import simu5g.stack.phy.radio.CellularReceiver;
+
+network Harness
+{
+    submodules:
+        binder: Binder;
+        radioMedium: CellularRadioMedium;
+        carrierAggregation: CarrierAggregation;
+        channelModel: IdealChannelModel;
+        curveReceiver: CellularReceiver;  // the default error model
+        rateReceiver: CellularReceiver;   // a ConfiguredRateErrorModel
+        test: Test;
+}
+
+%inifile: omnetpp.ini
+[General]
+network = Harness
+cmdenv-express-mode = false
+cmdenv-log-prefix = ""
+sim-time-limit = 1s
+*.carrierAggregation.numComponentCarriers = 1
+*.carrierAggregation.componentCarrier[0].carrierFrequency = 3.5GHz
+*.carrierAggregation.componentCarrier[0].numBands = 10
+*.binder.printTrafficGeneratorConfig = false
+
+*.rateReceiver.errorModel.typename = "ConfiguredRateErrorModel"
+*.rateReceiver.errorModel.perDl = 0.4
+*.rateReceiver.errorModel.perUl = 0.6
+*.rateReceiver.errorModel.perD2D = 0.8
+*.rateReceiver.errorModel.harqReduction = 0.5
+
+%no-default-inifile: 1
+
+%activity:
+Checker c;
+auto *model = harnessModule<IdealChannelModel>(this, "channelModel");
+auto *curveReceiver = harnessModule<CellularReceiver>(this, "curveReceiver");
+auto *rateReceiver = harnessModule<CellularReceiver>(this, "rateReceiver");
+
+StubEndpoint curveRadio, rateRadio;
+curveRadio.receiver = curveReceiver;
+rateRadio.receiver = rateReceiver;
+
+// the allocations: the first and the last band, blocks on every band, two remote units, a listed band with no blocks
+std::map<std::string, RbMap> allocations;
+allocations["one block on the first band"][MACRO][0] = 1;
+allocations["many blocks on the last band"][MACRO][9] = 25;
+for (Band b = 0; b < 10; b++)
+    allocations["every band"][MACRO][b] = 3;
+allocations["two remote units"][MACRO][2] = 4;
+allocations["two remote units"][RU1][7] = 2;
+allocations["a listed band with no blocks"][MACRO][1] = 0;
+allocations["a listed band with no blocks"][MACRO][5] = 6;
+
+auto reception = [] (const RbMap& blocks, Cqi cqi, int attempt, Direction dir = DL) {
+    Reception r;
+    r.dir = dir;
+    r.cqis = {cqi};
+    r.txNumber = attempt;
+    r.blocks = blocks;
+    return r;
+};
+
+//
+// --- the default error model: loses nothing at a CQI above 0 ---
+//
+for (const auto& [name, blocks] : allocations) {
+    int receptions = 0, received = 0, oneDraw = 0;
+    for (Direction dir : { DL, UL }) {
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            bool actual = false;
+            int draws = drawsDuring(curveReceiver, [&] { actual = decide(model, &curveRadio, reception(blocks, 15, attempt, dir)); });
+            receptions++;
+            received += actual;
+            oneDraw += draws == 1;
+        }
+    }
+    c.expectValue("BLER curves, CQI 15, " + name + ": received at every attempt", received, receptions);
+    c.expectValue("BLER curves, CQI 15, " + name + ": exactly one draw", oneDraw, receptions);
+
+    bool actual = true;
+    int draws = drawsDuring(curveReceiver, [&] { actual = decide(model, &curveRadio, reception(blocks, 0, 1)); });
+    c.check("BLER curves, CQI 0, " + name + ": lost with no draw", !actual && draws == 0,
+            "received=" + std::to_string(actual) + " draws=" + std::to_string(draws));
+}
+{
+    int receptions = 0, received = 0, oneDraw = 0;
+    for (Cqi cqi = 1; cqi <= 15; cqi++) {
+        for (const auto& [name, blocks] : allocations) {
+            bool actual = false;
+            int draws = drawsDuring(curveReceiver, [&] { actual = decide(model, &curveRadio, reception(blocks, cqi, 1)); });
+            receptions++;
+            received += actual;
+            oneDraw += draws == 1;
+        }
+    }
+    c.expectValue("BLER curves, every CQI above 0: received", received, receptions);
+    c.expectValue("BLER curves, every CQI above 0: exactly one draw", oneDraw, receptions);
+}
+
+// the CQI is the codeword's; CQI 0 is what tells one from the other at this SINR
+{
+    auto codeword = [&] (std::vector<Cqi> cqis, int cw) {
+        Reception r = reception(allocations["every band"], 15, 1);
+        r.cqis = cqis;
+        r.cw = cw;
+        return decide(model, &curveRadio, r);
+    };
+    c.check("two codewords: the first one's CQI when the frame is on the first", codeword({15, 0}, 0) && !codeword({0, 15}, 0));
+    c.check("two codewords: the second one's CQI when the frame is on the second", codeword({0, 15}, 1) && !codeword({15, 0}, 1));
+    c.check("one codeword: its CQI, whatever the frame's codeword index says", codeword({15}, 1) && !codeword({0}, 1));
+}
+
+//
+// --- what the model rejects before asking the error model ---
+//
+{
+    const RbMap& blocks = allocations["every band"];
+    int draws = -1;
+    auto rejected = [&] (const std::string& what, cComponent *receiver, IRadioEndpoint *radio, Reception r) {
+        draws = drawsDuring(receiver, [&] { c.expectRejected(what, [&] { decide(model, radio, r); }); });
+        c.expectValue("...with no draw", draws, 0);
+    };
+    rejected("BLER curves: a CQI above 15", curveReceiver, &curveRadio, reception(blocks, 16, 1));
+    rejected("configured rate: a CQI above 15", rateReceiver, &rateRadio, reception(blocks, 16, 1));
+    Reception secondCodeword = reception(blocks, 15, 1);
+    secondCodeword.cqis = {15, 16};
+    secondCodeword.cw = 1;
+    rejected("BLER curves: a CQI above 15 on the codeword the frame is on", curveReceiver, &curveRadio, secondCodeword);
+    secondCodeword.cw = 0;
+    c.check("...and not on the other", decide(model, &curveRadio, secondCodeword));
+    rejected("BLER curves: an attempt of 0", curveReceiver, &curveRadio, reception(blocks, 15, 0));
+    rejected("configured rate: an attempt of 0", rateReceiver, &rateRadio, reception(blocks, 15, 0));
+}
+
+//
+// --- the configured rate: the verdicts, graded against the draw ---
+//
+{
+    const int count = 2000;
+    std::mt19937 gen(20261109);  // which receptions the series has; the receiver's draws decide them
+    RngSnapshot twin(rateReceiver);
+    std::map<Direction, int> mismatches, received, lost;
+    std::map<int, int> attemptMismatches;
+    int contradicted[NUM_VARIANTS] = {};
+    std::string firstMismatch;
+
+    for (int i = 0; i < count; i++) {
+        Reception rx = randomReception(gen);
+        double u = omnetpp::uniform(twin.rng(), 0.0, 1.0);
+        bool actual = decide(model, &rateRadio, rx);
+        bool expected = u > errorRate(rx.dir, rx.txNumber, EXACT);
+        (actual ? received : lost)[rx.dir]++;
+        if (actual != expected) {
+            if (firstMismatch.empty())
+                firstMismatch = "reception " + std::to_string(i) + ": draw " + std::to_string(u) + ", error rate "
+                        + std::to_string(errorRate(rx.dir, rx.txNumber, EXACT)) + ", model says " + (actual ? "received" : "lost");
+            mismatches[rx.dir]++;
+            attemptMismatches[rx.txNumber]++;
+        }
+        for (int v = EXACT + 1; v < NUM_VARIANTS; v++)
+            if (actual != (u > errorRate(rx.dir, rx.txNumber, (Variant)v)))
+                contradicted[v]++;
+    }
+
+    const std::map<Direction, std::string> directionNames = { { DL, "DL" }, { UL, "UL" }, { D2D, "D2D" }, { D2D_MULTI, "D2D_MULTI" } };
+    for (const auto& [dir, name] : directionNames) {
+        c.check(name + ": every reception is decided by per * harqReduction^(attempt-1) and one draw", mismatches[dir] == 0,
+                std::to_string(mismatches[dir]) + " disagree; " + firstMismatch);
+        c.check("..." + name + " on a series that is not one-sided", received[dir] >= 20 && lost[dir] >= 20,
+                std::to_string(received[dir]) + " received, " + std::to_string(lost[dir]) + " lost");
+    }
+    for (int attempt = 1; attempt <= 4; attempt++)
+        c.expectValue("attempt " + std::to_string(attempt) + ": the frame's attempt is the one the error model is given",
+                attemptMismatches[attempt], 0);
+    for (int v = EXACT + 1; v < NUM_VARIANTS; v++)
+        c.check(std::string("...that tells the formula from its near miss: ") + variantNames[v], contradicted[v] > 0,
+                "contradicted by " + std::to_string(contradicted[v]) + " receptions");
+    RngSnapshot after(rateReceiver);
+    c.check("the series took exactly one draw per reception", twin.rng()->doubleRand() == after.rng()->doubleRand());
+}
+
+c.summary();
+
+%contains: stdout
+modelchecks=50 modelfailures=0
+
+%not-contains: stdout
+FAILED
