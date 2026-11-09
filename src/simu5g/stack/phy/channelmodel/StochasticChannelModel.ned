@@ -16,12 +16,13 @@ package simu5g.stack.phy.channelmodel;
 // The radio medium's channel model of one carrier and RAT (see
 // ~CellularRadioMedium): everything between a transmitted air frame and the
 // SINR it arrives with, which the receiving radio's error model and receiver
-// turn into the decision on whether it was received. The channel impairments are modeled
-// statistically -- drawn from the distributions of a 3GPP propagation study,
-// rather than computed from the geometry of an actual environment -- which is
-// what sets this model apart from ~IdealChannelModel, where there are no
-// impairments at all (and, with a ~ConfiguredRateErrorModel at the receivers,
-// only a configured packet error rate).
+// turn into the decision on whether it was received. The channel impairments
+// are modeled statistically -- drawn from the distributions of a 3GPP
+// propagation study, rather than computed from the geometry of an actual
+// environment -- which is what sets this model apart from ~IdealChannelModel,
+// where there are no impairments at all (and, with a
+// ~ConfiguredRateErrorModel at the receivers, only a configured packet error
+// rate).
 //
 // It covers:
 // - path loss per deployment scenario, LOS/NLOS state and log-normal shadowing,
@@ -57,7 +58,7 @@ simple StochasticChannelModel extends ChannelModelBase
         double nodebHeight @unit(m) = default(25m);
         // Building height
         double buildingHeight @unit(m) = default(20m);
-        // Enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901) for a UE inside a building (see ~PhyBase); only used with pathLossType="Tr38901"
+        // Enable the high-loss building penetration model (table 7.4.3-2 in TR 38.901) for a UE inside a building (see ~CellularRadio); only used with pathLossType="Tr38901"
         bool useBuildingPenetrationHighLossModel = default(false);
 
         double streetWidth @unit(m) = default(20m);
@@ -90,7 +91,7 @@ simple StochasticChannelModel extends ChannelModelBase
 
         // Whether interference from background cells is included in the SINR, in both UL and DL
         bool bgCellInterference = default(true);
-        // Whether interference from external cells is included in the DL SINR (TODO possibly obsolete)
+        // Whether interference from external cells is included in the DL SINR
         bool extCellInterference = default(true);
         // Whether interference from other base stations is included in the DL SINR
         bool downlinkInterference = default(false);
@@ -99,6 +100,7 @@ simple StochasticChannelModel extends ChannelModelBase
         // Whether interference from other D2D transmissions is included in the D2D SINR
         bool d2dInterference = default(true);
 
+        // Whether a phantom link (an external or background cell's, or a background UE's) takes its own LOS state; when false, it is NLOS
         bool enableExtCellLos = default(true);
 
         // Collection of SINR statistics can be disabled because it might be quite time-consuming.

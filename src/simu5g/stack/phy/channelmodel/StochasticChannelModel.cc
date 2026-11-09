@@ -129,8 +129,7 @@ void StochasticChannelModel::initialize(int stage)
 RadioLink StochasticChannelModel::cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, Coord coord)
 {
     // The radio the evaluation is at is one endpoint and 'coord' the other;
-    // 'dir' says which of the two is the UE. The UE is the node whose position
-    // history we track.
+    // 'dir' says which of the two is the UE.
     RadioLink link;
     link.startTime = simTime();
     link.dir = dir;
@@ -250,10 +249,7 @@ RadioLink StochasticChannelModel::linkFor(IRadioEndpoint *radio, UserControlInfo
     }
     link.linkKey = LinkKey(link.txId, link.rxId);
 
-    // It is always the UE's position that feeds the speed computation -- which is
-    // why the old code's "pass UL for a FEEDBACKPKT" special case is not needed
-    // here: it only existed to make getAttenuation() pick 'coord' rather than
-    // the local radio's position.
+    // The UE's position feeds the speed computation.
     link.stateNodeId = ueId;
 
     // the cell this link belongs to, for the interference computation
@@ -266,7 +262,7 @@ double StochasticChannelModel::getAttenuation(const RadioLink& link)
 {
     // a building's penetration loss is the UE end's: the transmitter of an
     // uplink, otherwise the receiver (the UE, or a D2D link's receiver); a
-    // background UE is outdoors
+    // phantom radio says it is outdoors
     IRadioEndpoint *ueEnd = link.dir == UL ? link.txRadio : link.rxRadio;
     PathLossModel::LinkConditions conditions;
     conditions.indoor = ueEnd != nullptr && ueEnd->isInsideBuilding();
@@ -1201,11 +1197,7 @@ void StochasticChannelModel::computeD2dInterferencePlusNoise(const RadioLink& li
     /*
      * In calculating a D2D CQI, the interference from other D2D UEs discriminates between calculating a CQI
      * in the direction D2D_Tx--->D2D_Rx or D2D_Tx<---D2D_Rx (This happens due to the different positions of the
-     * interfering UEs relative to the position of the UE for whom we are calculating the CQI). We need that the CQI
-     * for the D2D_Tx is the same as the D2D_Rx (This is a help for the simulator because when the eNodeB allocates
-     * resources to a D2D_Tx it must refer to the quality channel of the D2D_Rx).
-     * To do so, here we must check if the ueId is the ID of the D2D_Tx: if it
-     * is so we swap the ueId with the one of his Peer (D2D_Rx). We do the same for the coord.
+     * interfering UEs relative to the position of the UE for whom we are calculating the CQI).
      */
     // vector containing the sum of inCell interference for each band
     std::vector<double> d2dInterference; // Linear value (mW)
@@ -1215,15 +1207,11 @@ void StochasticChannelModel::computeD2dInterferencePlusNoise(const RadioLink& li
                 (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &d2dInterference, link.dir);
     }
 
-    EV << "StochasticChannelModel::computeInterferencePlusNoise - distance from my Peer = "
+    EV << "StochasticChannelModel::computeD2dInterferencePlusNoise - distance from my Peer = "
        << link.rxCoord.distance(link.txCoord) << " - DIR=" << dirToA(link.dir) << endl;
 
     // One loop for both cases: with interference disabled d2dInterference is all
-    // zeros, so this degenerates to the noise-only denominator. (The two used to be
-    // written out separately, the disabled branch summing noise directly instead of
-    // going through dBm -> linear -> dBm. That round trip is not bit-identical, so
-    // the collapse is observable -- but only where d2dInterference is false, which
-    // no shipped configuration sets.)
+    // zeros, so this degenerates to the noise-only denominator.
     for (unsigned int i = 0; i < numBands_; i++) {
         // the caller skips these bands too; leave their denominator untouched
         if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
@@ -1293,8 +1281,7 @@ std::vector<double> StochasticChannelModel::getRSRP_D2D(AirFrame *frame, UserCon
 
 std::vector<double> StochasticChannelModel::getSINR_D2D(AirFrame *frame, UserControlInfo *lteInfo, MacNodeId destId, Coord destCoord, MacNodeId enbId)
 {
-    // desired-signal RSRP (pathloss + shadowing + fading), then noise and
-    // interference on top: exactly the two halves this body used to inline
+    // desired-signal RSRP (pathloss + shadowing + fading), then noise and interference on top
     std::vector<double> rsrpVector = getRSRP_D2D(frame, lteInfo, destId, destCoord);
     return getSINR_D2D(frame, lteInfo, destId, destCoord, enbId, rsrpVector);
 }

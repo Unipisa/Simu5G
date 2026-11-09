@@ -174,9 +174,8 @@ class StochasticChannelModel : public ChannelModelBase
 
 
     /*
-     * Convenience overload for the cellular callers that still think in
-     * (UE, direction, remote coordinate) terms -- the interference helpers and
-     * the background-UE path. Builds a cellular link and forwards, so the
+     * Convenience overload for the interference walks, which have a UE id, a
+     * direction and a remote coordinate. Builds a cellular link and forwards, so the
      * subclass override of getAttenuation(const RadioLink&) still applies.
      *
      * @param radio the radio the evaluation is at, the local end of the link
@@ -311,7 +310,6 @@ class StochasticChannelModel : public ChannelModelBase
     virtual void computeLosProbability(double d3D, double d2D, const RadioLink& link);
 
     bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
-    virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
 
     /// Compute the received useful signal (RSRP) for a D2D transmission, per band.
     std::vector<double> getRSRP_D2D(AirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord);
@@ -414,9 +412,8 @@ class StochasticChannelModel : public ChannelModelBase
     const inet::Coord& transmissionStartPosition(const AirFrame *frame) const;
 
     /*
-     * Build the RadioLink for a UE<->serving-BS link expressed the old way: the
-     * radio the evaluation is at is one endpoint, 'coord' the other, and 'dir'
-     * says which of the two is the UE.
+     * Build the RadioLink for a UE<->BS link: the radio the evaluation is at is
+     * one endpoint, 'coord' the other, and 'dir' says which of the two is the UE.
      */
     RadioLink cellularLink(IRadioEndpoint *radio, MacNodeId ueId, Direction dir, inet::Coord coord);
 

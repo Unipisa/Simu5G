@@ -35,17 +35,10 @@ class Binder;
  * A radio link between two arbitrary endpoints, and the parameters the channel
  * model needs to evaluate it.
  *
- * The channel model used to be phrased as "a link between me (the local radio's
- * position) and one remote endpoint", with Direction selecting -- all at once --
- * which endpoint was mobile, which antenna gains applied, and which noise figure
- * applied. A UE-to-UE link fits neither of those two shapes, which is why the
- * D2D channel model had to re-implement the whole propagation path rather than
- * reuse it.
- *
- * Here those things are data. `dir` survives only as a tag: it selects the
- * statistic to emit and dispatches the (genuinely cellular-topology-aware)
- * interference computation, but it no longer derives any of the link geometry
- * or the link budget.
+ * A RadioLink states as data which end is mobile and which radios' budgets
+ * apply. `dir` is only a tag: it selects the statistic to emit and dispatches
+ * the (genuinely cellular-topology-aware) interference computation, but it
+ * derives neither the link geometry nor the link budget.
  */
 struct RadioLink
 {

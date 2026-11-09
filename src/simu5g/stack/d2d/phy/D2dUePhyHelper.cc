@@ -38,8 +38,6 @@ void D2dUePhyHelper::storeAirFrame(AirFrame *newFrame)
     // Store the frame received from the nearest transmitter
     UserControlInfo *newInfo = check_and_cast<UserControlInfo *>(newFrame->getControlInfo());
     GHz carrierFreq = newInfo->getCarrierFrequency();
-    if (phy_->getChannelModel(carrierFreq) == nullptr)
-        throw cRuntimeError("D2dUePhyHelper::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     // where this radio was as the frame started to arrive
     Coord myCoord = newFrame->getArrivalPosition();

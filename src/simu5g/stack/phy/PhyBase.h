@@ -319,7 +319,7 @@ class PhyBase : public cSimpleModule, public cListener, public IRadioEndpoint
     double getSpeed() override;
     /*
      * Whether the node is inside a building, and how far inside, as its
-     * primary channel model is configured
+     * radio says
      */
     bool isInsideBuilding() override;
     double getInsideDistance() override;

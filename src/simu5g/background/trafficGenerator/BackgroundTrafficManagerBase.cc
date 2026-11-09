@@ -73,20 +73,8 @@ void BackgroundTrafficManagerBase::initialize(int stage)
         WATCH(waitingForRac_);
     }
     if (stage == INITSTAGE_SIMU5G_BACKGROUNDTRAFFICMANAGER) {
-        BgTrafficManagerInfo *info = new BgTrafficManagerInfo();
-        info->init = false;
-        info->bgTrafficManager = this;
-        info->carrierFrequency = carrierFrequency_;
-        info->allocatedRbsDl = 0.0;
-        info->allocatedRbsUl = 0.0;
-        info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
-
-        if (isSetBgTrafficManagerInfoInit()) {
+        if (isSetBgTrafficManagerInfoInit())
             initializeAvgInterferenceComputation();
-            info->init = true;
-        }
-
-        binder_->addBgTrafficManagerInfo(info);
     }
 }
 
@@ -173,11 +161,6 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
         }
     }
     return found + 1;
-}
-
-TrafficGeneratorBase *BackgroundTrafficManagerBase::getTrafficGenerator(MacNodeId bgUeId)
-{
-    return bgUe_.at(getBgUeIndex(bgUeId));
 }
 
 CellularPhantomRadio *BackgroundTrafficManagerBase::getBgUeRadio(MacNodeId bgUeId)

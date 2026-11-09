@@ -68,7 +68,7 @@ inline std::ostream& operator<<(std::ostream& os, const LinkKey& k)
  * line of sight, its shadowing and its Jakes fading paths
  * (CellularRadioMedium::getLosMap(), getShadowingMap(), getJakesFadingMap()).
  */
-struct ChannelState
+namespace ChannelState
 {
     /** The Jakes fading paths of one band: an angle of arrival and a delay spread per path. */
     struct JakesFadingData
@@ -105,7 +105,7 @@ struct ChannelState
     };
     typedef std::map<LinkKey, ShadowingSample> ShadowFadingMap;
 
-};
+}
 
 } // namespace simu5g
 

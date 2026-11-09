@@ -39,7 +39,7 @@ Every row carries exactly one of `radio` and `idealchannel`; the rest refine.
 
     radio          235  a stochastic channel model is in use, so path loss,
                         fading and shadowing are actually evaluated
-    idealchannel    18  IdealChannelModel: reception is a coin flip and no
+    idealchannel    18  IdealChannelModel with ConfiguredRateErrorModel: reception is a coin flip and no
                         propagation is computed. These rows are radio-inert by
                         construction, and a change confined to the radio model
                         must leave all 18 byte-identical

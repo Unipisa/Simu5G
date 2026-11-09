@@ -306,7 +306,6 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
 inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
 inline ostream& operator<<(ostream& os, const UeInfo& info) { return os << info.str(); }
 inline ostream& operator<<(ostream& os, const EnbInfo& info) { return os << info.str(); }
-inline ostream& operator<<(ostream& os, const BgTrafficManagerInfo& info) { return os << info.str(); }
 
 void Binder::initialize(int stage)
 {
@@ -323,7 +322,6 @@ void Binder::initialize(int stage)
         WATCH(mecHostToUpfAddress_);
         WATCH(enbList_);
         WATCH(ueList_);
-        WATCH(bgTrafficManagerList_);
         WATCH(totalBands_);
         WATCH(componentCarriers_);
         WATCH(carrierUeMap_);

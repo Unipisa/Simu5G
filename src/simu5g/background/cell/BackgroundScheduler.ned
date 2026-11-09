@@ -28,13 +28,13 @@ simple BackgroundScheduler
         string radioModule = default("^.radio"); // The base station's phantom radio
         string trafficManagerModule = default("^.bgTrafficGenerator.manager");
 
-        // Transmission power
+        // Transmission power of the base station's phantom radio
         double txPower @unit(dBm) = default(46dBm);
 
-        // Transmission direction
+        // Transmission direction of the base station's phantom radio
         string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
 
-        // Transmission angle
+        // Transmission angle of the base station's phantom radio
         double txAngle @unit(deg) = default(0deg);
 
         // Flag to indicate whether this is a NR base station

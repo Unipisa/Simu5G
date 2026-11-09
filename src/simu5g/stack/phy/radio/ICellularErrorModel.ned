@@ -14,7 +14,8 @@ package simu5g.stack.phy.radio;
 //
 // The error model of a cellular receiver (~CellularReceiver): the packet
 // error rate of a reception, which the receiver decides the reception
-// against. ~BlerCurveErrorModel computes it from the reception's SINR.
+// against. ~BlerCurveErrorModel computes it from the reception's SINR;
+// ~ConfiguredRateErrorModel takes it from its parameters.
 //
 moduleinterface ICellularErrorModel
 {

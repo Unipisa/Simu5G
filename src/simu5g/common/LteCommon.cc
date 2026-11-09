@@ -625,17 +625,7 @@ std::string UeInfo::str() const
 {
     std::ostringstream oss;
     oss << "UeInfo[id=" << id << ", module=" << (ue ? ue->getFullName() : "null")
-        << ", cellId=" << cellId << ", init=" << (init ? "Y" : "N")
-        << ", txPwr=" << txPwr << "dBm]";
-    return oss.str();
-}
-
-std::string BgTrafficManagerInfo::str() const
-{
-    std::ostringstream oss;
-    oss << "BgTrafficManagerInfo[freq=" << carrierFrequency << "GHz"
-        << ", init=" << (init ? "Y" : "N") << ", rbsDL=" << allocatedRbsDl
-        << ", rbsUL=" << allocatedRbsUl << ", numUEs=" << allocatedRbsUeUl.size() << "]";
+        << ", cellId=" << cellId << "]";
     return oss.str();
 }
 

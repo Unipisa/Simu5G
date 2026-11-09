@@ -187,8 +187,8 @@ What a test should be able to do
 Fail. A check that cannot fail is not evidence, so when adding one, run the
 scenario once with the mechanism under test deliberately broken and confirm
 that the verdict says so. HarqResidualLoss rests on the transmission attempts
-being independent, which is what harqReduction = 1 buys; run it with the
-default harqReduction of 0.2 and 18 of its 27 checks fail, between 15 and 46
+being independent, which is what harqReduction = 1 buys; run it with a
+harqReduction of 0.2 and 18 of its 27 checks fail, between 15 and 46
 sigma out.
 
 Expected failures

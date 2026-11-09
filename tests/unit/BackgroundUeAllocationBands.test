@@ -6,7 +6,7 @@ The bands a background UE's allocation is recorded on
 The eNB scheduler allocates blocks to a background UE on the bands of the
 band-limit vector it is given, and hands the allocation, as an RbMap from
 band to block count, to the background traffic manager, which registers it
-with the radio medium as the UE's transmission. Background UEs have no radio,
+with the radio medium as the UE's transmission. A background UE's phantom radio sends no frames,
 so that map is the medium's only record of which bands they occupy: the
 interference they cause is computed on those bands. Each entry of
 the map is therefore keyed by the band the blocks were allocated on, the band
@@ -63,7 +63,6 @@ class RecordingBgManager : public IBackgroundTrafficManager
     void notifyBacklog(int index, Direction dir, bool rtx) override { unexpected("notifyBacklog"); }
     Cqi computeCqi(int bgUeIndex, Direction dir) override { unexpected("computeCqi"); }
     Cqi computeCqiFromSinr(double sinr) override { unexpected("computeCqiFromSinr"); }
-    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override { unexpected("getTrafficGenerator"); }
     CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) override { unexpected("getBgUeRadio"); }
     MacNodeId getBgUeId(int bgUeIndex) override { unexpected("getBgUeId"); }
     int getBgUeIndex(MacNodeId bgUeId) override { unexpected("getBgUeIndex"); }

@@ -59,7 +59,6 @@ output-vector-file = results/${iterationvarsf}${repetition}.vec
 ############### D2D: one pair, the flow started in D2D mode ##############
 **.ue*[*].hasD2D = true
 *.gnb.hasD2D = true
-*.radioMedium.nrChannelModelType = "Tr38901ChannelModel"
 *.numUeCell = 0
 *.numUeD2DTx = 1
 *.numUeD2DRx = 1

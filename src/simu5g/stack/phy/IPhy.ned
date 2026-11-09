@@ -23,9 +23,9 @@ package simu5g.stack.phy;
 // correctly or not. This is accomplished by utilizing an abstraction of the channel model without modeling
 // the transmission and reception of individual symbols. Specifically, on the transmitting side, radio frames
 // are sent directly to the intended receiver (via the sendDirect() method). On the receiving side, the
-// ChannelModel class is used to obtain the SINR resulting from channel effects (such as path loss,
-// fading/shadowing), as well as inter-cell interference, and to check the correctness of the reception using
-// Block Error Rate (BLER) curves.
+// radio medium's channel model is used to obtain the SINR resulting from channel effects (such as path loss,
+// fading/shadowing) and inter-cell interference; the radio's receiver checks the correctness of the reception
+// against its error model, by default Block Error Rate (BLER) curves.
 // The PHY layer also measures the uplink and downlink channel quality by computing Channel Status
 // Information (CSI) for User Equipments (UEs) in both uplink and downlink directions.
 // Handover management is also the responsibility of the PHY layer.

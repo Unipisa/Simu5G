@@ -192,7 +192,6 @@ inline std::ostream& operator<<(std::ostream& os, const BearerRequest& e)
 // Number of QCI classes
 #define LTE_QCI_CLASSES    9
 
-
 // specifies a list of bands that can be used by a user
 typedef std::vector<Band> UsableBands;
 
@@ -205,7 +204,6 @@ typedef unsigned short Codeword;
 /// Numerology Index
 typedef unsigned short NumerologyIndex;
 
-
 /*************************
 *   Transmission Modes  *
 *************************/
@@ -216,7 +214,6 @@ const unsigned char DL_NUM_TXMODE = 6; //UNKNOWN_TX_MODE;
 /// Number of transmission modes in UL direction.
 const unsigned char UL_NUM_TXMODE = 6; //UNKNOWN_TX_MODE;
 
-
 typedef std::map<MacNodeId, TxMode> TxModeMap;
 
 const double cqiToByteTms[16] = { 0, 2, 3, 5, 11, 15, 20, 25, 36, 38, 49, 63, 72, 79, 89, 92 };
@@ -225,7 +222,6 @@ double dBmToLinear(double dbm);
 double dBToLinear(double db);
 double linearToDBm(double lin);
 double linearToDb(double lin);
-
 
 /*****************
 * X2 Support
@@ -308,7 +304,6 @@ inline unsigned int nrUmHeaderBytes(NrUmSegState s, unsigned int snBits)
     return (s == NRUM_CONTINUATION) ? base + 2u : base;     // + SO(16b) on a continuation
 }
 
-
 // AM (TS 38.322 6.2.1.4): an AMD PDU always carries the SN. complete/first = D/C+P+SI(4)+SN,
 // byte-aligned (12-bit SN -> 2B, 18-bit -> 3B); continuation adds the SO(16b) (4B / 5B).
 inline unsigned int nrAmHeaderBytes(NrUmSegState s, unsigned int snBits)
@@ -386,7 +381,7 @@ typedef std::list<Codeword> CwList;
 typedef std::pair<unsigned char, CwList> UnitList;
 
 /*********************
-* Incell Interference Support
+* Node information kept by the Binder
 *********************/
 struct EnbInfo
 {
@@ -399,29 +394,12 @@ struct EnbInfo
 
 struct UeInfo
 {
-    bool init;         // initialization flag
-    double txPwr;
     MacNodeId id;
     MacNodeId cellId;
     opp_component_ptr<cModule> ue;
     IRadioEndpoint *phy = nullptr;  // the UE's PHY as a channel model sees it
     std::string str() const;
 };
-
-/**********************************
- * Background UEs avg CQI support *
- *********************************/
-struct BgTrafficManagerInfo
-{
-    bool init;         // initialization flag
-    IBackgroundTrafficManager *bgTrafficManager = nullptr;
-    GHz carrierFrequency;
-    double allocatedRbsDl;
-    double allocatedRbsUl;
-    std::vector<double> allocatedRbsUeUl;
-    std::string str() const;
-};
-
 
 /*****************
 *  PHY Support  *

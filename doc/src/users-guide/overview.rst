@@ -168,8 +168,8 @@ the receiver applies a channel model to compute the received
 power. The channel model can be configured to incorporate
 fading, shadowing, pathloss, etc., and can be made arbitrarily
 complex. From the received power, the receiver computes the
-SINR, querying the Binder to know which other nodes were
-interfering on the same resources. Then, it leverages Block
+SINR, asking the radio medium which other nodes were
+transmitting on the same resources. Then, it leverages Block
 Error Rate (BLER) curves to compute the reception probability
 for each RB composing the ongoing transmission. This makes it
 possible to translate a SINR and a transmission format to a

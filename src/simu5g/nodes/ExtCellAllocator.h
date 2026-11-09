@@ -53,9 +53,8 @@ class ExtCellAllocator : public cSimpleModule
     // Reference to the binder
     inet::ModuleRefByPar<Binder> binder_;
 
-    // Current and previous band occupation status. Used for interference computation
+    // Current band occupation status
     BandStatus bandStatus_;
-    BandStatus prevBandStatus_;
 
     // TTI self message
     cMessage *ttiTick_ = nullptr;
@@ -92,14 +91,6 @@ class ExtCellAllocator : public cSimpleModule
     MacNodeId getNodeId() const { return nodeId_; }
 
     unsigned int getNumBands() { return numBands_; }
-
-    void setBlock(int band) { bandStatus_.at(band) = 1; }
-
-    void unsetBlock(int band) { bandStatus_.at(band) = 0; }
-
-    int getBandStatus(int band) { return bandStatus_.at(band); }
-
-    int getPrevBandStatus(int band) { return prevBandStatus_.at(band); }
 
     // Set the band utilization percentage
     void setBandUtilization(double bandUtilization);

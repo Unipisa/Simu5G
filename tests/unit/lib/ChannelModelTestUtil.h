@@ -22,7 +22,6 @@
 #include "simu5g/stack/phy/channelmodel/StochasticChannelModel.h"
 #include "simu5g/stack/phy/medium/CellularRadioMedium.h"
 #include "simu5g/stack/phy/medium/CellularTransmission.h"
-#include "simu5g/stack/phy/radio/BlerCurveErrorModel.h"
 #include "simu5g/stack/phy/radio/CellularReceiver.h"
 
 namespace simu5g {
@@ -102,8 +101,6 @@ class StubUeRegistration
     StubUeRegistration(Binder *binder, MacNodeId id, StubEndpoint *endpoint)
         : info_(new UeInfo())
     {
-        info_->init = false;
-        info_->txPwr = 0.0;
         info_->id = id;
         info_->cellId = NODEID_NONE;
         info_->phy = endpoint;

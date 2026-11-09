@@ -15,11 +15,8 @@
 
 #include <inet/common/INETMath.h>
 
-#include "simu5g/background/trafficGenerator/generators/TrafficGeneratorBase.h"
 #include "simu5g/stack/phy/channelmodel/IRadioEndpoint.h"
 #include "simu5g/stack/phy/packet/AirFrame_m.h"
-#include "simu5g/stack/phy/PhyBase.h"
-#include "simu5g/stack/phy/radio/CellularPhantomRadio.h"
 #include "simu5g/stack/phy/channelmodel/ChannelModelBase.h"
 
 namespace simu5g {

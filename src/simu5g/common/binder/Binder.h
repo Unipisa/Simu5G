@@ -21,7 +21,6 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/blerCurves/PhyPisaData.h"
-#include "simu5g/nodes/ExtCellAllocator.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
@@ -30,7 +29,6 @@ using namespace omnetpp;
 
 class UserPlaneNodeControl;
 class UeStatsCollector;
-
 
 struct NodeInfo {
     opp_component_ptr<cModule> moduleRef;
@@ -72,18 +70,11 @@ class Binder : public cSimpleModule
     // the IP address of the corresponding UPF
     std::map<inet::L3Address, inet::L3Address> mecHostToUpfAddress_;
 
-    // list of static external cells. Used for intercell interference evaluation
-
-    // list of static external cells. Used for intercell interference evaluation
-
-    // list of all eNBs. Used for inter-cell interference evaluation
+    // list of all eNBs. Used for the handover candidate search
     std::vector<EnbInfo *> enbList_;
 
-    // list of all UEs. Used for inter-cell interference evaluation
+    // list of all UEs. Used for the D2D feedback loop
     std::vector<UeInfo *> ueList_;
-
-    // list of all background traffic managers. Used for background UEs CQI computation
-    std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
 
     typedef std::map<unsigned int, std::map<unsigned int, double>> BgInterferenceMatrix;
 
@@ -168,9 +159,6 @@ class Binder : public cSimpleModule
     {
         for (auto enb : enbList_)
             delete enb;
-
-        for (auto bg : bgTrafficManagerList_)
-            delete bg;
 
         for (auto ue : ueList_)
             delete ue;
@@ -510,7 +498,6 @@ class Binder : public cSimpleModule
         return nodeInfoMap_.size();
     }
 
-
     virtual void addEnbInfo(EnbInfo *info)
     {
         enbList_.push_back(info);
@@ -529,16 +516,6 @@ class Binder : public cSimpleModule
     virtual const std::vector<UeInfo *>& getUeList()
     {
         return ueList_;
-    }
-
-    virtual void addBgTrafficManagerInfo(BgTrafficManagerInfo *info)
-    {
-        bgTrafficManagerList_.push_back(info);
-    }
-
-    virtual const std::vector<BgTrafficManagerInfo *>& getBgTrafficManagerList()
-    {
-        return bgTrafficManagerList_;
     }
 
     virtual Cqi meanCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir);
@@ -589,7 +566,6 @@ class Binder : public cSimpleModule
     virtual inet::Ipv4Address getAddressForMulticastDestId(MacNodeId multicastDestId);
 
     virtual void updateUeInfoCellId(MacNodeId nodeId, MacCellId cellId);
-
 
     /*
      * author Alessandro Noferi.

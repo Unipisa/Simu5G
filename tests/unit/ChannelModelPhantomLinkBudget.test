@@ -4,13 +4,12 @@ The link budget of a phantom transmission -- an external or a background
 cell's, or a background cell's UE's -- at a receiver: the transmission's power,
 less the path loss, less its antenna's attenuation towards the receiver, plus
 the antenna gains of the radios at both ends, less the receiver's cable loss.
-Every term is the radios'; none is a key of the channel model, as in the real
-walks, and the phantom radio's own cable loss, a transmitter's, does not count.
+Every term is the radios', and the phantom radio's own cable loss, a transmitter's, does not count.
 
 The other tests of a phantom transmission cannot see this: their values equal
-the keys' defaults (antennGainEnB 18, antennaGainUe 0, cableLoss 2), and nothing
-grades the uplink. So here every term has a value of its own, and each is
-different from the keys:
+the radios' defaults (18 dBi, 0 dBi, 2 dB), and nothing grades
+the uplink. So here every term has a value of its own, and each is different
+from those defaults:
 
  - DL: the phantom radio has gain 15 dBi and cable loss 9 dB (a decoy), the UE
    gain 3 dBi and cable loss 1 dB: txPower - PL + 15 + 3 - 1.

@@ -123,9 +123,9 @@ def scalar_table(filter_expression, itervars):
 
 
 def grade_harq_residual_loss(grader):
-    """IdealChannelModel with harqReduction = 1 makes the HARQ transmission
+    """ConfiguredRateErrorModel with harqReduction = 1 makes the HARQ transmission
     attempts of a MAC PDU i.i.d. Bernoulli(perDl), so a PDU is discarded only
-    when all maxHarqRtx+1 of them fail. See IdealChannelModel.ned:32."""
+    when all maxHarqRtx+1 of them fail. See ConfiguredRateErrorModel.ned."""
 
     # The module filters also do the work of skipping the statistics that were
     # declared on a module which never emitted them: on an NR node the LTE leg

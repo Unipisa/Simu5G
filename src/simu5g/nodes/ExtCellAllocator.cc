@@ -31,7 +31,6 @@ void ExtCellAllocator::initialize(int stage)
 
         // initialize band status structures
         bandStatus_.resize(numBands_, 0);
-        prevBandStatus_.resize(numBands_, 0);
 
         // get allocation type
         std::string allocationType = par("bandAllocationType").stdstringValue();
@@ -54,7 +53,6 @@ void ExtCellAllocator::initialize(int stage)
             // initializes the elements it adds. Nothing updates them later,
             // because FULL_ALLOC schedules no TTI tick.
             bandStatus_.assign(numBands_, 1);
-            prevBandStatus_.assign(numBands_, 1);
         }
         else {
             // get the band utilization
@@ -74,7 +72,6 @@ void ExtCellAllocator::initialize(int stage)
         }
 
         WATCH(bandStatus_);
-        WATCH(prevBandStatus_);
     }
     if (stage == inet::INITSTAGE_SINGLE_MOBILITY && allocationType_ == FULL_ALLOC) {
         // on the radio medium, a transmission on every band that never ends,
@@ -141,8 +138,6 @@ void ExtCellAllocator::registerTransmission(simtime_t duration)
 
 void ExtCellAllocator::resetBandStatus()
 {
-    prevBandStatus_ = bandStatus_;
-
     bandStatus_.clear();
     bandStatus_.resize(numBands_, 0);
 }

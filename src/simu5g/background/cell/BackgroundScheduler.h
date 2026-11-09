@@ -61,21 +61,17 @@ class BackgroundScheduler : public cSimpleModule
     // reference to the background traffic manager - one per carrier
     inet::ModuleRefByPar<IBackgroundTrafficManager> bgTrafficManager_;
 
-    // reference to the channel model for this background base station
-
     // TTI self message
     cMessage *ttiTick_ = nullptr;
     double ttiPeriod_;
 
     /*** ALLOCATION MANAGEMENT ***/
 
-    // Current and previous band occupation status (both for UL and DL). Used for interference computation
+    // Current band occupation status (both for UL and DL)
     BandStatus bandStatus_[2];
-    BandStatus prevBandStatus_[2];
 
     // for the UL, we need to store which UE uses which block
     std::vector<MacNodeId> ulBandAllocation_;
-    std::vector<MacNodeId> ulPrevBandAllocation_;
 
     // statistics
     static simsignal_t bgAvgServedBlocksDlSignal_;
@@ -88,7 +84,7 @@ class BackgroundScheduler : public cSimpleModule
 
     // update the band status. Called at each TTI (not used for FULL_ALLOC)
     virtual void updateAllocation(Direction dir);
-    // move the current status in the prevBandStatus structure and reset the former
+    // reset the current band status and, in UL, the UE allocation
     void resetAllocation(Direction dir);
 
     // registers with the radio medium the transmissions of the current allocation: the base station's in DL, each UE's in UL
@@ -107,11 +103,6 @@ class BackgroundScheduler : public cSimpleModule
 
     unsigned int getNumBands() const { return numBands_; }
 
-    int getBandStatus(int band, Direction dir) { return bandStatus_[dir].at(band); }
-    int getPrevBandStatus(int band, Direction dir) { return prevBandStatus_[dir].at(band); }
-
-    TrafficGeneratorBase *getBandInterferingUe(int band);
-    TrafficGeneratorBase *getPrevBandInterferingUe(int band);
 };
 
 } //namespace

@@ -8,8 +8,7 @@ product over its bands; the error probability that leaves is scaled by
 harqReduction^(txNumber-1) for a retransmission; and one uniform draw decides.
 
 The SINRs are the test's own. The model under test overrides
-getReceptionSinr(), the seam the D2D model routes its links through, so the
-arithmetic runs on inputs chosen here, and the SINR computation is left to the
+getReceptionSinr(), so the arithmetic runs on inputs chosen here, and the SINR computation is left to the
 tests that grade it.
 
 The arithmetic is graded exactly, not statistically. A copy of the model's

@@ -54,7 +54,6 @@ void TrafficGeneratorBase::initialize(int stage)
         startTime_[UL] = par("startTimeUl");
 
         headerLen_ = par("headerLen");
-        txPower_ = par("txPower");
 
         rtxRate_[DL] = par("rtxRateDl");
         rtxRate_[UL] = par("rtxRateUl");

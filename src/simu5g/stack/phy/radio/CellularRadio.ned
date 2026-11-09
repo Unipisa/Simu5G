@@ -15,8 +15,9 @@ package simu5g.stack.phy.radio;
 // The radio of a cellular PHY leg: the node-side counterpart of the radio
 // medium, holding the antenna, the transmitter and the receiver. Every frame
 // the PHY transmits passes through it (the PHY says where it goes), and every
-// frame that arrives for the node's PHY leg enters through it; the PHY and its
-// channel models still decide everything else.
+// frame that arrives for the node's PHY leg enters through it. The radio's
+// receiver decides the reception, against its error model, on the SINR the
+// radio medium's channel model computes.
 //
 // A frame arrives when its transmission starts. The radio holds it until the
 // transmission ends and passes it up to the PHY then, at the frame's own

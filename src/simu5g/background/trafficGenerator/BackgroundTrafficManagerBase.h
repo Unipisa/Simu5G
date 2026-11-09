@@ -112,19 +112,15 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // set carrier frequency
     void setCarrierFrequency(GHz carrierFrequency) override { carrierFrequency_ = carrierFrequency; }
 
-
-
     // invoked by the UE's traffic generator when new data is backlogged
     void notifyBacklog(int index, Direction dir, bool rtx = false) override;
 
-    // returns the CQI based on the given position and power
+    // returns the CQI of the background UE in the direction
     Cqi computeCqi(int bgUeIndex, Direction dir) override;
 
     // returns the CQI based on the given sinr
     Cqi computeCqiFromSinr(double sinr) override;
 
-    // returns the pointer to the traffic generator of the given background UE
-    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override;
     MacNodeId getBgUeId(int bgUeIndex) override;
     int getBgUeIndex(MacNodeId bgUeId) override;
     CellularPhantomRadio *getBgUeRadio(MacNodeId bgUeId) override;

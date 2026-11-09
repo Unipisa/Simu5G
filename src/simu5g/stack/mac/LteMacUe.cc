@@ -93,7 +93,6 @@ void LteMacUe::initialize(int stage)
         UeInfo *info = new UeInfo();
         info->id = nodeId_;            // local mac ID
         info->cellId = cellId_;        // cell ID
-        info->init = false;            // flag for phy initialization
         info->ue = networkNode_;  // reference to the UE module
         info->phy = phy_;
 

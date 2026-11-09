@@ -33,18 +33,12 @@ void BackgroundScheduler::initialize(int stage)
 
         // initialize band status structures
         bandStatus_[UL].resize(numBands_, 0);
-        prevBandStatus_[UL].resize(numBands_, 0);
         bandStatus_[DL].resize(numBands_, 0);
-        prevBandStatus_[DL].resize(numBands_, 0);
-        ulPrevBandAllocation_.resize(numBands_, NODEID_NONE);
         ulBandAllocation_.resize(numBands_, NODEID_NONE);
 
         WATCH(bandStatus_[UL]);
         WATCH(bandStatus_[DL]);
-        WATCH(prevBandStatus_[UL]);
-        WATCH(prevBandStatus_[DL]);
         WATCH(ulBandAllocation_);
-        WATCH(ulPrevBandAllocation_);
     }
     else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
         binder_.reference(this, "binderModule", true);
@@ -277,25 +271,11 @@ void BackgroundScheduler::registerTransmissions()
 void BackgroundScheduler::resetAllocation(Direction dir)
 {
     for (unsigned int i = 0; i < numBands_; i++) {
-        prevBandStatus_[dir][i] = bandStatus_[dir][i];
         bandStatus_[dir][i] = 0;
         if (dir == UL) {
-            ulPrevBandAllocation_[i] = ulBandAllocation_[i];
             ulBandAllocation_[i] = NODEID_NONE;
         }
     }
-}
-
-TrafficGeneratorBase *BackgroundScheduler::getBandInterferingUe(int band)
-{
-    MacNodeId bgUeId = ulBandAllocation_[band];
-    return bgTrafficManager_->getTrafficGenerator(bgUeId);
-}
-
-TrafficGeneratorBase *BackgroundScheduler::getPrevBandInterferingUe(int band)
-{
-    MacNodeId bgUeId = ulPrevBandAllocation_[band];
-    return bgTrafficManager_->getTrafficGenerator(bgUeId);
 }
 
 } //namespace

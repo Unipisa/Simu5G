@@ -39,8 +39,6 @@ class IBackgroundTrafficManager
     // Get the number of RBs
     virtual unsigned int getNumBands() = 0;
 
-
-
     // Invoked by the UE's traffic generator when new data is backlogged
     virtual void notifyBacklog(int index, Direction dir, bool rtx = false) = 0;
 
@@ -49,9 +47,6 @@ class IBackgroundTrafficManager
 
     // Returns the CQI based on the given SINR
     virtual Cqi computeCqiFromSinr(double sinr) = 0;
-
-    // Returns the pointer to the traffic generator of the given background UE
-    virtual TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) = 0;
 
     // Returns the node id of the background UE with the given index
     virtual MacNodeId getBgUeId(int bgUeIndex) = 0;
