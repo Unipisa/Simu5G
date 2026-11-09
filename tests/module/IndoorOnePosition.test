@@ -1,0 +1,85 @@
+%description:
+An indoor UE has one indoor position: TR 38.901 7.4.3 says "The O2I penetration is
+UT-specifically generated", and 7.4.3.1 "d2D-in shall be UT-specifically generated".
+So the two radios of an NR UE, with **.insideBuilding = true, must answer with the same
+distance from the wall and the same penetration loss deviate.
+
+They do not: each radio draws its own (item 14 of tests/doc/model-deviations.md).
+IndoorTwoRadios pins what the model does today, so that any change to it fails there by
+name, and that the same run ends normally, so this one fails on its comparison and not
+on an abort. When the model follows the specification, update that pin and drop the
+line %expected-failure here.
+
+%expected-failure: each radio of an NR UE draws its own indoor distance and deviate, where TR 38.901 7.4.3 generates them per UT
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: IndoorRadioProbe.ned
+
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+simple IndoorRadioProbe
+{
+    @class(IndoorRadioProbe);
+}
+
+network IndoorRadioNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        probe: IndoorRadioProbe;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: IndoorRadioProbe.cc
+#include <iostream>
+
+#include "simu5g/stack/phy/radio/CellularRadio.h"
+
+using namespace omnetpp;
+using namespace simu5g;
+
+namespace IndoorOnePosition {   // the test's NED namespace (opp_test)
+
+// Reports what the two radios of the UE answer, at the end of the run
+class IndoorRadioProbe : public cSimpleModule
+{
+  protected:
+    void finish() override
+    {
+        cModule *nic = getModuleByPath("<root>.ue[0].cellularNic");
+        auto *radio = check_and_cast<CellularRadio *>(nic->getSubmodule("radio"));
+        auto *nrRadio = check_and_cast<CellularRadio *>(nic->getSubmodule("nrRadio"));
+        auto yesNo = [] (bool b) { return b ? "yes" : "no"; };
+        std::cout << "IndoorRadioProbe: both radios indoors: " << yesNo(radio->isInsideBuilding() && nrRadio->isInsideBuilding()) << std::endl;
+        std::cout << "IndoorRadioProbe: distance from the wall " << radio->getInsideDistance() << " and " << nrRadio->getInsideDistance() << std::endl;
+        std::cout << "IndoorRadioProbe: penetration loss deviate " << radio->getPenetrationLossDeviate() << " and " << nrRadio->getPenetrationLossDeviate() << std::endl;
+        std::cout << "IndoorRadioProbe: one distance from the wall: " << yesNo(radio->getInsideDistance() == nrRadio->getInsideDistance()) << std::endl;
+        std::cout << "IndoorRadioProbe: one penetration loss deviate: " << yesNo(radio->getPenetrationLossDeviate() == nrRadio->getPenetrationLossDeviate()) << std::endl;
+    }
+};
+
+Define_Module(IndoorRadioProbe);
+
+} // namespace IndoorOnePosition
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = IndoorRadioNetwork
+
+sim-time-limit = 10ms
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+**.insideBuilding = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+IndoorRadioProbe: both radios indoors: yes
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+IndoorRadioProbe: one distance from the wall: yes
+IndoorRadioProbe: one penetration loss deviate: yes
+%#--------------------------------------------------------------------------------------------------------------
