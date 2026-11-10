@@ -1,14 +1,14 @@
 # What's New in Simu5G
 
-## v1.8.1 (unreleased)
+## v1.8.1 (2026-11-10)
 
 A bug fix release. Most of the fixes change simulation results, above all in
 NR: loss under heavy traffic goes away, and NR downlink delays fall, in some
 configurations substantially. Results recorded with v1.8.0 are not directly
 comparable: 72 of the 222 fingerprint configurations have new baselines, and in
-37 of them the traffic between the nodes changed (`~tNl`).
+37 of them the traffic between the nodes changed.
 
-This release requires INET-4.7.0 and OMNeT++ 6.4.0, like v1.8.0.
+This release requires INET-4.7.0 and OMNeT++ 6.4.0 or 6.5.0 (unchanged from v1.8.0).
 
 ### MAC
 
@@ -75,8 +75,11 @@ This release requires INET-4.7.0 and OMNeT++ 6.4.0, like v1.8.0.
 
 The fixes come with new module tests: `SaturatedNrTrafficNoMacLoss`,
 `FewHarqProcessesLteDlNoMacLoss`, `FewHarqProcessesLteUlNoMacLoss`,
-`SlowHarqFeedbackNrUlGrants`, `DlCappedGrantKeepsBacklog` and
-`EthernetSessionFlowMeasurement`.
+`SlowHarqFeedbackNrUlGrants`, `DlCappedGrantKeepsBacklog`,
+`DlGrantCoversEverySduHeader` and `EthernetSessionFlowMeasurement`.
+
+Bugs fixed in this release: https://github.com/Unipisa/Simu5G/milestone/1?closed=1
+
 
 ## v1.8.0 (2026-10-07)
 
