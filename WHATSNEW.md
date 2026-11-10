@@ -34,17 +34,17 @@ This release requires INET-4.7.0 and OMNeT++ 6.4.0, like v1.8.0.
   with "H-ARQ TX buffer: new process selected for tx is not completely empty". No
   run with the default of 8 reached either.
 
-- **Delayed NR downlink data.** A downlink grant could fall a few bytes short of
-  the RLC headers of the queued SDUs. The end of an SDU then stayed in the buffer
-  with the connection marked inactive, and waited for the next SDU to arrive. This
-  inflated delays by up to a whole packet interval (`CBR-DL` in
+- **Delayed NR downlink data (issue #311).** A downlink grant could fall a few
+  bytes short of the RLC headers of the queued SDUs. The end of an SDU then stayed
+  in the buffer with the connection marked inactive, and waited for the next SDU to
+  arrive. This inflated delays by up to a whole packet interval (`CBR-DL` in
   `standalone_multicell`, a frame every 20 ms: mean `cbrFrameDelay` 24.9 ms before,
   4.9 ms now), and could lose the last frame of a burst. A connection marked
   inactive with data in its buffer is now an error.
 
-- **Schedulers that cap grants, such as DRR.** A capped grant could mark a
-  connection as finished while it still had data, so its frames were delayed
-  until new data arrived, or never sent.
+- **Schedulers that cap grants, such as DRR (issue #311).** A capped grant could
+  mark a connection as finished while it still had data, so its frames were
+  delayed until new data arrived, or never sent.
 
 - **NR uplink scheduler.** The gNB no longer spends resource blocks on grants for
   a UE whose H-ARQ processes are all busy. No data was lost here; this needs a
