@@ -1,0 +1,105 @@
+%description:
+An NR DL grant covers the RLC header of every SDU it carries, so no SDU waits for the next
+one. With RLC UM and NR SO framing, each SDU is an RLC PDU with a header of its own. The
+scenario is the one of GitHub issue #311: dnStation, a host on the UPF's N6 Ethernet LAN,
+sends the device behind ue[0], a UE in Ethernet bridge mode, three frames of 100, 46 and
+76 bytes within 2 us, every 20 ms, five times, and nothing afterwards. The three reach the
+same DRB in the same scheduling round, and the default scheduler does not cap the grant.
+
+Checks: the device receives every frame, and none takes 10 ms or more (each takes about
+5 ms; a frame that waits for the next round takes 20 ms longer).
+
+%#--------------------------------------------------------------------------------------------------------------
+%file: test.ned
+import inet.node.ethernet.Eth1G;
+import inet.node.inet.StandardHost;
+import simu5g.test.moduletest.lib.NrSessionTestNetwork;
+
+network SduHeaderTestNetwork extends NrSessionTestNetwork
+{
+    submodules:
+        dnStation: StandardHost {
+            @display("p=650,75");
+        }
+        device: StandardHost {
+            @display("p=650,400");
+        }
+    connections:
+        upf.dnEthg <--> Eth1G <--> dnStation.ethg++;
+        device.ethg++ <--> Eth1G <--> ue[0].ethg++;
+}
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+network = SduHeaderTestNetwork
+sim-time-limit = 1s
+
+# the results the test checks
+*.dnStation.app[*].source.**.scalar-recording = true
+*.device.app[0].sink.**.scalar-recording = true
+*.device.app[0].sink.packetLifeTime.result-recording-modes = max
+
+# the serving cells (defaults.ini sets them for NrSessionTestNetwork by name)
+*.ue[*].servingNodeId = 0
+*.ue[*].nrServingNodeId = 1
+
+# ue[0]: an Ethernet session in bridge mode, with the device behind it, on one RLC UM bearer
+*.upf.hasEthernetBridge = true
+*.ue[*].sessionType = "Ethernet"
+*.ue[*].hasIpv4 = false
+*.ue[0].ethernetMode = "bridge"
+*.ue[0].numEthInterfaces = 1
+*.bearerConfigurator.staticDrbs = [{coreNetwork: "5gc", ue: "ue[0]", drbId: 1, isDefault: true, rlcMode: "UM"}]
+
+# dnStation and the device: raw Ethernet hosts
+*.dnStation.hasIpv4 = false
+*.device.hasIpv4 = false
+*.dnStation.eth[*].typename = "LayeredEthernetInterface"
+*.device.eth[*].typename = "LayeredEthernetInterface"
+*.dnStation.ethernet.typename = "EthernetLayer"
+*.device.ethernet.typename = "EthernetLayer"
+*.dnStation.ethernet.hasSocketSupport = true
+*.device.ethernet.hasSocketSupport = true
+*.dnStation.llc.typename = ""
+*.device.llc.typename = ""
+*.dnStation.eth[*].bitrate = 1Gbps
+*.device.eth[*].bitrate = 1Gbps
+*.ue[0].eth[*].bitrate = 1Gbps
+
+# the three flows, five rounds from 0.1 s, and the sink
+*.dnStation.numApps = 3
+*.dnStation.app[*].typename = "EthernetSourceApp"
+*.dnStation.app[*].io.interface = "eth0"
+*.dnStation.app[*].io.remoteAddress = "device"
+*.dnStation.app[0].source.packetLength = 100B
+*.dnStation.app[1].source.packetLength = 46B
+*.dnStation.app[2].source.packetLength = 76B
+*.dnStation.app[*].source.productionInterval = (simTime() < 0.18s ? 20ms : 1000s)
+*.dnStation.app[*].source.initialProductionOffset = 0.1s + 1us * ancestorIndex(1)
+*.device.numApps = 1
+*.device.app[0].typename = "EthernetSinkApp"
+*.device.app[0].io.interface = "eth0"
+*.device.app[0].io.localAddress = "device"
+*.device.app[0].io.steal = true
+
+include ../../lib/defaults.ini
+
+%#--------------------------------------------------------------------------------------------------------------
+%exitcode: 0
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SduHeaderTestNetwork.dnStation.app[0].source packets:count 5
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SduHeaderTestNetwork.dnStation.app[1].source packets:count 5
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SduHeaderTestNetwork.dnStation.app[2].source packets:count 5
+%#--------------------------------------------------------------------------------------------------------------
+%contains: results/General-#0.sca
+scalar SduHeaderTestNetwork.device.app[0].sink packets:count 15
+%#--------------------------------------------------------------------------------------------------------------
+%contains-regex: results/General-#0.sca
+scalar SduHeaderTestNetwork\.device\.app\[0\]\.sink packetLifeTime:max 0\.00[0-9]+
+%#--------------------------------------------------------------------------------------------------------------
