@@ -262,6 +262,16 @@ rst_prolog = open('_templates/prolog.inc', 'r').read()
 # the NED reference, generated into neddoc/ by the doc-builder action
 neddoc_dir = 'neddoc'
 
+# A website-only build ('make site') has no NED and C++ references: their menu entries are dropped, and
+# :ned: names render as literals.
+suppress_warnings = []
+for ref in ('neddoc', 'api'):
+    if not os.path.exists(os.path.join(ref, 'index.rst')):
+        exclude_patterns.append(ref + '/**')
+        suppress_warnings.append('toc.excluded')
+if not os.path.exists('neddoc/index.rst'):
+    suppress_warnings.append('neddoc.no_reference')
+
 # whether to show TODO items
 todo_include_todos = False
 todo_emit_warnings = False

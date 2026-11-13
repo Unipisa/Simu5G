@@ -21,6 +21,13 @@ Simu5G and INET (ROOT), which is mounted into the container.
   documentation of this working tree.
 - Use 'make pdf' to also build the PDF of the User's Guide.
 - Use 'make serve' to preview the built website at http://localhost:8000/
+- Use 'make site' to build only the website pages, without the NED and C++
+  references, in seconds instead of minutes. Their menu entries are left out,
+  and :ned: names are not links. The references of an earlier 'make html' are
+  removed. It needs no INET checkout.
+- Use 'make live' to build only the website pages like 'make site', and serve
+  them at http://localhost:8000/ (PORT=... to change the port). A page that
+  you edit is rebuilt, and the browser reloads it. Ctrl-C stops it.
 - Use 'make clean' to remove the generated files.
 
 Deploying the website

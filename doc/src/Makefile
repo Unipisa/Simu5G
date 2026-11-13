@@ -5,6 +5,7 @@ ROOT          ?= $(abspath $(SIMU5G_DIR)/..)
 DOC_BUILDER_DIR ?= $(ROOT)/doc-builder
 INET_DIR      ?= $(ROOT)/inet
 BUILDDIR      = _build
+PORT          ?= 8000
 
 INET_VERSION  := $(shell awk '/repository: inet-framework\/inet/ { inet = 1 } inet && /ref:/ { print $$2; exit }' \
                    $(SIMU5G_DIR)/.github/workflows/fingerprint-tests.yml)
@@ -15,7 +16,7 @@ DOC_BUILDER   = cd $(ROOT) && $(DOC_BUILDER_DIR)/doc-builder.sh \
                 --title Simu5G --doxygen=true --ned-path $(abspath $(INET_DIR))/src \
                 --external-docs inet=$(INET_DOC_URL) --docgen-args --no-automatic-hyperlinks --output-dir $(abspath $(BUILDDIR))/html
 
-.PHONY: all html pdf serve clean checkdirs
+.PHONY: all html pdf site live serve clean checkdirs check-doc-builder
 
 all: html
 
@@ -25,6 +26,13 @@ html: checkdirs
 pdf: checkdirs
 	@$(DOC_BUILDER) --pdf
 
+# the website pages only, without the NED and C++ references; 'live' also serves them, rebuilt as they are edited
+site: check-doc-builder
+	@$(DOC_BUILDER) --ned=false --doxygen=false
+
+live: check-doc-builder
+	@$(DOC_BUILDER) --ned=false --doxygen=false --serve --port $(PORT)
+
 serve:
 	python3 -m http.server -d $(BUILDDIR)/html 8000
 
@@ -32,7 +40,9 @@ clean:
 	@rm -rf $(BUILDDIR) neddoc
 
 # doc-builder.sh only sees the directory it runs in (ROOT), so Simu5G and INET must be in it.
-checkdirs:
-	@test -x $(DOC_BUILDER_DIR)/doc-builder.sh || { echo "No checkout of omnetpp/doc-builder in $(DOC_BUILDER_DIR); set DOC_BUILDER_DIR"; exit 1; }
+checkdirs: check-doc-builder
 	@test -d $(INET_DIR)/src || { echo "No INET checkout in $(INET_DIR); set INET_DIR"; exit 1; }
 	@case "$(abspath $(INET_DIR))/" in $(ROOT)/*) ;; *) echo "$(INET_DIR) is not in $(ROOT); set ROOT to a directory that contains Simu5G and INET"; exit 1 ;; esac
+
+check-doc-builder:
+	@test -x $(DOC_BUILDER_DIR)/doc-builder.sh || { echo "No checkout of omnetpp/doc-builder in $(DOC_BUILDER_DIR); set DOC_BUILDER_DIR"; exit 1; }
